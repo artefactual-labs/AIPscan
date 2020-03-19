@@ -1,4 +1,5 @@
 import requests
+import os.path
 
 base_url = "http://am111xenial.qa.archivematica.net:8000"
 api_command = "/api/v2/file/"
@@ -29,7 +30,7 @@ for package in ss_packages["objects"]:
     relative_path = package["current_path"][40:-3]
     relative_path_to_mets = relative_path + "/data/METS." + package["uuid"] + ".xml"
 
-    # request METS file and save to disk
+    # request METS file
     mets_response = requests.get(
         base_url
         + api_command
@@ -42,7 +43,8 @@ for package in ss_packages["objects"]:
         + api_key
     )
 
-    with open(package["uuid"] + ".xml", "wb") as file:
+    # save METS files to disk
+    # TODO create "downloads/" directory if it doesn't exist
+    filename = package["uuid"] + ".xml"
+    with open("downloads/" + filename, "wb") as file:
         file.write(mets_response.content)
-
-    # TODO move to a separate downloads folder
