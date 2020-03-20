@@ -1,5 +1,6 @@
 import requests
 import os.path
+from datetime import datetime
 
 base_url = "http://am111xenial.qa.archivematica.net:8000"
 api_command = "/api/v2/file/"
@@ -25,6 +26,15 @@ ss_packages = packages_response.json()
 # with open("ss_packages.json", "w") as json_file:
 # json.dump(ss_packages, json_file)
 
+# create "downloads/" directory if it doesn't exist
+if not os.path.exists("downloads/"):
+    os.makedirs("downloads/")
+
+# create a downloads/ subdirectory for each job using timestamp as name
+dateTimeObj = datetime.now()
+timestampStr = dateTimeObj.strftime("%Y-%m-%d--%H:%M:%S")
+os.makedirs("downloads/" + timestampStr + "/")
+
 for package in ss_packages["objects"]:
     # build relative path to METS file
     relative_path = package["current_path"][40:-3]
@@ -44,7 +54,6 @@ for package in ss_packages["objects"]:
     )
 
     # save METS files to disk
-    # TODO create "downloads/" directory if it doesn't exist
     filename = package["uuid"] + ".xml"
-    with open("downloads/" + filename, "wb") as file:
+    with open("downloads/" + timestampStr + "/" + filename, "wb") as file:
         file.write(mets_response.content)
