@@ -21,10 +21,11 @@ packages_response = requests.get(
 
 ss_packages = packages_response.json()
 
-## write response to a file
-# import json
-# with open("ss_packages.json", "w") as json_file:
-# json.dump(ss_packages, json_file)
+# output basic request information to user
+print("base URL: " + base_url)
+print("total AIP count: " + str(ss_packages["meta"]["total_count"]))
+print("limit: " + limit)
+print("next URL: " + ss_packages["meta"]["next"])
 
 # create "downloads/" directory if it doesn't exist
 if not os.path.exists("downloads/"):
