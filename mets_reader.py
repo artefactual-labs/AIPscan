@@ -12,6 +12,7 @@ for file in mets.all_files():
     if file.use == "original":
         print("original file: " + file.label + "\n" + "file uuid: " + file.file_uuid)
         for premis_object in file.get_premis_objects():
+            print("puid: " + str(premis_object.format_registry_key))
             print("file format: " + str(premis_object.format_name))
             if str(premis_object.format_version) != "(('format_version',),)":
                 print("version: " + str(premis_object.format_version))
@@ -20,8 +21,9 @@ for file in mets.all_files():
                     "preservation copy uuid: "
                     + str(premis_object.related_object_identifier_value)
                 )
-            print("\n")
+            print("")
 
+for file in mets.all_files():
     if file.use == "preservation":
         print(
             "preservation copy: " + file.label + "\n" + "file uuid: " + file.file_uuid
@@ -30,4 +32,4 @@ for file in mets.all_files():
             print("file format: " + str(premis_object.format_name))
             if str(premis_object.format_version) != "(('format_version',),)":
                 print("version: " + str(premis_object.format_version))
-            print("\n")
+            print("")
