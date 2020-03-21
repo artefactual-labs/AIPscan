@@ -9,7 +9,8 @@ for file in mets.all_files():
         print("original: " + file.label + "\n" + "uuid: " + file.file_uuid)
         for premis_object in file.get_premis_objects():
             print("format: " + str(premis_object.format_name))
-            print("version: " + str(premis_object.format_version))
+            if str(premis_object.format_version) != "(('format_version',),)":
+                print("version: " + str(premis_object.format_version))
             print("\n")
 
 # f = open("files.txt", "w")
