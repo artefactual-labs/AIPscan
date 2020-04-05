@@ -6,6 +6,7 @@ import json
 base_url = "http://am111bionic.qa.archivematica.net:8000"
 api_command = "/api/v2/file/"
 limit = "10"
+offset = "10"
 username = "test"
 api_key = "110xapikey"
 
@@ -14,6 +15,8 @@ packages_response = requests.get(
     + api_command
     + "?limit="
     + limit
+    + "&offset="
+    + offset
     + "&username="
     + username
     + "&api_key="
