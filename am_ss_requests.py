@@ -9,6 +9,7 @@ limit = "10"
 offset = "0"
 username = "test"
 api_key = "110xapikey"
+totalAIPs = 0
 
 
 def get_packages(next):
@@ -28,7 +29,13 @@ def get_packages(next):
             + api_key
         )
 
-    return packages_response.json()
+        ss_packages = packages_response.json()
+
+        # write get packages response to a file
+        with open("downloads/" + timestampStr + "/_ss_packages.json", "a") as json_file:
+            json.dump(ss_packages, json_file)
+
+    return ss_packages
 
 
 def get_mets(ss_packages):
@@ -66,16 +73,10 @@ def get_mets(ss_packages):
             with open("downloads/" + timestampStr + "/" + filename, "wb") as file:
                 file.write(mets_response.content)
 
+            global totalAIPs
+            totalAIPs += 1
+    return totalAIPs
 
-next = None
-ss_packages = get_packages(next)
-
-# output basic request information to user
-print("base URL: " + base_url)
-print("total number of packages: " + str(ss_packages["meta"]["total_count"]))
-print("download limit: " + limit)
-if ss_packages["meta"]["next"] is not None:
-    print("next URL: " + ss_packages["meta"]["next"])
 
 # create "downloads/" directory if it doesn't exist
 if not os.path.exists("downloads/"):
@@ -86,8 +87,18 @@ dateTimeObj = datetime.now()
 timestampStr = dateTimeObj.strftime("%Y-%m-%d--%H:%M:%S")
 os.makedirs("downloads/" + timestampStr + "/")
 
-# write get packages response to a file
-with open("downloads/" + timestampStr + "/_ss_packages.json", "a") as json_file:
-    json.dump(ss_packages, json_file)
+# initial packages request
+ss_packages = get_packages(next=None)
 
+# output basic request information to user
+print("base URL: " + base_url)
+print("total number of packages: " + str(ss_packages["meta"]["total_count"]))
+print("download limit: " + limit)
+
+# initial METS request
 get_mets(ss_packages)
+
+print("AIP METS downloaded: " + str(totalAIPs))
+next = ss_packages["meta"]["next"]
+if next is not None:
+    print("next URL: " + next)
