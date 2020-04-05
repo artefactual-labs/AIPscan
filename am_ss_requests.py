@@ -24,9 +24,10 @@ ss_packages = packages_response.json()
 
 # output basic request information to user
 print("base URL: " + base_url)
-print("total AIP count: " + str(ss_packages["meta"]["total_count"]))
-print("limit: " + limit)
-print("next URL: " + ss_packages["meta"]["next"])
+print("total number of packages: " + str(ss_packages["meta"]["total_count"]))
+print("download limit: " + limit)
+if ss_packages["meta"]["next"] is not None:
+    print("next URL: " + ss_packages["meta"]["next"])
 
 # create "downloads/" directory if it doesn't exist
 if not os.path.exists("downloads/"):
@@ -42,8 +43,8 @@ with open("downloads/" + timestampStr + "/_ss_packages.json", "a") as json_file:
     json.dump(ss_packages, json_file)
 
 for package in ss_packages["objects"]:
-    # ignore replicated packages
-    if package["replicated_package"] is None:
+    # only scan AIP packages and ignore replicated packages
+    if package["package_type"] == "AIP" and package["replicated_package"] is None:
         # build relative path to METS file
         if package["current_path"].endswith(".7z"):
             relative_path = package["current_path"][40:-3]
