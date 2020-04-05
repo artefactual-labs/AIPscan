@@ -1,8 +1,9 @@
 import requests
 import os.path
 from datetime import datetime
+import json
 
-base_url = "http://am111xenial.qa.archivematica.net:8000"
+base_url = "http://am111bionic.qa.archivematica.net:8000"
 api_command = "/api/v2/file/"
 limit = "10"
 username = "test"
@@ -36,25 +37,34 @@ dateTimeObj = datetime.now()
 timestampStr = dateTimeObj.strftime("%Y-%m-%d--%H:%M:%S")
 os.makedirs("downloads/" + timestampStr + "/")
 
+# write response to a file
+with open("downloads/" + timestampStr + "/_ss_packages.json", "a") as json_file:
+    json.dump(ss_packages, json_file)
+
 for package in ss_packages["objects"]:
-    # build relative path to METS file
-    relative_path = package["current_path"][40:-3]
-    relative_path_to_mets = relative_path + "/data/METS." + package["uuid"] + ".xml"
+    # ignore replicated packages
+    if package["replicated_package"] is None:
+        # build relative path to METS file
+        if package["current_path"].endswith(".7z"):
+            relative_path = package["current_path"][40:-3]
+        else:
+            relative_path = package["current_path"][40:]
+        relative_path_to_mets = relative_path + "/data/METS." + package["uuid"] + ".xml"
 
-    # request METS file
-    mets_response = requests.get(
-        base_url
-        + api_command
-        + package["uuid"]
-        + "/extract_file/?relative_path_to_file="
-        + relative_path_to_mets
-        + "&username="
-        + username
-        + "&api_key="
-        + api_key
-    )
+        # request METS file
+        mets_response = requests.get(
+            base_url
+            + api_command
+            + package["uuid"]
+            + "/extract_file/?relative_path_to_file="
+            + relative_path_to_mets
+            + "&username="
+            + username
+            + "&api_key="
+            + api_key
+        )
 
-    # save METS files to disk
-    filename = package["uuid"] + ".xml"
-    with open("downloads/" + timestampStr + "/" + filename, "wb") as file:
-        file.write(mets_response.content)
+        # save METS files to disk
+        filename = package["uuid"] + ".xml"
+        with open("downloads/" + timestampStr + "/" + filename, "wb") as file:
+            file.write(mets_response.content)
