@@ -46,8 +46,12 @@ with open("downloads/" + timestampStr + "/_ss_packages.json", "a") as json_file:
     json.dump(ss_packages, json_file)
 
 for package in ss_packages["objects"]:
-    # only scan AIP packages and ignore replicated packages
-    if package["package_type"] == "AIP" and package["replicated_package"] is None:
+    # only scan AIP packages, ignore replicated and deleted packages
+    if (
+        package["package_type"] == "AIP"
+        and package["replicated_package"] is None
+        and package["status"] != "DELETED"
+    ):
         # build relative path to METS file
         if package["current_path"].endswith(".7z"):
             relative_path = package["current_path"][40:-3]
