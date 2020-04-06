@@ -1,24 +1,23 @@
 import requests
 import os.path
 from datetime import datetime
-import json
 
-base_url = "http://am111bionic.qa.archivematica.net:8000"
-api_command = "/api/v2/file/"
-limit = "10"
+baseUrl = "http://am111bionic.qa.archivematica.net:8000"
+apiCommand = "/api/v2/file/"
+limit = "20"
 offset = "0"
 username = "test"
-api_key = "110xapikey"
+apiKey = "110xapikey"
 totalAIPs = 0
 
 
-def get_packages(next):
-    if next is not None:
-        packages_response = requests.get(base_url + next)
+def get_packages(nextUrl):
+    if nextUrl is not None:
+        packages_response = requests.get(baseUrl + nextUrl)
     else:
         packages_response = requests.get(
-            base_url
-            + api_command
+            baseUrl
+            + apiCommand
             + "?limit="
             + limit
             + "&offset="
@@ -26,20 +25,16 @@ def get_packages(next):
             + "&username="
             + username
             + "&api_key="
-            + api_key
+            + apiKey
         )
 
-        ss_packages = packages_response.json()
+    ssPackages = packages_response.json()
 
-        # write get packages response to a file
-        with open("downloads/" + timestampStr + "/_ss_packages.json", "a") as json_file:
-            json.dump(ss_packages, json_file)
-
-    return ss_packages
+    return ssPackages
 
 
-def get_mets(ss_packages):
-    for package in ss_packages["objects"]:
+def get_mets(ssPackages):
+    for package in ssPackages["objects"]:
         # only scan AIP packages, ignore replicated and deleted packages
         if (
             package["package_type"] == "AIP"
@@ -57,15 +52,15 @@ def get_mets(ss_packages):
 
             # request METS file
             mets_response = requests.get(
-                base_url
-                + api_command
+                baseUrl
+                + apiCommand
                 + package["uuid"]
                 + "/extract_file/?relative_path_to_file="
                 + relative_path_to_mets
                 + "&username="
                 + username
                 + "&api_key="
-                + api_key
+                + apiKey
             )
 
             # save METS files to disk
@@ -88,17 +83,35 @@ timestampStr = dateTimeObj.strftime("%Y-%m-%d--%H:%M:%S")
 os.makedirs("downloads/" + timestampStr + "/")
 
 # initial packages request
-ss_packages = get_packages(next=None)
+firstPackages = get_packages(nextUrl=None)
 
 # output basic request information to user
-print("base URL: " + base_url)
-print("total number of packages: " + str(ss_packages["meta"]["total_count"]))
+print("base URL: " + baseUrl)
+print("total number of packages: " + str(firstPackages["meta"]["total_count"]))
 print("download limit: " + limit)
 
 # initial METS request
-get_mets(ss_packages)
+get_mets(firstPackages)
 
 print("AIP METS downloaded: " + str(totalAIPs))
-next = ss_packages["meta"]["next"]
-if next is not None:
-    print("next URL: " + next)
+nextUrl = firstPackages["meta"]["next"]
+
+while nextUrl is not None:
+    print("next URL: " + nextUrl)
+    ssPackages = get_packages(nextUrl)
+    get_mets(ssPackages)
+    print("AIP METS downloaded: " + str(totalAIPs))
+    nextUrl = ssPackages["meta"]["next"]
+
+# write download summary information to a file
+with open("downloads/" + timestampStr + "/_download_info.txt", "w") as download_info:
+    download_info.write("base URL: " + baseUrl + "\n")
+    download_info.write(
+        "total number of packages: " + str(firstPackages["meta"]["total_count"]) + "\n"
+    )
+    download_info.write("AIP METS downloaded: " + str(totalAIPs) + "\n")
+    download_info.write("download start time: " + timestampStr + "\n")
+    nowdateTimeObj = datetime.now()
+    nowtimestampStr = nowdateTimeObj.strftime("%Y-%m-%d--%H:%M:%S" + "\n")
+    download_info.write("download finish time: " + nowtimestampStr)
+    download_info.close()
