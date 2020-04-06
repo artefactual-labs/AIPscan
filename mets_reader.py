@@ -28,6 +28,8 @@ with os.scandir(downloadDirectory) as dir:
                     # for .iso file types
                     try:
                         for premis_object in aipFile.get_premis_objects():
+                            # it would be nice if we could access premis_object.original_name
+                            # this would allow us to use a human readable name for the AIP
                             print("puid: " + str(premis_object.format_registry_key))
                             print("file format: " + str(premis_object.format_name))
                             if (
