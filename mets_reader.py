@@ -1,6 +1,7 @@
 import os
 import metsrw
 import json
+import xml.etree.ElementTree as ET
 
 downloadDirectory = "downloads/2020-04-05--20:02:45"
 aipFilesInfo = {}
@@ -11,6 +12,17 @@ with os.scandir(downloadDirectory) as dir:
             mets = metsrw.METSDocument.fromfile(file.path)
             aipUuid = file.name[:-4]
 
+            # metsrw library does not give access to original Transfer Name
+            # which is often more useful to end-users than the AIP uuid
+            # so we'll take the extra processing hit here to retrieve it
+            metsTree = ET.parse(file)
+            metsRoot = metsTree.find("{http://www.loc.gov/METS/}dmdSec[@ID='dmdSec_1']")
+            for element in metsRoot.getiterator():
+                if element.tag == "{http://www.loc.gov/premis/v3}originalName":
+                    originalName = element.text
+                    break
+            transferName = originalName[:-37]
+
             for aipFile in mets.all_files():
 
                 if aipFile.use == "original":
@@ -19,6 +31,7 @@ with os.scandir(downloadDirectory) as dir:
                         {
                             "file name": aipFile.label,
                             "file type": "original",
+                            "transfer name": transferName,
                             "AIP uuid": aipUuid,
                         }
                     )
@@ -72,6 +85,7 @@ with os.scandir(downloadDirectory) as dir:
                         {
                             "file name": aipFile.label,
                             "file type": "preservation copy",
+                            "transfer name": transferName,
                             "AIP uuid": aipUuid,
                         }
                     )
