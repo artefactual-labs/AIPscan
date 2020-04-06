@@ -12,6 +12,10 @@ totalAIPs = 0
 
 
 def get_packages(nextUrl):
+    """
+    request package metadata from Archivematica Storage Service
+    """
+
     if nextUrl is not None:
         packages_response = requests.get(baseUrl + nextUrl)
     else:
@@ -28,12 +32,14 @@ def get_packages(nextUrl):
             + apiKey
         )
 
-    ssPackages = packages_response.json()
-
-    return ssPackages
+    return packages_response.json()
 
 
 def get_mets(ssPackages):
+    """
+    request METS files from Archivematica AIP packages
+    """
+
     for package in ssPackages["objects"]:
         # only scan AIP packages, ignore replicated and deleted packages
         if (
@@ -68,6 +74,7 @@ def get_mets(ssPackages):
             with open("downloads/" + timestampStr + "/" + filename, "wb") as file:
                 file.write(mets_response.content)
 
+            # count number of actual AIP METS files (versus packages) downloaded
             global totalAIPs
             totalAIPs += 1
     return totalAIPs
@@ -77,7 +84,7 @@ def get_mets(ssPackages):
 if not os.path.exists("downloads/"):
     os.makedirs("downloads/")
 
-# create a downloads/ subdirectory for each job using timestamp as name
+# create a subdirectory for each download job using a timestamp as its name
 dateTimeObj = datetime.now()
 timestampStr = dateTimeObj.strftime("%Y-%m-%d--%H:%M:%S")
 os.makedirs("downloads/" + timestampStr + "/")
@@ -96,6 +103,7 @@ get_mets(firstPackages)
 print("AIP METS downloaded: " + str(totalAIPs))
 nextUrl = firstPackages["meta"]["next"]
 
+# iterate over all packages in the Archivematica Storage Service
 while nextUrl is not None:
     print("next URL: " + nextUrl)
     ssPackages = get_packages(nextUrl)
@@ -105,11 +113,13 @@ while nextUrl is not None:
 
 # write download summary information to a file
 with open("downloads/" + timestampStr + "/_download_info.txt", "w") as download_info:
-    download_info.write("base URL: " + baseUrl + "\n")
+    download_info.write("base URL of Archivematica Storage Service: " + baseUrl + "\n")
     download_info.write(
-        "total number of packages: " + str(firstPackages["meta"]["total_count"]) + "\n"
+        "total number of packages in Storage Service: "
+        + str(firstPackages["meta"]["total_count"])
+        + "\n"
     )
-    download_info.write("AIP METS downloaded: " + str(totalAIPs) + "\n")
+    download_info.write("total number of AIP METS downloaded: " + str(totalAIPs) + "\n")
     download_info.write("download start time: " + timestampStr + "\n")
     nowdateTimeObj = datetime.now()
     nowtimestampStr = nowdateTimeObj.strftime("%Y-%m-%d--%H:%M:%S" + "\n")
