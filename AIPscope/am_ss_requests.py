@@ -5,12 +5,12 @@ import requests
 import os.path
 from datetime import datetime
 
-baseUrl = "http://am111bionic.qa.archivematica.net:8000"
+baseUrl = "https://amdemo.artefactual.com:8000"
 apiCommand = "/api/v2/file/"
 limit = "20"
 offset = "0"
 username = "test"
-apiKey = "110xapikey"
+apiKey = "cfbb2ae9677d80eac64c40f10ec84b865b4b4bc2"
 totalAIPs = 0
 
 
@@ -74,7 +74,7 @@ def get_mets(ssPackages):
 
             # save METS files to disk
             filename = package["uuid"] + ".xml"
-            with open("downloads/" + timestampStr + "/" + filename, "wb") as file:
+            with open("../downloads/" + timestampStr + "/" + filename, "wb") as file:
                 file.write(mets_response.content)
 
             # count number of actual AIP METS files (versus packages) downloaded
@@ -84,13 +84,13 @@ def get_mets(ssPackages):
 
 
 # create "downloads/" directory if it doesn't exist
-if not os.path.exists("downloads/"):
-    os.makedirs("downloads/")
+if not os.path.exists("../downloads/"):
+    os.makedirs("../downloads/")
 
 # create a subdirectory for each download job using a timestamp as its name
 dateTimeObj = datetime.now()
 timestampStr = dateTimeObj.strftime("%Y-%m-%d--%H:%M:%S")
-os.makedirs("downloads/" + timestampStr + "/")
+os.makedirs("../downloads/" + timestampStr + "/")
 
 # initial packages request
 firstPackages = get_packages(nextUrl=None)
@@ -115,7 +115,7 @@ while nextUrl is not None:
     nextUrl = ssPackages["meta"]["next"]
 
 # write download summary information to a file
-with open("downloads/" + timestampStr + "/_download_info.txt", "w") as download_info:
+with open("../downloads/" + timestampStr + "/_download_info.txt", "w") as download_info:
     download_info.write("base URL of Archivematica Storage Service: " + baseUrl + "\n")
     download_info.write(
         "total number of packages in Storage Service: "

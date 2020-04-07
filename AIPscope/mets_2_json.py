@@ -6,7 +6,7 @@ import metsrw
 import json
 import xml.etree.ElementTree as ET
 
-downloadDirectory = "downloads/2020-04-05--20:02:45"
+downloadDirectory = "../downloads/2020-04-05--20:02:45"
 aipFilesInfo = {}
 
 with os.scandir(downloadDirectory) as dir:
@@ -19,8 +19,8 @@ with os.scandir(downloadDirectory) as dir:
             # which is often more useful to end-users than the AIP uuid
             # so we'll take the extra processing hit here to retrieve it
             metsTree = ET.parse(file)
-            metsRoot = metsTree.find("{http://www.loc.gov/METS/}dmdSec[@ID='dmdSec_1']")
-            for element in metsRoot.getiterator():
+            dmdSec1 = metsTree.find("{http://www.loc.gov/METS/}dmdSec[@ID='dmdSec_1']")
+            for element in dmdSec1.getiterator():
                 if element.tag == "{http://www.loc.gov/premis/v3}originalName":
                     originalName = element.text
                     break
