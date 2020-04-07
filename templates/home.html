@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item active" aria-current="page">Home</li>
+  </ol>
+</nav>
+
+<h1>AIPscope</h1>
+<tagline class="text-muted"><em>A web application for reporting on AIPs in Archivematica's Storage Service</em></tagline>
+<br><br>
+<h2 class="h3">METS fetch jobs</h2>
+
+<table class="table table-striped table-bordered table-condensed sortable">
+  <tr>
+  <td><strong>Fetch date</strong></td>
+  <td><strong>Storage Service</strong></td>
+  <td><strong>Number of AIPs</strong></td>
+  </tr>
+  {% if metsFetchJobs %}
+    {% for metsFetchJob in metsFetchJobs %}
+      <tr>
+        <td>{{ metsFetchJob.downloadStartTime }}</td>
+        <td>{{ metsFetchJob.amSs }}</td>
+        <td><a href="/viewAip/{{ metsFetchJob.numberOfAips }}"></a></td>
+      </tr>
+    {% endfor %}
+  {% endif %}
+</table>
+{% endblock %}
