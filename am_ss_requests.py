@@ -1,3 +1,6 @@
+__author__ = "Peter Van Garderen"
+__email__ = "peter@artefactual.com"
+
 import requests
 import os.path
 from datetime import datetime

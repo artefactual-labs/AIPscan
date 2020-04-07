@@ -1,3 +1,6 @@
+__author__ = "Peter Van Garderen"
+__email__ = "peter@artefactual.com"
+
 import os
 import metsrw
 import json
