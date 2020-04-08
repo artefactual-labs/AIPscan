@@ -2,4 +2,5 @@ downloads/
 venv/
 .DS_Store
 __pycache__/
+AIPscope/__pycache__/
 aipscope.db
