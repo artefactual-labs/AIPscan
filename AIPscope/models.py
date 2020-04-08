@@ -7,6 +7,7 @@ class storage_services(db.Model):
     url = db.Column(db.String(255))
     user_name = db.Column(db.String(255))
     api_key = db.Column(db.String(255))
+    fetch_jobs = db.relationship("fetch_jobs", backref="storage_services", lazy=True)
 
     def __init__(self, name, url, user_name, api_key):
         self.name = name
@@ -24,7 +25,9 @@ class fetch_jobs(db.Model):
     total_aips = db.Column(db.Integer())
     download_start = db.Column(db.DateTime())
     download_end = db.Column(db.DateTime())
-    storage_service_id = db.Column(db.Integer(), db.ForeignKey("storage_services.id"))
+    storage_service_id = db.Column(
+        db.Integer(), db.ForeignKey("storage_services.id"), nullable=False
+    )
 
     def __init__(
         self,
