@@ -9,12 +9,14 @@ def adddata():
         url="https://amdemo.artefactual.com:8000",
         user_name="test",
         api_key="cfbb2ae9677d80eac64c40f10ec84b865b4b4bc2",
+        default=True,
     )
     ss2 = storage_services(
         name="AM Bionic 1.11 QA",
         url="http://am111bionic.qa.archivematica.net:8000",
         user_name="test",
         api_key="test110x",
+        default=False,
     )
     fetch1 = fetch_jobs(
         total_packages="3",

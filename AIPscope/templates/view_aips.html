@@ -1,11 +1,6 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div>
-  <button type="button" class="btn btn-success">New fetch job</button>
-</div>
-<br/>
-
 
 <h2 class="h3">METS fetch jobs</h2>
 
@@ -15,14 +10,16 @@
   <td><strong>Fetch date</strong></td>
   <td><strong>Number of packages</strong></td>
   <td><strong>Number of AIPs</strong></td>
+  <td><strong>Action</strong></td>
   </tr>
   {% if metsFetchJobs %}
     {% for metsFetchJob in metsFetchJobs %}
       <tr>
-        <td>{{ metsFetchJob.storage_services.name }}</td>
+        <td><a href="/storage_service/{{ metsFetchJob.storage_service_id }}">{{ metsFetchJob.storage_services.name }}</a></td>
         <td>{{ metsFetchJob.download_end }}</td>
         <td>{{ metsFetchJob.total_packages }}</td>
         <td>{{ metsFetchJob.total_aips }}</td>
+        <td><button type="button" class="btn btn-info">View</button></td>
       </tr>
     {% endfor %}
   {% endif %}

@@ -7,13 +7,15 @@ class storage_services(db.Model):
     url = db.Column(db.String(255))
     user_name = db.Column(db.String(255))
     api_key = db.Column(db.String(255))
+    default = db.Column(db.Boolean)
     fetch_jobs = db.relationship("fetch_jobs", backref="storage_services", lazy=True)
 
-    def __init__(self, name, url, user_name, api_key):
+    def __init__(self, name, url, user_name, api_key, default):
         self.name = name
         self.url = url
         self.user_name = user_name
         self.api_key = api_key
+        self.default = default
 
     def __repr__(self):
         return "<Storage Services '{}'>".format(self.name)
