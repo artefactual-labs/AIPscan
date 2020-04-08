@@ -13,14 +13,16 @@
   <tr>
   <td><strong>Fetch date</strong></td>
   <td><strong>Storage Service</strong></td>
+  <td><strong>Number of packages</strong></td>
   <td><strong>Number of AIPs</strong></td>
   </tr>
   {% if metsFetchJobs %}
     {% for metsFetchJob in metsFetchJobs %}
       <tr>
-        <td>{{ metsFetchJob.downloadStartTime }}</td>
-        <td>{{ metsFetchJob.amSs }}</td>
-        <td><a href="/viewAip/{{ metsFetchJob.numberOfAips }}"></a></td>
+        <td>{{ metsFetchJob.download_end }}</td>
+        <td>{{ metsFetchJob.storage_service_id }}</td>
+        <td>{{ metsFetchJob.total_packages }}</td>
+        <td>{{ metsFetchJob.total_aips }}</td>
       </tr>
     {% endfor %}
   {% endif %}

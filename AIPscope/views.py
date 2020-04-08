@@ -6,7 +6,8 @@ from datetime import datetime
 
 @app.route("/")
 def home():
-    return render_template("list_fetch_jobs.html")
+    metsFetchJobs = fetch_jobs.query.all()
+    return render_template("list_fetch_jobs.html", metsFetchJobs=metsFetchJobs)
 
 
 @app.route("/add_sample_data")
