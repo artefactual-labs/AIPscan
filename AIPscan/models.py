@@ -1,4 +1,4 @@
-from AIPscope import db
+from AIPscan import db
 
 
 class storage_services(db.Model):

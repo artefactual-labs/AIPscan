@@ -2,5 +2,7 @@ downloads/
 venv/
 .DS_Store
 __pycache__/
-AIPscope/__pycache__/
-aipscope.db
+AIPscan/__pycache__/
+AIPscan/__init__.pyc
+aipscan.db
+config.pyc

@@ -1,4 +1,4 @@
-from AIPscope import db
+from AIPscan import db
 from .models import fetch_jobs, storage_services
 from datetime import datetime
 
