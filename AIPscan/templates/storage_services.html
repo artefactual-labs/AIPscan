@@ -2,12 +2,12 @@
 
 {% block content %}
 
-<h2 class="h3">Storage Services</h2>
+<h3 class="h3">Storage Services</h3>
 
 <table class="table table-striped table-bordered table-condensed sortable">
   <tr>
   <td><strong>Name</strong></td>
-  <td><strong>Url</strong></td>
+  <td><strong>URL</strong></td>
   </tr>
   {% if storageServices %}
     {% for storageService in storageServices %}
@@ -18,5 +18,5 @@
     {% endfor %}
   {% endif %}
 </table>
-<button type="button" class="btn btn-success">New storage service</button>
+<a href="/new_storage_service"><button type="button" class="btn btn-success">New storage service</button></a>
 {% endblock %}

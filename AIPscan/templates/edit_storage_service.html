@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h3 class="h3">Storage Service</h3>
+
+<form action="" method="post" novalidate>
+{{ form.hidden_tag() }}
+<table class="table table-bordered table-condensed">
+  <tr><td><strong>{{ form.name.label }}</strong></td><td>{{ form.name(size=48) }}
+    {% for error in form.name.errors %}
+    <span style="color: red;">[{{ error }}]</span>
+    {% endfor %}</td></tr>
+  <tr><td><strong>{{ form.url.label }}</strong></td><td>{{ form.url(size=48) }}
+    {% for error in form.url.errors %}
+    <span style="color: red;">[{{ error }}]</span>
+    {% endfor %}</td></tr>
+  <tr><td><strong>{{ form.user_name.label }}</strong></td><td>{{ form.user_name(size=48)}}
+    {% for error in form.user_name.errors %}
+    <span style="color: red;">[{{ error }}]</span>
+    {% endfor %}</td></tr>
+  <tr><td><strong>{{ form.api_key.label }}</strong></td><td>{{ form.api_key(size=48) }}
+    {% for error in form.api_key.errors %}
+    <span style="color: red;">[{{ error }}]</span>
+    {% endfor %}</td></tr>
+  <tr><td><strong>{{ form.default.label }}</strong></td><td>{{ form.default() }}</td></tr>
+</table>
+<button type="submit" class="btn btn-success">Save</button>
+</form>
+
+{% endblock %}

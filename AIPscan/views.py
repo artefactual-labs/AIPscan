@@ -1,7 +1,8 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, flash, redirect, request
 from AIPscan import app, db
 from .models import fetch_jobs, storage_services
 from .add_sample_data import adddata
+from .forms import LoginForm, StorageServiceForm
 
 
 @app.route("/", methods=["GET"])
@@ -32,6 +33,46 @@ def storage_service(id):
 def ss():
     storageServices = storage_services.query.all()
     return render_template("storage_services.html", storageServices=storageServices)
+
+
+@app.route("/edit_storage_service/<id>", methods=["GET", "POST"])
+def edit_storage_service(id):
+    form = StorageServiceForm()
+    storageService = storage_services.query.get(id)
+    if request.method == "GET":
+        form.name.data = storageService.name
+        form.url.data = storageService.url
+        form.user_name.data = storageService.user_name
+        form.api_key.data = storageService.api_key
+        form.default.data = storageService.default
+    if form.validate_on_submit():
+        storageService.name = form.name.data
+        db.session.commit()
+        flash("Storage service {} updated".format(form.name.data))
+        return redirect("/storage_services")
+    return render_template(
+        "edit_storage_service.html", title="Storage Service", form=form
+    )
+
+
+@app.route("/new_storage_service", methods=["GET", "POST"])
+def new_storage_service():
+    form = StorageServiceForm()
+    if form.validate_on_submit():
+        ss = storage_services(
+            name=form.name.data,
+            url=form.url.data,
+            user_name=form.user_name.data,
+            api_key=form.api_key.data,
+            default=form.default.data,
+        )
+        db.session.add(ss)
+        db.session.commit()
+        flash("New storage service {} created".format(form.name.data))
+        return redirect("/storage_services")
+    return render_template(
+        "edit_storage_service.html", title="Storage Service", form=form
+    )
 
 
 @app.route("/view_aips", methods=["GET"])

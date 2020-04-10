@@ -2,18 +2,18 @@
 
 {% block content %}
 
-<h2 class="h3">Storage Service</h2>
+<h3 class="h3">Storage Service</h3>
 
 <table class="table table-bordered table-condensed">
-  <tr><td><strong>Name</strong></td><td>{{ storageService.name }}</td></tr>
-  <tr><td><strong>Url</strong></td><td>{{ storageService.url}}</td></tr>
-  <tr><td><strong>User name</strong></td><td>{{ storageService.user_name}}</td></tr>
-  <tr><td><strong>API key</strong></td><td>{{ storageService.api_key}}</td></tr>
-  <tr><td><strong>Default service</strong></td><td>{{ storageService.default}}</td></tr>
+  <tr><td width=20%><strong>Name</strong></td><td>{{ storageService.name }}</td></tr>
+  <tr><td width=20%><strong>URL</strong></td><td>{{ storageService.url}}</td></tr>
+  <tr><td width=20%><strong>User name</strong></td><td>{{ storageService.user_name}}</td></tr>
+  <tr><td width=20%><strong>API key</strong></td><td>{{ storageService.api_key}}</td></tr>
+  <tr><td width=20%><strong>Default service</strong></td><td>{{ storageService.default}}</td></tr>
 </table>
-<button type="button" class="btn btn-info">Edit</button>
+<a href="/edit_storage_service/{{ storageService.id }}"><button type="button" class="btn btn-info">Edit</button>
 <button type="button" class="btn btn-danger">Delete</button>
-<button type="button" class="btn btn-success">New storage service</button>
+<a href="/new_storage_service"><button type="button" class="btn btn-success">New storage service</button></a>
 <hr />
 
 <h2 class="h3">METS fetch jobs</h2>

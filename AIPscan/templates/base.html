@@ -26,7 +26,21 @@
     </div>
   <span style="font-style: italic" class="navbar-text">View repository-wide info about Archivematica AIPs</span>
 </nav>
+
 <div class="container-fluid" style="margin-top: 20px;">
-{% block content %}{% endblock %}
+
+  {% with messages = get_flashed_messages() %}{% if messages %}
+  <div class="alert alert-primary" role="alert">
+    <ul>
+      {% for message in messages %}
+      <li>{{ message }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}{% endwith %}
+
+{% block content %}
+{% endblock %}
+
 </div>
 </body>
