@@ -47,6 +47,14 @@ def edit_storage_service(id):
         form.default.data = storageService.default
     if form.validate_on_submit():
         storageService.name = form.name.data
+        storageService.url = form.url.data
+        storageService.user_name = form.user_name.data
+        storageService.api_key = form.api_key.data
+        if form.default.data is True:
+            storageServices = storage_services.query.all()
+            for ss in storageServices:
+                ss.default = False
+        storageService.default = form.default.data
         db.session.commit()
         flash("Storage service {} updated".format(form.name.data))
         return redirect("/storage_services")
