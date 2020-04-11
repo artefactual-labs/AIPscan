@@ -11,8 +11,8 @@
   <tr><td width=20%><strong>API key</strong></td><td>{{ storageService.api_key}}</td></tr>
   <tr><td width=20%><strong>Default service</strong></td><td>{{ storageService.default}}</td></tr>
 </table>
-<a href="/edit_storage_service/{{ storageService.id }}"><button type="button" class="btn btn-info">Edit</button>
-<button type="button" class="btn btn-danger">Delete</button>
+<a href="/edit_storage_service/{{ storageService.id }}"><button type="button" class="btn btn-info">Edit</button></a>
+<a href="/delete_storage_service/{{ storageService.id }}"<button type="button" class="btn btn-danger">Delete</button></a>
 <a href="/new_storage_service"><button type="button" class="btn btn-success">New storage service</button></a>
 <hr />
 
@@ -34,7 +34,7 @@
         <td>{{ metsFetchJob.total_packages }}</td>
         <td>{{ metsFetchJob.total_aips }}</td>
         <td><button type="button" class="btn btn-info">View</button>
-            <button type="button" class="btn btn-danger">Delete</button></td>
+            <a href="/delete_fetch_job/{{ metsFetchJob.id }}"><button type="button" class="btn btn-danger">Delete</button></a></td>
       </tr>
     {% endfor %}
   {% endif %}

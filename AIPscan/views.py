@@ -8,6 +8,8 @@ from .forms import LoginForm, StorageServiceForm
 @app.route("/", methods=["GET"])
 def ss_default():
     storageService = storage_services.query.filter_by(default=True).first()
+    if storageService is None:
+        storageService = storage_services.query.first()
     metsFetchJobs = fetch_jobs.query.filter_by(
         storage_service_id=storageService.id
     ).all()
@@ -81,6 +83,26 @@ def new_storage_service():
     return render_template(
         "edit_storage_service.html", title="Storage Service", form=form
     )
+
+
+@app.route("/delete_storage_service/<id>", methods=["GET"])
+def delete_storage_service(id):
+    storageService = storage_services.query.get(id)
+    flash("Storage service {} is deleted".format(storageService.name))
+    db.session.delete(storageService)
+    db.session.commit()
+    storageServices = storage_services.query.all()
+    return redirect("/storage_services")
+
+
+@app.route("/delete_fetch_job/<id>", methods=["GET"])
+def delete_fetch_job(id):
+    fetchJob = fetch_jobs.query.get(id)
+    storageService = storage_services.query.get(fetchJob.storage_service_id)
+    flash("Fetch job {} is deleted".format(fetchJob.download_end))
+    db.session.delete(fetchJob)
+    db.session.commit()
+    return redirect("/storage_service/{}".format(storageService.id))
 
 
 @app.route("/view_aips", methods=["GET"])

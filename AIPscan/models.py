@@ -8,7 +8,9 @@ class storage_services(db.Model):
     user_name = db.Column(db.String(255))
     api_key = db.Column(db.String(255))
     default = db.Column(db.Boolean)
-    fetch_jobs = db.relationship("fetch_jobs", backref="storage_services", lazy=True)
+    fetch_jobs = db.relationship(
+        "fetch_jobs", cascade="all,delete", backref="storage_services", lazy=True
+    )
 
     def __init__(self, name, url, user_name, api_key, default):
         self.name = name
