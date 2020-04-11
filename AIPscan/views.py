@@ -1,11 +1,14 @@
 from flask import Flask, render_template, flash, redirect, request
 from AIPscan import app, db
 from .models import fetch_jobs, storage_services
-from .add_sample_data import adddata
 from .forms import StorageServiceForm
 from .am_ss_requests import storage_service_request
 import os
 import shutil
+
+# AIPscan/add_sample_data.py is excluded from the code repository for
+# security reasons. See more info below at @app.route("/add_sample_data")
+from .add_sample_data import adddata
 
 
 @app.route("/", methods=["GET"])
@@ -130,5 +133,37 @@ def view_aips():
 
 @app.route("/add_sample_data", methods=["GET"])
 def add_sample_data():
+    """
+    This function requires a file at 'AIPscan/add_sample_data.py'
+    It is excluded from code commits for security. Contents of the file are below.
+    Add more ss# and fetch# dictionaries to add more sample data. Then run
+    http://root/add_sample_data to populate the database.any($0)
+
+    from AIPscan import db
+    from .models import fetch_jobs, storage_services
+    from datetime import datetime
+
+
+    def adddata():
+        ss1 = storage_services(
+            name="Artefactual AMdemo 1.11",
+            url="https://amdemo.artefactual.com:8000",
+            user_name="test",
+            api_key="cfbb2ae9677d80eac64c40f10ec84b865b4b4bc2",
+            default=True,
+        )
+        fetch1 = fetch_jobs(
+            total_packages="3",
+            total_aips="1",
+            download_start=datetime(2020, 4, 7, 16, 10, 51),
+            download_end=datetime(2020, 4, 7, 16, 10, 54),
+            download_directory="downloads/2020-04-07--16:10:51/",
+            storage_service_id="1",
+        )
+        db.session.add(ss1)
+        db.session.add(fetch1)
+        db.session.commit()
+        return ()
+        """
     adddata()
     return render_template("add_sample_data.html")
