@@ -3,6 +3,7 @@ from AIPscan import app, db
 from .models import fetch_jobs, storage_services
 from .add_sample_data import adddata
 from .forms import StorageServiceForm
+from .am_ss_requests import storage_service_request
 import os
 import shutil
 
@@ -97,6 +98,16 @@ def delete_storage_service(id):
     db.session.commit()
     storageServices = storage_services.query.all()
     return redirect("/storage_services")
+
+
+@app.route("/new_fetch_job/<id>", methods=["GET"])
+def new_fetch_job(id):
+    storageService = storage_services.query.get(id)
+    storage_service_request(
+        storageService.url, storageService.user_name, storageService.api_key
+    )
+    flash("New METS fetch job created")
+    return redirect("/storage_service/{}".format(id))
 
 
 @app.route("/delete_fetch_job/<id>", methods=["GET"])
