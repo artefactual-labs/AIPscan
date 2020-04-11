@@ -80,6 +80,8 @@ def get_mets(
             with open("downloads/" + timestampStr + "/" + filename, "wb") as file:
                 file.write(mets_response.content)
 
+            print("downloaded " + filename)
+
             # count number of actual AIP METS files (versus packages) downloaded
             totalAIPs += 1
 
@@ -185,4 +187,4 @@ def storage_service_request(baseUrl, username, apiKey, id):
         download_info.write("download finish time: " + nowtimestampStr)
         download_info.close()
 
-    return ()
+    return fetchJob.download_start

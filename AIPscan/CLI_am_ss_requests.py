@@ -77,6 +77,8 @@ def get_mets(ssPackages):
             with open("downloads/" + timestampStr + "/" + filename, "wb") as file:
                 file.write(mets_response.content)
 
+            print("downloaded " + filename)
+
             # count number of actual AIP METS files (versus packages) downloaded
             global totalAIPs
             totalAIPs += 1
