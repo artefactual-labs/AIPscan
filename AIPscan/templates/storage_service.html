@@ -20,8 +20,8 @@
 
 <table class="table table-striped table-bordered table-condensed sortable">
   <tr>
-  <td><strong>Fetch start time</strong></td>
-  <td><strong>Fetch end time</strong></td>
+  <td><strong>Download date</strong></td>
+  <td><strong>Download duration</strong></td>
   <td><strong>Number of packages</strong></td>
   <td><strong>Number of AIPs</strong></td>
   <td><strong>Action</strong></td>
@@ -30,7 +30,7 @@
     {% for metsFetchJob in metsFetchJobs %}
       <tr>
         <td>{{ metsFetchJob.download_start }}</td>
-        <td>{{ metsFetchJob.download_end }}</td>
+        <td>{{ metsFetchJob.download_end - metsFetchJob.download_start }}</td>
         <td>{{ metsFetchJob.total_packages }}</td>
         <td>{{ metsFetchJob.total_aips }}</td>
         <td><button type="button" class="btn btn-info">View</button>
