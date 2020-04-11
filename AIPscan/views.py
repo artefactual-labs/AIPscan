@@ -96,9 +96,13 @@ def new_storage_service():
 @app.route("/delete_storage_service/<id>", methods=["GET"])
 def delete_storage_service(id):
     storageService = storage_services.query.get(id)
-    flash("Storage service {} is deleted".format(storageService.name))
+    metsFetchJobs = fetch_jobs.query.filter_by(storage_service_id=id).all()
+    for metsFetchJob in metsFetchJobs:
+        if os.path.exists(metsFetchJob.download_directory):
+            shutil.rmtree(metsFetchJob.download_directory)
     db.session.delete(storageService)
     db.session.commit()
+    flash("Storage service {} is deleted".format(storageService.name))
     storageServices = storage_services.query.all()
     return redirect("/storage_services")
 
