@@ -23,6 +23,7 @@ def adddata():
         total_aips="1",
         download_start=datetime(2020, 4, 7, 16, 10, 51),
         download_end=datetime(2020, 4, 7, 16, 10, 54),
+        download_directory="../downloads/2020-04-07--16:10:51",
         storage_service_id="1",
     )
     fetch2 = fetch_jobs(
@@ -30,6 +31,7 @@ def adddata():
         total_aips="42",
         download_start=datetime(2020, 4, 5, 20, 2, 45),
         download_end=datetime(2020, 4, 5, 20, 3, 34),
+        download_directory="../downloads/2020-04-05--20:02:45",
         storage_service_id="2",
     )
     fetch3 = fetch_jobs(
@@ -37,6 +39,7 @@ def adddata():
         total_aips="2",
         download_start=datetime(2020, 4, 7, 20, 35, 6),
         download_end=datetime(2020, 4, 7, 20, 35, 11),
+        download_directory="../downloads/2020-04-07--20:35:06",
         storage_service_id="1",
     )
     db.session.add(ss1)

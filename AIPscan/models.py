@@ -29,6 +29,7 @@ class fetch_jobs(db.Model):
     total_aips = db.Column(db.Integer())
     download_start = db.Column(db.DateTime())
     download_end = db.Column(db.DateTime())
+    download_directory = db.Column(db.String(255))
     storage_service_id = db.Column(
         db.Integer(), db.ForeignKey("storage_services.id"), nullable=False
     )

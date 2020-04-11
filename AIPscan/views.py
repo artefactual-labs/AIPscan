@@ -2,7 +2,7 @@ from flask import Flask, render_template, flash, redirect, request
 from AIPscan import app, db
 from .models import fetch_jobs, storage_services
 from .add_sample_data import adddata
-from .forms import LoginForm, StorageServiceForm
+from .forms import StorageServiceForm
 
 
 @app.route("/", methods=["GET"])
@@ -10,6 +10,8 @@ def ss_default():
     storageService = storage_services.query.filter_by(default=True).first()
     if storageService is None:
         storageService = storage_services.query.first()
+        if storageService is None:
+            return redirect("/storage_services")
     metsFetchJobs = fetch_jobs.query.filter_by(
         storage_service_id=storageService.id
     ).all()
@@ -99,7 +101,7 @@ def delete_storage_service(id):
 def delete_fetch_job(id):
     fetchJob = fetch_jobs.query.get(id)
     storageService = storage_services.query.get(fetchJob.storage_service_id)
-    flash("Fetch job {} is deleted".format(fetchJob.download_end))
+    flash("Fetch job {} is deleted".format(fetchJob.download_start))
     db.session.delete(fetchJob)
     db.session.commit()
     return redirect("/storage_service/{}".format(storageService.id))
