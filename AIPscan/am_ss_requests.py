@@ -95,8 +95,8 @@ def storage_service_request(baseUrl, username, apiKey, id):
         os.makedirs("downloads/")
 
     # create a subdirectory for each download job using a timestamp as its name
-    dateTimeObjStart = datetime.now()
-    timestampStr = dateTimeObjStart.strftime("%Y-%m-%d--%H:%M:%S")
+    dateTimeObjStart = datetime.now().replace(microsecond=0)
+    timestampStr = dateTimeObjStart.strftime("%Y-%m-%d--%H-%M-%S")
     os.makedirs("downloads/" + timestampStr + "/")
 
     # initial packages request
@@ -146,7 +146,7 @@ def storage_service_request(baseUrl, username, apiKey, id):
         nextUrl = ssPackages["meta"]["next"]
 
     # record end time of fetch job
-    dateTimeObjEnd = datetime.now()
+    dateTimeObjEnd = datetime.now().replace(microsecond=0)
 
     # write fetch job info to database
     fetchJob = fetch_jobs(
