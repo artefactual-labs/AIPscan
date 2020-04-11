@@ -6,3 +6,4 @@ AIPscan/__pycache__/
 AIPscan/__init__.pyc
 aipscan.db
 config.pyc
+AIPscan/add_sample_data.py
