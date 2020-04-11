@@ -4,11 +4,12 @@ __email__ = "peter@artefactual.com"
 import requests
 import os.path
 from datetime import datetime
+from AIPscan import db
+from .models import fetch_jobs
 
 apiCommand = "/api/v2/file/"
 limit = "20"
 offset = "0"
-totalAIPs = 0
 
 
 def get_packages(nextUrl, baseUrl, username, apiKey):
@@ -34,12 +35,18 @@ def get_packages(nextUrl, baseUrl, username, apiKey):
     return packages_response.json()
 
 
-def get_mets(ssPackages, baseUrl, username, apiKey, timestampStr):
+def get_mets(
+    ssPackages, baseUrl, username, apiKey, timestampStr, totalAIPs, totalDeletedAIPs
+):
     """
     request METS files from Archivematica AIP packages
     """
 
     for package in ssPackages["objects"]:
+        # count number of deleted AIPs
+        if package["status"] == "DELETED":
+            totalDeletedAIPs += 1
+
         # only scan AIP packages, ignore replicated and deleted packages
         if (
             package["package_type"] == "AIP"
@@ -74,12 +81,15 @@ def get_mets(ssPackages, baseUrl, username, apiKey, timestampStr):
                 file.write(mets_response.content)
 
             # count number of actual AIP METS files (versus packages) downloaded
-            global totalAIPs
             totalAIPs += 1
-    return totalAIPs
+
+    return (totalAIPs, totalDeletedAIPs)
 
 
 def storage_service_request(baseUrl, username, apiKey):
+    totalAIPs = 0
+    totalDeletedAIPs = 0
+
     # create "downloads/" directory if it doesn't exist
     if not os.path.exists("downloads/"):
         os.makedirs("downloads/")
@@ -94,23 +104,45 @@ def storage_service_request(baseUrl, username, apiKey):
         nextUrl=None, baseUrl=baseUrl, username=username, apiKey=apiKey
     )
 
-    # output basic request information
+    # output basic request information to CLI
     print("base URL: " + baseUrl)
     print("total number of packages: " + str(firstPackages["meta"]["total_count"]))
     print("download limit: " + limit)
 
     # initial METS request
-    get_mets(firstPackages, baseUrl, username, apiKey, timestampStr)
+    totalAIPs, totalDeletedAIPs = get_mets(
+        firstPackages,
+        baseUrl,
+        username,
+        apiKey,
+        timestampStr,
+        totalAIPs,
+        totalDeletedAIPs,
+    )
+    print("total AIP METS downloaded: " + str(totalAIPs))
+    print("total deleted AIPs skipped: " + str(totalDeletedAIPs))
 
-    print("AIP METS downloaded: " + str(totalAIPs))
+    # print("AIP METS downloaded: " + str(totalAIPCount))
+    # print("Number of deleted AIPs skipped: " + str(totalDeletedAIPCount))
+
     nextUrl = firstPackages["meta"]["next"]
 
     # iterate over all packages in the Archivematica Storage Service
     while nextUrl is not None:
         print("next URL: " + nextUrl)
         ssPackages = get_packages(nextUrl, baseUrl, username, apiKey)
-        get_mets(ssPackages, baseUrl, username, apiKey, timestampStr)
-        print("AIP METS downloaded: " + str(totalAIPs))
+        totalAIPs, totalDeletedAIPs = get_mets(
+            ssPackages,
+            baseUrl,
+            username,
+            apiKey,
+            timestampStr,
+            totalAIPs,
+            totalDeletedAIPs,
+        )
+        print("total AIP METS downloaded: " + str(totalAIPs))
+        print("total deleted AIPs skipped: " + str(totalDeletedAIPs))
+
         nextUrl = ssPackages["meta"]["next"]
 
     # write download summary information to a file
@@ -127,6 +159,9 @@ def storage_service_request(baseUrl, username, apiKey):
         )
         download_info.write(
             "total number of AIP METS downloaded: " + str(totalAIPs) + "\n"
+        )
+        download_info.write(
+            "total number of deleted AIP skipped: " + str(totalDeletedAIPs) + "\n"
         )
         download_info.write("download start time: " + timestampStr + "\n")
         nowdateTimeObj = datetime.now()

@@ -27,6 +27,7 @@ class fetch_jobs(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
     total_packages = db.Column(db.Integer())
     total_aips = db.Column(db.Integer())
+    total_deleted_aips = db.Column(db.Integer())
     download_start = db.Column(db.DateTime())
     download_end = db.Column(db.DateTime())
     download_directory = db.Column(db.String(255))
@@ -38,6 +39,7 @@ class fetch_jobs(db.Model):
         self,
         total_packages,
         total_aips,
+        total_deleted_aips,
         download_start,
         download_end,
         download_directory,
@@ -45,6 +47,7 @@ class fetch_jobs(db.Model):
     ):
         self.total_packages = total_packages
         self.total_aips = total_aips
+        self.total_deleted_aips = total_deleted_aips
         self.download_start = download_start
         self.download_end = download_end
         self.download_directory = download_directory

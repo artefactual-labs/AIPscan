@@ -7,21 +7,27 @@
 <table class="table table-striped table-bordered table-condensed sortable">
   <tr>
   <td><strong>Storage Service</strong></td>
-  <td><strong>Fetch date</strong></td>
-  <td><strong>Number of packages</strong></td>
+  <td><strong>Download date</strong></td>
+  <td><strong>Download duration</strong></td>
   <td><strong>Number of AIPs</strong></td>
+  <td><strong>Number of packages</strong></td>
+  <td><strong>Number of deleted AIPs</strong></td>
   <td><strong>Action</strong></td>
   </tr>
   {% if metsFetchJobs %}
     {% for metsFetchJob in metsFetchJobs %}
       <tr>
         <td><a href="/storage_service/{{ metsFetchJob.storage_service_id }}">{{ metsFetchJob.storage_services.name }}</a></td>
-        <td>{{ metsFetchJob.download_end }}</td>
-        <td>{{ metsFetchJob.total_packages }}</td>
+        <td>{{ metsFetchJob.download_start }}</td>
+        <td>{{ metsFetchJob.download_end - metsFetchJob.download_start }}</td>
         <td>{{ metsFetchJob.total_aips }}</td>
-        <td><button type="button" class="btn btn-info">View</button></td>
+        <td>{{ metsFetchJob.total_packages }}</td>
+        <td>{{ metsFetchJob.total_deleted_aips }}</td>
+        <td><button type="button" class="btn btn-info">View</button>
       </tr>
     {% endfor %}
   {% endif %}
 </table>
+
+
 {% endblock %}

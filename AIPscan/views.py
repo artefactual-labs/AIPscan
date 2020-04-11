@@ -135,9 +135,9 @@ def view_aips():
 def add_sample_data():
     """
     This function requires a file at 'AIPscan/add_sample_data.py'
-    It is excluded from code commits for security. Contents of the file are below.
-    Add more ss# and fetch# dictionaries to add more sample data. Then run
-    http://root/add_sample_data to populate the database.any($0)
+    This file is excluded from code commits for security. Contents of the file
+    are below. Add more ss# and fetch# tuples to add more sample data. Then run
+    http://[root]/add_sample_data to populate the database.
 
     from AIPscan import db
     from .models import fetch_jobs, storage_services
