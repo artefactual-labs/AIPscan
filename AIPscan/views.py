@@ -107,7 +107,7 @@ def delete_storage_service(id):
 def new_fetch_job(id):
     storageService = storage_services.query.get(id)
     storage_service_request(
-        storageService.url, storageService.user_name, storageService.api_key
+        storageService.url, storageService.user_name, storageService.api_key, id
     )
     flash("New METS fetch job created")
     return redirect("/storage_service/{}".format(id))

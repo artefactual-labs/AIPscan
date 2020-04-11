@@ -86,7 +86,7 @@ def get_mets(
     return (totalAIPs, totalDeletedAIPs)
 
 
-def storage_service_request(baseUrl, username, apiKey):
+def storage_service_request(baseUrl, username, apiKey, id):
     totalAIPs = 0
     totalDeletedAIPs = 0
 
@@ -95,8 +95,8 @@ def storage_service_request(baseUrl, username, apiKey):
         os.makedirs("downloads/")
 
     # create a subdirectory for each download job using a timestamp as its name
-    dateTimeObj = datetime.now()
-    timestampStr = dateTimeObj.strftime("%Y-%m-%d--%H:%M:%S")
+    dateTimeObjStart = datetime.now()
+    timestampStr = dateTimeObjStart.strftime("%Y-%m-%d--%H:%M:%S")
     os.makedirs("downloads/" + timestampStr + "/")
 
     # initial packages request
@@ -145,7 +145,23 @@ def storage_service_request(baseUrl, username, apiKey):
 
         nextUrl = ssPackages["meta"]["next"]
 
-    # write download summary information to a file
+    # record end time of fetch job
+    dateTimeObjEnd = datetime.now()
+
+    # write fetch job info to database
+    fetchJob = fetch_jobs(
+        total_packages=firstPackages["meta"]["total_count"],
+        total_deleted_aips=totalDeletedAIPs,
+        total_aips=totalAIPs,
+        download_start=dateTimeObjStart,
+        download_end=dateTimeObjEnd,
+        download_directory="downloads/" + timestampStr + "/",
+        storage_service_id=id,
+    )
+    db.session.add(fetchJob)
+    db.session.commit()
+
+    # write fetch job info to a file
     with open(
         "downloads/" + timestampStr + "/_download_info.txt", "w"
     ) as download_info:
@@ -165,7 +181,7 @@ def storage_service_request(baseUrl, username, apiKey):
         )
         download_info.write("download start time: " + timestampStr + "\n")
         nowdateTimeObj = datetime.now()
-        nowtimestampStr = nowdateTimeObj.strftime("%Y-%m-%d--%H:%M:%S" + "\n")
+        nowtimestampStr = dateTimeObjEnd.strftime("%Y-%m-%d--%H:%M:%S" + "\n")
         download_info.write("download finish time: " + nowtimestampStr)
         download_info.close()
 
