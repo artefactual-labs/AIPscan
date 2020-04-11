@@ -3,6 +3,8 @@ from AIPscan import app, db
 from .models import fetch_jobs, storage_services
 from .add_sample_data import adddata
 from .forms import StorageServiceForm
+import os
+import shutil
 
 
 @app.route("/", methods=["GET"])
@@ -101,9 +103,11 @@ def delete_storage_service(id):
 def delete_fetch_job(id):
     fetchJob = fetch_jobs.query.get(id)
     storageService = storage_services.query.get(fetchJob.storage_service_id)
-    flash("Fetch job {} is deleted".format(fetchJob.download_start))
+    if os.path.exists(fetchJob.download_directory):
+        shutil.rmtree(fetchJob.download_directory)
     db.session.delete(fetchJob)
     db.session.commit()
+    flash("Fetch job {} is deleted".format(fetchJob.download_start))
     return redirect("/storage_service/{}".format(storageService.id))
 
 

@@ -1,5 +1,8 @@
-from config import SQLALCHEMY_DATABASE_URI
+#!venv/bin/python
+
+# chmod a+x create_db.py
+# ./create_db.py
+
 from AIPscan import db
-import os.path
 
 db.create_all()

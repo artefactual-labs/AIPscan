@@ -40,12 +40,14 @@ class fetch_jobs(db.Model):
         total_aips,
         download_start,
         download_end,
+        download_directory,
         storage_service_id,
     ):
         self.total_packages = total_packages
         self.total_aips = total_aips
         self.download_start = download_start
         self.download_end = download_end
+        self.download_directory = download_directory
         self.storage_service_id = storage_service_id
 
     def __repr__(self):
