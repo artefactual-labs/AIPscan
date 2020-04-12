@@ -84,13 +84,43 @@ class files(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
     name = db.Column(db.String(255), index=True)
     uuid = db.Column(db.String(255), index=True)
+    type = db.Column(db.String(255), index=True)
+    size = db.Column(db.Integer())
+    puid = db.Column(db.String(255), index=True)
+    format = db.Column(db.String(255))
+    format_version = db.Column(db.String(255))
+    related_uuid = db.Column(db.String(255), index=True)
+    creation_date = db.Column(db.String(255))
+    ingestion_date = db.Column(db.String(255))
+    normalization_date = db.Column(db.String(255))
     aip_id = db.Column(db.Integer(), db.ForeignKey("aips.id"), nullable=False)
 
     def __init__(
-        self, name, uuid, aip_id,
+        self,
+        name,
+        uuid,
+        type,
+        size,
+        puid,
+        format,
+        format_version,
+        related_uuid,
+        creation_date,
+        ingestion_date,
+        normalization_date,
+        aip_id,
     ):
         self.name = name
         self.uuid = uuid
+        self.type = type
+        self.size = size
+        self.puid = puid
+        self.format = format
+        self.format_version = format_version
+        self.related_uuid = related_uuid
+        self.creation_date = creation_date
+        self.ingestion_date = ingestion_date
+        self.normalization_date = normalization_date
         self.aip_id = aip_id
 
     def __repr__(self):

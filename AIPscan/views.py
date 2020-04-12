@@ -115,6 +115,7 @@ def new_fetch_job(id):
         storageService.url, storageService.user_name, storageService.api_key, id
     )
     flash("New METS fetch job {} created".format(fetchJob.download_start))
+    fetchJob = fetch_jobs.query.get(id)
     parse_mets(fetchJob)
     flash("METS files parsed")
     return redirect("/storage_service/{}".format(id))
