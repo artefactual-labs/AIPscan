@@ -71,15 +71,27 @@ class aips(db.Model):
     uuid = db.Column(db.String(255), index=True)
     transfer_name = db.Column(db.String(255))
     create_date = db.Column(db.DateTime())
+    originals = db.Column(db.Integer())
+    preservation_copies = db.Column(db.Integer())
     fetch_job_id = db.Column(
         db.Integer(), db.ForeignKey("fetch_jobs.id"), nullable=False
     )
     files = db.relationship("files", cascade="all,delete", backref="aips", lazy=True)
 
-    def __init__(self, uuid, transfer_name, create_date, fetch_job_id):
+    def __init__(
+        self,
+        uuid,
+        transfer_name,
+        create_date,
+        originals,
+        preservation_copies,
+        fetch_job_id,
+    ):
         self.uuid = uuid
         self.transfer_name = transfer_name
         self.create_date = create_date
+        self.originals = originals
+        self.preservation_copies = preservation_copies
         self.fetch_job_id = fetch_job_id
 
     def __repr__(self):

@@ -13,6 +13,8 @@ def parse_mets(fetchJob):
     with os.scandir(fetchJob.download_directory) as dir:
         for file in dir:
             if file.name.endswith(".xml") and file.is_file():
+                originalsCount = 0
+                preservationCopiesCount = 0
                 print("parsing " + file.name)
                 mets = metsrw.METSDocument.fromfile(file.path)
                 # metsrw library does not give access to original Transfer Name
@@ -32,6 +34,8 @@ def parse_mets(fetchJob):
                     create_date=datetime.datetime.strptime(
                         mets.createdate, "%Y-%m-%dT%H:%M:%S"
                     ),
+                    originals=None,
+                    preservation_copies=None,
                     fetch_job_id=fetchJob.id,
                 )
                 db.session.add(aip)
@@ -81,9 +85,13 @@ def parse_mets(fetchJob):
                                     creationDate = datetime.datetime.strptime(
                                         eventDate, "%Y-%m-%d"
                                     )
+                                    originalsCount += 1
+                                else:
+                                    preservationCopiesCount += 1
                         except:
                             format = "ISO Disk Image File"
                             puid = "fmt/468"
+                            originalsCount += 1
                             pass
 
                         for premis_event in aipFile.get_premis_events():
@@ -113,4 +121,11 @@ def parse_mets(fetchJob):
                         )
                         db.session.add(file)
                         db.session.commit()
+
+                        aips.query.filter_by(id=aip.id).update(
+                            {
+                                "originals": originalsCount,
+                                "preservation_copies": preservationCopiesCount,
+                            }
+                        )
     return ()
