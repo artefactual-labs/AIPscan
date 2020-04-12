@@ -13,6 +13,7 @@ def parse_mets(fetchJob):
     with os.scandir(fetchJob.download_directory) as dir:
         for file in dir:
             if file.name.endswith(".xml") and file.is_file():
+                print("parsing " + file.name)
                 # metsrw library does not give access to original Transfer Name
                 # which is often more useful to end-users than the AIP uuid
                 # so we'll take the extra processing hit here to retrieve it

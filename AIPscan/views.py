@@ -116,6 +116,7 @@ def new_fetch_job(id):
     )
     flash("New METS fetch job {} created".format(fetchJob.download_start))
     parse_mets(fetchJob)
+    flash("METS files parsed")
     return redirect("/storage_service/{}".format(id))
 
 
@@ -132,9 +133,22 @@ def delete_fetch_job(id):
 
 
 @app.route("/view_fetch_jobs", methods=["GET"])
-def view_aips():
+def view_fetch_jobs():
     metsFetchJobs = fetch_jobs.query.all()
     return render_template("view_fetch_jobs.html", metsFetchJobs=metsFetchJobs)
+
+
+@app.route("/view_aips/<id>", methods=["GET"])
+def view_aips(id):
+    metsFetchJob = fetch_jobs.query.get(id)
+    storageService = storage_services.query.get(metsFetchJob.storage_service_id)
+    AIPs = aips.query.filter_by(fetch_job_id=metsFetchJob.id).all()
+    return render_template(
+        "view_aips.html",
+        metsFetchJob=metsFetchJob,
+        storageService=storageService,
+        AIPs=AIPs,
+    )
 
 
 @app.route("/add_sample_data", methods=["GET"])
@@ -173,17 +187,3 @@ def add_sample_data():
         """
     adddata()
     return render_template("add_sample_data.html")
-
-
-@app.route("/parse_mets", methods=["GET"])
-def parsemets():
-    metsFetchJob = fetch_jobs.query.get(4)
-    storageService = storage_services.query.get(metsFetchJob.storage_service_id)
-    parse_mets(metsFetchJob)
-    AIPs = aips.query.filter_by(fetch_job_id=metsFetchJob.id).all()
-    return render_template(
-        "view_aips.html",
-        metsFetchJob=metsFetchJob,
-        storageService=storageService,
-        AIPs=AIPs,
-    )

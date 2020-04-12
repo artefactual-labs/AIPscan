@@ -35,8 +35,10 @@
         <td>{{ metsFetchJob.total_aips }}</td>
         <td>{{ metsFetchJob.total_packages }}</td>
         <td>{{ metsFetchJob.total_deleted_aips }}</td>
-        <td><button type="button" class="btn btn-info">View</button>
-            <a href="/delete_fetch_job/{{ metsFetchJob.id }}"><button type="button" class="btn btn-danger">Delete</button></a></td>
+        <td>
+          <a href="/view_aips/{{ metsFetchJob.id }}"><button type="button" class="btn btn-info">View AIPs</button></a>
+          <a href="/delete_fetch_job/{{ metsFetchJob.id }}"><button type="button" class="btn btn-danger">Delete</button></a>
+        </td>
       </tr>
     {% endfor %}
   {% endif %}
