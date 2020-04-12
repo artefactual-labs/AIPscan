@@ -1,8 +1,9 @@
 from flask import Flask, render_template, flash, redirect, request
 from AIPscan import app, db
-from .models import fetch_jobs, storage_services
+from .models import fetch_jobs, storage_services, aips
 from .forms import StorageServiceForm
 from .am_ss_requests import storage_service_request
+from .mets_2_sql import parse_mets
 import os
 import shutil
 
@@ -113,7 +114,8 @@ def new_fetch_job(id):
     fetchJob = storage_service_request(
         storageService.url, storageService.user_name, storageService.api_key, id
     )
-    flash("New METS fetch job {} created".format(fetchJob))
+    flash("New METS fetch job {} created".format(fetchJob.download_start))
+    parse_mets(fetchJob)
     return redirect("/storage_service/{}".format(id))
 
 
@@ -129,10 +131,10 @@ def delete_fetch_job(id):
     return redirect("/storage_service/{}".format(storageService.id))
 
 
-@app.route("/view_aips", methods=["GET"])
+@app.route("/view_fetch_jobs", methods=["GET"])
 def view_aips():
     metsFetchJobs = fetch_jobs.query.all()
-    return render_template("view_aips.html", metsFetchJobs=metsFetchJobs)
+    return render_template("view_fetch_jobs.html", metsFetchJobs=metsFetchJobs)
 
 
 @app.route("/add_sample_data", methods=["GET"])
@@ -171,3 +173,17 @@ def add_sample_data():
         """
     adddata()
     return render_template("add_sample_data.html")
+
+
+@app.route("/parse_mets", methods=["GET"])
+def parsemets():
+    metsFetchJob = fetch_jobs.query.get(4)
+    storageService = storage_services.query.get(metsFetchJob.storage_service_id)
+    parse_mets(metsFetchJob)
+    AIPs = aips.query.filter_by(fetch_job_id=metsFetchJob.id).all()
+    return render_template(
+        "view_aips.html",
+        metsFetchJob=metsFetchJob,
+        storageService=storageService,
+        AIPs=AIPs,
+    )

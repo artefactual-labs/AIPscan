@@ -187,4 +187,4 @@ def storage_service_request(baseUrl, username, apiKey, id):
         download_info.write("download finish time: " + nowtimestampStr)
         download_info.close()
 
-    return fetchJob.download_start
+    return fetchJob
