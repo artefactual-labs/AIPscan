@@ -31,6 +31,8 @@ class fetch_jobs(db.Model):
     download_start = db.Column(db.DateTime())
     download_end = db.Column(db.DateTime())
     download_directory = db.Column(db.String(255))
+    parse_start = db.Column(db.DateTime())
+    parse_end = db.Column(db.DateTime())
     storage_service_id = db.Column(
         db.Integer(), db.ForeignKey("storage_services.id"), nullable=False
     )
@@ -46,6 +48,8 @@ class fetch_jobs(db.Model):
         download_start,
         download_end,
         download_directory,
+        parse_start,
+        parse_end,
         storage_service_id,
     ):
         self.total_packages = total_packages
@@ -54,6 +58,8 @@ class fetch_jobs(db.Model):
         self.download_start = download_start
         self.download_end = download_end
         self.download_directory = download_directory
+        self.parse_start = parse_start
+        self.parse_end = parse_end
         self.storage_service_id = storage_service_id
 
     def __repr__(self):

@@ -6,6 +6,7 @@ from .am_ss_requests import storage_service_request
 from .mets_2_sql import parse_mets
 import os
 import shutil
+from datetime import datetime
 
 # AIPscan/add_sample_data.py is excluded from the code repository for
 # security reasons. See more info below at @app.route("/add_sample_data")
@@ -115,9 +116,14 @@ def new_fetch_job(id):
         storageService.url, storageService.user_name, storageService.api_key, id
     )
     flash("New METS fetch job {} created".format(fetchJob.download_start))
-    fetchJob = fetch_jobs.query.get(id)
+    dateTimeObjStart = datetime.now().replace(microsecond=0)
     parse_mets(fetchJob)
     flash("METS files parsed")
+    dateTimeObjEnd = datetime.now().replace(microsecond=0)
+    fetch_jobs.query.filter_by(id=fetchJob.id).update(
+        {"parse_start": dateTimeObjStart, "parse_end": dateTimeObjEnd}
+    )
+    db.session.commit()
     return redirect("/storage_service/{}".format(id))
 
 

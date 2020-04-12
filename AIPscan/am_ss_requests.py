@@ -158,6 +158,8 @@ def storage_service_request(baseUrl, username, apiKey, id):
         download_start=dateTimeObjStart,
         download_end=dateTimeObjEnd,
         download_directory="downloads/" + timestampStr + "/",
+        parse_start=None,
+        parse_end=None,
         storage_service_id=id,
     )
     db.session.add(fetchJob)

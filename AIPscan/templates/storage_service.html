@@ -22,9 +22,9 @@
   <tr>
   <td><strong>Download date</strong></td>
   <td><strong>Download duration</strong></td>
-  <td><strong>Number of AIPs</strong></td>
-  <td><strong>Number of packages</strong></td>
-  <td><strong>Number of deleted AIPs</strong></td>
+  <td><strong>Number of packages in SS</strong></td>
+  <td><strong>Number of AIP METS downloaded</strong></td>
+  <td><strong>METS parsing duration</strong></td>
   <td><strong>Action</strong></td>
   </tr>
   {% if metsFetchJobs %}
@@ -32,9 +32,9 @@
       <tr>
         <td>{{ metsFetchJob.download_start }}</td>
         <td>{{ metsFetchJob.download_end - metsFetchJob.download_start }}</td>
-        <td>{{ metsFetchJob.total_aips }}</td>
         <td>{{ metsFetchJob.total_packages }}</td>
-        <td>{{ metsFetchJob.total_deleted_aips }}</td>
+        <td>{{ metsFetchJob.total_aips }}</td>
+        <td>{{ metsFetchJob.parse_end - metsFetchJob.parse_start }}</td>
         <td>
           <a href="/view_aips/{{ metsFetchJob.id }}"><button type="button" class="btn btn-info">View AIPs</button></a>
           <a href="/delete_fetch_job/{{ metsFetchJob.id }}"><button type="button" class="btn btn-danger">Delete</button></a>

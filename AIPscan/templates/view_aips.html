@@ -8,9 +8,10 @@
   <tr><td width=20%><strong>Storage Service</strong></td><td><a href="/storage_service/{{ storageService.id }}">{{ storageService.name }}</a></td></tr>
   <tr><td width=20%><strong>Download date</strong></td><td>{{ metsFetchJob.download_start }}</td></tr>
   <tr><td width=20%><strong>Download duration</strong></td><td>{{ metsFetchJob.download_end - metsFetchJob.download_start }}</td></tr>
-  <tr><td width=20%><strong>Number of AIPs</strong></td><td>{{ metsFetchJob.total_aips }}</td></tr>
-  <tr><td width=20%><strong>Number of packages</strong></td><td>{{ metsFetchJob.total_packages }}</td></tr>
-  <tr><td width=20%><strong>Number of deleted AIPs</strong></td><td>{{ metsFetchJob.total_deleted_aips }}</td></tr>
+  <tr><td width=20%><strong>Number of packages in SS</strong></td><td>{{ metsFetchJob.total_packages }}</td></tr>
+  <tr><td width=20%><strong>Number of AIP METS downloaded</strong></td><td>{{ metsFetchJob.total_aips }}</td></tr>
+  <tr><td width=20%><strong>Number of deleted AIPs skipped</strong></td><td>{{ metsFetchJob.total_deleted_aips }}</td></tr>
+  <tr><td width=20%><strong>METS parsing duration</strong></td><td>{{ metsFetchJob.parse_end - metsFetchJob.parse_start }}</td></tr>
 </table>
 
 <h2 class="h3">AIPs</h2>

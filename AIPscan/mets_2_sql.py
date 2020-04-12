@@ -13,6 +13,7 @@ def parse_mets(fetchJob):
     with os.scandir(fetchJob.download_directory) as dir:
         for file in dir:
             if file.name.endswith(".xml") and file.is_file():
+                print("parsing " + file.name)
                 mets = metsrw.METSDocument.fromfile(file.path)
                 # metsrw library does not give access to original Transfer Name
                 # which is often more useful to end-users than the AIP uuid
@@ -48,38 +49,39 @@ def parse_mets(fetchJob):
                         ingestionDate = None
                         normalizationDate = None
 
-                        # this exception handler had to be added because METSRW throws
+                        # this exception handler had to be added because for .iso file types METSRW throws
                         # the error: "metsrw/plugins/premisrw/premis.py", line 644, in _to_colon_ns
                         # parts = [x.strip("{") for x in bracket_ns.split("}")]"
                         # AttributeError: 'cython_function_or_method' object has no attribute 'split'
-                        # for .iso file types
-                        # try:
-                        for premis_object in aipFile.get_premis_objects():
-                            size = premis_object.size
-                            if (
-                                str(premis_object.format_registry_key)
-                            ) != "(('format_registry_key',),)":
-                                if (str(premis_object.format_registry_key)) != "()":
-                                    puid = premis_object.format_registry_key
-                            format = premis_object.format_name
-                            if (
-                                str(premis_object.format_version)
-                            ) != "(('format_version',),)":
-                                if (str(premis_object.format_version)) != "()":
-                                    formatVersion = premis_object.format_version
-                            if (
-                                str(premis_object.related_object_identifier_value)
-                                != "()"
-                            ):
-                                relatedUuid = (
-                                    premis_object.related_object_identifier_value
-                                )
-                            if aipFile.use == "original":
-                                creationDate = str(
-                                    premis_object.date_created_by_application
-                                )
-                        # except:
-                        # pass
+                        try:
+                            for premis_object in aipFile.get_premis_objects():
+                                size = premis_object.size
+                                if (
+                                    str(premis_object.format_registry_key)
+                                ) != "(('format_registry_key',),)":
+                                    if (str(premis_object.format_registry_key)) != "()":
+                                        puid = premis_object.format_registry_key
+                                format = premis_object.format_name
+                                if (
+                                    str(premis_object.format_version)
+                                ) != "(('format_version',),)":
+                                    if (str(premis_object.format_version)) != "()":
+                                        formatVersion = premis_object.format_version
+                                if (
+                                    str(premis_object.related_object_identifier_value)
+                                    != "()"
+                                ):
+                                    relatedUuid = (
+                                        premis_object.related_object_identifier_value
+                                    )
+                                if aipFile.use == "original":
+                                    creationDate = str(
+                                        premis_object.date_created_by_application
+                                    )
+                        except:
+                            format = "ISO Disk Image File"
+                            puid = "fmt/468"
+                            pass
 
                         for premis_event in aipFile.get_premis_events():
                             if (premis_event.event_type) == "ingestion":
