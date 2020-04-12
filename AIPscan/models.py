@@ -96,9 +96,9 @@ class files(db.Model):
     format = db.Column(db.String(255))
     format_version = db.Column(db.String(255))
     related_uuid = db.Column(db.String(255), index=True)
-    creation_date = db.Column(db.String(255))
-    ingestion_date = db.Column(db.String(255))
-    normalization_date = db.Column(db.String(255))
+    creation_date = db.Column(db.DateTime())
+    ingestion_date = db.Column(db.DateTime())
+    normalization_date = db.Column(db.DateTime())
     aip_id = db.Column(db.Integer(), db.ForeignKey("aips.id"), nullable=False)
 
     def __init__(

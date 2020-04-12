@@ -75,8 +75,11 @@ def parse_mets(fetchJob):
                                         premis_object.related_object_identifier_value
                                     )
                                 if aipFile.use == "original":
-                                    creationDate = str(
+                                    eventDate = str(
                                         premis_object.date_created_by_application
+                                    )
+                                    creationDate = datetime.datetime.strptime(
+                                        eventDate, "%Y-%m-%d"
                                     )
                         except:
                             format = "ISO Disk Image File"
@@ -85,9 +88,15 @@ def parse_mets(fetchJob):
 
                         for premis_event in aipFile.get_premis_events():
                             if (premis_event.event_type) == "ingestion":
-                                ingestionDate = premis_event.event_date_time
+                                eventDate = (premis_event.event_date_time)[:-13]
+                                ingestionDate = datetime.datetime.strptime(
+                                    eventDate, "%Y-%m-%dT%H:%M:%S"
+                                )
                             if (premis_event.event_type) == "creation":
-                                normalizationDate = premis_event.event_date_time
+                                eventDate = (premis_event.event_date_time)[:-13]
+                                normalizationDate = datetime.datetime.strptime(
+                                    eventDate, "%Y-%m-%dT%H:%M:%S"
+                                )
                         file = files(
                             name=name,
                             type=type,
