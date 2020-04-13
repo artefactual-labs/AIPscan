@@ -33,7 +33,7 @@
         <td>{{ original.uuid }}</td>
         <td>{{ original.size }} bytes</td>
         <td>{{ original.puid }}</td>
-        <td>{{ original.format }} {{original.format_version}}</td>
+        <td>{{ original.format }} {% if original.format_version != None %} {{original.format_version}}{% endif %}</td>
         <td>{{ original.creation_date }}</td>
         <td>{{ original.ingestion_date }}</td>
         <td>{{ original.related_uuid }}</td>

@@ -162,7 +162,7 @@ def view_aips(id):
 def view_aip(id):
     aip = aips.query.get(id)
     fetchJob = fetch_jobs.query.get(aip.fetch_job_id)
-    storageService = storage_services.query.get(fetchJob.id)
+    storageService = storage_services.query.get(fetchJob.storage_service_id)
     originals = files.query.filter_by(aip_id=aip.id, type="original").all()
     preservationCopies = files.query.filter_by(aip_id=aip.id, type="preservation").all()
     return render_template(
