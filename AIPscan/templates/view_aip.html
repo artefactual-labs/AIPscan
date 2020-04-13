@@ -2,41 +2,70 @@
 
 {% block content %}
 
-<h3 class="h3">METS Fetch Job</h3>
+<div class="alert alert-info"><h2 class="h2">AIP: {{ aip.transfer_name }}</h2></div>
 
 <table class="table table-bordered table-condensed">
-  <tr><td width=20%><strong>Storage Service</strong></td><td><a href="/storage_service/{{ storageService.id }}">{{ storageService.name }}</a></td></tr>
-  <tr><td width=20%><strong>Download date</strong></td><td>{{ metsFetchJob.download_start }}</td></tr>
-  <tr><td width=20%><strong>Download duration</strong></td><td>{{ metsFetchJob.download_end - metsFetchJob.download_start }}</td></tr>
-  <tr><td width=20%><strong>Packages in SS</strong></td><td>{{ metsFetchJob.total_packages }}</td></tr>
-  <tr><td width=20%><strong>AIP METS downloaded</strong></td><td>{{ metsFetchJob.total_aips }}</td></tr>
-  <tr><td width=20%><strong>Deleted AIPs skipped</strong></td><td>{{ metsFetchJob.total_deleted_aips }}</td></tr>
-  <tr><td width=20%><strong>METS parsing duration</strong></td><td>{{ metsFetchJob.parse_end - metsFetchJob.parse_start }}</td></tr>
+  <tr><td width=20%><strong>AIP UUID</strong></td><td>{{ aip.uuid }}</td></tr>
+  <tr><td width=20%><strong>Creation date</strong></td><td>{{ aip.create_date }}</td></tr>
+  <tr><td width=20%><strong>Originals</strong></td><td>{{ aip.originals }}</td></tr>
+  <tr><td width=20%><strong>Preservation copies</strong></td><td>{{ aip.preservation_copies }}</td></tr>
+  <tr><td width=20%><strong>Fetch job</strong></td><td><a href="/view_aips/{{ fetchJob.id }}">{{ fetchJob.download_start }}</a></td></tr>
+  <tr><td width=20%><strong>Storage service</strong></td><td><a href="/storage_service/{{ storageService.id }}">{{ storageService.name }}</a></td></tr>
 </table>
 
-<h2 class="h3">AIPs</h2>
+<div class="alert alert-info"><h3>Originals ({{ aip.originals }})</h3></div>
 
 <table class="table table-striped table-bordered table-condensed sortable">
   <tr>
-  <td><strong>Transfer name</strong></td>
-  <td><strong>AIP UUID</strong></td>
+  <td><strong>Name</strong></td>
+  <td><strong>UUID</strong></td>
+  <td><strong>Size</strong></td>
+  <td><strong>PUID</strong></td>
+  <td><strong>Format</strong></td>
   <td><strong>Creation date</strong></td>
-  <td><strong>Originals</strong></td>
-  <td><strong>Preservation copies</strong></td>
-  <td><strong>Action</strong></td>
+  <td><strong>Ingestion date</strong></td>
+  <td><strong>Preservation copy</strong></td>
   </tr>
-  {% if AIPs %}
-    {% for aip in AIPs %}
+  {% if originals %}
+    {% for original in originals %}
       <tr>
-        <td>{{ aip.transfer_name }}</td>
-        <td>{{ aip.uuid }}</td>
-        <td>{{ aip.create_date }}</td>
-        <td></td>
-        <td></td>
-        <td><a href="/view_aip/{{ aip.id }}"><button type="button" class="btn btn-info">View</button></a></td>
+        <td>{{ original.name }}</td>
+        <td>{{ original.uuid }}</td>
+        <td>{{ original.size }} bytes</td>
+        <td>{{ original.puid }}</td>
+        <td>{{ original.format }} {{original.format_version}}</td>
+        <td>{{ original.creation_date }}</td>
+        <td>{{ original.ingestion_date }}</td>
+        <td>{{ original.related_uuid }}</td>
       </tr>
     {% endfor %}
   {% endif %}
 </table>
+
+{% if preservationCopies %}
+<div class="alert alert-info"><h3>Preservation copies ({{ aip.preservation_copies }})</h3></div>
+
+<table class="table table-striped table-bordered table-condensed sortable">
+  <tr>
+  <td><strong>Name</strong></td>
+  <td><strong>UUID</strong></td>
+  <td><strong>Size</strong></td>
+  <td><strong>Format</strong></td>
+  <td><strong>Normalization date</strong></td>
+  <td><strong>Original</strong></td>
+  </tr>
+
+    {% for preservationCopy in preservationCopies %}
+      <tr>
+        <td>{{ preservationCopy.name }}</td>
+        <td>{{ preservationCopy.uuid }}</td>
+        <td>{{ preservationCopy.size }} bytes</td>
+        <td>{{ preservationCopy.format }}</td>
+        <td>{{ preservationCopy.normalization_date }}</td>
+        <td>{{ preservationCopy.related_uuid }}</td>
+      </tr>
+    {% endfor %}
+</table>
+{% endif %}
 
 {% endblock %}

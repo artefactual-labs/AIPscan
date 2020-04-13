@@ -1,6 +1,6 @@
 from flask import Flask, render_template, flash, redirect, request
 from AIPscan import app, db
-from .models import fetch_jobs, storage_services, aips
+from .models import fetch_jobs, storage_services, aips, files
 from .forms import StorageServiceForm
 from .am_ss_requests import storage_service_request
 from .mets_2_sql import parse_mets
@@ -155,6 +155,23 @@ def view_aips(id):
         metsFetchJob=metsFetchJob,
         storageService=storageService,
         AIPs=AIPs,
+    )
+
+
+@app.route("/view_aip/<id>", methods=["GET"])
+def view_aip(id):
+    aip = aips.query.get(id)
+    fetchJob = fetch_jobs.query.get(aip.fetch_job_id)
+    storageService = storage_services.query.get(fetchJob.id)
+    originals = files.query.filter_by(aip_id=aip.id, type="original").all()
+    preservationCopies = files.query.filter_by(aip_id=aip.id, type="preservation").all()
+    return render_template(
+        "view_aip.html",
+        aip=aip,
+        fetchJob=fetchJob,
+        storageService=storageService,
+        originals=originals,
+        preservationCopies=preservationCopies,
     )
 
 
