@@ -151,11 +151,26 @@ def view_aips(id):
     metsFetchJob = fetch_jobs.query.get(id)
     storageService = storage_services.query.get(metsFetchJob.storage_service_id)
     AIPs = aips.query.filter_by(fetch_job_id=metsFetchJob.id).all()
+
+    formatLabels = []
+    originalsCount = 0
+    for aip in AIPs:
+        originals = files.query.filter_by(aip_id=aip.id, type="original").all()
+        for original in originals:
+            formatLabels.append(original.format)
+            originalsCount += 1
+    formatCounts = Counter(formatLabels)
+    labels = list(formatCounts.keys())
+    values = list(formatCounts.values())
+
     return render_template(
         "view_aips.html",
         metsFetchJob=metsFetchJob,
         storageService=storageService,
         AIPs=AIPs,
+        labels=labels,
+        values=values,
+        originalsCount=originalsCount,
     )
 
 

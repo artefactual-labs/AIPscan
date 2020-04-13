@@ -2,17 +2,31 @@
 
 {% block content %}
 
-<h3 class="h3">METS Fetch Job</h3>
+<div class="alert alert-info"><h3 class="h3">METS Fetch Job: {{ metsFetchJob.download_start }}</h3></div>
 
-<table class="table table-bordered table-condensed">
-  <tr><td width=20%><strong>Storage Service</strong></td><td><a href="/storage_service/{{ storageService.id }}">{{ storageService.name }}</a></td></tr>
-  <tr><td width=20%><strong>Download date</strong></td><td>{{ metsFetchJob.download_start }}</td></tr>
-  <tr><td width=20%><strong>Download duration</strong></td><td>{{ metsFetchJob.download_end - metsFetchJob.download_start }}</td></tr>
-  <tr><td width=20%><strong>Packages in SS</strong></td><td>{{ metsFetchJob.total_packages }}</td></tr>
-  <tr><td width=20%><strong>AIP METS downloaded</strong></td><td>{{ metsFetchJob.total_aips }}</td></tr>
-  <tr><td width=20%><strong>Deleted AIPs skipped</strong></td><td>{{ metsFetchJob.total_deleted_aips }}</td></tr>
-  <tr><td width=20%><strong>METS parsing duration</strong></td><td>{{ metsFetchJob.parse_end - metsFetchJob.parse_start }}</td></tr>
-</table>
+<div class="container-fluid">
+  <div class="row">
+    <div class="col">
+      <table class="table table-bordered table-condensed">
+        <tr><td width=20%><strong>Storage Service</strong></td><td><a href="/storage_service/{{ storageService.id }}">{{ storageService.name }}</a></td></tr>
+        <tr><td width=20%><strong>Download duration</strong></td><td>{{ metsFetchJob.download_end - metsFetchJob.download_start }}</td></tr>
+        <tr><td width=20%><strong>Packages in SS</strong></td><td>{{ metsFetchJob.total_packages }}</td></tr>
+        <tr><td width=20%><strong>AIP METS downloaded</strong></td><td>{{ metsFetchJob.total_aips }}</td></tr>
+        <tr><td width=20%><strong>Deleted AIPs skipped</strong></td><td>{{ metsFetchJob.total_deleted_aips }}</td></tr>
+        <tr><td width=20%><strong>METS parsing duration</strong></td><td>{{ metsFetchJob.parse_end - metsFetchJob.parse_start }}</td></tr>
+        <tr><td width=20%><strong>Total original files</strong></td><td>{{ originalsCount }}</td></tr>
+      </table>
+    </div>
+    <div class="col">
+      <div class="col-lg" id="formatChart" style="display: block; margin-bottom: 10px;">
+        <canvas id="chart" width="400" height="600" aria-label="Format pie chart" role="img">
+          <!-- Fallback text -->
+          <p>Canvas element not supported.</p>
+        </canvas>
+      </div>
+    </div>
+  </div>
+</div>
 
 <div class="alert alert-info"><h4>AIPs ({{ metsFetchJob.total_aips }})</h4></div>
 
@@ -38,5 +52,38 @@
     {% endfor %}
   {% endif %}
 </table>
+
+<script>
+// draw format chart
+
+let randCols = []
+let jsonLabels = {{ labels|tojson }}
+let jsonValues = {{ values|tojson }}
+
+let makeColor = function() {
+  var r = Math.floor(Math.random() * 255)
+  var g = Math.floor(Math.random() * 255)
+  var b = Math.floor(Math.random() * 255)
+  return "rgb(" + r + "," + g + "," + b + ")"
+}
+for (let x=0;x<jsonValues.length;x++){randCols.push(makeColor())}
+
+let canvas = document.getElementById("chart")
+let ctx = canvas.getContext("2d")
+
+let config = {
+    type: 'pie',
+    data: {
+      labels: jsonLabels,
+      datasets: [{
+        data: jsonValues,
+        label: "Formats chart",
+        backgroundColor: randCols,
+      }],
+    },
+    options: {responsive: false},
+  }
+ let myPie = new Chart(ctx, config)
+</script>
 
 {% endblock %}
