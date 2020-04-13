@@ -4,14 +4,28 @@
 
 <div class="alert alert-info"><h2 class="h2">AIP: {{ aip.transfer_name }}</h2></div>
 
-<table class="table table-bordered table-condensed">
-  <tr><td width=20%><strong>AIP UUID</strong></td><td>{{ aip.uuid }}</td></tr>
-  <tr><td width=20%><strong>Creation date</strong></td><td>{{ aip.create_date }}</td></tr>
-  <tr><td width=20%><strong>Originals</strong></td><td>{{ aip.originals }}</td></tr>
-  <tr><td width=20%><strong>Preservation copies</strong></td><td>{{ aip.preservation_copies }}</td></tr>
-  <tr><td width=20%><strong>Fetch job</strong></td><td><a href="/view_aips/{{ fetchJob.id }}">{{ fetchJob.download_start }}</a></td></tr>
-  <tr><td width=20%><strong>Storage service</strong></td><td><a href="/storage_service/{{ storageService.id }}">{{ storageService.name }}</a></td></tr>
-</table>
+<div class="container-fluid">
+  <div class="row">
+    <div class="col">
+      <table class="table table-bordered table-condensed">
+        <tr><td width=20%><strong>AIP UUID</strong></td><td>{{ aip.uuid }}</td></tr>
+        <tr><td width=20%><strong>Creation date</strong></td><td>{{ aip.create_date }}</td></tr>
+        <tr><td width=20%><strong>Originals</strong></td><td>{{ aip.originals }}</td></tr>
+        <tr><td width=20%><strong>Preservation copies</strong></td><td>{{ aip.preservation_copies }}</td></tr>
+        <tr><td width=20%><strong>Fetch job</strong></td><td><a href="/view_aips/{{ fetchJob.id }}">{{ fetchJob.download_start }}</a></td></tr>
+        <tr><td width=20%><strong>Storage service</strong></td><td><a href="/storage_service/{{ storageService.id }}">{{ storageService.name }}</a></td></tr>
+      </table>
+    </div>
+    <div class="col">
+      <div class="col-lg" id="formatChart" style="display: block; margin-bottom: 10px;">
+        <canvas id="chart" width="400" height="400" aria-label="Format pie chart" role="img">
+          <!-- Fallback text -->
+          <p>Canvas element not supported.</p>
+        </canvas>
+      </div>
+    </div>
+  </div>
+</div>
 
 <div class="alert alert-info"><h4>Originals ({{ aip.originals }})</h4></div>
 
@@ -22,7 +36,7 @@
   <td><strong>Size</strong></td>
   <td><strong>PUID</strong></td>
   <td><strong>Format</strong></td>
-  <td><strong>Creation date</strong></td>
+  <td><strong>Last modified</strong></td>
   <td><strong>Ingestion date</strong></td>
   <td><strong>Preservation copy</strong></td>
   </tr>
@@ -67,5 +81,41 @@
     {% endfor %}
 </table>
 {% endif %}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
+<script>
+
+// draw format chart
+
+let randCols = []
+let jsonLabels = {{ labels|tojson }}
+let jsonValues = {{ values|tojson }}
+
+let makeColor = function() {
+  var r = Math.floor(Math.random() * 255)
+  var g = Math.floor(Math.random() * 255)
+  var b = Math.floor(Math.random() * 255)
+  return "rgb(" + r + "," + g + "," + b + ")"
+}
+for (let x=0;x<jsonValues.length;x++){randCols.push(makeColor())}
+
+let canvas = document.getElementById("chart")
+let ctx = canvas.getContext("2d")
+
+let config = {
+    type: 'pie',
+    data: {
+      labels: jsonLabels,
+      datasets: [{
+        data: jsonValues,
+        label: "Formats chart",
+        backgroundColor: randCols,
+      }],
+    },
+    options: {responsive: false},
+  }
+ let myPie = new Chart(ctx, config)
+</script>
+
 
 {% endblock %}

@@ -7,6 +7,7 @@ from .mets_2_sql import parse_mets
 import os
 import shutil
 from datetime import datetime
+from collections import Counter
 
 # AIPscan/add_sample_data.py is excluded from the code repository for
 # security reasons. See more info below at @app.route("/add_sample_data")
@@ -165,6 +166,14 @@ def view_aip(id):
     storageService = storage_services.query.get(fetchJob.storage_service_id)
     originals = files.query.filter_by(aip_id=aip.id, type="original").all()
     preservationCopies = files.query.filter_by(aip_id=aip.id, type="preservation").all()
+
+    formatLabels = []
+    for original in originals:
+        formatLabels.append(original.format)
+    formatCounts = Counter(formatLabels)
+    labels = list(formatCounts.keys())
+    values = list(formatCounts.values())
+
     return render_template(
         "view_aip.html",
         aip=aip,
@@ -172,6 +181,8 @@ def view_aip(id):
         storageService=storageService,
         originals=originals,
         preservationCopies=preservationCopies,
+        labels=labels,
+        values=values,
     )
 
 
