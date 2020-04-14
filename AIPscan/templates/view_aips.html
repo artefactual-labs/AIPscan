@@ -2,19 +2,19 @@
 
 {% block content %}
 
-<div class="alert alert-info"><h3 class="h3">METS Fetch Job: {{ metsFetchJob.download_start }}</h3></div>
+<div class="alert alert-info"><h3 class="h3"><a href="/storage_service/{{ storageService.id }}">{{ storageService.name }}</a></h3></div>
 
 <div class="container-fluid">
   <div class="row">
     <div class="col">
       <table class="table table-bordered table-condensed">
-        <tr><td width=20%><strong>Storage Service</strong></td><td><a href="/storage_service/{{ storageService.id }}">{{ storageService.name }}</a></td></tr>
+        <tr><td width=20%><strong>Total original files</strong></td><td>{{ originalsCount }}</td></tr>
+        <tr><td width=20%><strong>Scan date</strong></td><td>{{ metsFetchJob.download_start }}</td></tr>
         <tr><td width=20%><strong>Download duration</strong></td><td>{{ metsFetchJob.download_end - metsFetchJob.download_start }}</td></tr>
         <tr><td width=20%><strong>Packages in SS</strong></td><td>{{ metsFetchJob.total_packages }}</td></tr>
-        <tr><td width=20%><strong>AIP METS downloaded</strong></td><td>{{ metsFetchJob.total_aips }}</td></tr>
         <tr><td width=20%><strong>Deleted AIPs skipped</strong></td><td>{{ metsFetchJob.total_deleted_aips }}</td></tr>
+        <tr><td width=20%><strong>AIP METS downloaded</strong></td><td>{{ metsFetchJob.total_aips }}</td></tr>
         <tr><td width=20%><strong>METS parsing duration</strong></td><td>{{ metsFetchJob.parse_end - metsFetchJob.parse_start }}</td></tr>
-        <tr><td width=20%><strong>Total original files</strong></td><td>{{ originalsCount }}</td></tr>
       </table>
     </div>
     <div class="col">
