@@ -201,6 +201,31 @@ def view_aip(id):
     )
 
 
+@app.route("/report_file_formats/<id>", methods=["GET"])
+def report_file_formats(id):
+    metsFetchJob = fetch_jobs.query.get(id)
+    storageService = storage_services.query.get(metsFetchJob.storage_service_id)
+    AIPs = aips.query.filter_by(fetch_job_id=metsFetchJob.id).all()
+
+    formatLabels = []
+    originalsCount = 0
+    for aip in AIPs:
+        originals = files.query.filter_by(aip_id=aip.id, type="original").all()
+        for original in originals:
+            formatLabels.append(original.format)
+            originalsCount += 1
+    formatCounts = Counter(formatLabels)
+
+    return render_template(
+        "report_file_formats.html",
+        metsFetchJob=metsFetchJob,
+        storageService=storageService,
+        AIPs=AIPs,
+        formatCounts=formatCounts,
+        originalsCount=originalsCount,
+    )
+
+
 @app.route("/add_sample_data", methods=["GET"])
 def add_sample_data():
     """
