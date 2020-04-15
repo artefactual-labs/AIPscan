@@ -19,3 +19,4 @@ View repository-wide info about Archivematica AIPs
 * Add an Archivematica Storage Service record, including API Key, eg.
 `https://amdemo.artefactual.com:8000`
 * Select "New Fetch Job"
+* See CLI for Fetch Job status
