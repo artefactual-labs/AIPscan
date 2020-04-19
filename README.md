@@ -12,7 +12,7 @@ View repository-wide info about Archivematica AIPs
 * Create database:  
   `python create_db.py`      
 * Run (on localhost, port 5000):  
-  `export FLASK_APP=run.py`
+  `export FLASK_APP=run.py`  
   `flask run`  
 * Go to `localhost:5000` in browser.
 * Add an Archivematica Storage Service record, including API Key, eg.
