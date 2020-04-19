@@ -11,7 +11,7 @@ View repository-wide info about Archivematica AIPs
   `pip install -r requirements.txt`   
 * Create database:  
   `python create_db.py`      
-* Run (on localhost, port 5000):
+* Run (on localhost, port 5000):  
   `export FLASK_APP=run.py`
   `flask run`  
 * Go to `localhost:5000` in browser.
