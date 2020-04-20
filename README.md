@@ -22,3 +22,5 @@ View repository-wide info about Archivematica AIPs
 * See CLI for Fetch Job status
 * See UI for new Fetch Job when complete
 * Select "View AIPs"
+
+![screencap](aipscan-demo.png)
