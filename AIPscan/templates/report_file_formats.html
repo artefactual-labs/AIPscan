@@ -9,8 +9,8 @@
 <tr><td width=20%><strong>Total AIPs</strong></td><td>{{ metsFetchJob.total_aips }}</td></tr>
 <tr><td width=20%><strong>Total original files</strong></td><td>{{ originalsCount }}</td></tr>
 <tr><td width=20%><strong>Scan date</strong></td><td><a href="/view_aips/{{ metsFetchJob.id }}">{{ metsFetchJob.download_start }}</a></td></tr>
-<tr><td width="20%">Ingest start date</td><td><a href="#"><img src="../static/calendar-icon.png" margin-right:10px></a> 2008-01-01</td></tr>
-<tr><td width="20%">Ingest end date</td><td><a href="#"><img src="../static/calendar-icon.png" margin-right:10px></a> 2020-04-15</td></tr>
+<tr><td width="20%"><strong>Ingest start date</strong></td><td><input type="text" id="datepicker"></td></tr>
+<tr><td width="20%"><strong>Ingest end date</strong></td><td><input type="text" id="datepicker2"></td></tr>
 </table>
 
 <div class="alert alert-info"><h4 class="h3">File formats report</h4></div>
@@ -31,5 +31,22 @@
   {% endif %}
 </table>
 </div>
+
+<script>
+$( function() {
+  $("#datepicker").datepicker({
+    dateFormat: 'yy-mm-dd',
+    onSelect: function (date) {
+      alert(date);
+    }
+    });
+  $("#datepicker2").datepicker({
+    dateFormat: 'yy-mm-dd',
+    onSelect: function (date) {
+      alert(date);
+    }
+    });
+});
+</script>
 
 {% endblock %}
