@@ -18,15 +18,17 @@
 
 <div class="alert alert-info"><h4 class="h3">METS fetch jobs</h4></div>
 
-<table class="table table-striped table-bordered table-condensed sortable">
+<table id="aiptable" class="table table-striped table-bordered">
+  <thead>
   <tr>
-  <td><strong>Scan date</strong></td>
-  <td><strong>Download duration</strong></td>
-  <td><strong>Packages in SS</strong></td>
-  <td><strong>AIP METS downloaded</strong></td>
-  <td><strong>METS parsing duration</strong></td>
-  <td><strong>Action</strong></td>
+  <th><strong>Scan date</strong></th>
+  <th><strong>Download duration</strong></th>
+  <th><strong>Packages in SS</strong></th>
+  <th><strong>AIP METS downloaded</strong></th>
+  <th><strong>METS parsing duration</strong></th>
+  <th><strong>Action</strong></th>
   </tr>
+  </thead>
   {% if metsFetchJobs %}
     {% for metsFetchJob in metsFetchJobs %}
       <tr>

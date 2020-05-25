@@ -4,16 +4,18 @@
 
 <div class="alert alert-info"><h3 class="h3">METS fetch jobs</h3><div class="alert alert-info">
 
-<table class="table table-striped table-bordered table-condensed sortable">
+<table id="aiptable" class="table table-striped table-bordered"">
+  <thead>
   <tr>
-  <td><strong>Storage Service</strong></td>
-  <td><strong>Scan date</strong></td>
-  <td><strong>Download duration</strong></td>
-  <td><strong>Number of AIPs</strong></td>
-  <td><strong>Number of packages</strong></td>
-  <td><strong>Number of deleted AIPs</strong></td>
-  <td><strong>Action</strong></td>
+  <th><strong>Storage Service</strong></th>
+  <th><strong>Scan date</strong></th>
+  <th><strong>Download duration</strong></th>
+  <th><strong>Number of AIPs</strong></th>
+  <th><strong>Number of packages</strong></th>
+  <th><strong>Number of deleted AIPs</strong></th>
+  <th><strong>Action</strong></th>
   </tr>
+  </thead>
   {% if metsFetchJobs %}
     {% for metsFetchJob in metsFetchJobs %}
       <tr>
