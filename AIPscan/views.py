@@ -1,4 +1,4 @@
-from flask import Flask, render_template, flash, redirect, request
+from flask import Flask, render_template, flash, redirect, request, session, jsonify
 from AIPscan import app, db
 from .models import fetch_jobs, storage_services, aips, files
 from .forms import StorageServiceForm
@@ -203,6 +203,17 @@ def view_aip(id):
 
 @app.route("/report_file_formats/<id>", methods=["GET"])
 def report_file_formats(id):
+    if session.get("formats_startdate"):
+        startdate = session.get("formats_startdate")
+        session["formats_startdate"] = ""
+    else:
+        startdate = ""
+    if session.get("formats_enddate"):
+        enddate = session.get("formats_enddate")
+        session["formats_enddate"] = ""
+    else:
+        enddate = ""
+
     metsFetchJob = fetch_jobs.query.get(id)
     storageService = storage_services.query.get(metsFetchJob.storage_service_id)
     AIPs = aips.query.filter_by(fetch_job_id=metsFetchJob.id).all()
@@ -223,7 +234,19 @@ def report_file_formats(id):
         AIPs=AIPs,
         formatCounts=formatCounts,
         originalsCount=originalsCount,
+        startdate=startdate,
+        enddate=enddate,
     )
+
+
+@app.route("/report_file_formats_range", methods=["GET"])
+def report_file_format_range():
+    startdate = request.args.get("startdate")
+    enddate = request.args.get("enddate")
+    session["formats_startdate"] = startdate
+    session["formats_enddate"] = enddate
+
+    return jsonify({"status": "success"})
 
 
 @app.route("/add_sample_data", methods=["GET"])
