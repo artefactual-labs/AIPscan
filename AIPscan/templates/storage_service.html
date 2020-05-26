@@ -18,7 +18,7 @@
 
 <div class="alert alert-info"><h4 class="h3">METS fetch jobs</h4></div>
 
-<table id="aiptable" class="table table-striped table-bordered">
+<table id="infotable" class="table table-striped table-bordered">
   <thead>
   <tr>
   <th><strong>Scan date</strong></th>
@@ -45,6 +45,6 @@
     {% endfor %}
   {% endif %}
 </table>
-<a href="/new_fetch_job/{{ storageService.id }}"<button type="button" class="btn btn-success">New fetch job</button></a>
+<a href="/new_fetch_job/{{ storageService.id }}"<button type="button" class="btn btn-success" style="margin-top: 20px;">New fetch job</button></a>
 
 {% endblock %}
