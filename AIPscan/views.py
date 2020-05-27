@@ -221,8 +221,19 @@ def report_file_formats(id):
     formatLabels = []
     originalsCount = 0
     for aip in AIPs:
-        originals = files.query.filter_by(aip_id=aip.id, type="original").all()
+        if startdate != "":
+            originals = (
+                files.query.filter_by(aip_id=aip.id, type="original")
+                .filter(files.ingestion_date.between(startdate, enddate))
+                .all()
+            )
+        else:
+            originals = files.query.filter_by(aip_id=aip.id, type="original").all()
+
         for original in originals:
+            print(
+                original.ingestion_date, original.type, original.aip_id, original.name,
+            )
             formatLabels.append(original.format)
             originalsCount += 1
     formatCounts = Counter(formatLabels)
