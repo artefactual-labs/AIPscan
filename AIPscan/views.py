@@ -11,7 +11,7 @@ from collections import Counter
 
 # AIPscan/add_sample_data.py is excluded from the code repository for
 # security reasons. See more info below at @app.route("/add_sample_data")
-from .add_sample_data import adddata
+# from .add_sample_data import adddata
 
 
 @app.route("/", methods=["GET"])
