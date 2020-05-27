@@ -231,9 +231,6 @@ def report_file_formats(id):
             originals = files.query.filter_by(aip_id=aip.id, type="original").all()
 
         for original in originals:
-            print(
-                original.ingestion_date, original.type, original.aip_id, original.name,
-            )
             formatLabels.append(original.format)
             originalsCount += 1
     formatCounts = Counter(formatLabels)
