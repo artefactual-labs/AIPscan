@@ -8,10 +8,18 @@ import os
 import shutil
 from datetime import datetime
 from collections import Counter
+from . import tasks
 
 # AIPscan/add_sample_data.py is excluded from the code repository for
 # security reasons. See more info below at @app.route("/add_sample_data")
 # from .add_sample_data import adddata
+
+
+@app.route("/task1")
+def task1():
+    result = tasks.add_together.delay(10, 20)
+    print(result.wait())
+    return "Welcome to task1!"
 
 
 @app.route("/", methods=["GET"])
@@ -290,6 +298,6 @@ def add_sample_data():
         db.session.add(fetch1)
         db.session.commit()
         return ()
-        """
     adddata()
+    """
     return render_template("add_sample_data.html")

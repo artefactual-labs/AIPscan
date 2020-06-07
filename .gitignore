@@ -7,3 +7,4 @@ AIPscan/__init__.pyc
 aipscan.db
 config.pyc
 AIPscan/add_sample_data.py
+celery_tasks.db
