@@ -1,13 +1,14 @@
 from flask import Blueprint, render_template, redirect, request, flash, url_for
 from AIPscan.models import fetch_jobs, storage_services
 from AIPscan.forms import StorageServiceForm
-from AIPscan import db
+from AIPscan import db, app
 import os
 import shutil
 
 aggregator = Blueprint("aggregator", __name__, template_folder="templates")
 
 
+@app.route("/")
 @aggregator.route("/", methods=["GET"])
 def ss_default():
     storageService = storage_services.query.filter_by(default=True).first()
