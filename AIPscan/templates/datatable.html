@@ -1,0 +1,33 @@
+
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/buttons.dataTables.min.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/dataTables.bootstrap4.min.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/custom.css') }}">
+
+    <script type="text/javascript" language="javascript" src="{{ url_for('static', filename='js/jquery.dataTables.min.js') }}"></script>
+    <script type="text/javascript" language="javascript" src="{{ url_for('static', filename='js/dataTables.bootstrap4.min.js') }}"></script>
+    <script type="text/javascript" language="javascript" src="{{ url_for('static', filename='js/dataTables.buttons.min.js') }}"></script>
+    <script type="text/javascript" language="javascript" src="{{ url_for('static', filename='js/buttons.print.min.js') }}"></script>
+
+    <script type="text/javascript" class="init">
+        $(document).ready(function() {
+            $('#aiptable').DataTable( {
+                "lengthMenu": [[10, 30, 60, -1], [10, 30, 60, "All"]],
+                "pageLength": 10,
+                "pagingType": "full_numbers",
+                "buttons": [{extend: 'print', className: "print-button"}],
+                "dom": "lBfrtip",
+            } );
+            $('#aiptable2').DataTable( {
+                "lengthMenu": [[10, 30, 60, -1], [10, 30, 60, "All"]],
+                "pageLength": 10,
+                "pagingType": "full_numbers",
+                "buttons": [{extend: 'print', className: "print-button"}],
+                "dom": "lBfrtip",
+            } );
+            $('#infotable').DataTable( {
+                "lengthMenu": [[10, 30, 60, -1], [10, 30, 60, "All"]],
+                "pageLength": 10,
+                "pagingType": "full_numbers",
+            } );
+        } );
+    </script>

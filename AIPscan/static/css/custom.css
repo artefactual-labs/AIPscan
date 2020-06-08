@@ -1,0 +1,17 @@
+.dataTables_length {
+  float: left;
+  margin-top: 5px;
+  margin-right: 20px;
+}
+
+
+/* can't seem to wrangle DataTables CSS file ordering so ramming
+   these through using !important tag */
+   
+.print-button{
+    color: #fff !important;
+    background-color: #17a2b8 !important;
+    border-color: #17a2b8 !important;
+    background-image: none !important;
+    border-radius: .25rem !important;
+}

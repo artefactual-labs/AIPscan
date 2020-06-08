@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>AIPscan</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/jquery-ui.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+
+    <script type="text/javascript" language="javascript" src="{{ url_for('static', filename='js/jquery-3.3.1.js') }}"></script>
+    <script type="text/javascript" language="javascript" src="{{ url_for('static', filename='js/jquery-ui.js') }}"></script>
+    <script type="text/javascript" language="javascript" src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+    <script type="text/javascript" language="javascript" src="{{ url_for('static', filename='js/Chart.min.js') }}"></script>
+
+    {% include "datatable.html" %}
+
+
+
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <a class="navbar-brand" href="/aggregator/">AIPscan</a>
+    <div class="navbar-collapse" id="navbarNavDropdown">
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link" href="/aggregator/storage_services">Archivematica Storage Services</a>
+        </li>
+      </ul>
+    </div>
+  <span style="font-style: italic" class="navbar-text">Collect and view repository-wide info about Archivematica AIPs</span>
+</nav>
+
+<div class="container-fluid" style="margin: 20px 0;">
+
+  {% with messages = get_flashed_messages() %}{% if messages %}
+  <div class="alert alert-primary" role="alert">
+      {% for message in messages %}
+      {{ message }}<br />
+      {% endfor %}
+  </div>
+  {% endif %}{% endwith %}
+
+{% block content %}
+{% endblock %}
+
+</div>
+</body>
