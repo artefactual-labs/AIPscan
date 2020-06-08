@@ -1,10 +1,11 @@
-downloads/
 venv/
 .DS_Store
 __pycache__/
 AIPscan/__pycache__/
+AIPscan/Aggregator/__pycache__/
+AIPscan/Reporter/__pycache__/
+AIPscan/API/__pycache__/
 AIPscan/__init__.pyc
-aipscan.db
 config.pyc
-AIPscan/add_sample_data.py
+aipscan.db
 celery_tasks.db
