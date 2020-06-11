@@ -8,11 +8,3 @@ class LoginForm(FlaskForm):
     password = PasswordField("Password", validators=[DataRequired()])
     remember_me = BooleanField("Remember Me")
     submit = SubmitField("Sign In")
-
-
-class StorageServiceForm(FlaskForm):
-    name = StringField("Name", validators=[DataRequired()])
-    url = StringField("URL", validators=[DataRequired()])
-    user_name = StringField("User name", validators=[DataRequired()])
-    api_key = StringField("API key", validators=[DataRequired()])
-    default = BooleanField("Default")

@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, redirect, request, flash, url_for
 from AIPscan.models import fetch_jobs, storage_services
-from AIPscan.forms import StorageServiceForm
+from AIPscan.Aggregator.forms import StorageServiceForm
 from AIPscan import db, app
 import os
 import shutil
