@@ -15,7 +15,7 @@ Collect and view repository-wide info about Archivematica AIPs
   `export FLASK_APP=run.py`  
   `flask run`  
 * In another terminal window, start a Celery worker
-  `celery -A AIPscan.tasks worker`
+  `celery -A AIPscan.Aggregator.tasks worker`
 * In another terminal window, start RabbitMQ queue manager
   `export PATH=$PATH:/usr/local/sbin`
   `rabbitmq-server`

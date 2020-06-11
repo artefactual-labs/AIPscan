@@ -1,11 +1,19 @@
 from flask import Blueprint, render_template, redirect, request, flash, url_for
 from AIPscan.models import fetch_jobs, storage_services
 from AIPscan.Aggregator.forms import StorageServiceForm
+from AIPscan.Aggregator import tasks
 from AIPscan import db, app
 import os
 import shutil
 
 aggregator = Blueprint("aggregator", __name__, template_folder="templates")
+
+
+@aggregator.route("/task1")
+def task1():
+    result = tasks.add_together.delay(10, 20)
+    print(result.wait())
+    return "Welcome to task1!"
 
 
 @app.route("/")

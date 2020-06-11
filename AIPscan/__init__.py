@@ -5,6 +5,11 @@ app = Flask(__name__)
 app.config.from_object("config")
 db = SQLAlchemy(app)
 
+from celery import Celery
+from flask_celery import make_celery
+
+celery = make_celery(app)
+
 from AIPscan import models
 
 from AIPscan.Aggregator.views import aggregator

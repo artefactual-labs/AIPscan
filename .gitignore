@@ -8,4 +8,4 @@ AIPscan/API/__pycache__/
 AIPscan/__init__.pyc
 config.pyc
 aipscan.db
-celery_tasks.db
+celerytasks.db
