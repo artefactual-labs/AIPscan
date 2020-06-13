@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, request, flash, url_for
+from flask import Blueprint, render_template, redirect, request, flash, url_for, jsonify
 from AIPscan.models import fetch_jobs, storage_services
 from AIPscan.Aggregator.forms import StorageServiceForm
 from AIPscan.Aggregator import tasks
@@ -108,7 +108,7 @@ def delete_storage_service(id):
     return redirect(url_for("aggregator.ss"))
 
 
-@aggregator.route("/new_fetch_job/<id>", methods=["GET"])
+@aggregator.route("/new_fetch_job/<id>", methods=["POST"])
 def new_fetch_job(id):
 
     storageService = storage_services.query.get(id)
@@ -127,10 +127,34 @@ def new_fetch_job(id):
     # create a subdirectory for the download job using a timestamp as its name
     dateTimeObjStart = datetime.now().replace(microsecond=0)
     timestampStr = dateTimeObjStart.strftime("%Y-%m-%d--%H-%M-%S")
+    timestamp = dateTimeObjStart.strftime("%Y-%m-%d %H:%M:%S")
     os.makedirs("AIPscan/Aggregator/downloads/" + timestampStr + "/packages/")
 
     task = tasks.storage_service_request.delay(apiUrl, timestampStr)
-    job = AsyncResult(task.id, app=celery)
-    # print(job.info.get("current package list"))
+    taskId = task.id
+    response = {"timestamp": timestamp, "taskId": taskId}
 
-    return redirect(url_for("aggregator.storage_service", id=id))
+    return jsonify(response)
+
+
+@app.route("/task_status/<taskid>")
+def task_status(taskId):
+    task = tasks.storage_service_request.AsyncResult(taskId, app=celery)
+    if task.state == "PENDING":
+        # job did not start yet
+        response = {
+            "state": task.state,
+        }
+    elif task.state != "FAILURE":
+        response = {
+            "state": task.state,
+        }
+        if "result" in task.info:
+            response["result"] = task.info["result"]
+    else:
+        # something went wrong in the background job
+        response = {
+            "state": task.state,
+            "status": str(task.info),  # this is the exception raised
+        }
+    return jsonify(response)

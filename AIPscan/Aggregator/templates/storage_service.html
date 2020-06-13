@@ -46,13 +46,13 @@
   {% endif %}
 </table>
 <button type="button" class="btn btn-success" style="margin-top: 20px;" id="newfetchjob">New fetch job</button>
-<div id="fetchjobstatus" style="margin-top: 20px; padding: 10px; border-radius: .25rem; background-color: #000; color: #0F0; font-family: SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace;">
+<div id="console" style="margin-top: 20px; padding: 10px; border-radius: .25rem; color: #0F0; font-family: SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace; font-size: small;">
 </div>
 
 <script>
 $(document).ready(function(){
   $('#newfetchjob').on('click', function () {
-    newfetchjob({{ storageService.id }});
+    new_fetch_job({{ storageService.id }});
     });
 })
 </script>

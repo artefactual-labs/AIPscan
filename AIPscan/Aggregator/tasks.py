@@ -3,6 +3,7 @@ import requests
 from AIPscan import celery
 import json
 from datetime import datetime
+import time
 
 
 def write_packages_json(count, timestampStr, packages):
@@ -45,10 +46,10 @@ def storage_service_request(self, apiUrl, timestampStr):
     nextUrl = packages["meta"]["next"]
     write_packages_json(packagesCount, timestampStr, packages)
     self.update_state(
-        state="STARTED DOWNLOADING PACKAGE LISTS",
+        state="DOWNLOADING PACKAGE LISTS",
         meta={
-            "started": dateTimeObjStart,
             "total packages": packages["meta"]["total_count"],
+            "current package list": packagesCount,
         },
     )
 
@@ -58,10 +59,15 @@ def storage_service_request(self, apiUrl, timestampStr):
         packagesCount += 1
         write_packages_json(packagesCount, timestampStr, nextPackages)
         nextUrl = nextPackages["meta"]["next"]
-
+        time.sleep(1)
         self.update_state(
-            state="IN PROGRESS", meta={"current package list": packagesCount}
+            state="DOWNLOADING PACKAGE LISTS",
+            meta={
+                "total packages": nextPackages["meta"]["total_count"],
+                "current package list": packagesCount,
+            },
         )
+    return {"result": "PACKAGE LIST DOWNLOAD COMPLETED"}
 
 
 @celery.task()
