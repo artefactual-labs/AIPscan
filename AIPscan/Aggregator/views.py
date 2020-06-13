@@ -2,18 +2,13 @@ from flask import Blueprint, render_template, redirect, request, flash, url_for
 from AIPscan.models import fetch_jobs, storage_services
 from AIPscan.Aggregator.forms import StorageServiceForm
 from AIPscan.Aggregator import tasks
-from AIPscan import db, app
+from AIPscan import db, app, celery
 import os
 import shutil
+from datetime import datetime
+from celery.result import AsyncResult
 
 aggregator = Blueprint("aggregator", __name__, template_folder="templates")
-
-
-@aggregator.route("/task1")
-def task1():
-    result = tasks.add_together.delay(10, 20)
-    print(result.wait())
-    return "Welcome to task1!"
 
 
 @app.route("/")
@@ -111,3 +106,31 @@ def delete_storage_service(id):
     flash("Storage service '{}' is deleted".format(storageService.name))
     storageServices = storage_services.query.all()
     return redirect(url_for("aggregator.ss"))
+
+
+@aggregator.route("/new_fetch_job/<id>", methods=["GET"])
+def new_fetch_job(id):
+
+    storageService = storage_services.query.get(id)
+    apiUrl = {
+        "baseUrl": storageService.url,
+        "userName": storageService.user_name,
+        "apiKey": storageService.api_key,
+        "offset": "0",
+        "limit": "5",
+    }
+
+    # create "downloads/" directory if it doesn't exist
+    if not os.path.exists("AIPscan/Aggregator/downloads/"):
+        os.makedirs("AIPscan/Aggregator/downloads/")
+
+    # create a subdirectory for the download job using a timestamp as its name
+    dateTimeObjStart = datetime.now().replace(microsecond=0)
+    timestampStr = dateTimeObjStart.strftime("%Y-%m-%d--%H-%M-%S")
+    os.makedirs("AIPscan/Aggregator/downloads/" + timestampStr + "/packages/")
+
+    task = tasks.storage_service_request.delay(apiUrl, timestampStr)
+    job = AsyncResult(task.id, app=celery)
+    # print(job.info.get("current package list"))
+
+    return redirect(url_for("aggregator.storage_service", id=id))

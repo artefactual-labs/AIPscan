@@ -15,10 +15,10 @@ Collect and view repository-wide info about Archivematica AIPs
   `export FLASK_APP=run.py`  
   `flask run`  
 * In another terminal window, start a Celery worker
-  `celery -A AIPscan.Aggregator.tasks worker`
+  `celery -A AIPscan.Aggregator.tasks worker --loglevel=info`
 * In another terminal window, start RabbitMQ queue manager
   `export PATH=$PATH:/usr/local/sbin`
-  `rabbitmq-server`
+  `sudo rabbitmq-server`
 
 * Go to `localhost:5000` in browser.
 * Select "New Storage Service"  

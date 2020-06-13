@@ -1,0 +1,91 @@
+{
+    "meta": {
+        "limit": 5,
+        "next": "/api/v2/file/?username=analyst&api_key=ow7ioGh2reephua8uPaiWee4EiHeev6u&limit=5&offset=30",
+        "offset": 25,
+        "previous": "/api/v2/file/?username=analyst&api_key=ow7ioGh2reephua8uPaiWee4EiHeev6u&limit=5&offset=20",
+        "total_count": 34
+    },
+    "objects": [
+        {
+            "current_full_path": "/var/archivematica/sharedDirectory/www/AIPsStore/1d7d/417c/a473/4402/bb39/041e/1afd/0cdf/ZippedBag-1d7d417c-a473-4402-bb39-041e1afd0cdf.7z",
+            "current_location": "/api/v2/location/04305e96-acfe-41e3-865c-eed0e092d351/",
+            "current_path": "1d7d/417c/a473/4402/bb39/041e/1afd/0cdf/ZippedBag-1d7d417c-a473-4402-bb39-041e1afd0cdf.7z",
+            "encrypted": false,
+            "misc_attributes": {},
+            "origin_pipeline": "/api/v2/pipeline/2b3d91c5-fd64-4f35-9615-004e8b112979/",
+            "package_type": "AIP",
+            "related_packages": [],
+            "replicas": [],
+            "replicated_package": null,
+            "resource_uri": "/api/v2/file/1d7d417c-a473-4402-bb39-041e1afd0cdf/",
+            "size": 92801,
+            "status": "UPLOADED",
+            "uuid": "1d7d417c-a473-4402-bb39-041e1afd0cdf"
+        },
+        {
+            "current_full_path": "/var/archivematica/sharedDirectory/www/AIPsStore/0c5b/4839/dc60/4f57/822b/1972/bbfd/1e89/BagTransfer-0c5b4839-dc60-4f57-822b-1972bbfd1e89.7z",
+            "current_location": "/api/v2/location/04305e96-acfe-41e3-865c-eed0e092d351/",
+            "current_path": "0c5b/4839/dc60/4f57/822b/1972/bbfd/1e89/BagTransfer-0c5b4839-dc60-4f57-822b-1972bbfd1e89.7z",
+            "encrypted": false,
+            "misc_attributes": {},
+            "origin_pipeline": "/api/v2/pipeline/2b3d91c5-fd64-4f35-9615-004e8b112979/",
+            "package_type": "AIP",
+            "related_packages": [],
+            "replicas": [],
+            "replicated_package": null,
+            "resource_uri": "/api/v2/file/0c5b4839-dc60-4f57-822b-1972bbfd1e89/",
+            "size": 29118,
+            "status": "UPLOADED",
+            "uuid": "0c5b4839-dc60-4f57-822b-1972bbfd1e89"
+        },
+        {
+            "current_full_path": "/var/archivematica/sharedDirectory/www/AIPsStore/e7ce/83ce/5568/4daa/8e01/e791/b1fa/3d0a/test24-e7ce83ce-5568-4daa-8e01-e791b1fa3d0a.7z",
+            "current_location": "/api/v2/location/04305e96-acfe-41e3-865c-eed0e092d351/",
+            "current_path": "e7ce/83ce/5568/4daa/8e01/e791/b1fa/3d0a/test24-e7ce83ce-5568-4daa-8e01-e791b1fa3d0a.7z",
+            "encrypted": false,
+            "misc_attributes": {},
+            "origin_pipeline": "/api/v2/pipeline/2b3d91c5-fd64-4f35-9615-004e8b112979/",
+            "package_type": "AIP",
+            "related_packages": [],
+            "replicas": [],
+            "replicated_package": null,
+            "resource_uri": "/api/v2/file/e7ce83ce-5568-4daa-8e01-e791b1fa3d0a/",
+            "size": 1060270,
+            "status": "UPLOADED",
+            "uuid": "e7ce83ce-5568-4daa-8e01-e791b1fa3d0a"
+        },
+        {
+            "current_full_path": "/var/archivematica/sharedDirectory/www/AIPsStore/c46d/99e4/c9a4/4cf2/8544/4349/b6ff/9af7/test25-c46d99e4-c9a4-4cf2-8544-4349b6ff9af7.7z",
+            "current_location": "/api/v2/location/04305e96-acfe-41e3-865c-eed0e092d351/",
+            "current_path": "c46d/99e4/c9a4/4cf2/8544/4349/b6ff/9af7/test25-c46d99e4-c9a4-4cf2-8544-4349b6ff9af7.7z",
+            "encrypted": false,
+            "misc_attributes": {},
+            "origin_pipeline": "/api/v2/pipeline/2b3d91c5-fd64-4f35-9615-004e8b112979/",
+            "package_type": "AIP",
+            "related_packages": [],
+            "replicas": [],
+            "replicated_package": null,
+            "resource_uri": "/api/v2/file/c46d99e4-c9a4-4cf2-8544-4349b6ff9af7/",
+            "size": 24119371,
+            "status": "UPLOADED",
+            "uuid": "c46d99e4-c9a4-4cf2-8544-4349b6ff9af7"
+        },
+        {
+            "current_full_path": "/var/archivematica/sharedDirectory/www/AIPsStore/b994/1a07/1a8a/4952/ba54/56bf/3d31/62be/test29-b9941a07-1a8a-4952-ba54-56bf3d3162be.7z",
+            "current_location": "/api/v2/location/04305e96-acfe-41e3-865c-eed0e092d351/",
+            "current_path": "b994/1a07/1a8a/4952/ba54/56bf/3d31/62be/test29-b9941a07-1a8a-4952-ba54-56bf3d3162be.7z",
+            "encrypted": false,
+            "misc_attributes": {},
+            "origin_pipeline": "/api/v2/pipeline/2b3d91c5-fd64-4f35-9615-004e8b112979/",
+            "package_type": "AIP",
+            "related_packages": [],
+            "replicas": [],
+            "replicated_package": null,
+            "resource_uri": "/api/v2/file/b9941a07-1a8a-4952-ba54-56bf3d3162be/",
+            "size": 96929,
+            "status": "UPLOADED",
+            "uuid": "b9941a07-1a8a-4952-ba54-56bf3d3162be"
+        }
+    ]
+}
