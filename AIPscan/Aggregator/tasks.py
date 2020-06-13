@@ -59,7 +59,7 @@ def storage_service_request(self, apiUrl, timestampStr):
         packagesCount += 1
         write_packages_json(packagesCount, timestampStr, nextPackages)
         nextUrl = nextPackages["meta"]["next"]
-        time.sleep(1)
+        time.sleep(2)
         self.update_state(
             state="DOWNLOADING PACKAGE LISTS",
             meta={

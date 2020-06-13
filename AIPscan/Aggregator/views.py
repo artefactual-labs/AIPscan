@@ -137,9 +137,11 @@ def new_fetch_job(id):
     return jsonify(response)
 
 
-@app.route("/task_status/<taskid>")
-def task_status(taskId):
-    task = tasks.storage_service_request.AsyncResult(taskId, app=celery)
+@aggregator.route("/task_status/<taskid>")
+def task_status(taskid):
+    task = tasks.storage_service_request.AsyncResult(taskid, app=celery)
+    response = {"state": task.state}
+    """
     if task.state == "PENDING":
         # job did not start yet
         response = {
@@ -157,4 +159,5 @@ def task_status(taskId):
             "state": task.state,
             "status": str(task.info),  # this is the exception raised
         }
+    """
     return jsonify(response)

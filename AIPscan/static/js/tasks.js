@@ -22,14 +22,8 @@ function task_status(taskId){
     success: function(data) {
     $('#console').append('<div class="log">' + data['state'] + '</div>');
     if (data['state'] != 'PENDING' && data['state'] != 'DOWNLOADING PACKAGE LISTS') {
-      if ('result' in data) {
-        $('#console').append('<div class="log">' + data['result'] + '</div>')
-      }
-      else {
-        // something happened
         $('#console').append('<div class="log">' + data['state'] + '</div>')
       }
-    }
     else {
       // rerun in 1 seconds
       setTimeout(function() {task_status(taskId);}, 1000);
@@ -38,5 +32,5 @@ function task_status(taskId){
     error: function() {
       alert('Unexpected error');
       }
-  });*/
+  });
 }
