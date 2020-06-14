@@ -58,9 +58,9 @@ def package_lists_request(self, apiUrl, timestampStr):
         self.update_state(
             state="IN PROGRESS",
             meta={
-                "message": "Downloading package lists. Total packages: "
+                "message": "Total packages: "
                 + str(totalPackages)
-                + " Total lists: "
+                + " Total package lists: "
                 + str(totalPackageLists)
             },
         )
