@@ -18,7 +18,7 @@ def ss_default():
     if storageService is None:
         storageService = storage_services.query.first()
         if storageService is None:
-            return redirect("storage_services")
+            return redirect(url_for("aggregator.ss"))
     metsFetchJobs = fetch_jobs.query.filter_by(
         storage_service_id=storageService.id
     ).all()
@@ -54,6 +54,8 @@ def edit_storage_service(id):
         form.name.data = storageService.name
         form.url.data = storageService.url
         form.user_name.data = storageService.user_name
+        form.download_limit.data = storageService.download_limit
+        form.download_offset.data = storageService.download_offset
         form.api_key.data = storageService.api_key
         form.default.data = storageService.default
     if form.validate_on_submit():
@@ -61,6 +63,8 @@ def edit_storage_service(id):
         storageService.url = form.url.data
         storageService.user_name = form.user_name.data
         storageService.api_key = form.api_key.data
+        storageService.download_limit = form.download_limit.data
+        storageService.download_offset = form.download_offset.data
         if form.default.data is True:
             storageServices = storage_services.query.all()
             for ss in storageServices:
@@ -83,6 +87,8 @@ def new_storage_service():
             url=form.url.data,
             user_name=form.user_name.data,
             api_key=form.api_key.data,
+            download_limit=form.download_limit.data,
+            download_offset=form.download_offset.data,
             default=form.default.data,
         )
         db.session.add(ss)
@@ -116,8 +122,8 @@ def new_fetch_job(id):
         "baseUrl": storageService.url,
         "userName": storageService.user_name,
         "apiKey": storageService.api_key,
-        "offset": "0",
-        "limit": "5",
+        "offset": str(storageService.download_offset),
+        "limit": str(storageService.download_limit),
     }
 
     # create "downloads/" directory if it doesn't exist

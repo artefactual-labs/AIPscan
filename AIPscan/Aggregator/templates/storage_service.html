@@ -9,6 +9,8 @@
   <tr><td width=20%><strong>URL</strong></td><td>{{ storageService.url}}</td></tr>
   <tr><td width=20%><strong>User name</strong></td><td>{{ storageService.user_name}}</td></tr>
   <tr><td width=20%><strong>API key</strong></td><td>{{ storageService.api_key}}</td></tr>
+  <tr><td width=20%><strong>Download limit</strong></td><td>{{ storageService.download_limit}}</td></tr>
+  <tr><td width=20%><strong>Download offset</strong></td><td>{{ storageService.download_offset}}</td></tr>
   <tr><td width=20%><strong>Default service</strong></td><td>{{ storageService.default}}</td></tr>
 </table>
 <a href="{{ url_for('aggregator.edit_storage_service', id=storageService.id) }}"><button type="button" class="btn btn-info">Edit</button></a>

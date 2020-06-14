@@ -47,7 +47,6 @@ def package_lists_request(self, apiUrl, timestampStr):
     totalPackages = int(packages["meta"]["total_count"])
     limit = int(apiUrl["limit"])
     totalPackageLists = int(totalPackages / limit) + (totalPackages % limit > 0)
-    self.update_state(state="IN PROGRESS")
     write_packages_json(packagesCount, timestampStr, packages)
 
     while nextUrl is not None:

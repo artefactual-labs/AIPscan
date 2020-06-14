@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, BooleanField
+from wtforms import StringField, BooleanField, IntegerField
 from wtforms.validators import DataRequired
 
 
@@ -8,4 +8,6 @@ class StorageServiceForm(FlaskForm):
     url = StringField("URL", validators=[DataRequired()])
     user_name = StringField("User name", validators=[DataRequired()])
     api_key = StringField("API key", validators=[DataRequired()])
+    download_limit = StringField("Download limit", default="20")
+    download_offset = StringField("Download offset", default="0")
     default = BooleanField("Default")

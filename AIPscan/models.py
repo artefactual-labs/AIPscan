@@ -7,16 +7,22 @@ class storage_services(db.Model):
     url = db.Column(db.String(255))
     user_name = db.Column(db.String(255))
     api_key = db.Column(db.String(255))
+    download_limit = db.Column(db.Integer())
+    download_offset = db.Column(db.Integer())
     default = db.Column(db.Boolean)
     fetch_jobs = db.relationship(
         "fetch_jobs", cascade="all,delete", backref="storage_services", lazy=True
     )
 
-    def __init__(self, name, url, user_name, api_key, default):
+    def __init__(
+        self, name, url, user_name, api_key, download_limit, download_offset, default
+    ):
         self.name = name
         self.url = url
         self.user_name = user_name
         self.api_key = api_key
+        self.download_limit = download_limit
+        self.download_offset = download_offset
         self.default = default
 
     def __repr__(self):
