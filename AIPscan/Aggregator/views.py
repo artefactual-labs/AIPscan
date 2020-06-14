@@ -130,7 +130,7 @@ def new_fetch_job(id):
     timestamp = dateTimeObjStart.strftime("%Y-%m-%d %H:%M:%S")
     os.makedirs("AIPscan/Aggregator/downloads/" + timestampStr + "/packages/")
 
-    task = tasks.storage_service_request.delay(apiUrl, timestampStr)
+    task = tasks.package_lists_request.delay(apiUrl, timestampStr)
     taskId = task.id
     response = {"timestamp": timestamp, "taskId": taskId}
 
@@ -139,25 +139,18 @@ def new_fetch_job(id):
 
 @aggregator.route("/task_status/<taskid>")
 def task_status(taskid):
-    task = tasks.storage_service_request.AsyncResult(taskid, app=celery)
-    response = {"state": task.state}
-    """
+    task = tasks.package_lists_request.AsyncResult(taskid, app=celery)
     if task.state == "PENDING":
         # job did not start yet
         response = {
             "state": task.state,
         }
     elif task.state != "FAILURE":
-        response = {
-            "state": task.state,
-        }
-        if "result" in task.info:
-            response["result"] = task.info["result"]
+        response = {"state": task.state, "message": task.info.get("message")}
     else:
         # something went wrong in the background job
         response = {
             "state": task.state,
             "status": str(task.info),  # this is the exception raised
         }
-    """
     return jsonify(response)

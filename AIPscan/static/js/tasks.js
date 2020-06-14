@@ -20,15 +20,17 @@ function task_status(taskId){
     url: '/aggregator/task_status/' + taskId,
     datatype: "json",
     success: function(data) {
-    $('#console').append('<div class="log">' + data['state'] + '</div>');
-    if (data['state'] != 'PENDING' && data['state'] != 'DOWNLOADING PACKAGE LISTS') {
-        $('#console').append('<div class="log">' + data['state'] + '</div>')
+      if (data['state'] != 'PENDING' && data['state'] != 'IN PROGRESS') {
+        $('#console').append('<div class="log">' + data["state"] +'</div>')
       }
-    else {
-      // rerun in 1 seconds
-      setTimeout(function() {task_status(taskId);}, 1000);
-    }
-      },
+      else {
+        if (data['state'] == 'IN PROGRESS'){
+          $('#console').append('<div class="log">' + data['message'] + '</div>')
+          }
+        // rerun in 1 seconds
+        setTimeout(function() {task_status(taskId);}, 1000);
+      }
+    },
     error: function() {
       alert('Unexpected error');
       }

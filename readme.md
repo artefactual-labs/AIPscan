@@ -19,6 +19,7 @@ Collect and view repository-wide info about Archivematica AIPs
 * In another terminal window, start RabbitMQ queue manager
   `export PATH=$PATH:/usr/local/sbin`
   `sudo rabbitmq-server`
+  `http://localhost:15672/ (guest/guest)`
 
 * Go to `localhost:5000` in browser.
 * Select "New Storage Service"  

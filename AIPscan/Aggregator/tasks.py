@@ -20,7 +20,7 @@ def write_packages_json(count, timestampStr, packages):
 
 
 @celery.task(bind=True)
-def storage_service_request(self, apiUrl, timestampStr):
+def package_lists_request(self, apiUrl, timestampStr):
     """
     make requests for package information to Archivematica Storage Service
     """
@@ -44,14 +44,11 @@ def storage_service_request(self, apiUrl, timestampStr):
 
     packages = firstPackages.json()
     nextUrl = packages["meta"]["next"]
+    totalPackages = int(packages["meta"]["total_count"])
+    limit = int(apiUrl["limit"])
+    totalPackageLists = int(totalPackages / limit) + (totalPackages % limit > 0)
+    self.update_state(state="IN PROGRESS")
     write_packages_json(packagesCount, timestampStr, packages)
-    self.update_state(
-        state="DOWNLOADING PACKAGE LISTS",
-        meta={
-            "total packages": packages["meta"]["total_count"],
-            "current package list": packagesCount,
-        },
-    )
 
     while nextUrl is not None:
         next = requests.get(apiUrl["baseUrl"] + nextUrl)
@@ -59,15 +56,16 @@ def storage_service_request(self, apiUrl, timestampStr):
         packagesCount += 1
         write_packages_json(packagesCount, timestampStr, nextPackages)
         nextUrl = nextPackages["meta"]["next"]
-        time.sleep(2)
         self.update_state(
-            state="DOWNLOADING PACKAGE LISTS",
+            state="IN PROGRESS",
             meta={
-                "total packages": nextPackages["meta"]["total_count"],
-                "current package list": packagesCount,
+                "message": "Downloading package lists. Total packages: "
+                + str(totalPackages)
+                + " Total lists: "
+                + str(totalPackageLists)
             },
         )
-    return {"result": "PACKAGE LIST DOWNLOAD COMPLETED"}
+    return {"result": "Package lists download completed"}
 
 
 @celery.task()
