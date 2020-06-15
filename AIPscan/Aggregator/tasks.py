@@ -4,6 +4,7 @@ from AIPscan import celery
 import json
 from datetime import datetime
 import sqlite3
+from celery.result import AsyncResult
 
 
 def write_packages_json(count, timestampStr, packages):
@@ -21,6 +22,8 @@ def write_packages_json(count, timestampStr, packages):
 
 @celery.task(bind=True)
 def workflow_coordinator(self, apiUrl, timestampStr):
+
+    # send package list request to a worker
     package_lists_task = package_lists_request.delay(apiUrl, timestampStr)
 
     """
@@ -40,6 +43,43 @@ def workflow_coordinator(self, apiUrl, timestampStr):
         (package_lists_task.id, workflow_coordinator.request.id),
     )
     db.commit()
+
+    # wait for package lists to download
+    task = package_lists_request.AsyncResult(package_lists_task.id, app=celery)
+    while True:
+        if (task.state == "SUCCESS") or (task.state == "FAILURE"):
+            break
+
+    packagesDirectory = (
+        "AIPscan/Aggregator/downloads/"
+        + package_lists_task.info["timestampStr"]
+        + "/packages/packages"
+    )
+    packagesCount = package_lists_task.info["packageCount"]
+    totalDeletedAIPs = 0
+
+    for packageListNo in range(1, packagesCount):
+        with open(packagesDirectory + str(packageListNo) + ".json", "r") as packageList:
+            list = packageList.read()
+            for package in list["objects"]:
+                # count number of deleted AIPs
+                if package["status"] == "DELETED":
+                    totalDeletedAIPs += 1
+
+                # only scan AIP packages, ignore replicated and deleted packages
+                if (
+                    package["package_type"] == "AIP"
+                    and package["replicated_package"] is None
+                    and package["status"] != "DELETED"
+                ):
+                    # build relative path to METS file
+                    if package["current_path"].endswith(".7z"):
+                        relative_path = package["current_path"][40:-3]
+                    else:
+                        relative_path = package["current_path"][40:]
+                relative_path_to_mets = (
+                    relative_path + "/data/METS." + package["uuid"] + ".xml"
+                )
 
     return
 
@@ -89,7 +129,7 @@ def package_lists_request(self, apiUrl, timestampStr):
                 + str(totalPackageLists)
             },
         )
-    return {"package count": packagesCount, "timestampStr": timestampStr}
+    return {"packageCount": packagesCount, "timestampStr": timestampStr}
 
 
 @celery.task()

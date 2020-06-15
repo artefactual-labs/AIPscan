@@ -118,6 +118,8 @@ def delete_storage_service(id):
 @aggregator.route("/new_fetch_job/<id>", methods=["POST"])
 def new_fetch_job(id):
 
+    # this function is triggered by the Javascript attached to the "New Fetch Job" button
+
     storageService = storage_services.query.get(id)
     apiUrl = {
         "baseUrl": storageService.url,
@@ -136,7 +138,9 @@ def new_fetch_job(id):
     timestampStr = dateTimeObjStart.strftime("%Y-%m-%d--%H-%M-%S")
     timestamp = dateTimeObjStart.strftime("%Y-%m-%d %H:%M:%S")
     os.makedirs("AIPscan/Aggregator/downloads/" + timestampStr + "/packages/")
+    os.makedirs("AIPscan/Aggregator/downloads/" + timestampStr + "/mets/")
 
+    # send the METS fetch job to a background job that will coordinate other workers
     task = tasks.workflow_coordinator.delay(apiUrl, timestampStr)
 
     """
@@ -151,9 +155,8 @@ def new_fetch_job(id):
     db = sqlite3.connect("celerytasks.db")
     cursor = db.cursor()
     sql = "SELECT package_task_id FROM package_tasks WHERE workflow_coordinator_id = ?"
-    # run a while loop in case the workflow_coordinator task hasn't finished yet
+    # run a while loop in case the workflow coordinator task hasn't finished writing to dbase yet
     while True:
-        print(task.id)
         cursor.execute(
             sql, (task.id,),
         )
@@ -161,8 +164,8 @@ def new_fetch_job(id):
         if taskId is not None:
             break
 
+    # send response back to Javascript function that was triggered by the 'New Fetch Job' button
     response = {"timestamp": timestamp, "taskId": taskId}
-
     return jsonify(response)
 
 
