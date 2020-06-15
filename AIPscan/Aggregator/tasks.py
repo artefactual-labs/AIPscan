@@ -3,7 +3,7 @@ import requests
 from AIPscan import celery
 import json
 from datetime import datetime
-import time
+import sqlite3
 
 
 def write_packages_json(count, timestampStr, packages):
@@ -16,6 +16,31 @@ def write_packages_json(count, timestampStr, packages):
         "w",
     ) as json_file:
         json.dump(packages, json_file, indent=4)
+    return
+
+
+@celery.task(bind=True)
+def workflow_coordinator(self, apiUrl, timestampStr):
+    package_lists_task = package_lists_request.delay(apiUrl, timestampStr)
+
+    """
+    # Sending state updates back to Flask only works once, then the server needs
+    # a restart for it to work again. The compromise is to write task ID to dbase
+
+    self.update_state(meta={"package_lists_taskId": package_lists_task.id},)
+    """
+
+    db = sqlite3.connect("celerytasks.db")
+    cursor = db.cursor()
+    cursor.execute(
+        "CREATE TABLE IF NOT EXISTS package_tasks(package_task_id TEXT PRIMARY KEY, workflow_coordinator_id TEXT)"
+    )
+    cursor.execute(
+        "INSERT INTO package_tasks VALUES (?,?)",
+        (package_lists_task.id, workflow_coordinator.request.id),
+    )
+    db.commit()
+
     return
 
 
@@ -64,7 +89,7 @@ def package_lists_request(self, apiUrl, timestampStr):
                 + str(totalPackageLists)
             },
         )
-    return {"result": "Package lists download completed"}
+    return {"package count": packagesCount, "timestampStr": timestampStr}
 
 
 @celery.task()

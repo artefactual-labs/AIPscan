@@ -7,6 +7,7 @@ import os
 import shutil
 from datetime import datetime
 from celery.result import AsyncResult
+import sqlite3
 
 aggregator = Blueprint("aggregator", __name__, template_folder="templates")
 
@@ -136,8 +137,30 @@ def new_fetch_job(id):
     timestamp = dateTimeObjStart.strftime("%Y-%m-%d %H:%M:%S")
     os.makedirs("AIPscan/Aggregator/downloads/" + timestampStr + "/packages/")
 
-    task = tasks.package_lists_request.delay(apiUrl, timestampStr)
-    taskId = task.id
+    task = tasks.workflow_coordinator.delay(apiUrl, timestampStr)
+
+    """
+    # this only works on the first try, after that Flask is not able to get task info from Celery
+    # the compromise is to write the task ID from the Celery worker to its SQLite backend
+
+    coordinator_task = tasks.workflow_coordinator.AsyncResult(task.id, app=celery)
+    taskId = coordinator_task.info.get("package_lists_taskId")
+    response = {"timestamp": timestamp, "taskId": taskId}
+    """
+
+    db = sqlite3.connect("celerytasks.db")
+    cursor = db.cursor()
+    sql = "SELECT package_task_id FROM package_tasks WHERE workflow_coordinator_id = ?"
+    # run a while loop in case the workflow_coordinator task hasn't finished yet
+    while True:
+        print(task.id)
+        cursor.execute(
+            sql, (task.id,),
+        )
+        taskId = cursor.fetchone()
+        if taskId is not None:
+            break
+
     response = {"timestamp": timestamp, "taskId": taskId}
 
     return jsonify(response)
@@ -152,7 +175,12 @@ def task_status(taskid):
             "state": task.state,
         }
     elif task.state != "FAILURE":
-        response = {"state": task.state, "message": task.info.get("message")}
+        if task.state == "SUCCESS":
+            response = {
+                "state": task.state,
+            }
+        else:
+            response = {"state": task.state, "message": task.info.get("message")}
     else:
         # something went wrong in the background job
         response = {
