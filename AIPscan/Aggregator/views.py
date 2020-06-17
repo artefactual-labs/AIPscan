@@ -1,8 +1,8 @@
 from flask import Blueprint, render_template, redirect, request, flash, url_for, jsonify
+from AIPscan import db, app, celery
 from AIPscan.models import fetch_jobs, storage_services
 from AIPscan.Aggregator.forms import StorageServiceForm
 from AIPscan.Aggregator import tasks
-from AIPscan import db, app, celery
 import os
 import shutil
 from datetime import datetime
@@ -140,8 +140,22 @@ def new_fetch_job(id):
     os.makedirs("AIPscan/Aggregator/downloads/" + timestampStr + "/packages/")
     os.makedirs("AIPscan/Aggregator/downloads/" + timestampStr + "/mets/")
 
+    # create a fetch_job record in the aipscan database
+    # write fetch job info to database
+    fetchJob = fetch_jobs(
+        total_packages=None,
+        total_deleted_aips=None,
+        total_aips=None,
+        download_start=dateTimeObjStart,
+        download_end=None,
+        download_directory="AIPscan/Aggregator/downloads/" + timestampStr + "/",
+        storage_service_id=storageService.id,
+    )
+    db.session.add(fetchJob)
+    db.session.commit()
+
     # send the METS fetch job to a background job that will coordinate other workers
-    task = tasks.workflow_coordinator.delay(apiUrl, timestampStr)
+    task = tasks.workflow_coordinator.delay(apiUrl, timestampStr, fetchJob.id)
 
     """
     # this only works on the first try, after that Flask is not able to get task info from Celery
@@ -152,8 +166,8 @@ def new_fetch_job(id):
     response = {"timestamp": timestamp, "taskId": taskId}
     """
 
-    db = sqlite3.connect("celerytasks.db")
-    cursor = db.cursor()
+    celerydb = sqlite3.connect("celerytasks.db")
+    cursor = celerydb.cursor()
     sql = "SELECT package_task_id FROM package_tasks WHERE workflow_coordinator_id = ?"
     # run a while loop in case the workflow coordinator task hasn't finished writing to dbase yet
     while True:

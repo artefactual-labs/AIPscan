@@ -27,7 +27,6 @@
   <th><strong>Download duration</strong></th>
   <th><strong>Packages in SS</strong></th>
   <th><strong>AIP METS downloaded</strong></th>
-  <th><strong>METS parsing duration</strong></th>
   <th><strong>Action</strong></th>
   </tr>
   </thead>
@@ -38,7 +37,6 @@
         <td>{{ metsFetchJob.download_end - metsFetchJob.download_start }}</td>
         <td>{{ metsFetchJob.total_packages }}</td>
         <td>{{ metsFetchJob.total_aips }}</td>
-        <td>{{ metsFetchJob.parse_end - metsFetchJob.parse_start }}</td>
         <td>
           <a href="/view_aips/{{ metsFetchJob.id }}"><button type="button" class="btn btn-info">View AIPs</button></a>
           <a href="/delete_fetch_job/{{ metsFetchJob.id }}"><button type="button" class="btn btn-danger">Delete</button></a>
