@@ -272,8 +272,6 @@ def get_mets(
     originalsCount = 0
     preservationCopiesCount = 0
 
-    print(packageUUID)
-
     for aipFile in mets.all_files():
         if (aipFile.use == "original") or (aipFile.use == "preservation"):
             name = aipFile.label
@@ -305,11 +303,9 @@ def get_mets(
                     if str(premis_object.related_object_identifier_value) != "()":
                         relatedUuid = premis_object.related_object_identifier_value
                     if aipFile.use == "original":
-                        print(aipFile.label)
                         eventDate = str(premis_object.date_created_by_application)
                         creationDate = datetime.strptime(eventDate, "%Y-%m-%d")
                         originalsCount += 1
-                        print(originalsCount)
                     else:
                         preservationCopiesCount += 1
             except:
@@ -343,8 +339,6 @@ def get_mets(
             )
             db.session.add(file)
             db.session.commit()
-
-    print(aip.uuid + ": " + str(originalsCount))
 
     aips.query.filter_by(id=aip.id).update(
         {"originals": originalsCount, "preservation_copies": preservationCopiesCount,}

@@ -15,7 +15,9 @@
 </table>
 <a href="{{ url_for('aggregator.edit_storage_service', id=storageService.id) }}"><button type="button" class="btn btn-info">Edit</button></a>
 <a href="{{ url_for('aggregator.delete_storage_service', id= storageService.id) }}"<button type="button" class="btn btn-danger">Delete</button></a>
+{% if metsFetchJobs %}
 <a href="{{ url_for('reporter.view_aips', id=storageService.id) }}"><button type="button" class="btn btn-success">View AIPs</button></a>
+{% endif %}
 <hr />
 
 <div class="alert alert-info"><strong>METS fetch jobs</strong></div>
