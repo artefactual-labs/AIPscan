@@ -26,7 +26,7 @@ def write_packages_json(count, timestampStr, packages):
 
 
 @celery.task(bind=True)
-def workflow_coordinator(self, apiUrl, timestampStr, fetchJobId):
+def workflow_coordinator(self, apiUrl, timestampStr, storageServiceId, fetchJobId):
 
     # send package list request to a worker
     package_lists_task = package_lists_request.delay(apiUrl, timestampStr)
@@ -106,6 +106,7 @@ def workflow_coordinator(self, apiUrl, timestampStr, fetchJobId):
                         apiUrl,
                         timestampStr,
                         packageListNo,
+                        storageServiceId,
                         fetchJobId,
                     )
 
@@ -193,7 +194,13 @@ def package_lists_request(self, apiUrl, timestampStr):
 
 @celery.task()
 def get_mets(
-    packageUUID, relativePathToMETS, apiUrl, timestampStr, packageListNo, fetchJobId
+    packageUUID,
+    relativePathToMETS,
+    apiUrl,
+    timestampStr,
+    packageListNo,
+    storageServiceId,
+    fetchJobId,
 ):
     """
     request METS XML file from Archivematica AIP package and parse it
@@ -256,6 +263,7 @@ def get_mets(
         create_date=datetime.strptime(mets.createdate, "%Y-%m-%dT%H:%M:%S"),
         originals=None,
         preservation_copies=None,
+        storage_service_id=storageServiceId,
         fetch_job_id=fetchJobId,
     )
     db.session.add(aip)

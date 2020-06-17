@@ -155,7 +155,9 @@ def new_fetch_job(id):
     db.session.commit()
 
     # send the METS fetch job to a background job that will coordinate other workers
-    task = tasks.workflow_coordinator.delay(apiUrl, timestampStr, fetchJob.id)
+    task = tasks.workflow_coordinator.delay(
+        apiUrl, timestampStr, storageService.id, fetchJob.id
+    )
 
     """
     # this only works on the first try, after that Flask is not able to get task info from Celery

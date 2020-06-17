@@ -73,6 +73,9 @@ class aips(db.Model):
     create_date = db.Column(db.DateTime())
     originals = db.Column(db.Integer())
     preservation_copies = db.Column(db.Integer())
+    storage_service_id = db.Column(
+        db.Integer(), db.ForeignKey("storage_services.id"), nullable=False
+    )
     fetch_job_id = db.Column(
         db.Integer(), db.ForeignKey("fetch_jobs.id"), nullable=False
     )
@@ -85,6 +88,7 @@ class aips(db.Model):
         create_date,
         originals,
         preservation_copies,
+        storage_service_id,
         fetch_job_id,
     ):
         self.uuid = uuid
@@ -92,6 +96,7 @@ class aips(db.Model):
         self.create_date = create_date
         self.originals = originals
         self.preservation_copies = preservation_copies
+        self.storage_service_id = storage_service_id
         self.fetch_job_id = fetch_job_id
 
     def __repr__(self):

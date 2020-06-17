@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="alert alert-info"><strong><a href="{{ url_for('aggregator.storage_service', id = storageService.id) }}">{{ storageService.name }}</a></strong></div>
+
+<div class="container-fluid">
+
+<div class="alert alert-info"><strong>AIPs ({{ totalAIPs }})</strong></div>
+
+<table id="aiptable" class="table table-striped table-bordered">
+  <thead>
+  <tr>
+  <th><strong>Transfer name</strong></th>
+  <th><strong>AIP UUID</strong></th>
+  <th><strong>Creation date</strong></th>
+  <th><strong>Originals</strong></th>
+  <th><strong>Preservation copies</strong></th>
+  <th><strong>Action</strong></th>
+  </tr>
+  </thead>
+  {% if AIPs %}
+    {% for aip in AIPs %}
+      <tr>
+        <td>{{ aip.transfer_name }}</td>
+        <td>{{ aip.uuid }}</td>
+        <td>{{ aip.create_date }}</td>
+        <td>{{ aip.originals }}</td>
+        <td>{{ aip.preservation_copies }}</td>
+        <td><a href="/view_aip/{{ aip.id }}"><button type="button" class="btn btn-info">View</button></a></td>
+      </tr>
+    {% endfor %}
+  {% endif %}
+</table>
+
+{% endblock %}
