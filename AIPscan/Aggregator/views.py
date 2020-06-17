@@ -183,6 +183,18 @@ def new_fetch_job(id):
     return jsonify(response)
 
 
+@aggregator.route("/delete_fetch_job/<id>", methods=["GET"])
+def delete_fetch_job(id):
+    fetchJob = fetch_jobs.query.get(id)
+    storageService = storage_services.query.get(fetchJob.storage_service_id)
+    if os.path.exists(fetchJob.download_directory):
+        shutil.rmtree(fetchJob.download_directory)
+    db.session.delete(fetchJob)
+    db.session.commit()
+    flash("Fetch job {} is deleted".format(fetchJob.download_start))
+    return redirect(url_for("aggregator.storage_service", id=storageService.id))
+
+
 @aggregator.route("/task_status/<taskid>")
 def task_status(taskid):
     task = tasks.package_lists_request.AsyncResult(taskid, app=celery)

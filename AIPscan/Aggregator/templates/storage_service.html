@@ -15,7 +15,7 @@
 </table>
 <a href="{{ url_for('aggregator.edit_storage_service', id=storageService.id) }}"><button type="button" class="btn btn-info">Edit</button></a>
 <a href="{{ url_for('aggregator.delete_storage_service', id= storageService.id) }}"<button type="button" class="btn btn-danger">Delete</button></a>
-<a href="{{ url_for('aggregator.new_storage_service') }}"><button type="button" class="btn btn-success">New storage service</button></a>
+<a href="{{ url_for('reporter.view_aips', id=storageService.id) }}"><button type="button" class="btn btn-success">View AIPs</button></a>
 <hr />
 
 <div class="alert alert-info"><strong>METS fetch jobs</strong></div>
@@ -38,8 +38,7 @@
         <td>{{ metsFetchJob.total_packages }}</td>
         <td>{{ metsFetchJob.total_aips }}</td>
         <td>
-          <a href="/view_aips/{{ metsFetchJob.id }}"><button type="button" class="btn btn-info">View AIPs</button></a>
-          <a href="/delete_fetch_job/{{ metsFetchJob.id }}"><button type="button" class="btn btn-danger">Delete</button></a>
+          <a href="{{ url_for('aggregator.delete_fetch_job', id= metsFetchJob.id) }}"><button type="button" class="btn btn-danger">Delete</button></a>
         </td>
       </tr>
     {% endfor %}
