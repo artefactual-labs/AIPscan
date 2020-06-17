@@ -1,5 +1,5 @@
 # AIPscan
-Collect and view repository-wide info about Archivematica AIPs
+Collect repository-wide info about Archivematica AIPs
 
 * Clone files and cd to directory:  
   `git clone https://github.com/peterVG/AIPscan && cd AIPscan`  
