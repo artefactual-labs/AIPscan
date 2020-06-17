@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="alert alert-info"><strong>AIP: <a href="{{ url_for('reporter.view_aips', id=storageService.id ) }}">{{ aip.transfer_name }}  {{ aip.uuid }}</a></strong></div>
+
+<div class="alert alert-header"><strong>Originals ({{ aip.originals }})</strong></div>
+
+<table id="aiptable" class="table table-striped table-bordered">
+  <thead>
+  <tr>
+  <th><strong>Name</strong></th>
+  <th><strong>UUID</strong></th>
+  <th><strong>Size</strong></th>
+  <th><strong>PUID</strong></th>
+  <th><strong>Format</strong></th>
+  <th><strong>Last modified</strong></th>
+  <th><strong>Ingestion date</strong></th>
+  <th><strong>Preservation copy</strong></th>
+  </tr>
+  </thead>
+  {% if originals %}
+    {% for original in originals %}
+      <tr>
+        <td>{{ original.name }}</td>
+        <td>{{ original.uuid }}</td>
+        <td>{{ original.size }} bytes</td>
+        <td>{{ original.puid }}</td>
+        <td>{{ original.format }} {% if original.format_version != None %} {{original.format_version}}{% endif %}</td>
+        <td>{{ original.creation_date }}</td>
+        <td>{{ original.ingestion_date }}</td>
+        <td>{{ original.related_uuid }}</td>
+      </tr>
+    {% endfor %}
+  {% endif %}
+</table>
+
+{% if preservationCopies %}
+<div class="alert alert-header" style="margin-top: 40px;"><strong>Preservation copies ({{ aip.preservation_copies }})</strong></div>
+
+<table id="aiptable2" class="table table-striped table-bordered">
+  <thead>
+  <tr>
+  <th><strong>Name</strong></th>
+  <th><strong>UUID</strong></th>
+  <th><strong>Size</strong></th>
+  <th><strong>Format</strong></th>
+  <th><strong>Normalization date</strong></th>
+  <th><strong>Original</strong></th>
+  </tr>
+  </thead>
+
+    {% for preservationCopy in preservationCopies %}
+      <tr>
+        <td>{{ preservationCopy.name }}</td>
+        <td>{{ preservationCopy.uuid }}</td>
+        <td>{{ preservationCopy.size }} bytes</td>
+        <td>{{ preservationCopy.format }}</td>
+        <td>{{ preservationCopy.normalization_date }}</td>
+        <td>{{ preservationCopy.related_uuid }}</td>
+      </tr>
+    {% endfor %}
+</table>
+{% endif %}
+
+{% endblock %}

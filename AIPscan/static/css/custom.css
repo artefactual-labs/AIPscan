@@ -16,3 +16,8 @@
     background-image: none !important;
     border-radius: .25rem !important;
 }
+
+.alert-header {
+  color: #fff;
+  background-color: #17a2b8;
+}

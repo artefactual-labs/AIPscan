@@ -6,7 +6,7 @@
 
 <div class="container-fluid">
 
-<div class="alert alert-info"><strong>AIPs ({{ totalAIPs }})</strong></div>
+<div class="alert alert-header"><strong>AIPs ({{ totalAIPs }})</strong></div>
 
 <table id="aiptable" class="table table-striped table-bordered">
   <thead>
@@ -27,7 +27,7 @@
         <td>{{ aip.create_date }}</td>
         <td>{{ aip.originals }}</td>
         <td>{{ aip.preservation_copies }}</td>
-        <td><a href="/view_aip/{{ aip.id }}"><button type="button" class="btn btn-info">View</button></a></td>
+        <td><a href="{{ url_for('reporter.view_aip', id = aip.id) }}"><button type="button" class="btn btn-info">View</button></a></td>
       </tr>
     {% endfor %}
   {% endif %}
