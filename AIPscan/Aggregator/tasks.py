@@ -277,6 +277,7 @@ def get_mets(
             name = aipFile.label
             type = aipFile.use
             uuid = aipFile.file_uuid
+            size = None
             puid = None
             formatVersion = None
             relatedUuid = None
@@ -339,6 +340,10 @@ def get_mets(
             )
             db.session.add(file)
             db.session.commit()
+
+            get_mets.update_state(
+                state="IN PROGRESS", meta={"message": "Total packages: "},
+            )
 
     aips.query.filter_by(id=aip.id).update(
         {"originals": originalsCount, "preservation_copies": preservationCopiesCount,}

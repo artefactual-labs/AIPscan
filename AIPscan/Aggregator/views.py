@@ -207,11 +207,43 @@ def task_status(taskid):
         }
     elif task.state != "FAILURE":
         if task.state == "SUCCESS":
+            celerydb = sqlite3.connect("celerytasks.db")
+            cursor = celerydb.cursor()
+            sql = "SELECT workflow_coordinator_id FROM package_tasks WHERE package_task_id = ?"
+            cursor.execute(
+                sql, (task.id,),
+            )
+            coordinatorId = cursor.fetchone()
+            response = {"state": task.state, "coordinatorId": coordinatorId}
+        else:
+            response = {"state": task.state, "message": task.info.get("message")}
+    else:
+        # something went wrong in the background job
+        response = {
+            "state": task.state,
+            "status": str(task.info),  # this is the exception raised
+        }
+    return jsonify(response)
+
+
+@aggregator.route("/get_mets_task_status/<coordinatorid>")
+def get_mets_task_status(coordinatorid):
+    task = tasks.workflow_coordinator.AsyncResult(coordinatorid, app=celery)
+    if task.state == "PENDING":
+        # job did not start yet
+        response = {
+            "state": task.state,
+        }
+    elif task.state != "FAILURE":
+        if task.state == "SUCCESS":
             response = {
                 "state": task.state,
             }
         else:
-            response = {"state": task.state, "message": task.info.get("message")}
+            response = {
+                "state": task.state,
+            }
+        # response = {"state": task.state, "message": task.info.get("message")}
     else:
         # something went wrong in the background job
         response = {

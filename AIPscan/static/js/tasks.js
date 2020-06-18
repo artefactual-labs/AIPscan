@@ -24,6 +24,8 @@ function task_status(taskId, showcount){
     success: function(data) {
       if (data['state'] != 'PENDING' && data['state'] != 'IN PROGRESS') {
         $('#console').append('<div class="log">' + data["state"] +'</div>')
+        $('#console').append('<div class="log">Downloading AIP METS files</div>')
+        get_mets_task_status(data["coordinatorId"]);
       }
       else {
         if (showcount == false) {
@@ -35,6 +37,30 @@ function task_status(taskId, showcount){
         $('#console').append('<div class="log">' + data['state'] + '</div>')
         // rerun in 1 seconds
         setTimeout(function() {task_status(taskId, showcount);}, 1000);
+      }
+    },
+    error: function() {
+      alert('Unexpected error');
+      }
+  });
+}
+
+function get_mets_task_status(coordinatorId){
+  $.ajax({
+    type: 'GET',
+    url: '/aggregator/get_mets_task_status/' + coordinatorId,
+    datatype: "json",
+    success: function(data) {
+      if (data['state'] != 'PENDING' && data['state'] != 'IN PROGRESS') {
+        $('#console').append('<div class="log">' + data["state"] +'</div>')
+      }
+      else {
+        $('#console').append('<div class="log">' + data['state'] + '</div>')
+        if ('message' in data){
+          $('#console').append('<div class="log">' + data["message"] +'</div>')
+        }
+        // rerun in 1 seconds
+        setTimeout(function() {get_mets_task_status(coordinatorId);}, 1000);
       }
     },
     error: function() {
