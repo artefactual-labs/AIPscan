@@ -48,6 +48,7 @@ def workflow_coordinator(self, apiUrl, timestampStr, storageServiceId, fetchJobI
         (package_lists_task.id, workflow_coordinator.request.id),
     )
     celerydb.commit()
+    celerydb.close()
 
     # wait for package lists task to finish downloading all package lists
     task = package_lists_request.AsyncResult(package_lists_task.id, app=celery)
@@ -110,8 +111,23 @@ def workflow_coordinator(self, apiUrl, timestampStr, storageServiceId, fetchJobI
                         fetchJobId,
                     )
 
-    # fix me to match time when last get_mets task finishes
-    downloadEnd = datetime.now().replace(microsecond=0)
+                    # track worker status through dbase backend
+                    celerydb = sqlite3.connect("celerytasks.db")
+                    cursor = celerydb.cursor()
+                    cursor.execute(
+                        "CREATE TABLE IF NOT EXISTS get_mets_tasks(get_mets_task_id TEXT PRIMARY KEY, workflow_coordinator_id TEXT, package_uuid TEXT, status TEXT)"
+                    )
+                    cursor.execute(
+                        "INSERT INTO get_mets_tasks VALUES (?,?,?,?)",
+                        (
+                            get_mets_task.id,
+                            workflow_coordinator.request.id,
+                            packageUUID,
+                            None,
+                        ),
+                    )
+                    celerydb.commit()
+                    celerydb.close()
 
     """
     fetch_jobs.query.filter_by(id=fetchJobId).update(
@@ -129,8 +145,8 @@ def workflow_coordinator(self, apiUrl, timestampStr, storageServiceId, fetchJobI
     aipscandb = sqlite3.connect("aipscan.db")
     cursor = aipscandb.cursor()
     cursor.execute(
-        "UPDATE fetch_jobs SET total_packages = ?, total_aips = ?, total_deleted_aips = ?, download_end = ?  WHERE id = ?",
-        (totalPackages, totalAIPs, totalDeletedAIPs, downloadEnd, fetchJobId),
+        "UPDATE fetch_jobs SET total_packages = ?, total_aips = ?, total_deleted_aips = ? WHERE id = ?",
+        (totalPackages, totalAIPs, totalDeletedAIPs, fetchJobId),
     )
     aipscandb.commit()
 
@@ -236,7 +252,7 @@ def get_mets(
         + timestampStr
         + "/mets/"
         + str(packageListNo)
-        + "/"
+        + "/METS."
         + packageUUID
         + ".xml"
     )
@@ -341,9 +357,7 @@ def get_mets(
             db.session.add(file)
             db.session.commit()
 
-            get_mets.update_state(
-                state="IN PROGRESS", meta={"message": "Total packages: "},
-            )
+            get_mets.update_state(state="IN PROGRESS")
 
     aips.query.filter_by(id=aip.id).update(
         {"originals": originalsCount, "preservation_copies": preservationCopiesCount,}

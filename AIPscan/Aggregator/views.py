@@ -8,6 +8,7 @@ import shutil
 from datetime import datetime
 from celery.result import AsyncResult
 import sqlite3
+import time
 
 aggregator = Blueprint("aggregator", __name__, template_folder="templates")
 
@@ -181,7 +182,7 @@ def new_fetch_job(id):
             break
 
     # send response back to Javascript function that was triggered by the 'New Fetch Job' button
-    response = {"timestamp": timestamp, "taskId": taskId}
+    response = {"timestamp": timestamp, "taskId": taskId, "fetchJobId": fetchJob.id}
     return jsonify(response)
 
 
@@ -197,7 +198,7 @@ def delete_fetch_job(id):
     return redirect(url_for("aggregator.storage_service", id=storageService.id))
 
 
-@aggregator.route("/task_status/<taskid>")
+@aggregator.route("/package_list_task_status/<taskid>")
 def task_status(taskid):
     task = tasks.package_lists_request.AsyncResult(taskid, app=celery)
     if task.state == "PENDING":
@@ -228,26 +229,56 @@ def task_status(taskid):
 
 @aggregator.route("/get_mets_task_status/<coordinatorid>")
 def get_mets_task_status(coordinatorid):
-    task = tasks.workflow_coordinator.AsyncResult(coordinatorid, app=celery)
-    if task.state == "PENDING":
-        # job did not start yet
-        response = {
-            "state": task.state,
-        }
-    elif task.state != "FAILURE":
-        if task.state == "SUCCESS":
-            response = {
-                "state": task.state,
-            }
+
+    totalAIPs = int(request.args.get("totalAIPs"))
+    fetchJobId = int(request.args.get("fetchJobId"))
+
+    celerydb = sqlite3.connect("celerytasks.db")
+    cursor = celerydb.cursor()
+    sql = "SELECT get_mets_task_id, package_uuid FROM get_mets_tasks WHERE workflow_coordinator_id = ? AND status IS ?"
+    cursor.execute(sql, (coordinatorid, None,))
+    get_mets_tasks = cursor.fetchall()
+
+    response = []
+
+    for i in range(0, len(get_mets_tasks)):
+        # Celery only adds tasks to the backend dbase after they are done
+        sql = "SELECT status FROM celery_taskmeta WHERE task_id = ?"
+        cursor.execute(
+            sql, (get_mets_tasks[i][0],),
+        )
+        mets_task_status = cursor.fetchone()
+        if mets_task_status is not None:
+            # TODO add a FAILURE condition
+            if mets_task_status[0] == "SUCCESS":
+                totalAIPs += 1
+                response.append(
+                    {
+                        "state": mets_task_status[0],
+                        "package": "METS." + get_mets_tasks[i][1] + ".xml",
+                        "totalAIPs": totalAIPs,
+                    }
+                )
+                cursor.execute(
+                    "UPDATE get_mets_tasks SET status = ? WHERE get_mets_task_id = ?",
+                    (mets_task_status[0], get_mets_tasks[i][0]),
+                )
+                celerydb.commit()
+    celerydb.close()
+
+    if len(get_mets_tasks) == 0:
+        if totalAIPs == 0:
+            response = {"state": "PENDING"}
         else:
-            response = {
-                "state": task.state,
-            }
-        # response = {"state": task.state, "message": task.info.get("message")}
-    else:
-        # something went wrong in the background job
-        response = {
-            "state": task.state,
-            "status": str(task.info),  # this is the exception raised
-        }
+            downloadEnd = datetime.now().replace(microsecond=0)
+            aipscandb = sqlite3.connect("aipscan.db")
+            cursor = aipscandb.cursor()
+            cursor.execute(
+                "UPDATE fetch_jobs SET download_end = ? WHERE id = ?",
+                (downloadEnd, fetchJobId,),
+            )
+            aipscandb.commit()
+
+            response = {"state": "COMPLETED"}
+
     return jsonify(response)
