@@ -1,10 +1,18 @@
+#console {
+  padding: 10px;
+  border-radius: .25rem;
+  color: #0F0;
+  font-family: SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  font-size: small;
+  max-height: 520px;
+  overflow-y: auto;
+}
+
 .dataTables_length {
   float: left;
   margin-top: 5px;
   margin-right: 20px;
 }
-
-
 
 /* can't seem to wrangle DataTables CSS file ordering so ramming
    these through using !important tag */

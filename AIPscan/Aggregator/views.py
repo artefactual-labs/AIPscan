@@ -249,7 +249,7 @@ def get_mets_task_status(coordinatorid):
         )
         mets_task_status = cursor.fetchone()
         if mets_task_status is not None:
-            if mets_task_status[0] == "SUCCESS" or "FAILURE":
+            if (mets_task_status[0] == "SUCCESS") or (mets_task_status[0] == "FAILURE"):
                 totalAIPs += 1
                 response.append(
                     {

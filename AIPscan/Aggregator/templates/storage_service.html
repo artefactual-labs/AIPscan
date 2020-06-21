@@ -2,6 +2,9 @@
 
 {% block content %}
 
+<div class="row">
+<div class="col">
+
 <div class="alert alert-info"><strong>Storage Service</strong></div>
 
 <table class="table table-bordered table-condensed">
@@ -18,9 +21,18 @@
 {% if metsFetchJobs %}
 <a href="{{ url_for('reporter.view_aips', id=storageService.id) }}"><button type="button" class="btn btn-success">View AIPs</button></a>
 {% endif %}
-<hr />
 
-<div class="alert alert-info"><strong>METS fetch jobs</strong></div>
+</div>
+<div class="col">
+
+  <div id="console">
+  </div>
+
+</div>
+</div>
+
+
+<div class="alert alert-info" style="margin-top: 20px;"><strong>METS fetch jobs</strong></div>
 
 <table id="infotable" class="table table-striped table-bordered">
   <thead>
@@ -48,8 +60,7 @@
 </table>
 <button type="button" class="btn btn-success" style="margin-top: 20px;" id="newfetchjob">New fetch job</button>
 
-<div id="console" style="margin-top: 20px; padding: 10px; border-radius: .25rem; color: #0F0; font-family: SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace; font-size: small;">
-</div>
+
 
 <script>
 $(document).ready(function(){

@@ -57,8 +57,8 @@ function get_mets_task_status(coordinatorId, totalAIPs, fetchJobId){
       }
       else if (data['state'] == "COMPLETED")
         {
-          $('#console').append('<div class="log">METS download completed</div>')
-          location.reload(true);
+          $('#console').append('<div class="log">METS download completed</div>');
+          setTimeout(function() {location.reload(true)}, 3000);
         }
       else {
         for(var i = 0; i < data.length; i++){
