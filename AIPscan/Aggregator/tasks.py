@@ -9,7 +9,7 @@ import sqlite3
 import metsrw
 import xml.etree.ElementTree as ET
 from AIPscan import db
-from AIPscan.models import fetch_jobs, aips, files
+from AIPscan.models import fetch_jobs, aips, originals
 
 
 def write_packages_json(count, timestampStr, packages):
@@ -277,16 +277,11 @@ def get_mets(
         packageUUID,
         transfer_name=originalName,
         create_date=datetime.strptime(mets.createdate, "%Y-%m-%dT%H:%M:%S"),
-        originals=None,
-        preservation_copies=None,
         storage_service_id=storageServiceId,
         fetch_job_id=fetchJobId,
     )
     db.session.add(aip)
     db.session.commit()
-
-    originalsCount = 0
-    preservationCopiesCount = 0
 
     for aipFile in mets.all_files():
         if (aipFile.use == "original") or (aipFile.use == "preservation"):
@@ -297,9 +292,6 @@ def get_mets(
             puid = None
             formatVersion = None
             relatedUuid = None
-            creationDate = None
-            ingestionDate = None
-            normalizationDate = None
 
             # this exception handler had to be added because for .iso file types METSRW throws
             # the error: "metsrw/plugins/premisrw/premis.py", line 644, in _to_colon_ns
@@ -317,49 +309,35 @@ def get_mets(
                     if (str(premis_object.format_version)) != "(('format_version',),)":
                         if (str(premis_object.format_version)) != "()":
                             formatVersion = premis_object.format_version
+                    checksumType = premis_object.message_digest_algorithm
+                    checksumValue = premis_object.message_digest
                     if str(premis_object.related_object_identifier_value) != "()":
                         relatedUuid = premis_object.related_object_identifier_value
-                    if aipFile.use == "original":
-                        originalsCount += 1
-                    else:
-                        preservationCopiesCount += 1
+
             except:
                 format = "ISO Disk Image File"
                 puid = "fmt/468"
-                originalsCount += 1
                 pass
 
-            for premis_event in aipFile.get_premis_events():
-                if (premis_event.event_type) == "ingestion":
-                    eventDate = (premis_event.event_date_time)[:-13]
-                    ingestionDate = datetime.strptime(eventDate, "%Y-%m-%dT%H:%M:%S")
-                if (premis_event.event_type) == "creation":
-                    eventDate = (premis_event.event_date_time)[:-13]
-                    normalizationDate = datetime.strptime(
-                        eventDate, "%Y-%m-%dT%H:%M:%S"
-                    )
-            file = files(
-                name=name,
-                type=type,
-                uuid=uuid,
-                size=size,
-                puid=puid,
-                format=format,
-                format_version=formatVersion,
-                related_uuid=relatedUuid,
-                creation_date=creationDate,
-                ingestion_date=ingestionDate,
-                normalization_date=normalizationDate,
-                aip_id=aip.id,
-            )
-            db.session.add(file)
-            db.session.commit()
+            if aipFile.use == "original":
+                files = originals(
+                    name=name,
+                    type=type,
+                    uuid=uuid,
+                    size=size,
+                    puid=puid,
+                    format=format,
+                    format_version=formatVersion,
+                    checksum_type=checksumType,
+                    checksum_value=checksumValue,
+                    related_uuid=relatedUuid,
+                    aip_id=aip.id,
+                )
+                db.session.add(files)
+                db.session.commit()
 
             get_mets.update_state(state="IN PROGRESS")
 
-    aips.query.filter_by(id=aip.id).update(
-        {"originals": originalsCount, "preservation_copies": preservationCopiesCount,}
-    )
     db.session.commit()
 
     return

@@ -71,31 +71,22 @@ class aips(db.Model):
     uuid = db.Column(db.String(255), index=True)
     transfer_name = db.Column(db.String(255))
     create_date = db.Column(db.DateTime())
-    originals = db.Column(db.Integer())
-    preservation_copies = db.Column(db.Integer())
     storage_service_id = db.Column(
         db.Integer(), db.ForeignKey("storage_services.id"), nullable=False
     )
     fetch_job_id = db.Column(
         db.Integer(), db.ForeignKey("fetch_jobs.id"), nullable=False
     )
-    files = db.relationship("files", cascade="all,delete", backref="aips", lazy=True)
+    originals = db.relationship(
+        "originals", cascade="all,delete", backref="aips", lazy=True
+    )
 
     def __init__(
-        self,
-        uuid,
-        transfer_name,
-        create_date,
-        originals,
-        preservation_copies,
-        storage_service_id,
-        fetch_job_id,
+        self, uuid, transfer_name, create_date, storage_service_id, fetch_job_id,
     ):
         self.uuid = uuid
         self.transfer_name = transfer_name
         self.create_date = create_date
-        self.originals = originals
-        self.preservation_copies = preservation_copies
         self.storage_service_id = storage_service_id
         self.fetch_job_id = fetch_job_id
 
@@ -103,7 +94,7 @@ class aips(db.Model):
         return "<AIPs '{}'>".format(self.transfer_name)
 
 
-class files(db.Model):
+class originals(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
     name = db.Column(db.String(255), index=True)
     uuid = db.Column(db.String(255), index=True)
@@ -112,9 +103,9 @@ class files(db.Model):
     puid = db.Column(db.String(255), index=True)
     format = db.Column(db.String(255))
     format_version = db.Column(db.String(255))
+    checksum_type = db.Column(db.String(255))
+    checksum_value = db.Column(db.String(255))
     related_uuid = db.Column(db.String(255), index=True)
-    ingestion_date = db.Column(db.DateTime())
-    normalization_date = db.Column(db.DateTime())
     aip_id = db.Column(db.Integer(), db.ForeignKey("aips.id"), nullable=False)
 
     def __init__(
@@ -126,9 +117,9 @@ class files(db.Model):
         puid,
         format,
         format_version,
+        checksum_type,
+        checksum_value,
         related_uuid,
-        ingestion_date,
-        normalization_date,
         aip_id,
     ):
         self.name = name
@@ -138,9 +129,9 @@ class files(db.Model):
         self.puid = puid
         self.format = format
         self.format_version = format_version
+        self.checksum_type = checksum_type
+        self.checksum_value = checksum_value
         self.related_uuid = related_uuid
-        self.ingestion_date = ingestion_date
-        self.normalization_date = normalization_date
         self.aip_id = aip_id
 
     def __repr__(self):

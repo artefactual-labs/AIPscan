@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template
 from AIPscan import db
-from AIPscan.models import aips, files, fetch_jobs, storage_services
+from AIPscan.models import aips, originals, fetch_jobs, storage_services
 from collections import Counter
 
 reporter = Blueprint("reporter", __name__, template_folder="templates")
@@ -22,14 +22,12 @@ def view_aip(id):
     aip = aips.query.get(id)
     fetchJob = fetch_jobs.query.get(aip.fetch_job_id)
     storageService = storage_services.query.get(fetchJob.storage_service_id)
-    originals = files.query.filter_by(aip_id=aip.id, type="original").all()
-    preservationCopies = files.query.filter_by(aip_id=aip.id, type="preservation").all()
+    original = originals.query.filter_by(aip_id=aip.id).all()
 
     return render_template(
         "view_aip.html",
         aip=aip,
         fetchJob=fetchJob,
         storageService=storageService,
-        originals=originals,
-        preservationCopies=preservationCopies,
+        originals=original,
     )

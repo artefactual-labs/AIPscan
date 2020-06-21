@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="alert alert-info"><strong>File: <a href="{{ url_for('reporter.view_aip', id=aip.id ) }}">{{ file.name }}  {{ file.uuid }}</a></strong></div>
+
+<table id="aiptable" class="table table-striped table-bordered">
+  <thead>
+  <tr>
+  <th><strong>Name</strong></th>
+  <th><strong>UUID</strong></th>
+  <th><strong>Size</strong></th>
+  <th><strong>PUID</strong></th>
+  <th><strong>Format</strong></th>
+  <th><strong>Preservation copy</strong></th>
+  </tr>
+  </thead>
+  {% if events %}
+    {% for event in events %}
+      <tr>
+        <td>{{ original.name }}</td>
+        <td>{{ original.uuid }}</td>
+        <td>{{ original.size }} bytes</td>
+        <td>{{ original.puid }}</td>
+        <td></td>
+        <td></td>
+
+      </tr>
+    {% endfor %}
+  {% endif %}
+</table>
+
+{% endblock %}
