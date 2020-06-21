@@ -14,7 +14,6 @@
   <th><strong>Size</strong></th>
   <th><strong>PUID</strong></th>
   <th><strong>Format</strong></th>
-  <th><strong>Last modified</strong></th>
   <th><strong>Ingestion date</strong></th>
   <th><strong>Preservation copy</strong></th>
   </tr>
@@ -27,7 +26,6 @@
         <td>{{ original.size }} bytes</td>
         <td>{{ original.puid }}</td>
         <td>{{ original.format }} {% if original.format_version != None %} {{original.format_version}}{% endif %}</td>
-        <td>{{ original.creation_date }}</td>
         <td>{{ original.ingestion_date }}</td>
         <td>{{ original.related_uuid }}</td>
       </tr>

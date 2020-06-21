@@ -320,8 +320,6 @@ def get_mets(
                     if str(premis_object.related_object_identifier_value) != "()":
                         relatedUuid = premis_object.related_object_identifier_value
                     if aipFile.use == "original":
-                        eventDate = str(premis_object.date_created_by_application)
-                        creationDate = datetime.strptime(eventDate, "%Y-%m-%d")
                         originalsCount += 1
                     else:
                         preservationCopiesCount += 1

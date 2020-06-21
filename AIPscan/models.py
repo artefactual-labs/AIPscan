@@ -113,7 +113,6 @@ class files(db.Model):
     format = db.Column(db.String(255))
     format_version = db.Column(db.String(255))
     related_uuid = db.Column(db.String(255), index=True)
-    creation_date = db.Column(db.DateTime())
     ingestion_date = db.Column(db.DateTime())
     normalization_date = db.Column(db.DateTime())
     aip_id = db.Column(db.Integer(), db.ForeignKey("aips.id"), nullable=False)
@@ -128,7 +127,6 @@ class files(db.Model):
         format,
         format_version,
         related_uuid,
-        creation_date,
         ingestion_date,
         normalization_date,
         aip_id,
@@ -141,7 +139,6 @@ class files(db.Model):
         self.format = format
         self.format_version = format_version
         self.related_uuid = related_uuid
-        self.creation_date = creation_date
         self.ingestion_date = ingestion_date
         self.normalization_date = normalization_date
         self.aip_id = aip_id
