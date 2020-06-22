@@ -82,6 +82,7 @@ class aips(db.Model):
     originals = db.relationship(
         "originals", cascade="all,delete", backref="aips", lazy=True
     )
+    copies = db.relationship("copies", cascade="all,delete", backref="aips", lazy=True)
 
     def __init__(
         self,
