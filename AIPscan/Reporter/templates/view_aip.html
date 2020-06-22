@@ -2,7 +2,8 @@
 
 {% block content %}
 
-<div class="alert alert-info">AIP: <a href="{{ url_for('reporter.view_aips', id=storageService.id ) }}">{{ aip.transfer_name }}  {{ aip.uuid }}</a>
+<div class="alert alert-info"><strong>AIP: {{ aip.transfer_name }}  {{ aip.uuid }}</strong>
+<br />Storage service: <a href="{{ url_for('aggregator.storage_service', id=storageService.id ) }}">{{ storageService.name }}</a> (<a href="{{ url_for('reporter.view_aips', id=storageService.id ) }}">{{ totalAIPs }} AIPs</a>)
 <br />Creation date: {{ aip.create_date }}
 <br />Originals: {{ aip.originals_count }}
 <br />Preservation copies: {{ aip.copies_count }}
@@ -18,8 +19,7 @@
   <th><strong>Size</strong></th>
   <th><strong>PUID</strong></th>
   <th><strong>Format</strong></th>
-  <th><strong>Preservation copy</strong></th>
-  <th><strong>Action</strong></th>
+  <th><strong>View</strong></th>
   </tr>
   </thead>
   {% if originals %}
@@ -30,8 +30,8 @@
         <td>{{ original.size }} bytes</td>
         <td>{{ original.puid }}</td>
         <td>{{ original.format }} {% if original.format_version != None %} {{original.format_version}}{% endif %}</td>
-        <td>{{ original.related_uuid }}</td>
-        <td><a href="{{ url_for('reporter.view_file', id = original.id) }}"><button type="button" class="btn btn-info">Events</button></a></td>
+        <td>{% if original.related_uuid != None %}<a href="{{ url_for('reporter.view_copy', uuid=original.related_uuid ) }}"><button type="button" class="btn btn-info">Preservation copy</button></a>{% endif %}
+        <a href="{{ url_for('reporter.view_original', id=original.id ) }}"><button type="button" class="btn btn-info">Events</button></a></td>
       </tr>
     {% endfor %}
   {% endif %}

@@ -22,6 +22,7 @@ def view_aip(id):
     aip = aips.query.get(id)
     fetchJob = fetch_jobs.query.get(aip.fetch_job_id)
     storageService = storage_services.query.get(fetchJob.storage_service_id)
+    totalAIPs = aips.query.filter_by(storage_service_id=storageService.id).count()
     original = originals.query.filter_by(aip_id=aip.id).all()
 
     return render_template(
@@ -29,13 +30,24 @@ def view_aip(id):
         aip=aip,
         fetchJob=fetchJob,
         storageService=storageService,
+        totalAIPs=totalAIPs,
         originals=original,
     )
 
 
-@reporter.route("/view_file/<id>", methods=["GET"])
-def view_file(id):
-    file = originals.query.get(id)
-    aip = aips.query.get(file.aip_id)
+@reporter.route("/view_copy/<uuid>", methods=["GET"])
+def view_copy(uuid):
+    copy = copies.query.filter_by(uuid=uuid).first()
+    original = originals.query.filter_by(uuid=copy.related_uuid).first()
+    aip = aips.query.get(copy.aip_id)
 
-    return render_template("view_file.html", file=file, aip=aip,)
+    return render_template("view_copy.html", copy=copy, original=original, aip=aip)
+
+
+@reporter.route("/view_original/<id>", methods=["GET"])
+def view_original(id):
+    original = originals.query.get(id)
+    aip = aips.query.get(original.aip_id)
+    copy = copies.query.filter_by(uuid=original.related_uuid).first()
+
+    return render_template("view_original.html", original=original, copy=copy, aip=aip)
