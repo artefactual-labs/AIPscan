@@ -5,7 +5,10 @@
 <div class="alert alert-info">AIP: <a href="{{ url_for('reporter.view_aips', id=storageService.id ) }}">{{ aip.transfer_name }}  {{ aip.uuid }}</a>
 <br />Creation date: {{ aip.create_date }}
 <br />Originals: {{ aip.originals_count }}
+<br />Preservation copies: {{ aip.copies_count }}
 </div>
+
+<h3>Original files</h3>
 
 <table id="aiptable" class="table table-striped table-bordered">
   <thead>

@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template
 from AIPscan import db
-from AIPscan.models import aips, originals, fetch_jobs, storage_services
+from AIPscan.models import aips, originals, copies, fetch_jobs, storage_services
 from collections import Counter
 
 reporter = Blueprint("reporter", __name__, template_folder="templates")

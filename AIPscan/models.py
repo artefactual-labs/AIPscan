@@ -109,7 +109,6 @@ class originals(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
     name = db.Column(db.String(255), index=True)
     uuid = db.Column(db.String(255), index=True)
-    type = db.Column(db.String(255), index=True)
     size = db.Column(db.Integer())
     puid = db.Column(db.String(255), index=True)
     format = db.Column(db.String(255))
@@ -123,7 +122,6 @@ class originals(db.Model):
         self,
         name,
         uuid,
-        type,
         size,
         puid,
         format,
@@ -135,7 +133,6 @@ class originals(db.Model):
     ):
         self.name = name
         self.uuid = uuid
-        self.type = type
         self.size = size
         self.puid = puid
         self.format = format
@@ -143,6 +140,44 @@ class originals(db.Model):
         self.checksum_type = checksum_type
         self.checksum_value = checksum_value
         self.related_uuid = related_uuid
+        self.aip_id = aip_id
+
+    def __repr__(self):
+        return "<Files '{}'>".format(self.name)
+
+
+class copies(db.Model):
+    id = db.Column(db.Integer(), primary_key=True)
+    name = db.Column(db.String(255), index=True)
+    uuid = db.Column(db.String(255), index=True)
+    size = db.Column(db.Integer())
+    format = db.Column(db.String(255))
+    checksum_type = db.Column(db.String(255))
+    checksum_value = db.Column(db.String(255))
+    related_uuid = db.Column(db.String(255), index=True)
+    normalization_date = db.Column(db.DateTime())
+    aip_id = db.Column(db.Integer(), db.ForeignKey("aips.id"), nullable=False)
+
+    def __init__(
+        self,
+        name,
+        uuid,
+        size,
+        format,
+        checksum_type,
+        checksum_value,
+        related_uuid,
+        normalization_date,
+        aip_id,
+    ):
+        self.name = name
+        self.uuid = uuid
+        self.size = size
+        self.format = format
+        self.checksum_type = checksum_type
+        self.checksum_value = checksum_value
+        self.related_uuid = related_uuid
+        self.normalization_date = normalization_date
         self.aip_id = aip_id
 
     def __repr__(self):

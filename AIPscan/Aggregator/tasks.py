@@ -9,7 +9,7 @@ import sqlite3
 import metsrw
 import xml.etree.ElementTree as ET
 from AIPscan import db
-from AIPscan.models import fetch_jobs, aips, originals
+from AIPscan.models import fetch_jobs, aips, originals, copies
 
 
 def write_packages_json(count, timestampStr, packages):
@@ -288,7 +288,6 @@ def get_mets(
     for aipFile in mets.all_files():
         if (aipFile.use == "original") or (aipFile.use == "preservation"):
             name = aipFile.label
-            type = aipFile.use
             uuid = aipFile.file_uuid
             size = None
             puid = None
@@ -324,7 +323,6 @@ def get_mets(
             if aipFile.use == "original":
                 files = originals(
                     name=name,
-                    type=type,
                     uuid=uuid,
                     size=size,
                     puid=puid,
@@ -338,9 +336,33 @@ def get_mets(
                 db.session.add(files)
                 db.session.commit()
 
+                # TODO add originals events using files.id
+
+            if aipFile.use == "preservation":
+                for premis_event in aipFile.get_premis_events():
+                    if (premis_event.event_type) == "creation":
+                        eventDate = (premis_event.event_date_time)[:-13]
+                        normalizationDate = datetime.strptime(
+                            eventDate, "%Y-%m-%dT%H:%M:%S"
+                        )
+                files = copies(
+                    name=name,
+                    uuid=uuid,
+                    size=size,
+                    format=format,
+                    checksum_type=checksumType,
+                    checksum_value=checksumValue,
+                    related_uuid=relatedUuid,
+                    normalization_date=normalizationDate,
+                    aip_id=aip.id,
+                )
+                db.session.add(files)
+                db.session.commit()
+
             get_mets.update_state(state="IN PROGRESS")
 
     aip.originals_count = originals.query.filter_by(aip_id=aip.id).count()
+    aip.copies_count = copies.query.filter_by(aip_id=aip.id).count()
     db.session.commit()
 
     return
