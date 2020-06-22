@@ -277,6 +277,8 @@ def get_mets(
         packageUUID,
         transfer_name=originalName,
         create_date=datetime.strptime(mets.createdate, "%Y-%m-%dT%H:%M:%S"),
+        originals_count=None,
+        copies_count=None,
         storage_service_id=storageServiceId,
         fetch_job_id=fetchJobId,
     )
@@ -338,6 +340,7 @@ def get_mets(
 
             get_mets.update_state(state="IN PROGRESS")
 
+    aip.originals_count = originals.query.filter_by(aip_id=aip.id).count()
     db.session.commit()
 
     return

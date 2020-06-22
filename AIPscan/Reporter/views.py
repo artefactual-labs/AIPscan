@@ -31,3 +31,11 @@ def view_aip(id):
         storageService=storageService,
         originals=original,
     )
+
+
+@reporter.route("/view_file/<id>", methods=["GET"])
+def view_file(id):
+    file = originals.query.get(id)
+    aip = aips.query.get(file.aip_id)
+
+    return render_template("view_file.html", file=file, aip=aip,)

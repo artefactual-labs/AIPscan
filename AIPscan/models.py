@@ -71,6 +71,8 @@ class aips(db.Model):
     uuid = db.Column(db.String(255), index=True)
     transfer_name = db.Column(db.String(255))
     create_date = db.Column(db.DateTime())
+    originals_count = db.Column(db.Integer())
+    copies_count = db.Column(db.Integer())
     storage_service_id = db.Column(
         db.Integer(), db.ForeignKey("storage_services.id"), nullable=False
     )
@@ -82,11 +84,20 @@ class aips(db.Model):
     )
 
     def __init__(
-        self, uuid, transfer_name, create_date, storage_service_id, fetch_job_id,
+        self,
+        uuid,
+        transfer_name,
+        create_date,
+        originals_count,
+        copies_count,
+        storage_service_id,
+        fetch_job_id,
     ):
         self.uuid = uuid
         self.transfer_name = transfer_name
         self.create_date = create_date
+        self.originals_count = originals_count
+        self.copies_count = copies_count
         self.storage_service_id = storage_service_id
         self.fetch_job_id = fetch_job_id
 
