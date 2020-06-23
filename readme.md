@@ -19,7 +19,7 @@ Collect repository-wide info about Archivematica AIPs
   https://www.rabbitmq.com/download.html
 * In another terminal window, start RabbitMQ queue manager  
   `export PATH=$PATH:/usr/local/sbin`  
-  ß`sudo rabbitmq-server`
+  `sudo rabbitmq-server`
 * To see RabbitMQ dashboard visit:  
   http://localhost:15672/  
   un: guest, pw: guest
