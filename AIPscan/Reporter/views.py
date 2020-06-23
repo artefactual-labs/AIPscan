@@ -1,6 +1,15 @@
 from flask import Blueprint, render_template
 from AIPscan import db
-from AIPscan.models import aips, originals, copies, fetch_jobs, storage_services
+from AIPscan.models import (
+    aips,
+    originals,
+    events,
+    agents,
+    event_agents,
+    copies,
+    fetch_jobs,
+    storage_services,
+)
 from collections import Counter
 
 reporter = Blueprint("reporter", __name__, template_folder="templates")
@@ -47,7 +56,14 @@ def view_copy(uuid):
 @reporter.route("/view_original/<id>", methods=["GET"])
 def view_original(id):
     original = originals.query.get(id)
+    original_events = events.query.filter_by(original_id=id).all()
     aip = aips.query.get(original.aip_id)
     copy = copies.query.filter_by(uuid=original.related_uuid).first()
 
-    return render_template("view_original.html", original=original, copy=copy, aip=aip)
+    return render_template(
+        "view_original.html",
+        original=original,
+        original_events=original_events,
+        copy=copy,
+        aip=aip,
+    )

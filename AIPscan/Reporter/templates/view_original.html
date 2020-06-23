@@ -2,46 +2,41 @@
 
 {% block content %}
 
-<div class="alert alert-info"><strong>Original file: {{ original.name }}</strong>
-<br />AIP: <a href="{{ url_for('reporter.view_aip', id=aip.id ) }}"">{{ aip.transfer_name }}  {{ aip.uuid }}</a>
-</div>
+<h3>Original file: {{ original.name }}</h3>
 
-<table class="table table-bordered table-condensed">
+<table class="table table-bordered table-condensed" style="margin-top: 20px;">
+  <tr><td width=20%><strong>AIP</strong></td><td><a href="{{ url_for('reporter.view_aip', id=aip.id ) }}"">{{ aip.transfer_name }}  {{ aip.uuid }}</a></td></tr>
   <tr><td width=20%><strong>UUID</strong></td><td>{{ original.uuid }}</td></tr>
   <tr><td width=20%><strong>Size</strong></td><td>{{ original.size }} bytes</td></tr>
   <tr><td width=20%><strong>PUID</strong></td><td>{{ original.puid }}</td></tr>
   <tr><td width=20%><strong>Format</strong></td><td>{{ original.format }} {% if original.format_version != None %} {{original.format_version}}{% endif %}</td></tr>
   <tr><td width=20%><strong>Checksum type</strong></td><td>{{ original.checksum_type }}</td></tr>
   <tr><td width=20%><strong>Checksum value</strong></td><td>{{ original.checksum_value }}</td></tr>
+  {% if copy != None %}
   <tr><td width=20%><strong>Preservation copy</strong></td><td><a href="{{ url_for('reporter.view_copy', uuid=copy.uuid ) }}"">{{ copy.name }}</td></tr>
+  {% endif %}
 </table>
 
 <h3>PREMIS Events</h3>
 
-<table id="aiptable" class="table table-striped table-bordered">
-  <thead>
-  <tr>
-  <th><strong></strong></th>
-  <th><strong></strong></th>
-  <th><strong></strong></th>
-  <th><strong></strong></th>
-  <th><strong></strong></th>
-  <th><strong></strong></th>
-  </tr>
-  </thead>
-  {% if events %}
-    {% for event in events %}
-      <tr>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-
-      </tr>
+{% if original_events %}
+    {% for event in original_events %}
+    <table class="table table-bordered table-condensed">
+      <tr style="background-color: #D3D3D3;"><td width=20%><strong>Event type</strong></td><td>{{ event.type }}</td></tr>
+      <tr><td width=20%><strong>UUID</strong></td><td>{{ event.uuid }}</td></tr>
+      <tr><td width=20%><strong>Date</strong></td><td>{{ event.date }}</td></tr>
+      {% if event.detail != None %}
+      <tr><td width=20%><strong>Detail</strong></td><td>{{ event.detail }}</td></tr>
+      {% endif %}
+      {% if event.outcome != None %}
+      <tr><td width=20%><strong>Outcome</strong></td><td>{{ event.outcome }}</td></tr>
+      {% endif %}
+      {% if event.outcome_detail != None %}
+      <tr><td width=20%><strong>Outcome Detail</strong></td><td>{{ event.outcome_detail }}</td></tr>
+      {% endif %}
+    </table>
+    <br />
     {% endfor %}
   {% endif %}
-</table>
 
 {% endblock %}

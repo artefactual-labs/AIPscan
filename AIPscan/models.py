@@ -118,6 +118,9 @@ class originals(db.Model):
     checksum_value = db.Column(db.String(255))
     related_uuid = db.Column(db.String(255), index=True)
     aip_id = db.Column(db.Integer(), db.ForeignKey("aips.id"), nullable=False)
+    events = db.relationship(
+        "events", cascade="all,delete", backref="originals", lazy=True
+    )
 
     def __init__(
         self,
@@ -144,7 +147,7 @@ class originals(db.Model):
         self.aip_id = aip_id
 
     def __repr__(self):
-        return "<Files '{}'>".format(self.name)
+        return "<Originals '{}'>".format(self.name)
 
 
 class copies(db.Model):
@@ -182,4 +185,52 @@ class copies(db.Model):
         self.aip_id = aip_id
 
     def __repr__(self):
-        return "<Files '{}'>".format(self.name)
+        return "<Copies '{}'>".format(self.name)
+
+
+event_agents = db.Table(
+    "event_agents",
+    db.Column("event_id", db.Integer, db.ForeignKey("events.id")),
+    db.Column("agent_id", db.Integer, db.ForeignKey("agents.id")),
+)
+
+
+class events(db.Model):
+    id = db.Column(db.Integer(), primary_key=True)
+    type = db.Column(db.String(255), index=True)
+    uuid = db.Column(db.String(255), index=True)
+    date = db.Column(db.DateTime())
+    detail = db.Column(db.String(255))
+    outcome = db.Column(db.String(255))
+    outcome_detail = db.Column(db.String(255))
+    original_id = db.Column(db.Integer(), db.ForeignKey("originals.id"), nullable=False)
+    event_agents = db.relationship(
+        "agents", secondary=event_agents, backref=db.backref("events", lazy="dynamic")
+    )
+
+    def __init__(
+        self, type, uuid, date, detail, outcome, outcome_detail, original_id,
+    ):
+        self.type = type
+        self.uuid = uuid
+        self.date = date
+        self.detail = detail
+        self.outcome = outcome
+        self.outcome_detail = outcome_detail
+        self.original_id = original_id
+
+    def __repr__(self):
+        return "<Events '{}'>".format(self.type)
+
+
+class agents(db.Model):
+    id = db.Column(db.Integer(), primary_key=True)
+    type = db.Column(db.String(255), index=True)
+    value = db.Column(db.String(255), index=True)
+
+    def __init__(self, type, value):
+        self.type = type
+        self.value = value
+
+    def __repr__(self):
+        return "<Agents '{}'>".format(self.value)

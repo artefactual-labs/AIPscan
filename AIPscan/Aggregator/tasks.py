@@ -9,7 +9,15 @@ import sqlite3
 import metsrw
 import xml.etree.ElementTree as ET
 from AIPscan import db
-from AIPscan.models import fetch_jobs, aips, originals, copies
+from AIPscan.models import (
+    fetch_jobs,
+    aips,
+    originals,
+    copies,
+    events,
+    agents,
+    event_agents,
+)
 
 
 def write_packages_json(count, timestampStr, packages):
@@ -321,7 +329,7 @@ def get_mets(
                 pass
 
             if aipFile.use == "original":
-                files = originals(
+                file = originals(
                     name=name,
                     uuid=uuid,
                     size=size,
@@ -333,10 +341,49 @@ def get_mets(
                     related_uuid=relatedUuid,
                     aip_id=aip.id,
                 )
-                db.session.add(files)
+                db.session.add(file)
                 db.session.commit()
 
-                # TODO add originals events using files.id
+                for premis_event in aipFile.get_premis_events():
+                    type = premis_event.event_type
+                    uuid = premis_event.event_identifier_value
+                    eventDate = premis_event.event_date_time[:-13]
+                    date = datetime.strptime(eventDate, "%Y-%m-%dT%H:%M:%S")
+                    if str(premis_event.event_detail) != "(('event_detail',),)":
+                        detail = premis_event.event_detail
+                    else:
+                        detail = None
+                    if str(premis_event.event_outcome) != "(('event_outcome',),)":
+                        outcome = premis_event.event_outcome
+                    else:
+                        outcome = None
+                    if (
+                        str(premis_event.event_outcome_detail_note)
+                        != "(('event_outcome_detail_note',),)"
+                    ):
+                        outcomeDetail = premis_event.event_outcome_detail_note
+                    else:
+                        outcomeDetail = None
+                    originalId = file.id
+
+                    event = events(
+                        type=type,
+                        uuid=uuid,
+                        date=date,
+                        detail=detail,
+                        outcome=outcome,
+                        outcome_detail=outcomeDetail,
+                        original_id=originalId,
+                    )
+
+                    db.session.add(event)
+                    db.session.commit()
+
+                """
+                for linking_agent in premis_event.linking_agent_identifier:
+                print("Agent: " + linking_agent.linking_agent_identifier_value
+                + " (" + linking_agent.linking_agent_identifier_type + ")")
+                """
 
             if aipFile.use == "preservation":
                 for premis_event in aipFile.get_premis_events():
@@ -345,7 +392,7 @@ def get_mets(
                         normalizationDate = datetime.strptime(
                             eventDate, "%Y-%m-%dT%H:%M:%S"
                         )
-                files = copies(
+                file = copies(
                     name=name,
                     uuid=uuid,
                     size=size,
@@ -356,7 +403,7 @@ def get_mets(
                     normalization_date=normalizationDate,
                     aip_id=aip.id,
                 )
-                db.session.add(files)
+                db.session.add(file)
                 db.session.commit()
 
             get_mets.update_state(state="IN PROGRESS")
