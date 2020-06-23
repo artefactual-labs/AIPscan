@@ -7,19 +7,19 @@ Collect repository-wide info about Archivematica AIPs
   `virtualenv venv`  
 * Activate virtualenv:  
   `source venv/bin/activate`  
-* Install requirements (this includes Celery)
+* Install requirements (this includes Flask & Celery)  
   `pip install -r requirements.txt`   
 * Create database:  
   `python create_db.py`      
-* In a terminal window, start the Flask server:
+* In a terminal window, start the Flask server:  
   `python run.py`
 * In another terminal window, from the same root directory, start a Celery worker:  
   `celery -A AIPscan.Aggregator.tasks worker --loglevel=info`  
 * Download and install RabbitMQ queue manager:  
   https://www.rabbitmq.com/download.html
-* In another terminal window, start RabbitMQ queue manager
-  `export PATH=$PATH:/usr/local/sbin`
-  `sudo rabbitmq-server`
+* In another terminal window, start RabbitMQ queue manager  
+  `export PATH=$PATH:/usr/local/sbin`  
+  ß`sudo rabbitmq-server`
 * To see RabbitMQ dashboard visit:  
   http://localhost:15672/  
   un: guest, pw: guest
