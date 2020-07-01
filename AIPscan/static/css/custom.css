@@ -1,10 +1,18 @@
+.bg-dark {
+  background-color: #000 !important;
+}
+
+body {
+  font-family: 'Roboto', sans-serif
+}
+
 #console {
   padding: 10px;
   border-radius: .25rem;
   color: #0F0;
   font-family: SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
   font-size: small;
-  max-height: 520px;
+  max-height: 440px;
   overflow-y: auto;
 }
 
