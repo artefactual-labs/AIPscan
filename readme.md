@@ -10,7 +10,7 @@ Collect repository-wide info about Archivematica AIPs
 * Install requirements (this includes Flask & Celery)  
   `pip install -r requirements.txt`   
 * Create database:  
-  `python create_db.py`      
+  `python create_aipscan_db.py`      
 * In a terminal window, start the Flask server:  
   `python run.py`
 * In another terminal window, from the same root directory, start a Celery worker:  
