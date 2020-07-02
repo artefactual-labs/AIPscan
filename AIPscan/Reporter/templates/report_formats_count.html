@@ -3,7 +3,7 @@
 <head>
   <title>{{ storageService.name }}: file formats count</title>
   <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
-  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/custom.css') }}">
+
   <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
 
 
@@ -24,8 +24,8 @@
     <th><strong>Count</strong></th>
     </tr>
     </thead>
-    {% if formatCounts %}
-      {% for key,value in formatCounts.items() %}
+    {% if sortedFormats %}
+      {% for key,value in sortedFormats.items() %}
         <tr>
           <td>{{ key }}</td>
           <td>{{ value }}</td>

@@ -118,11 +118,14 @@ def report_formats_count():
                 originalsCount += 1
                 formatCounts = Counter(formatLabels)
 
+    formats = Counter(formatCounts)
+    sortedFormats = dict(formats.most_common())
+
     return render_template(
         "report_formats_count.html",
         startdate=startdate,
         enddate=enddate,
         storageService=storageService,
-        formatCounts=formatCounts,
+        sortedFormats=sortedFormats,
         originalsCount=originalsCount,
     )
