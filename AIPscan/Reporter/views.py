@@ -116,10 +116,9 @@ def report_formats_count():
             else:
                 formatLabels.append(original.format)
                 originalsCount += 1
-                formatCounts = Counter(formatLabels)
 
-    formats = Counter(formatCounts)
-    sortedFormats = dict(formats.most_common())
+    formatCounts = Counter(formatLabels)
+    sortedFormats = dict(formatCounts.most_common())
 
     return render_template(
         "report_formats_count.html",
@@ -161,8 +160,8 @@ def chart_formats_count():
             else:
                 formatLabels.append(original.format)
                 originalsCount += 1
-                formatCounts = Counter(formatLabels)
 
+    formatCounts = Counter(formatLabels)
     labels = list(formatCounts.keys())
     values = list(formatCounts.values())
 
