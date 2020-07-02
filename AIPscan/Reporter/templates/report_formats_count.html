@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>{{ storageService.name }}: file formats count</title>
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/custom.css') }}">
+  <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+
+
+  {% include "datatable.html" %}
+</head>
+<body>
+
+<div class="alert alert-secondary">
+<a class="noprint" onClick="window.print();return false"><button type="button" class="btn btn-info" style="float:right;">Print</button></a>
+<strong>{{ storageService.name }}: file formats count</strong><br />
+{{ originalsCount }} original files ingested between {{startdate}} and {{enddate}}
+</div>
+
+<table id="aiptable" class="table table-striped table-bordered">
+    <thead>
+    <tr>
+    <th width="30%"><strong>Format</strong></th>
+    <th><strong>Count</strong></th>
+    </tr>
+    </thead>
+    {% if formatCounts %}
+      {% for key,value in formatCounts.items() %}
+        <tr>
+          <td>{{ key }}</td>
+          <td>{{ value }}</td>
+        </tr>
+      {% endfor %}
+    {% endif %}
+</table>
+
+
+</body>
+</html>

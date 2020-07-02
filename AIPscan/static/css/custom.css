@@ -37,3 +37,9 @@ body {
   color: #fff;
   background-color: #17a2b8;
 }
+
+@media print{
+   .noprint{
+       display:none;
+   }
+}
