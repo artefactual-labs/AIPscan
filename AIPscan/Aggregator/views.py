@@ -272,6 +272,12 @@ def get_mets_task_status(coordinatorid):
             downloadEnd = datetime.now().replace(microsecond=0)
             aipscandb = sqlite3.connect("aipscan.db")
             cursor = aipscandb.cursor()
+            sql = "SELECT download_start FROM fetch_jobs WHERE id = ?"
+            cursor.execute(
+                sql, (fetchJobId,),
+            )
+            start = cursor.fetchone()
+            downloadStart = start[0][:-7]
             cursor.execute(
                 "UPDATE fetch_jobs SET download_end = ? WHERE id = ?",
                 (downloadEnd, fetchJobId,),
@@ -279,5 +285,7 @@ def get_mets_task_status(coordinatorid):
             aipscandb.commit()
 
             response = {"state": "COMPLETED"}
+
+            flash("Fetch Job {} completed".format(downloadStart))
 
     return jsonify(response)

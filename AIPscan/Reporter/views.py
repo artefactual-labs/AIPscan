@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, request
 from AIPscan import db
 from AIPscan.models import (
     aips,
@@ -11,6 +11,7 @@ from AIPscan.models import (
     storage_services,
 )
 from collections import Counter
+from datetime import datetime
 
 reporter = Blueprint("reporter", __name__, template_folder="templates")
 
@@ -66,4 +67,111 @@ def view_original(id):
         original_events=original_events,
         copy=copy,
         aip=aip,
+    )
+
+
+@reporter.route("/reports/", methods=["GET"])
+def reports():
+    storageServices = storage_services.query.all()
+
+    now = datetime.now()
+    startdate = str(datetime(now.year, 1, 1))[:-9]
+    enddate = str(datetime(now.year, now.month, now.day))[:-9]
+
+    return render_template(
+        "reports.html",
+        storageServices=storageServices,
+        startdate=startdate,
+        enddate=enddate,
+    )
+
+
+@reporter.route("/report_formats_count/", methods=["GET"])
+def report_formats_count():
+    startdate = request.args.get("startdate")
+    enddate = request.args.get("enddate")
+    storageServiceId = request.args.get("ssId")
+    storageService = storage_services.query.get(storageServiceId)
+
+    AIPs = aips.query.filter_by(storage_service_id=storageServiceId).all()
+
+    formatLabels = []
+    formatCounts = []
+    originalsCount = 0
+
+    for aip in AIPs:
+        originalFiles = originals.query.filter_by(aip_id=aip.id)
+        for original in originalFiles:
+            # Note that original files in packages do not have a PREMIS ingestion
+            # event. Therefore "message digest calculation" is used to get the
+            # ingest date for all originals. This event typically happens within
+            # the same second or seconds of the ingestion event and is done for all files.
+            ingestEvent = events.query.filter_by(
+                original_id=original.id, type="message digest calculation"
+            ).first()
+            if ingestEvent.date < datetime.strptime(startdate, "%Y-%m-%d"):
+                continue
+            elif ingestEvent.date > datetime.strptime(enddate, "%Y-%m-%d"):
+                continue
+            else:
+                formatLabels.append(original.format)
+                originalsCount += 1
+                formatCounts = Counter(formatLabels)
+
+    formats = Counter(formatCounts)
+    sortedFormats = dict(formats.most_common())
+
+    return render_template(
+        "report_formats_count.html",
+        startdate=startdate,
+        enddate=enddate,
+        storageService=storageService,
+        sortedFormats=sortedFormats,
+        originalsCount=originalsCount,
+    )
+
+
+@reporter.route("/chart_formats_count/", methods=["GET"])
+def chart_formats_count():
+    startdate = request.args.get("startdate")
+    enddate = request.args.get("enddate")
+    storageServiceId = request.args.get("ssId")
+    storageService = storage_services.query.get(storageServiceId)
+
+    AIPs = aips.query.filter_by(storage_service_id=storageServiceId).all()
+
+    formatLabels = []
+    formatCounts = []
+    originalsCount = 0
+
+    for aip in AIPs:
+        originalFiles = originals.query.filter_by(aip_id=aip.id)
+        for original in originalFiles:
+            # Note that original files in packages do not have a PREMIS ingestion
+            # event. Therefore "message digest calculation" is used to get the
+            # ingest date for all originals. This event typically happens within
+            # the same second or seconds of the ingestion event and is done for all files.
+            ingestEvent = events.query.filter_by(
+                original_id=original.id, type="message digest calculation"
+            ).first()
+            if ingestEvent.date < datetime.strptime(startdate, "%Y-%m-%d"):
+                continue
+            elif ingestEvent.date > datetime.strptime(enddate, "%Y-%m-%d"):
+                continue
+            else:
+                formatLabels.append(original.format)
+                originalsCount += 1
+                formatCounts = Counter(formatLabels)
+
+    labels = list(formatCounts.keys())
+    values = list(formatCounts.values())
+
+    return render_template(
+        "chart_formats_count.html",
+        startdate=startdate,
+        enddate=enddate,
+        storageService=storageService,
+        labels=labels,
+        values=values,
+        originalsCount=originalsCount,
     )

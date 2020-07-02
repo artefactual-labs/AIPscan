@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>{{ storageService.name }}: file formats count</title>
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/custom.css') }}">
+  <script type="text/javascript" language="javascript" src="{{ url_for('static', filename='js/Chart.min.js') }}"></script>
+
+  <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+
+
+</head>
+<body>
+
+<div class="alert alert-secondary">
+  <a class="noprint" onClick="window.print();return false"><button type="button" class="btn btn-info" style="float:right;">Print</button></a>
+  <strong>{{ storageService.name }}: file formats count</strong><br />
+  {{ originalsCount }} original files ingested between {{startdate}} and {{enddate}}
+</div>
+
+<div class="col-lg" id="formatChart" style="display: block; margin-top: 20px;">
+    <canvas id="chart" style="width: 100%;" aria-label="Format pie chart" role="img">
+      <!-- Fallback text -->
+      <p>Canvas element not supported.</p>
+    </canvas>
+</div>
+
+<script>
+  // draw format chart
+
+  let randCols = []
+  let jsonLabels = {{ labels|tojson }}
+  let jsonValues = {{ values|tojson }}
+
+  let makeColor = function() {
+    var r = Math.floor(Math.random() * 255)
+    var g = Math.floor(Math.random() * 255)
+    var b = Math.floor(Math.random() * 255)
+    return "rgb(" + r + "," + g + "," + b + ")"
+  }
+  for (let x=0;x<jsonValues.length;x++){randCols.push(makeColor())}
+
+  let canvas = document.getElementById("chart")
+  let ctx = canvas.getContext("2d")
+
+  let config = {
+      type: 'pie',
+      data: {
+        labels: jsonLabels,
+        datasets: [{
+          data: jsonValues,
+          label: "Formats chart",
+          backgroundColor: randCols,
+        }],
+      },
+      options: {responsive: true},
+    }
+   let myPie = new Chart(ctx, config)
+</script>
+
+</body>
+</html>
