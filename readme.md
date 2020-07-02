@@ -2,11 +2,15 @@
 Collect repository-wide info about Archivematica AIPs
 
 ![screencap1](screencaps/aipscan_fetch_job.png)
+
 ![screencap2](screencaps/aipscan_view_aip.png)
+
 ![screencap3](screencaps/aipscan_select_report.png)
+
 ![screencap4](screencaps/aipscan_piechart_report.png)
 
-#Installation
+
+# Installation
 
 * Clone files and cd to directory:  
   `git clone https://github.com/peterVG/AIPscan && cd AIPscan`  
