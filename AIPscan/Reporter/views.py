@@ -119,7 +119,6 @@ def report_formats_count():
             else:
                 format = original.format
                 size = original.size
-                formatLabels.append(format)
                 originalsCount += 1
 
                 if format in formatCount:
