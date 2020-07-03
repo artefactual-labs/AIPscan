@@ -5,14 +5,14 @@
 <h3>Preservation copy: {{ copy.name }}</h3>
 
 <table class="table table-bordered table-condensed" style="margin-top: 20px;">
+  <tr><td width=20%><strong>Original file</strong></td><td><a href="{{ url_for('reporter.view_original', id=original.id ) }}"">{{ original.name }}</td></tr>
   <tr><td width=20%><strong>AIP</strong></td><td><a href="{{ url_for('reporter.view_aip', id=aip.id ) }}"">{{ aip.transfer_name }}  {{ aip.uuid }}</a></td></tr>
   <tr><td width=20%><strong>UUID</strong></td><td>{{ copy.uuid }}</td></tr>
   <tr><td width=20%><strong>Normalization date</strong></td><td>{{ copy.normalization_date }}</td></tr>
-  <tr><td width=20%><strong>Size</strong></td><td>{{ copy.size }} bytes</td></tr>
+  <tr><td width=20%><strong>Size</strong></td><td>{{ size }}</td></tr>
   <tr><td width=20%><strong>Format</strong></td><td>{{ copy.format }}</td></tr>
   <tr><td width=20%><strong>Checksum type</strong></td><td>{{ copy.checksum_type }}</td></tr>
   <tr><td width=20%><strong>Checksum value</strong></td><td>{{ copy.checksum_value }}</td></tr>
-  <tr><td width=20%><strong>Original file</strong></td><td><a href="{{ url_for('reporter.view_original', id=original.id ) }}"">{{ original.name }}</td></tr>
 </table>
 
 {% endblock %}

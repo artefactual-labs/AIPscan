@@ -73,16 +73,20 @@ def view_aip(id):
 @reporter.route("/view_copy/<uuid>", methods=["GET"])
 def view_copy(uuid):
     copy = copies.query.filter_by(uuid=uuid).first()
+    size = GetHumanReadableFilesize(copy.size)
     original = originals.query.filter_by(uuid=copy.related_uuid).first()
     aip = aips.query.get(copy.aip_id)
 
-    return render_template("view_copy.html", copy=copy, original=original, aip=aip)
+    return render_template(
+        "view_copy.html", copy=copy, original=original, aip=aip, size=size
+    )
 
 
 @reporter.route("/view_original/<id>", methods=["GET"])
 def view_original(id):
     original = originals.query.get(id)
     original_events = events.query.filter_by(original_id=id).all()
+    size = GetHumanReadableFilesize(original.size)
     aip = aips.query.get(original.aip_id)
     copy = copies.query.filter_by(uuid=original.related_uuid).first()
 
@@ -92,6 +96,7 @@ def view_original(id):
         original_events=original_events,
         copy=copy,
         aip=aip,
+        size=size,
     )
 
 

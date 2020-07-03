@@ -16,7 +16,7 @@
   <tr>
   <th><strong>Name</strong></th>
   <th><strong>UUID</strong></th>
-  <th><strong>Size</strong></th>
+  <th><strong>Size in bytes</strong></th>
   <th><strong>PUID</strong></th>
   <th><strong>Format</strong></th>
   <th><strong>View</strong></th>
@@ -27,11 +27,12 @@
       <tr>
         <td>{{ original.name }}</td>
         <td>{{ original.uuid }}</td>
-        <td>{{ original.size }} bytes</td>
+        <td>{{ original.size }}</td>
         <td>{{ original.puid }}</td>
         <td>{{ original.format }} {% if original.format_version != None %} {{original.format_version}}{% endif %}</td>
-        <td>{% if original.related_uuid != None %}<a href="{{ url_for('reporter.view_copy', uuid=original.related_uuid ) }}"><button type="button" class="btn btn-info" style="margin-bottom: 5px;">Preservation copy</button></a>{% endif %}
-        <a href="{{ url_for('reporter.view_original', id=original.id ) }}"><button type="button" class="btn btn-info" style="margin-bottom: 5px;">Events</button></a></td>
+        <td><a href="{{ url_for('reporter.view_original', id=original.id ) }}"><button type="button" class="btn btn-info" style="margin-bottom: 5px;">Events</button></a>
+        {% if original.related_uuid != None %}<a href="{{ url_for('reporter.view_copy', uuid=original.related_uuid ) }}"><button type="button" class="btn btn-info" style="margin-bottom: 5px;">Preservation copy</button></a>{% endif %}
+      </td>
       </tr>
     {% endfor %}
   {% endif %}

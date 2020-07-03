@@ -7,7 +7,7 @@
 <table class="table table-bordered table-condensed" style="margin-top: 20px;">
   <tr><td width=20%><strong>AIP</strong></td><td><a href="{{ url_for('reporter.view_aip', id=aip.id ) }}"">{{ aip.transfer_name }}  {{ aip.uuid }}</a></td></tr>
   <tr><td width=20%><strong>UUID</strong></td><td>{{ original.uuid }}</td></tr>
-  <tr><td width=20%><strong>Size</strong></td><td>{{ original.size }} bytes</td></tr>
+  <tr><td width=20%><strong>Size</strong></td><td>{{ size }}</td></tr>
   <tr><td width=20%><strong>PUID</strong></td><td>{{ original.puid }}</td></tr>
   <tr><td width=20%><strong>Format</strong></td><td>{{ original.format }} {% if original.format_version != None %} {{original.format_version}}{% endif %}</td></tr>
   <tr><td width=20%><strong>Checksum type</strong></td><td>{{ original.checksum_type }}</td></tr>
