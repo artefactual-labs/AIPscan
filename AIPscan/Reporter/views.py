@@ -17,14 +17,38 @@ from datetime import datetime
 reporter = Blueprint("reporter", __name__, template_folder="templates")
 
 
+@reporter.route("/view_aips/", methods=["GET"])
 @reporter.route("/view_aips/<id>", methods=["GET"])
-def view_aips(id):
-    storageService = storage_services.query.get(id)
-    AIPs = aips.query.filter_by(storage_service_id=id).all()
-    totalAIPs = aips.query.filter_by(storage_service_id=id).count()
+def view_aips(id=0):
+    if id != 0:
+        storageService = storage_services.query.get(id)
+        storageServiceId = storageService.id
+    else:
+        storageService = storage_services.query.filter_by(default=1).first()
+        if storageService:
+            storageServiceId = storageService.id
+        else:
+            storageService = storage_services.query.first()
+            if storageService:
+                storageServiceId = storageService.id
+            else:
+                storageServiceId = 0
+
+    if storageService:
+        AIPs = aips.query.filter_by(storage_service_id=storageService.id).all()
+        totalAIPs = aips.query.filter_by(storage_service_id=storageService.id).count()
+    else:
+        AIPs = None
+        totalAIPs = 0
+
+    storageServices = storage_services.query.all()
 
     return render_template(
-        "view_aips.html", storageService=storageService, totalAIPs=totalAIPs, AIPs=AIPs,
+        "view_aips.html",
+        storageServices=storageServices,
+        storageServiceId=storageServiceId,
+        totalAIPs=totalAIPs,
+        AIPs=AIPs,
     )
 
 

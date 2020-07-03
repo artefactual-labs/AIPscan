@@ -28,10 +28,13 @@
     <div class="navbar-collapse" id="navbarNavDropdown">
       <ul class="navbar-nav">
         <li class="nav-item">
-          <a class="nav-link" href="/aggregator/storage_services">Archivematica Storage Services</a>
+          <a class="nav-link" href="{{ url_for('aggregator.ss') }}">Archivematica Storage Services</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="/reporter/reports">Reports</a>
+          <a class="nav-link" href="{{ url_for('reporter.view_aips') }}">AIPs</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('reporter.reports') }}">Reports</a>
         </li>
       </ul>
     </div>

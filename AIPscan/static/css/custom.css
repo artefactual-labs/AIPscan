@@ -2,6 +2,10 @@
   background-color: #000 !important;
 }
 
+.nav-item {
+  margin-left: 20px;
+}
+
 body {
   font-family: 'Roboto', sans-serif
 }
