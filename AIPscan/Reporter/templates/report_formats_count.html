@@ -2,14 +2,17 @@
 <html lang="en">
 <head>
   <title>{{ storageService.name }}: file formats count</title>
-  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
-
   <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
 
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+
+  <script type="text/javascript" language="javascript" src="/static/js/jquery-3.3.1.js"></script>
 
   {% include "datatable.html" %}
 </head>
 <body>
+
+<div class="container-fluid" style="margin: 20px 0;">
 
 <div class="alert alert-secondary">
 <a class="noprint" onClick="window.print();return false"><button type="button" class="btn btn-info" style="float:right;">Print</button></a>
@@ -17,23 +20,27 @@
 {{ originalsCount }} original files ingested between {{startdate}} and {{enddate}}
 </div>
 
-<table id="aiptable" class="table table-striped table-bordered">
-    <thead>
-    <tr>
-    <th width="30%"><strong>Format</strong></th>
-    <th><strong>Count</strong></th>
-    </tr>
-    </thead>
-    {% if sortedFormats %}
-      {% for key,value in sortedFormats.items() %}
-        <tr>
-          <td>{{ key }}</td>
-          <td>{{ value }}</td>
-        </tr>
-      {% endfor %}
-    {% endif %}
-</table>
+<table id="formats1" class="table table-striped table-bordered">
+      <thead>
+      <tr>
+      <th><strong>Format</strong></th>
+      <th width="20%"><strong>Count</strong></th>
+      <th width="20%"><strong>Size in bytes</strong></th>
+      </tr>
+      </thead>
+      {% if formatCount %}
+        {% for key,value in formatCount.items() %}
+          <tr>
+            <td>{{ key }}</td>
+            <td>{{ value["count"] }}</td>
+            <td>{% if value["size"] == None %} 0
+              {% else %}{{ value["size"] }}
+              {% endif %}</td>
+          </tr>
+        {% endfor %}
+      {% endif %}
+  </table>
 
-
+</div>
 </body>
 </html>

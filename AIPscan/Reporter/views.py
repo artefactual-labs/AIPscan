@@ -86,6 +86,15 @@ def reports():
     )
 
 
+def GetHumanReadableFilesize(size, precision=2):
+    suffixes = ["B", "KB", "MB", "GB", "TB"]
+    suffixIndex = 0
+    while size > 1024 and suffixIndex < 4:
+        suffixIndex += 1  # increment the index of the suffix
+        size = size / 1024.0  # apply the division
+    return "%.*f%s" % (precision, size, suffixes[suffixIndex])
+
+
 @reporter.route("/report_formats_count/", methods=["GET"])
 def report_formats_count():
     startdate = request.args.get("startdate")
@@ -97,6 +106,8 @@ def report_formats_count():
 
     formatLabels = []
     formatCounts = []
+    formatCount = {}
+
     originalsCount = 0
 
     for aip in AIPs:
@@ -114,19 +125,29 @@ def report_formats_count():
             elif ingestEvent.date > datetime.strptime(enddate, "%Y-%m-%d"):
                 continue
             else:
-                formatLabels.append(original.format)
+                format = original.format
+                size = original.size
+                formatLabels.append(format)
                 originalsCount += 1
 
-    formatCounts = Counter(formatLabels)
-    sortedFormats = dict(formatCounts.most_common())
+                if format in formatCount:
+                    formatCount[format]["count"] += 1
+                    formatCount[format]["size"] += size
+                else:
+                    formatCount.update({format: {"count": 1, "size": size}})
+
+    for key, value in formatCount.items():
+        print(key)
+        print(value["size"])
+        print()
 
     return render_template(
         "report_formats_count.html",
         startdate=startdate,
         enddate=enddate,
         storageService=storageService,
-        sortedFormats=sortedFormats,
         originalsCount=originalsCount,
+        formatCount=formatCount,
     )
 
 

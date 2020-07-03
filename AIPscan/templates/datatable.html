@@ -22,5 +22,11 @@
                 "buttons": [{extend: 'print', className: "print-button"}],
                 "dom": "lBfrtip",
             } );
+            $('#formats1').DataTable( {
+              "lengthMenu": [[10, 30, 60, -1], [10, 30, 60, "All"]],
+              "paging" : false,
+              "dom" : "",
+              "order": [[ 1, "desc" ]]
+            } );
         } );
     </script>
