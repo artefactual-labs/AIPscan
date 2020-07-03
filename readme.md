@@ -1,5 +1,5 @@
 # AIPscan
-Collect repository-wide info about [Archivematica](https://archivematica.org) AIPs
+Collect repository-wide info about [Archivematica](https://archivematica.org) Archival Information Packages (AIPs)
 
 ![screencap1](screencaps/aipscan_fetch_job.png)
 
