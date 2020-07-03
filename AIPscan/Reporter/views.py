@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, request
 from AIPscan import db
+from AIPscan.helpers import GetHumanReadableFilesize
 from AIPscan.models import (
     aips,
     originals,
@@ -86,15 +87,6 @@ def reports():
     )
 
 
-def GetHumanReadableFilesize(size, precision=2):
-    suffixes = ["B", "KB", "MB", "GB", "TB"]
-    suffixIndex = 0
-    while size > 1024 and suffixIndex < 4:
-        suffixIndex += 1  # increment the index of the suffix
-        size = size / 1024.0  # apply the division
-    return "%.*f%s" % (precision, size, suffixes[suffixIndex])
-
-
 @reporter.route("/report_formats_count/", methods=["GET"])
 def report_formats_count():
     startdate = request.args.get("startdate")
@@ -137,9 +129,14 @@ def report_formats_count():
                     formatCount.update({format: {"count": 1, "size": size}})
 
     for key, value in formatCount.items():
-        print(key)
-        print(value["size"])
-        print()
+        size = value["size"]
+        if size != None:
+            humanSize = GetHumanReadableFilesize(size)
+            formatCount[key] = {
+                "count": value["count"],
+                "size": value["size"],
+                "humansize": humanSize,
+            }
 
     return render_template(
         "report_formats_count.html",

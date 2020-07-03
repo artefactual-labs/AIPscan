@@ -24,8 +24,9 @@
       <thead>
       <tr>
       <th><strong>Format</strong></th>
-      <th width="20%"><strong>Count</strong></th>
-      <th width="20%"><strong>Size in bytes</strong></th>
+      <th width="15%"><strong>Count</strong></th>
+      <th width="15%"><strong>Size in bytes</strong></th>
+      <th width="15%"><strong>Size</strong></th>
       </tr>
       </thead>
       {% if formatCount %}
@@ -36,6 +37,7 @@
             <td>{% if value["size"] == None %} 0
               {% else %}{{ value["size"] }}
               {% endif %}</td>
+            <td>{{ value["humansize"] }}</td>
           </tr>
         {% endfor %}
       {% endif %}
