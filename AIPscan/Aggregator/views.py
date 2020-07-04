@@ -177,12 +177,16 @@ def new_fetch_job(id):
     sql = "SELECT package_task_id FROM package_tasks WHERE workflow_coordinator_id = ?"
     # run a while loop in case the workflow coordinator task hasn't finished writing to dbase yet
     while True:
-        cursor.execute(
-            sql, (task.id,),
-        )
-        taskId = cursor.fetchone()
-        if taskId is not None:
-            break
+        try:
+            cursor.execute(
+                sql, (task.id,),
+            )
+            taskId = cursor.fetchone()
+            if taskId is not None:
+                break
+        except:
+            print("celertytasks.db not available yet")
+            continue
 
     # send response back to Javascript function that was triggered by the 'New Fetch Job' button
     response = {"timestamp": timestamp, "taskId": taskId, "fetchJobId": fetchJob.id}
