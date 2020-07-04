@@ -13,6 +13,8 @@ from AIPscan.models import (
 )
 from collections import Counter
 from datetime import datetime
+import json
+
 
 reporter = Blueprint("reporter", __name__, template_folder="templates")
 
@@ -166,6 +168,11 @@ def report_formats_count():
                 "humansize": humanSize,
             }
 
+    differentFormats = len(formatCount.keys())
+
+    with open("formats.json", "w") as fp:
+        json.dump(formatCount, fp)
+
     return render_template(
         "report_formats_count.html",
         startdate=startdate,
@@ -173,6 +180,7 @@ def report_formats_count():
         storageService=storageService,
         originalsCount=originalsCount,
         formatCount=formatCount,
+        differentFormats=differentFormats,
     )
 
 
@@ -211,6 +219,8 @@ def chart_formats_count():
     labels = list(formatCounts.keys())
     values = list(formatCounts.values())
 
+    differentFormats = len(formatCounts.keys())
+
     return render_template(
         "chart_formats_count.html",
         startdate=startdate,
@@ -219,4 +229,5 @@ def chart_formats_count():
         labels=labels,
         values=values,
         originalsCount=originalsCount,
+        differentFormats=differentFormats,
     )
