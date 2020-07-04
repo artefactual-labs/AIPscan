@@ -24,8 +24,6 @@ Collect repository-wide info about [Archivematica](https://archivematica.org) Ar
   `python create_aipscan_db.py`      
 * In a terminal window, start the Flask server:  
   `python run.py`
-* In another terminal window, from the same root directory, start a Celery worker:  
-  `celery -A AIPscan.Aggregator.tasks worker --loglevel=info`  
 * Download and install RabbitMQ queue manager:  
   https://www.rabbitmq.com/download.html
 * In another terminal window, start RabbitMQ queue manager  
@@ -33,7 +31,9 @@ Collect repository-wide info about [Archivematica](https://archivematica.org) Ar
   `sudo rabbitmq-server`
 * To see RabbitMQ dashboard visit:  
   http://localhost:15672/  
-  un: guest, pw: guest
+  un: guest, pw: guest  
+* In another terminal window, from the same root directory, start a Celery worker:  
+  `celery -A AIPscan.Aggregator.tasks worker --loglevel=info`  
 
 * Go to `localhost:5000` in browser.
 * Select "New Storage Service"  
