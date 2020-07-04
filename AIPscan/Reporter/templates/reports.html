@@ -24,13 +24,13 @@
   <tr><th>Report</th><th><img src="{{ url_for('static', filename='assets/calendar-icon.png') }}" style="height: 1.5em; margin-right: 5px;"/>Start date</th><th><img src="{{ url_for('static', filename='assets/calendar-icon.png') }}" style="height: 1.5em; margin-right: 5px;"/>End date</th><th>Format</th></tr>
 
   <tr><td>File format count</td><td><input id="startdate1" type="text" value="{{ startdate }}">
-</td><td><input type="text" id="enddate1" value="{{ enddate }}"></td><td><a href=""><button type="button" id="report1a" class="btn btn-info" style="margin-bottom:5px;">Tabular</button></a><a href=""><button type="button" id="report1b" class="btn btn-info" style="margin-left:10px; margin-bottom:5px;">Chart</button></a></td></tr>
+</td><td><input type="text" id="enddate1" value="{{ enddate }}"></td><td><a href=""><button type="button" id="report1a" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a><a href=""><button type="button" id="report1b" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Pie Chart</button></a><a href=""><button type="button" id="report1c" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Scatter Plot</button></a></td></tr>
 
-  <tr><td>AIP contents</td><td></td><td></td><td><a href="#"><button type="button" class="btn btn-info" style="margin-bottom:5px;">Tabular</button></a></td></tr>
+  <tr><td>AIP contents</td><td></td><td></td><td><a href="#"><button type="button" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a></td></tr>
 
-  <tr><td>Format version count</td><td></td><td></td><td><a href="#"><button type="button" class="btn btn-info" style="margin-bottom:5px;">Tabular</button></a></td></tr>
+  <tr><td>Format version count</td><td></td><td></td><td><a href="#"><button type="button" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a></td></tr>
 
-  <tr><td>Preservation copy count</td><td></td><td></td><td><a href="#"><button type="button" class="btn btn-info" style="margin-bottom:5px;">Tabular</button></a></td></tr>
+  <tr><td>Preservation copy count</td><td></td><td></td><td><a href="#"><button type="button" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a></td></tr>
 
 </table>
 
@@ -71,7 +71,6 @@ $(document).ready(function(){
      var url = window.location.origin + '/reporter/report_formats_count?startdate=' + startdate + '&enddate=' + enddate + '&ssId=' + storageServiceId
      window.open(url);
     }
-
   });
   $("#report1b").on("click", function(){
     var startdate = $('#startdate1').val();
@@ -84,7 +83,18 @@ $(document).ready(function(){
      var url = window.location.origin + '/reporter/chart_formats_count?startdate=' + startdate + '&enddate=' + enddate + '&ssId=' + storageServiceId
      window.open(url);
     }
-
+  });
+  $("#report1c").on("click", function(){
+    var startdate = $('#startdate1').val();
+    var enddate = $('#enddate1').val();
+    if (enddate < startdate) {
+        alert("The start date must be before the end date");
+      }
+    else {
+     var storageServiceId = $('#ss').val();
+     var url = window.location.origin + '/reporter/plot_formats_count?startdate=' + startdate + '&enddate=' + enddate + '&ssId=' + storageServiceId
+     window.open(url);
+    }
   });
 });
 </script>

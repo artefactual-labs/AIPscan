@@ -13,10 +13,6 @@ from AIPscan.models import (
 )
 from collections import Counter
 from datetime import datetime
-import plotly.express as px
-import pandas as pd
-import json
-
 
 reporter = Blueprint("reporter", __name__, template_folder="templates")
 
@@ -274,28 +270,23 @@ def plot_formats_count():
                     formatCount.update({format: {"count": 1, "size": size}})
 
     totalSize = 0
+    x_axis = []
+    y_axis = []
+    format = []
+    humanSize = []
 
     for key, value in formatCount.items():
+        y_axis.append(value["count"])
         size = value["size"]
-        if size != None:
-            totalSize += size
-            humanSize = GetHumanReadableFilesize(size)
-            formatCount[key] = {
-                "count": value["count"],
-                "size": size,
-                "humansize": humanSize,
-            }
+        if size == None:
+            size = 0
+        x_axis.append(size)
+        totalSize += size
+        humanSize.append(GetHumanReadableFilesize(size))
 
+    format = list(formatCount.keys())
     differentFormats = len(formatCount.keys())
     totalHumanSize = GetHumanReadableFilesize(totalSize)
-
-    # format Pandas data frame for scatterplot
-    df1 = pd.read_json(json.dumps(formatCount))
-    df2 = df1.transpose()
-    df3 = df2.rename_axis("format").reset_index()
-    df4 = df3.sort_values(by="count", ascending=False)
-    df5 = df4.rename(columns={"size": "size in bytes", "humansize": "size"})
-    df6 = json.dumps(df5)
 
     return render_template(
         "plot_formats_count.html",
@@ -306,5 +297,8 @@ def plot_formats_count():
         formatCount=formatCount,
         differentFormats=differentFormats,
         totalHumanSize=totalHumanSize,
-        df=df6,
+        x_axis=x_axis,
+        y_axis=y_axis,
+        format=format,
+        humansize=humanSize,
     )
