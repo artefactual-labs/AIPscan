@@ -7,7 +7,7 @@ Collect repository-wide info about [Archivematica](https://archivematica.org) Ar
 
 ![screencap3](screencaps/aipscan_select_report.png)
 
-![screencap4](screencaps/aipscan_piechart_report.png)
+![screencap4](screencaps/aipscan_scatterplot_report.png)
 
 
 # Installation
