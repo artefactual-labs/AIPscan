@@ -105,8 +105,10 @@ def reports():
     storageServices = storage_services.query.all()
 
     now = datetime.now()
-    startdate = str(datetime(now.year, 1, 1))[:-9]
-    enddate = str(datetime(now.year, now.month, now.day))[:-9]
+    lastYear = now.year - 1
+    startdate = str(datetime(lastYear, 12, 31))[:-9]
+    tomorrow = now.day + 1
+    enddate = str(datetime(now.year, now.month, tomorrow))[:-9]
 
     return render_template(
         "reports.html",
@@ -125,10 +127,7 @@ def report_formats_count():
 
     AIPs = aips.query.filter_by(storage_service_id=storageServiceId).all()
 
-    formatLabels = []
-    formatCounts = []
     formatCount = {}
-
     originalsCount = 0
 
     for aip in AIPs:
@@ -156,15 +155,21 @@ def report_formats_count():
                 else:
                     formatCount.update({format: {"count": 1, "size": size}})
 
+    totalSize = 0
+
     for key, value in formatCount.items():
         size = value["size"]
         if size != None:
+            totalSize += size
             humanSize = GetHumanReadableFilesize(size)
             formatCount[key] = {
                 "count": value["count"],
-                "size": value["size"],
+                "size": size,
                 "humansize": humanSize,
             }
+
+    differentFormats = len(formatCount.keys())
+    totalHumanSize = GetHumanReadableFilesize(totalSize)
 
     return render_template(
         "report_formats_count.html",
@@ -173,6 +178,8 @@ def report_formats_count():
         storageService=storageService,
         originalsCount=originalsCount,
         formatCount=formatCount,
+        differentFormats=differentFormats,
+        totalHumanSize=totalHumanSize,
     )
 
 
@@ -211,6 +218,8 @@ def chart_formats_count():
     labels = list(formatCounts.keys())
     values = list(formatCounts.values())
 
+    differentFormats = len(formatCounts.keys())
+
     return render_template(
         "chart_formats_count.html",
         startdate=startdate,
@@ -219,4 +228,77 @@ def chart_formats_count():
         labels=labels,
         values=values,
         originalsCount=originalsCount,
+        differentFormats=differentFormats,
+    )
+
+
+@reporter.route("/plot_formats_count/", methods=["GET"])
+def plot_formats_count():
+    startdate = request.args.get("startdate")
+    enddate = request.args.get("enddate")
+    storageServiceId = request.args.get("ssId")
+    storageService = storage_services.query.get(storageServiceId)
+
+    AIPs = aips.query.filter_by(storage_service_id=storageServiceId).all()
+
+    formatCount = {}
+    originalsCount = 0
+
+    for aip in AIPs:
+        originalFiles = originals.query.filter_by(aip_id=aip.id)
+        for original in originalFiles:
+            # Note that original files in packages do not have a PREMIS ingestion
+            # event. Therefore "message digest calculation" is used to get the
+            # ingest date for all originals. This event typically happens within
+            # the same second or seconds of the ingestion event and is done for all files.
+            ingestEvent = events.query.filter_by(
+                original_id=original.id, type="message digest calculation"
+            ).first()
+            if ingestEvent.date < datetime.strptime(startdate, "%Y-%m-%d"):
+                continue
+            elif ingestEvent.date > datetime.strptime(enddate, "%Y-%m-%d"):
+                continue
+            else:
+                format = original.format
+                size = original.size
+                originalsCount += 1
+
+                if format in formatCount:
+                    formatCount[format]["count"] += 1
+                    formatCount[format]["size"] += size
+                else:
+                    formatCount.update({format: {"count": 1, "size": size}})
+
+    totalSize = 0
+    x_axis = []
+    y_axis = []
+    format = []
+    humanSize = []
+
+    for key, value in formatCount.items():
+        y_axis.append(value["count"])
+        size = value["size"]
+        if size == None:
+            size = 0
+        x_axis.append(size)
+        totalSize += size
+        humanSize.append(GetHumanReadableFilesize(size))
+
+    format = list(formatCount.keys())
+    differentFormats = len(formatCount.keys())
+    totalHumanSize = GetHumanReadableFilesize(totalSize)
+
+    return render_template(
+        "plot_formats_count.html",
+        startdate=startdate,
+        enddate=enddate,
+        storageService=storageService,
+        originalsCount=originalsCount,
+        formatCount=formatCount,
+        differentFormats=differentFormats,
+        totalHumanSize=totalHumanSize,
+        x_axis=x_axis,
+        y_axis=y_axis,
+        format=format,
+        humansize=humanSize,
     )

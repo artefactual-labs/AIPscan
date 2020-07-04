@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>{{ storageService.name }}: file formats count</title>
+  <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/custom.css') }}">
+  <script type="text/javascript" language="javascript" src="{{ url_for('static', filename='js/plotly-latest.min.js') }}"></script>
+
+</head>
+<body>
+
+<div class="container-fluid" style="margin: 20px 0;">
+
+<div class="alert alert-secondary">
+  <a class="noprint" onClick="window.print();return false"><button type="button" class="btn btn-info" style="float:right;">Print</button></a>
+  <strong>{{ storageService.name }}: file formats count</strong><br />
+  {{ originalsCount }} original files ingested between {{startdate}} and {{enddate}}<br />
+  {{ differentFormats }} different formats totalling {{ totalHumanSize }}
+</div>
+
+<div id="scatterplot">
+  <script>
+  var data = [{
+    x: {{ x_axis | safe }},
+    y: {{ y_axis | safe }},
+    text: {{ format | safe }},
+    customdata: {{ humansize | safe }},
+    marker: {size: 7},
+    hovertemplate: '<b>%{text}</b><br />' +
+                   'count: %{y}<br />' +
+                   'size: %{customdata}<br />' +
+                   'size in bytes: %{x}' +
+                   '<extra></extra>',
+    type: 'scatter',
+    mode: 'markers',
+  }];
+  var layout = {
+    hovermode: 'closest', yaxis: {title:'format occurence count'}, xaxis: {title:'total size in bytes'},
+    showlegend: false
+  }
+
+  Plotly.newPlot('scatterplot', data, layout, {displayModeBar: false});
+  </script>
+</div>
+
+</div>
+</body>
+</html>

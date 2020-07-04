@@ -48,7 +48,7 @@
     {% for metsFetchJob in metsFetchJobs %}
       <tr>
         <td>{{ metsFetchJob.download_start }}</td>
-        <td>{{ metsFetchJob.download_end - metsFetchJob.download_start }}</td>
+        <td>{% if metsFetchJob.download_end %} {{ metsFetchJob.download_end - metsFetchJob.download_start }} {% endif %}</td>
         <td>{{ metsFetchJob.total_packages }}</td>
         <td>{{ metsFetchJob.total_aips }}</td>
         <td>

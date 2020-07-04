@@ -12,10 +12,13 @@
 </head>
 <body>
 
+<div class="container-fluid" style="margin: 20px 0;">
+
 <div class="alert alert-secondary">
   <a class="noprint" onClick="window.print();return false"><button type="button" class="btn btn-info" style="float:right;">Print</button></a>
   <strong>{{ storageService.name }}: file formats count</strong><br />
-  {{ originalsCount }} original files ingested between {{startdate}} and {{enddate}}
+  {{ originalsCount }} original files ingested between {{startdate}} and {{enddate}}<br />
+  {{ differentFormats }} different formats
 </div>
 
 <div class="col-lg" id="formatChart" style="display: block; margin-top: 20px;">
@@ -58,5 +61,6 @@
    let myPie = new Chart(ctx, config)
 </script>
 
+</div>
 </body>
 </html>

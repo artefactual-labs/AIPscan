@@ -16,9 +16,12 @@ aggregator = Blueprint("aggregator", __name__, template_folder="templates")
 @app.route("/")
 @aggregator.route("/", methods=["GET"])
 def ss_default():
+    # load the default storage service
     storageService = storage_services.query.filter_by(default=True).first()
     if storageService is None:
+        # no default is set, retrieve the first storage service
         storageService = storage_services.query.first()
+        # there are no storage services defined at all
         if storageService is None:
             return redirect(url_for("aggregator.ss"))
     metsFetchJobs = fetch_jobs.query.filter_by(
