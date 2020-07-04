@@ -12,7 +12,7 @@ from AIPscan.models import (
     storage_services,
 )
 from collections import Counter
-from datetime import datetime
+from datetime import datetime, timedelta
 
 reporter = Blueprint("reporter", __name__, template_folder="templates")
 
@@ -105,10 +105,8 @@ def reports():
     storageServices = storage_services.query.all()
 
     now = datetime.now()
-    lastYear = now.year - 1
-    startdate = str(datetime(lastYear, 12, 31))[:-9]
-    tomorrow = now.day + 1
-    enddate = str(datetime(now.year, now.month, tomorrow))[:-9]
+    startdate = str(datetime(now.year, 1, 1))[:-9]
+    enddate = str(datetime(now.year, now.month, now.day))[:-9]
 
     return render_template(
         "reports.html",
@@ -122,13 +120,19 @@ def reports():
 def report_formats_count():
     startdate = request.args.get("startdate")
     enddate = request.args.get("enddate")
+    # make date range inclusive
+    start = datetime.strptime(startdate, "%Y-%m-%d")
+    end = datetime.strptime(enddate, "%Y-%m-%d")
+    daybefore = start - timedelta(days=1)
+    dayafter = end + timedelta(days=1)
+
     storageServiceId = request.args.get("ssId")
     storageService = storage_services.query.get(storageServiceId)
-
     AIPs = aips.query.filter_by(storage_service_id=storageServiceId).all()
 
     formatCount = {}
     originalsCount = 0
+    delta = timedelta(days=1)
 
     for aip in AIPs:
         originalFiles = originals.query.filter_by(aip_id=aip.id)
@@ -140,9 +144,9 @@ def report_formats_count():
             ingestEvent = events.query.filter_by(
                 original_id=original.id, type="message digest calculation"
             ).first()
-            if ingestEvent.date < datetime.strptime(startdate, "%Y-%m-%d"):
+            if ingestEvent.date < daybefore:
                 continue
-            elif ingestEvent.date > datetime.strptime(enddate, "%Y-%m-%d"):
+            elif ingestEvent.date > dayafter:
                 continue
             else:
                 format = original.format
@@ -187,9 +191,14 @@ def report_formats_count():
 def chart_formats_count():
     startdate = request.args.get("startdate")
     enddate = request.args.get("enddate")
+    # make date range inclusive
+    start = datetime.strptime(startdate, "%Y-%m-%d")
+    end = datetime.strptime(enddate, "%Y-%m-%d")
+    daybefore = start - timedelta(days=1)
+    dayafter = end + timedelta(days=1)
+
     storageServiceId = request.args.get("ssId")
     storageService = storage_services.query.get(storageServiceId)
-
     AIPs = aips.query.filter_by(storage_service_id=storageServiceId).all()
 
     formatLabels = []
@@ -206,9 +215,9 @@ def chart_formats_count():
             ingestEvent = events.query.filter_by(
                 original_id=original.id, type="message digest calculation"
             ).first()
-            if ingestEvent.date < datetime.strptime(startdate, "%Y-%m-%d"):
+            if ingestEvent.date < daybefore:
                 continue
-            elif ingestEvent.date > datetime.strptime(enddate, "%Y-%m-%d"):
+            elif ingestEvent.date > dayafter:
                 continue
             else:
                 formatLabels.append(original.format)
@@ -236,9 +245,14 @@ def chart_formats_count():
 def plot_formats_count():
     startdate = request.args.get("startdate")
     enddate = request.args.get("enddate")
+    # make date range inclusive
+    start = datetime.strptime(startdate, "%Y-%m-%d")
+    end = datetime.strptime(enddate, "%Y-%m-%d")
+    daybefore = start - timedelta(days=1)
+    dayafter = end + timedelta(days=1)
+
     storageServiceId = request.args.get("ssId")
     storageService = storage_services.query.get(storageServiceId)
-
     AIPs = aips.query.filter_by(storage_service_id=storageServiceId).all()
 
     formatCount = {}
@@ -254,9 +268,9 @@ def plot_formats_count():
             ingestEvent = events.query.filter_by(
                 original_id=original.id, type="message digest calculation"
             ).first()
-            if ingestEvent.date < datetime.strptime(startdate, "%Y-%m-%d"):
+            if ingestEvent.date < daybefore:
                 continue
-            elif ingestEvent.date > datetime.strptime(enddate, "%Y-%m-%d"):
+            elif ingestEvent.date > dayafter:
                 continue
             else:
                 format = original.format
