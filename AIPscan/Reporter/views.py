@@ -13,6 +13,8 @@ from AIPscan.models import (
 )
 from collections import Counter
 from datetime import datetime
+import plotly.express as px
+import pandas as pd
 import json
 
 
@@ -107,8 +109,10 @@ def reports():
     storageServices = storage_services.query.all()
 
     now = datetime.now()
-    startdate = str(datetime(now.year, 1, 1))[:-9]
-    enddate = str(datetime(now.year, now.month, now.day))[:-9]
+    lastYear = now.year - 1
+    startdate = str(datetime(lastYear, 12, 31))[:-9]
+    tomorrow = now.day + 1
+    enddate = str(datetime(now.year, now.month, tomorrow))[:-9]
 
     return render_template(
         "reports.html",
@@ -127,10 +131,7 @@ def report_formats_count():
 
     AIPs = aips.query.filter_by(storage_service_id=storageServiceId).all()
 
-    formatLabels = []
-    formatCounts = []
     formatCount = {}
-
     originalsCount = 0
 
     for aip in AIPs:
@@ -232,4 +233,78 @@ def chart_formats_count():
         values=values,
         originalsCount=originalsCount,
         differentFormats=differentFormats,
+    )
+
+
+@reporter.route("/plot_formats_count/", methods=["GET"])
+def plot_formats_count():
+    startdate = request.args.get("startdate")
+    enddate = request.args.get("enddate")
+    storageServiceId = request.args.get("ssId")
+    storageService = storage_services.query.get(storageServiceId)
+
+    AIPs = aips.query.filter_by(storage_service_id=storageServiceId).all()
+
+    formatCount = {}
+    originalsCount = 0
+
+    for aip in AIPs:
+        originalFiles = originals.query.filter_by(aip_id=aip.id)
+        for original in originalFiles:
+            # Note that original files in packages do not have a PREMIS ingestion
+            # event. Therefore "message digest calculation" is used to get the
+            # ingest date for all originals. This event typically happens within
+            # the same second or seconds of the ingestion event and is done for all files.
+            ingestEvent = events.query.filter_by(
+                original_id=original.id, type="message digest calculation"
+            ).first()
+            if ingestEvent.date < datetime.strptime(startdate, "%Y-%m-%d"):
+                continue
+            elif ingestEvent.date > datetime.strptime(enddate, "%Y-%m-%d"):
+                continue
+            else:
+                format = original.format
+                size = original.size
+                originalsCount += 1
+
+                if format in formatCount:
+                    formatCount[format]["count"] += 1
+                    formatCount[format]["size"] += size
+                else:
+                    formatCount.update({format: {"count": 1, "size": size}})
+
+    totalSize = 0
+
+    for key, value in formatCount.items():
+        size = value["size"]
+        if size != None:
+            totalSize += size
+            humanSize = GetHumanReadableFilesize(size)
+            formatCount[key] = {
+                "count": value["count"],
+                "size": size,
+                "humansize": humanSize,
+            }
+
+    differentFormats = len(formatCount.keys())
+    totalHumanSize = GetHumanReadableFilesize(totalSize)
+
+    # format Pandas data frame for scatterplot
+    df1 = pd.read_json(json.dumps(formatCount))
+    df2 = df1.transpose()
+    df3 = df2.rename_axis("format").reset_index()
+    df4 = df3.sort_values(by="count", ascending=False)
+    df5 = df4.rename(columns={"size": "size in bytes", "humansize": "size"})
+    df6 = json.dumps(df5)
+
+    return render_template(
+        "plot_formats_count.html",
+        startdate=startdate,
+        enddate=enddate,
+        storageService=storageService,
+        originalsCount=originalsCount,
+        formatCount=formatCount,
+        differentFormats=differentFormats,
+        totalHumanSize=totalHumanSize,
+        df=df6,
     )
