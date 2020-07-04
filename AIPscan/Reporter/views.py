@@ -158,20 +158,21 @@ def report_formats_count():
                 else:
                     formatCount.update({format: {"count": 1, "size": size}})
 
+    totalSize = 0
+
     for key, value in formatCount.items():
         size = value["size"]
         if size != None:
+            totalSize += size
             humanSize = GetHumanReadableFilesize(size)
             formatCount[key] = {
                 "count": value["count"],
-                "size": value["size"],
+                "size": size,
                 "humansize": humanSize,
             }
 
     differentFormats = len(formatCount.keys())
-
-    with open("formats.json", "w") as fp:
-        json.dump(formatCount, fp)
+    totalHumanSize = GetHumanReadableFilesize(totalSize)
 
     return render_template(
         "report_formats_count.html",
@@ -181,6 +182,7 @@ def report_formats_count():
         originalsCount=originalsCount,
         formatCount=formatCount,
         differentFormats=differentFormats,
+        totalHumanSize=totalHumanSize,
     )
 
 
