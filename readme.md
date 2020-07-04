@@ -32,7 +32,7 @@ Collect repository-wide info about [Archivematica](https://archivematica.org) Ar
 * To see RabbitMQ dashboard visit:  
   http://localhost:15672/  
   un: guest, pw: guest  
-* In another terminal window, from the same root directory, start a Celery worker:  
+* In another terminal window, from the AIPscan root directory, start a Celery worker:  
   `celery -A AIPscan.Aggregator.tasks worker --loglevel=info`  
 
 * Go to `localhost:5000` in browser.
