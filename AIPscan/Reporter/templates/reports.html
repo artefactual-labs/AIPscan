@@ -26,11 +26,11 @@
   <tr><td>File format count</td><td><input id="startdate1" type="text" value="{{ startdate }}">
 </td><td><input type="text" id="enddate1" value="{{ enddate }}"></td><td><a href=""><button type="button" id="report1a" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a><a href=""><button type="button" id="report1b" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Pie Chart</button></a><a href=""><button type="button" id="report1c" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Scatter Plot</button></a></td></tr>
 
-  <tr><td>AIP contents</td><td></td><td></td><td><a href="#"><button type="button" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a></td></tr>
+  <tr><td>AIP contents</td><td></td><td></td><td><a href="#"><button type="button" id="report2a" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a></td></tr>
 
-  <tr><td>Format version count</td><td></td><td></td><td><a href="#"><button type="button" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a></td></tr>
+  <tr><td>Format version count</td><td></td><td></td><td><a href="#"><button type="button" id="report3a" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a></td></tr>
 
-  <tr><td>Preservation copy count</td><td></td><td></td><td><a href="#"><button type="button" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a></td></tr>
+  <tr><td>Preservation copy count</td><td></td><td></td><td><a href="#"><button type="button" id="report4a" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a></td></tr>
 
 </table>
 
@@ -95,6 +95,51 @@ $(document).ready(function(){
      var url = window.location.origin + '/reporter/plot_formats_count?startdate=' + startdate + '&enddate=' + enddate + '&ssId=' + storageServiceId
      window.open(url);
     }
+  });
+  $("#report2a").on("click", function(){
+    alert("coming soon");
+    /*
+    var startdate = $('#startdate2').val();
+    var enddate = $('#enddate2').val();
+    if (enddate < startdate) {
+        alert("The start date must be before the end date");
+      }
+    else {
+     var storageServiceId = $('#ss').val();
+     var url = window.location.origin + '/reporter/plot_formats_count?startdate=' + startdate + '&enddate=' + enddate + '&ssId=' + storageServiceId
+     window.open(url);
+    }
+    */
+  });
+  $("#report3a").on("click", function(){
+    alert("coming soon");
+    /*
+    var startdate = $('#startdate3').val();
+    var enddate = $('#enddate3').val();
+    if (enddate < startdate) {
+        alert("The start date must be before the end date");
+      }
+    else {
+     var storageServiceId = $('#ss').val();
+     var url = window.location.origin + ''
+     window.open(url);
+    }
+    */
+  });
+  $("#report4a").on("click", function(){
+    alert("coming soon");
+    /*
+    var startdate = $('#startdate4').val();
+    var enddate = $('#enddate4').val();
+    if (enddate < startdate) {
+        alert("The start date must be before the end date");
+      }
+    else {
+     var storageServiceId = $('#ss').val();
+     var url = window.location.origin + ''
+     window.open(url);
+    }
+    */
   });
 });
 </script>
