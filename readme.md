@@ -40,4 +40,4 @@ Collect repository-wide info about [Archivematica](https://archivematica.org) Ar
 * Add an Archivematica Storage Service record, including API Key, eg.  
  `https://amdemo.artefactual.com:8000`
 * Select "New Fetch Job"
-* When Fetch Job completes, select "View AIPs"
+* When Fetch Job completes, select "View AIPs" button, "AIPs" menu, or "Reports" menu.
