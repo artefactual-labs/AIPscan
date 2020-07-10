@@ -1,0 +1,4 @@
+-r base.txt
+
+flake8==3.8.3
+pytest==5.4.3
