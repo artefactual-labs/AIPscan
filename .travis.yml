@@ -1,0 +1,30 @@
+dist: xenial
+sudo: false
+language: python
+python: "3.6"
+install: pip install -r requirements.txt
+
+branches:
+  only:
+    - main
+
+before_script:
+  - pip install tox
+
+script: tox
+
+notifications:
+  email: false
+
+branches:
+  only:
+  - main
+
+matrix:
+  include:
+
+    - python: "3.6"
+      env: TOXENV=py36
+
+    - python: "3.6"
+      env: TOXENV=linting
