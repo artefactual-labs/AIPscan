@@ -155,7 +155,8 @@ def report_formats_count():
 
                 if format in formatCount:
                     formatCount[format]["count"] += 1
-                    formatCount[format]["size"] += size
+                    if formatCount[format]["size"] != None:
+                        formatCount[format]["size"] += size
                 else:
                     formatCount.update({format: {"count": 1, "size": size}})
 
