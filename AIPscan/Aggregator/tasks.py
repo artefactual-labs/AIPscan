@@ -348,7 +348,11 @@ def get_mets(
                     type = premis_event.event_type
                     uuid = premis_event.event_identifier_value
                     eventDate = premis_event.event_date_time[:-13]
-                    date = datetime.strptime(eventDate, "%Y-%m-%dT%H:%M:%S")
+                    try:
+                        date = datetime.strptime(eventDate, "%Y-%m-%dT%H:%M:%S")
+                    except:
+                        strpDate = eventDate[:-2]
+                        date = datetime.strptime(strpDate, "%Y-%m-%d")
                     if str(premis_event.event_detail) != "(('event_detail',),)":
                         detail = premis_event.event_detail
                     else:
