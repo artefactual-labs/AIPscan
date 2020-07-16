@@ -347,12 +347,8 @@ def get_mets(
                 for premis_event in aipFile.get_premis_events():
                     type = premis_event.event_type
                     uuid = premis_event.event_identifier_value
-                    eventDate = premis_event.event_date_time[:-13]
-                    try:
-                        date = datetime.strptime(eventDate, "%Y-%m-%dT%H:%M:%S")
-                    except:
-                        strpDate = eventDate[:-2]
-                        date = datetime.strptime(strpDate, "%Y-%m-%d")
+                    eventDate = premis_event.event_date_time[0:19]
+                    date = datetime.strptime(eventDate, "%Y-%m-%dT%H:%M:%S")
                     if str(premis_event.event_detail) != "(('event_detail',),)":
                         detail = premis_event.event_detail
                     else:
@@ -392,7 +388,7 @@ def get_mets(
             if aipFile.use == "preservation":
                 for premis_event in aipFile.get_premis_events():
                     if (premis_event.event_type) == "creation":
-                        eventDate = (premis_event.event_date_time)[:-13]
+                        eventDate = (premis_event.event_date_time)[0:19]
                         normalizationDate = datetime.strptime(
                             eventDate, "%Y-%m-%dT%H:%M:%S"
                         )
