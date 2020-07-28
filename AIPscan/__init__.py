@@ -22,4 +22,4 @@ from AIPscan.User.views import user
 app.register_blueprint(aggregator, url_prefix="/aggregator")
 app.register_blueprint(reporter, url_prefix="/reporter")
 app.register_blueprint(api, url_prefix="/api")
-app.register_blueprint(api, url_prefix="/user")
+app.register_blueprint(user, url_prefix="/user")
