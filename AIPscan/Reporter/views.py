@@ -22,6 +22,52 @@ reporter = Blueprint("reporter", __name__, template_folder="templates")
 @reporter.route("/view_aips/", methods=["GET"])
 @reporter.route("/view_aips/<id>", methods=["GET"])
 def view_aips(id=0):
+
+    # CR: This is a really good attempt at being robust. There are a few things
+    # we can do here to simplify it though. And a couple of other things we
+    # might want to consider.
+    #
+    # Variable naming:
+    #
+    #    * 'storageService' should be 'storage_service' as we try to use snake
+    #       case in Python with CamelCase reserved for classes. After a while
+    #       it really helps to differentiate things.
+    #
+    # Logic:
+    #
+    #    * I suspect this isn't quite doing what we want it to do, even though
+    #      it works, but I think this can come out of simplifying it. I'll
+    #      propose an alternative below and see what you think.
+    #
+    """
+
+    DEFAULT_STORAGE_SERVICE_ID = 1
+    storage_services_ = {}
+    storage_id = int(id)
+    if storage_id == 0 or storage_id is None:
+        storage_id = DEFAULT_STORAGE_SERVICE_ID
+    storage_service = storage_services.query.get(storage_id)
+    if storage_service:
+        aips_ = aips.query.filter_by(storage_service_id=storage_service.id).all()
+        aips_count = len(aips_)
+        storage_services_ = storage_services.query.all()
+    else:
+        aips_ = None
+        aips_count = 0
+    return render_template(
+        "view_aips.html",
+        storageServices=storage_services_,
+        storageServiceId=storage_id,
+        totalAIPs=aips_count,
+        AIPs=aips_,
+    )
+
+    """
+    # The variable names are tough eh? Maybe we can expand the model names so
+    # we can use our nice shorter names for local vars? Let's have a think
+    # though.
+    #
+
     if id != 0:
         storageService = storage_services.query.get(id)
         storageServiceId = storageService.id
