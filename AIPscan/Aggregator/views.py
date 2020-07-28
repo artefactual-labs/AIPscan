@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from flask import Blueprint, render_template, redirect, request, flash, url_for, jsonify
 from AIPscan import db, app, celery
 from AIPscan.models import fetch_jobs, storage_services

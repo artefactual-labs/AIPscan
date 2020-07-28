@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from celery import Celery
 from celery.result import AsyncResult
 from AIPscan import celery
