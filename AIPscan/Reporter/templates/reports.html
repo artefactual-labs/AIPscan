@@ -2,7 +2,15 @@
 
 {% block content %}
 
+<!--TODO container-fluid is also present on base.html should this be a
+    different class?
+-->
 <div class="container-fluid">
+
+    <!-- TODO: Same question as container-fluid for consistency across the
+         application.
+    -->
+    <div class="container-alert"></div>
 
     <div class="alert alert-header"><strong>Reports</strong></div>
 
@@ -61,7 +69,28 @@
 
 </div>
 
+<!-- TODO: Let's get this into a separate JS and import it... -->
 <script>
+
+    const WARNINGS = {
+      ALERT_SECONDARY: "secondary",
+      ALERT_INFO: "info",
+    };
+
+    // TODO: This should be a generic function across the app, so let's get
+    // this into it's own import too.
+    //
+    // TODO: Are there more idiomatic approaches? 🤷
+    bootstrap_alert = function(message, alertType) {
+      $("body > div.container-fluid > div > div.container-alert").html(
+        '<div class="alert alert-' +
+        alertType +
+        '"><a class="close" data-dismiss="alert">×</a><span>' +
+        message +
+        "</span></div>"
+      )
+    }
+
     $(document).ready(function() {
         $("#startdate1").datepicker({
             dateFormat: 'yy-mm-dd',
@@ -137,7 +166,9 @@
             }
         });
         $("#report2a").on("click", function() {
-            alert("coming soon");
+
+            bootstrap_alert('This is a demo of report two!', WARNINGS.ALERT_SECONDARY);
+
             /*
             var startdate = $('#startdate2').val();
             var enddate = $('#enddate2').val();
@@ -152,7 +183,7 @@
             */
         });
         $("#report3a").on("click", function() {
-            alert("coming soon");
+            bootstrap_alert('Coming soon...', WARNINGS.ALERT_INFO);
             /*
             var startdate = $('#startdate3').val();
             var enddate = $('#enddate3').val();
@@ -167,7 +198,7 @@
             */
         });
         $("#report4a").on("click", function() {
-            alert("coming soon");
+            bootstrap_alert('Coming soon...', WARNINGS.ALERT_INFO);
             /*
             var startdate = $('#startdate4').val();
             var enddate = $('#enddate4').val();
