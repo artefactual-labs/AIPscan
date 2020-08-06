@@ -210,9 +210,7 @@ class events(db.Model):
         "agents", secondary=event_agents, backref=db.backref("events", lazy="dynamic")
     )
 
-    def __init__(
-        self, type, uuid, date, detail, outcome, outcome_detail, original_id,
-    ):
+    def __init__(self, type, uuid, date, detail, outcome, outcome_detail, original_id):
         self.type = type
         self.uuid = uuid
         self.date = date

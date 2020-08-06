@@ -166,51 +166,22 @@
             }
         });
         $("#report2a").on("click", function() {
-
             bootstrap_alert('This is a demo of report two!', WARNINGS.ALERT_SECONDARY);
-
-            /*
-            var startdate = $('#startdate2').val();
-            var enddate = $('#enddate2').val();
-            if (enddate < startdate) {
-                alert("The start date must be before the end date");
-              }
-            else {
-             var storageServiceId = $('#ss').val();
-             var url = window.location.origin + '/reporter/plot_formats_count?startdate=' + startdate + '&enddate=' + enddate + '&ssId=' + storageServiceId
-             window.open(url);
-            }
-            */
+            const URL_AIP_CONTENTS = "/reporter/aip_contents/"
+            var storageServiceID = $('#ss').val();
+            var url = (
+              window.location.origin +
+              URL_AIP_CONTENTS +
+              '?amss_id=' +
+              storageServiceID
+            );
+            window.open(url);
         });
         $("#report3a").on("click", function() {
             bootstrap_alert('Coming soon...', WARNINGS.ALERT_INFO);
-            /*
-            var startdate = $('#startdate3').val();
-            var enddate = $('#enddate3').val();
-            if (enddate < startdate) {
-                alert("The start date must be before the end date");
-              }
-            else {
-             var storageServiceId = $('#ss').val();
-             var url = window.location.origin + ''
-             window.open(url);
-            }
-            */
         });
         $("#report4a").on("click", function() {
             bootstrap_alert('Coming soon...', WARNINGS.ALERT_INFO);
-            /*
-            var startdate = $('#startdate4').val();
-            var enddate = $('#enddate4').val();
-            if (enddate < startdate) {
-                alert("The start date must be before the end date");
-              }
-            else {
-             var storageServiceId = $('#ss').val();
-             var url = window.location.origin + ''
-             window.open(url);
-            }
-            */
         });
     });
 </script>

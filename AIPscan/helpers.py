@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+
 def GetHumanReadableFilesize(size, precision=2):
     suffixes = ["B", "KiB", "MiB", "GiB", "TiB"]
     suffixIndex = 0

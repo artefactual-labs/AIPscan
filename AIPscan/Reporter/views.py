@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
 from flask import Blueprint, render_template, request
-from AIPscan import db
+
+# from AIPscan import db
+from AIPscan.Data import data
 from AIPscan.helpers import GetHumanReadableFilesize
 from AIPscan.models import (
     aips,
@@ -364,4 +366,52 @@ def plot_formats_count():
         y_axis=y_axis,
         format=format,
         humansize=humanSize,
+    )
+
+
+@reporter.route("/aip_contents/", methods=["GET"])
+def aip_contents():
+    """Return AIP contents organized by format."""
+    storage_service_id = request.args.get("amss_id")
+    aip_data = data.aip_overview_two(storage_service_id=storage_service_id)
+    COL_UUID = "UUID"
+    COL_AIPNAME = "AipName"
+    COL_CREATED = "CreatedDate"
+    COL_SIZE = "AipSize"
+    COL_FORMATS = "Formats"
+    COL_COUNT = "Count"
+    COL_NAME = "StorageName"
+    headers = [COL_UUID, COL_AIPNAME, COL_CREATED, COL_SIZE]
+    format_lookup = aip_data[COL_FORMATS]
+    format_headers = list(aip_data[COL_FORMATS].keys())
+    storage_service_name = aip_data[COL_NAME]
+    aip_data.pop(COL_FORMATS, None)
+    aip_data.pop(COL_NAME, None)
+    rows = []
+    for k, v in aip_data.items():
+        row = []
+        for header in headers:
+            if header == COL_UUID:
+                row.append(k)
+            elif header == COL_SIZE:
+                row.append(GetHumanReadableFilesize(v.get(header)))
+            elif header != COL_FORMATS:
+                row.append(v.get(header))
+        formats = v.get(COL_FORMATS)
+        for format_header in format_headers:
+            format_ = formats.get(format_header)
+            count = 0
+            if format_:
+                count = format_.get(COL_COUNT, 0)
+            row.append(count)
+        rows.append(row)
+    headers = headers + format_headers
+    return render_template(
+        "aip_contents.html",
+        storage_service=storage_service_id,
+        storage_service_name=storage_service_name,
+        aip_data=aip_data,
+        columns=headers,
+        rows=rows,
+        format_lookup=format_lookup,
     )

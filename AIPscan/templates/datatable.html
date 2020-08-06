@@ -28,5 +28,12 @@
               "dom" : "",
               "order": [[ 1, "desc" ]]
             } );
+            $('#aips-1').DataTable( {
+                "lengthMenu": [[10, 30, 60, -1], [10, 30, 60, "All"]],
+                "pageLength": 10,
+                "pagingType": "full_numbers",
+                "scrollX": true
+            } );
         } );
     </script>
+
