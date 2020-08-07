@@ -152,6 +152,7 @@ def workflow_coordinator(self, apiUrl, timestampStr, storageServiceId, fetchJobI
     # The SQLalchemy insert above is not working so the raw insert below is used
     """
 
+    # PICTURAE TODO: REPLACE SQL.
     aipscandb = sqlite3.connect("aipscan.db")
     cursor = aipscandb.cursor()
     cursor.execute(
@@ -159,7 +160,6 @@ def workflow_coordinator(self, apiUrl, timestampStr, storageServiceId, fetchJobI
         (totalPackages, totalAIPs, totalDeletedAIPs, fetchJobId),
     )
     aipscandb.commit()
-
     return
 
 

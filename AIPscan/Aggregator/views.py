@@ -173,23 +173,20 @@ def new_fetch_job(id):
     taskId = coordinator_task.info.get("package_lists_taskId")
     response = {"timestamp": timestamp, "taskId": taskId}
     """
-
     celerydb = sqlite3.connect("celerytasks.db")
     cursor = celerydb.cursor()
+    # PICTURAE TODO: REPLACE SQL.
     sql = "SELECT package_task_id FROM package_tasks WHERE workflow_coordinator_id = ?"
     # run a while loop in case the workflow coordinator task hasn't finished writing to dbase yet
     while True:
         try:
-            cursor.execute(
-                sql, (task.id,),
-            )
+            cursor.execute(sql, (task.id,))
             taskId = cursor.fetchone()
             if taskId is not None:
                 break
         except:
             print("celertytasks.db not available yet")
             continue
-
     # send response back to Javascript function that was triggered by the 'New Fetch Job' button
     response = {"timestamp": timestamp, "taskId": taskId, "fetchJobId": fetchJob.id}
     return jsonify(response)
@@ -212,17 +209,14 @@ def task_status(taskid):
     task = tasks.package_lists_request.AsyncResult(taskid, app=celery)
     if task.state == "PENDING":
         # job did not start yet
-        response = {
-            "state": task.state,
-        }
+        response = {"state": task.state}
     elif task.state != "FAILURE":
         if task.state == "SUCCESS":
             celerydb = sqlite3.connect("celerytasks.db")
             cursor = celerydb.cursor()
+            # PICTURAE TODO: REPLACE SQL.
             sql = "SELECT workflow_coordinator_id FROM package_tasks WHERE package_task_id = ?"
-            cursor.execute(
-                sql, (task.id,),
-            )
+            cursor.execute(sql, (task.id,))
             coordinatorId = cursor.fetchone()
             response = {"state": task.state, "coordinatorId": coordinatorId}
         else:
@@ -241,21 +235,18 @@ def get_mets_task_status(coordinatorid):
 
     totalAIPs = int(request.args.get("totalAIPs"))
     fetchJobId = int(request.args.get("fetchJobId"))
-
+    # PICTURAE TODO: REPLACE SQL.
     celerydb = sqlite3.connect("celerytasks.db")
     cursor = celerydb.cursor()
     sql = "SELECT get_mets_task_id, package_uuid FROM get_mets_tasks WHERE workflow_coordinator_id = ? AND status IS ?"
-    cursor.execute(sql, (coordinatorid, None,))
+    cursor.execute(sql, (coordinatorid, None))
     get_mets_tasks = cursor.fetchall()
-
     response = []
-
     for i in range(0, len(get_mets_tasks)):
+        # PICTURAE TODO: REPLACE SQL.
         # Celery only adds tasks to the backend dbase after they are done
         sql = "SELECT status FROM celery_taskmeta WHERE task_id = ?"
-        cursor.execute(
-            sql, (get_mets_tasks[i][0],),
-        )
+        cursor.execute(sql, (get_mets_tasks[i][0],))
         mets_task_status = cursor.fetchone()
         if mets_task_status is not None:
             if (mets_task_status[0] == "SUCCESS") or (mets_task_status[0] == "FAILURE"):
@@ -267,34 +258,31 @@ def get_mets_task_status(coordinatorid):
                         "totalAIPs": totalAIPs,
                     }
                 )
+                # PICTURAE TODO: REPLACE SQL.
                 cursor.execute(
                     "UPDATE get_mets_tasks SET status = ? WHERE get_mets_task_id = ?",
                     (mets_task_status[0], get_mets_tasks[i][0]),
                 )
                 celerydb.commit()
     celerydb.close()
-
     if len(get_mets_tasks) == 0:
         if totalAIPs == 0:
             response = {"state": "PENDING"}
         else:
             downloadEnd = datetime.now().replace(microsecond=0)
+            # PICTURAE TODO: REPLACE SQL.
             aipscandb = sqlite3.connect("aipscan.db")
             cursor = aipscandb.cursor()
             sql = "SELECT download_start FROM fetch_jobs WHERE id = ?"
-            cursor.execute(
-                sql, (fetchJobId,),
-            )
+            cursor.execute(sql, (fetchJobId,))
             start = cursor.fetchone()
             downloadStart = start[0][:-7]
+            # PICTURAE TODO: REPLACE SQL.
             cursor.execute(
                 "UPDATE fetch_jobs SET download_end = ? WHERE id = ?",
-                (downloadEnd, fetchJobId,),
+                (downloadEnd, fetchJobId),
             )
             aipscandb.commit()
-
             response = {"state": "COMPLETED"}
-
             flash("Fetch Job {} completed".format(downloadStart))
-
     return jsonify(response)
