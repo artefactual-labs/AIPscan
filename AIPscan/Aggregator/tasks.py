@@ -21,6 +21,24 @@ from AIPscan.models import (
     event_agents,
 )
 
+from dateutil.parser import parse, ParserError
+
+
+def _tz_neutral_date(date):
+    """Convert inconsistent dates consistently. Dates are round-tripped
+    back to a Python datetime object as anticipated by the database.
+    Where a date is unknown or can't be parsed, we return the UNIX EPOCH
+    in lieu of another sensible value.
+    """
+    EPOCH = datetime.strptime("1970-01-01T00:00:01", "%Y-%m-%dT%H:%M:%S")
+    try:
+        date = parse(date)
+        date = date.strftime("%Y-%m-%dT%H:%M:%S")
+        date = datetime.strptime(date, "%Y-%m-%dT%H:%M:%S")
+    except ParserError:
+        date = EPOCH
+    return date
+
 
 def write_packages_json(count, timestampStr, packages):
     with open(
@@ -349,8 +367,7 @@ def get_mets(
                 for premis_event in aipFile.get_premis_events():
                     type = premis_event.event_type
                     uuid = premis_event.event_identifier_value
-                    eventDate = premis_event.event_date_time[0:19]
-                    date = datetime.strptime(eventDate, "%Y-%m-%dT%H:%M:%S")
+                    date = _tz_neutral_date(premis_event.event_date_time)
                     if str(premis_event.event_detail) != "(('event_detail',),)":
                         detail = premis_event.event_detail
                     else:
@@ -394,6 +411,7 @@ def get_mets(
                         normalizationDate = datetime.strptime(
                             eventDate, "%Y-%m-%dT%H:%M:%S"
                         )
+                        eventDate = _tz_neutral_date(premis_event.event_date_time)
                 file = copies(
                     name=name,
                     uuid=uuid,
