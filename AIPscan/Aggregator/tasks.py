@@ -288,9 +288,24 @@ def get_mets(
     with open(downloadFile, "wb") as file:
         file.write(mets_response.content)
 
-
-    mets = metsrw.METSDocument.fromfile(downloadFile)
-
+    # Load and Parse the METS. Because this function parses the whole
+    # METS into memory it has  the potential to fail, so we need to
+    # catch certain failures.
+    #
+    # NB. Any failures at this point are critical and so let's hope that
+    # the source data is good.
+    try:
+        mets = metsrw.METSDocument.fromfile(downloadFile)
+    except AttributeError as err:
+        # We have an attribute error associated with archivematica/issues#1129.
+        #
+        # https://github.com/archivematica/Issues/issues/1129
+        #
+        # PICTURAE TODO: We need a pretty log output.
+        #
+        err = "{}: {}".format(err, downloadFile)
+        print(err)
+        return
 
     # metsrw library does not give access to original Transfer Name
     # which is often more useful to end-users than the AIP uuid
