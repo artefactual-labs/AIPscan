@@ -288,7 +288,9 @@ def get_mets(
     with open(downloadFile, "wb") as file:
         file.write(mets_response.content)
 
+
     mets = metsrw.METSDocument.fromfile(downloadFile)
+
 
     # metsrw library does not give access to original Transfer Name
     # which is often more useful to end-users than the AIP uuid
@@ -322,10 +324,8 @@ def get_mets(
             formatVersion = None
             relatedUuid = None
 
-            # this exception handler had to be added because for .iso file types METSRW throws
-            # the error: "metsrw/plugins/premisrw/premis.py", line 644, in _to_colon_ns
-            # parts = [x.strip("{") for x in bracket_ns.split("}")]"
-            # AttributeError: 'cython_function_or_method' object has no attribute 'split'
+            # TODO: Fix-up mets-reader-writer:
+            # https://github.com/archivematica/Issues/issues/1277
             try:
                 for premis_object in aipFile.get_premis_objects():
                     size = premis_object.size
