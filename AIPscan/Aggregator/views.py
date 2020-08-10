@@ -204,7 +204,7 @@ def new_fetch_job(id):
             if taskId is not None:
                 break
         except:
-            print("celertytasks.db not available yet")
+            print("New fetch job: celertytasks.db not available yet")
             continue
 
     # send response back to Javascript function that was triggered by the 'New Fetch Job' button

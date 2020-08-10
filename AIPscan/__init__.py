@@ -10,6 +10,11 @@ db = SQLAlchemy(app)
 from celery import Celery
 from flask_celery import make_celery
 
+# PICTURAE TODO: Create a different app configuration for celery. If
+# we inspect the celery object below celery.__dict__ we can see all
+# of the app consts have been consumed by the celery constructor,
+# probably as a **kwarg and hasn't decided to rid itself of any values
+# that are superfluous.
 celery = make_celery(app)
 
 from AIPscan import models

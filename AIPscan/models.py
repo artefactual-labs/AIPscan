@@ -3,6 +3,20 @@
 from AIPscan import db
 
 
+class package_tasks(db.Model):
+    __bind_key__ = "celery"
+    package_task_id = db.Column(db.String(36), primary_key=True)
+    workflow_coordinator_id = db.Column(db.String(36))
+
+
+class get_mets_tasks(db.Model):
+    __bind_key__ = "celery"
+    get_mets_task_id = db.Column(db.String(36), primary_key=True)
+    workflow_coordinator_id = db.Column(db.String(36))
+    package_uuid = db.Column(db.String(36))
+    status = db.Column(db.String())
+
+
 class storage_services(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
     name = db.Column(db.String(255), index=True, unique=True)

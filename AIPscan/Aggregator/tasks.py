@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 
 from celery import Celery
+
 from celery.result import AsyncResult
+
 from AIPscan import celery
 import os
 import requests
 import json
 from datetime import datetime
-import sqlite3
 import metsrw
 import xml.etree.ElementTree as ET
 from AIPscan import db
@@ -19,6 +20,9 @@ from AIPscan.models import (
     events,
     agents,
     event_agents,
+    # Custom celery Models.
+    package_tasks,
+    get_mets_tasks,
 )
 
 from dateutil.parser import parse, ParserError
@@ -66,17 +70,12 @@ def workflow_coordinator(self, apiUrl, timestampStr, storageServiceId, fetchJobI
     self.update_state(meta={"package_lists_taskId": package_lists_task.id},)
     """
 
-    celerydb = sqlite3.connect("celerytasks.db")
-    cursor = celerydb.cursor()
-    cursor.execute(
-        "CREATE TABLE IF NOT EXISTS package_tasks(package_task_id TEXT PRIMARY KEY, workflow_coordinator_id TEXT)"
+    package_task = package_tasks(
+        package_task_id=package_lists_task.id,
+        workflow_coordinator_id=workflow_coordinator.request.id,
     )
-    cursor.execute(
-        "INSERT INTO package_tasks VALUES (?,?)",
-        (package_lists_task.id, workflow_coordinator.request.id),
-    )
-    celerydb.commit()
-    celerydb.close()
+    db.session.add(package_task)
+    db.session.commit()
 
     # wait for package lists task to finish downloading all package lists
     task = package_lists_request.AsyncResult(package_lists_task.id, app=celery)
@@ -139,23 +138,14 @@ def workflow_coordinator(self, apiUrl, timestampStr, storageServiceId, fetchJobI
                         fetchJobId,
                     )
 
-                    # track worker status through dbase backend
-                    celerydb = sqlite3.connect("celerytasks.db")
-                    cursor = celerydb.cursor()
-                    cursor.execute(
-                        "CREATE TABLE IF NOT EXISTS get_mets_tasks(get_mets_task_id TEXT PRIMARY KEY, workflow_coordinator_id TEXT, package_uuid TEXT, status TEXT)"
+                    mets_task = get_mets_tasks(
+                        get_mets_task_id=get_mets_task.id,
+                        workflow_coordinator_id=workflow_coordinator.request.id,
+                        package_uuid=packageUUID,
+                        status=None,
                     )
-                    cursor.execute(
-                        "INSERT INTO get_mets_tasks VALUES (?,?,?,?)",
-                        (
-                            get_mets_task.id,
-                            workflow_coordinator.request.id,
-                            packageUUID,
-                            None,
-                        ),
-                    )
-                    celerydb.commit()
-                    celerydb.close()
+                    db.session.add(mets_task)
+                    db.session.commit()
 
     # PICTURAE TODO: Do we need a try catch here in case the value
     # returns None.
