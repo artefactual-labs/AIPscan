@@ -2,7 +2,9 @@
 
 from flask import Blueprint, render_template, redirect, request, flash, url_for, jsonify
 from AIPscan import db, app, celery
+
 from AIPscan.models import fetch_jobs, storage_services
+
 from AIPscan.Aggregator.forms import StorageServiceForm
 from AIPscan.Aggregator import tasks
 import os
@@ -13,6 +15,22 @@ import sqlite3
 import time
 
 aggregator = Blueprint("aggregator", __name__, template_folder="templates")
+
+
+# PICTURAE TODO: Starting to see patterns shared across modules, e.g.
+# date handling in the data module and in here. Let's bring those
+# together in a helpful kind of way.
+def _split_ms(date_string):
+    """Remove microseconds from the given date string."""
+    return str(date_string).split(".")[0]
+
+
+def _format_date(date_string):
+    """Format date to something nicer that can played back in reports"""
+    DATE_FORMAT_FULL = "%Y-%m-%d %H:%M:%S"
+    DATE_FORMAT_PARTIAL = "%Y-%m-%d"
+    formatted_date = datetime.strptime(_split_ms(date_string), DATE_FORMAT_FULL)
+    return formatted_date.strftime(DATE_FORMAT_PARTIAL)
 
 
 @app.route("/")
@@ -175,6 +193,7 @@ def new_fetch_job(id):
     """
     celerydb = sqlite3.connect("celerytasks.db")
     cursor = celerydb.cursor()
+
     # PICTURAE TODO: REPLACE SQL.
     sql = "SELECT package_task_id FROM package_tasks WHERE workflow_coordinator_id = ?"
     # run a while loop in case the workflow coordinator task hasn't finished writing to dbase yet
@@ -187,6 +206,7 @@ def new_fetch_job(id):
         except:
             print("celertytasks.db not available yet")
             continue
+
     # send response back to Javascript function that was triggered by the 'New Fetch Job' button
     response = {"timestamp": timestamp, "taskId": taskId, "fetchJobId": fetchJob.id}
     return jsonify(response)
@@ -214,6 +234,7 @@ def task_status(taskid):
         if task.state == "SUCCESS":
             celerydb = sqlite3.connect("celerytasks.db")
             cursor = celerydb.cursor()
+
             # PICTURAE TODO: REPLACE SQL.
             sql = "SELECT workflow_coordinator_id FROM package_tasks WHERE package_task_id = ?"
             cursor.execute(sql, (task.id,))
@@ -221,6 +242,7 @@ def task_status(taskid):
             response = {"state": task.state, "coordinatorId": coordinatorId}
         else:
             response = {"state": task.state, "message": task.info.get("message")}
+
     else:
         # something went wrong in the background job
         response = {
@@ -235,6 +257,7 @@ def get_mets_task_status(coordinatorid):
 
     totalAIPs = int(request.args.get("totalAIPs"))
     fetchJobId = int(request.args.get("fetchJobId"))
+
     # PICTURAE TODO: REPLACE SQL.
     celerydb = sqlite3.connect("celerytasks.db")
     cursor = celerydb.cursor()
@@ -243,6 +266,7 @@ def get_mets_task_status(coordinatorid):
     get_mets_tasks = cursor.fetchall()
     response = []
     for i in range(0, len(get_mets_tasks)):
+
         # PICTURAE TODO: REPLACE SQL.
         # Celery only adds tasks to the backend dbase after they are done
         sql = "SELECT status FROM celery_taskmeta WHERE task_id = ?"
@@ -270,19 +294,12 @@ def get_mets_task_status(coordinatorid):
             response = {"state": "PENDING"}
         else:
             downloadEnd = datetime.now().replace(microsecond=0)
-            # PICTURAE TODO: REPLACE SQL.
-            aipscandb = sqlite3.connect("aipscan.db")
-            cursor = aipscandb.cursor()
-            sql = "SELECT download_start FROM fetch_jobs WHERE id = ?"
-            cursor.execute(sql, (fetchJobId,))
-            start = cursor.fetchone()
-            downloadStart = start[0][:-7]
-            # PICTURAE TODO: REPLACE SQL.
-            cursor.execute(
-                "UPDATE fetch_jobs SET download_end = ? WHERE id = ?",
-                (downloadEnd, fetchJobId),
-            )
-            aipscandb.commit()
+            obj = fetch_jobs.query.filter_by(id=fetchJobId).first()
+            start = obj.download_start
+            downloadStart = _format_date(start)
+            obj.download_end = downloadEnd
+            db.session.commit()
             response = {"state": "COMPLETED"}
             flash("Fetch Job {} completed".format(downloadStart))
+
     return jsonify(response)
