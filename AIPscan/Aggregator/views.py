@@ -3,7 +3,13 @@
 from flask import Blueprint, render_template, redirect, request, flash, url_for, jsonify
 from AIPscan import db, app, celery
 
-from AIPscan.models import fetch_jobs, storage_services
+from AIPscan.models import (
+    fetch_jobs,
+    storage_services,
+    # Custom celery Models.
+    package_tasks,
+    get_mets_tasks,
+)
 
 from AIPscan.Aggregator.forms import StorageServiceForm
 from AIPscan.Aggregator import tasks
@@ -254,52 +260,43 @@ def task_status(taskid):
 
 @aggregator.route("/get_mets_task_status/<coordinatorid>")
 def get_mets_task_status(coordinatorid):
-
+    """Get mets task status"""
     totalAIPs = int(request.args.get("totalAIPs"))
     fetchJobId = int(request.args.get("fetchJobId"))
-
-    # PICTURAE TODO: REPLACE SQL.
-    celerydb = sqlite3.connect("celerytasks.db")
-    cursor = celerydb.cursor()
-    sql = "SELECT get_mets_task_id, package_uuid FROM get_mets_tasks WHERE workflow_coordinator_id = ? AND status IS ?"
-    cursor.execute(sql, (coordinatorid, None))
-    get_mets_tasks = cursor.fetchall()
+    mets_tasks = get_mets_tasks.query.filter_by(
+        workflow_coordinator_id=coordinatorid, status=None
+    ).all()
     response = []
-    for i in range(0, len(get_mets_tasks)):
-
-        # PICTURAE TODO: REPLACE SQL.
-        # Celery only adds tasks to the backend dbase after they are done
-        sql = "SELECT status FROM celery_taskmeta WHERE task_id = ?"
-        cursor.execute(sql, (get_mets_tasks[i][0],))
-        mets_task_status = cursor.fetchone()
-        if mets_task_status is not None:
-            if (mets_task_status[0] == "SUCCESS") or (mets_task_status[0] == "FAILURE"):
-                totalAIPs += 1
-                response.append(
-                    {
-                        "state": mets_task_status[0],
-                        "package": "METS." + get_mets_tasks[i][1] + ".xml",
-                        "totalAIPs": totalAIPs,
-                    }
-                )
-                # PICTURAE TODO: REPLACE SQL.
-                cursor.execute(
-                    "UPDATE get_mets_tasks SET status = ? WHERE get_mets_task_id = ?",
-                    (mets_task_status[0], get_mets_tasks[i][0]),
-                )
-                celerydb.commit()
-    celerydb.close()
-    if len(get_mets_tasks) == 0:
-        if totalAIPs == 0:
-            response = {"state": "PENDING"}
-        else:
-            downloadEnd = datetime.now().replace(microsecond=0)
-            obj = fetch_jobs.query.filter_by(id=fetchJobId).first()
-            start = obj.download_start
-            downloadStart = _format_date(start)
-            obj.download_end = downloadEnd
+    for row in mets_tasks:
+        task_id = row.get_mets_task_id
+        package_uuid = row.package_uuid
+        task_result = AsyncResult(id=task_id, app=celery)
+        mets_task_status = task_result.state
+        if mets_task_status is None:
+            continue
+        if (mets_task_status == "SUCCESS") or (mets_task_status[0] == "FAILURE"):
+            totalAIPs += 1
+            response.append(
+                {
+                    "state": mets_task_status,
+                    "package": "METS.{}.xml".format(package_uuid),
+                    "totalAIPs": totalAIPs,
+                }
+            )
+            obj = get_mets_tasks.query.filter_by(get_mets_task_id=task_id).first()
+            obj.status = mets_task_status
             db.session.commit()
-            response = {"state": "COMPLETED"}
-            flash("Fetch Job {} completed".format(downloadStart))
-
+    if len(mets_tasks) != 0:
+        return jsonify(response)
+    if totalAIPs == 0:
+        response = {"state": "PENDING"}
+        return jsonify(response)
+    downloadEnd = datetime.now().replace(microsecond=0)
+    obj = fetch_jobs.query.filter_by(id=fetchJobId).first()
+    start = obj.download_start
+    downloadStart = _format_date(start)
+    obj.download_end = downloadEnd
+    db.session.commit()
+    response = {"state": "COMPLETED"}
+    flash("Fetch Job {} completed".format(downloadStart))
     return jsonify(response)
