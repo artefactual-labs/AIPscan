@@ -238,17 +238,11 @@ def task_status(taskid):
         response = {"state": task.state}
     elif task.state != "FAILURE":
         if task.state == "SUCCESS":
-            celerydb = sqlite3.connect("celerytasks.db")
-            cursor = celerydb.cursor()
-
-            # PICTURAE TODO: REPLACE SQL.
-            sql = "SELECT workflow_coordinator_id FROM package_tasks WHERE package_task_id = ?"
-            cursor.execute(sql, (task.id,))
-            coordinatorId = cursor.fetchone()
-            response = {"state": task.state, "coordinatorId": coordinatorId}
+            obj = package_tasks.query.filter_by(package_task_id=task.id).first()
+            coordinator_id = obj.workflow_coordinator_id
+            response = {"state": task.state, "coordinatorId": coordinator_id}
         else:
             response = {"state": task.state, "message": task.info.get("message")}
-
     else:
         # something went wrong in the background job
         response = {
