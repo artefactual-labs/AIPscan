@@ -157,27 +157,13 @@ def workflow_coordinator(self, apiUrl, timestampStr, storageServiceId, fetchJobI
                     celerydb.commit()
                     celerydb.close()
 
-    """
-    fetch_jobs.query.filter_by(id=fetchJobId).update(
-        {
-            "total_packages": packagesCount,
-            "total_aips": totalAIPs,
-            "total_deleted_aips": totalDeletedAIPs,
-            "download_end": downloadEnd,
-        }
-    )
-
-    # The SQLalchemy insert above is not working so the raw insert below is used
-    """
-
-    # PICTURAE TODO: REPLACE SQL.
-    aipscandb = sqlite3.connect("aipscan.db")
-    cursor = aipscandb.cursor()
-    cursor.execute(
-        "UPDATE fetch_jobs SET total_packages = ?, total_aips = ?, total_deleted_aips = ? WHERE id = ?",
-        (totalPackages, totalAIPs, totalDeletedAIPs, fetchJobId),
-    )
-    aipscandb.commit()
+    # PICTURAE TODO: Do we need a try catch here in case the value
+    # returns None.
+    obj = fetch_jobs.query.filter_by(id=fetchJobId).first()
+    obj.total_packages = totalPackages
+    obj.total_aips = totalAIPs
+    obj.total_deleted_aips = totalDeletedAIPs
+    db.session.commit()
     return
 
 
@@ -435,7 +421,7 @@ def get_mets(
                     checksum_type=checksumType,
                     checksum_value=checksumValue,
                     related_uuid=relatedUuid,
-                    normalization_date=normalizationDate,
+                    normalization_date=eventDate,
                     aip_id=aip.id,
                 )
                 db.session.add(file)
