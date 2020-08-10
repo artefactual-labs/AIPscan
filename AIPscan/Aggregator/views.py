@@ -243,6 +243,9 @@ def task_status(taskid):
             response = {"state": task.state, "coordinatorId": coordinator_id}
         else:
             response = {"state": task.state, "message": task.info.get("message")}
+    # CR Note: I am not sure we will ever meet this else, because
+    # task.state will always be intercepted through != FAILUTE. IDK. Do
+    # you read it the same way?
     else:
         # something went wrong in the background job
         response = {
