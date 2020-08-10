@@ -197,24 +197,21 @@ def new_fetch_job(id):
     taskId = coordinator_task.info.get("package_lists_taskId")
     response = {"timestamp": timestamp, "taskId": taskId}
     """
-    celerydb = sqlite3.connect("celerytasks.db")
-    cursor = celerydb.cursor()
 
-    # PICTURAE TODO: REPLACE SQL.
-    sql = "SELECT package_task_id FROM package_tasks WHERE workflow_coordinator_id = ?"
-    # run a while loop in case the workflow coordinator task hasn't finished writing to dbase yet
+    # Run a while loop in case the workflow coordinator task hasn't
+    # finished writing to database yet
     while True:
+        obj = package_tasks.query.filter_by(workflow_coordinator_id=task.id).first()
         try:
-            cursor.execute(sql, (task.id,))
-            taskId = cursor.fetchone()
-            if taskId is not None:
+            task_id = obj.package_task_id
+            if task_id is not None:
                 break
-        except:
-            print("New fetch job: celertytasks.db not available yet")
+        except AttributeError:
             continue
 
-    # send response back to Javascript function that was triggered by the 'New Fetch Job' button
-    response = {"timestamp": timestamp, "taskId": taskId, "fetchJobId": fetchJob.id}
+    # Send response back to JavaScript function that was triggered by
+    # the 'New Fetch Job' button.
+    response = {"timestamp": timestamp, "taskId": task_id, "fetchJobId": fetchJob.id}
     return jsonify(response)
 
 
