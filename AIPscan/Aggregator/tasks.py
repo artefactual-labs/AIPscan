@@ -9,6 +9,7 @@ import os
 import requests
 import json
 from datetime import datetime
+import lxml
 import metsrw
 import xml.etree.ElementTree as ET
 from AIPscan import db
@@ -279,6 +280,15 @@ def get_mets(
         #
         # PICTURAE TODO: We need a pretty log output.
         #
+        err = "{}: {}".format(err, downloadFile)
+        print(err)
+        return
+    except lxml.etree.Error as err:
+        # We have another undetermined storage service error, e.g. the
+        # package no longer exists. We might also want to check the
+        # response code in this instance. I didn't grab the exact error
+        # code, so to recreate, delete an AIP on the server and don't
+        # tell the storage service about it. Then try to download it.
         err = "{}: {}".format(err, downloadFile)
         print(err)
         return
