@@ -415,3 +415,45 @@ def aip_contents():
         rows=rows,
         format_lookup=format_lookup,
     )
+
+
+# PICTURAE TODO: This can probably be a more descriptive name.
+@reporter.route("/original_derivatives/", methods=["GET"])
+def original_derivatives():
+    """Return a mapping between original files and derivatives if they
+    exist.
+    """
+    tables = []
+    storage_service_id = request.args.get("amss_id")
+    aip_data = data.derivative_overview(storage_service_id=storage_service_id)
+    COL_NAME = "StorageName"
+    ALL_AIPS = "AllAips"
+    storage_service_name = aip_data[COL_NAME]
+    for aip in aip_data[ALL_AIPS]:
+        aip_row = []
+        transfer_name = aip["TransferName"]
+        for pairing in aip["RelatedPairing"]:
+            row = []
+            row.append(transfer_name)
+            row.append(pairing["OriginalUUID"])
+            row.append(pairing["OriginalFormat"])
+            row.append(pairing["DerivativeUUID"])
+            row.append(pairing["DerivativeFormat"])
+            aip_row.append(row)
+        tables.append(aip_row)
+    headers = [
+        "TransferName",
+        "OriginalUUID",
+        "OriginalFormat",
+        "DerivativeUUID",
+        "DerivativeFormat",
+    ]
+    aip_count = len(tables)
+    return render_template(
+        "report_originals_derivatives.html",
+        storage_service=storage_service_id,
+        storage_service_name=storage_service_name,
+        aip_count=aip_count,
+        headers=headers,
+        tables=tables,
+    )

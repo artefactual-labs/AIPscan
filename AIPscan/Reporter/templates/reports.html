@@ -181,7 +181,16 @@
             bootstrap_alert('Coming soon...', WARNINGS.ALERT_INFO);
         });
         $("#report4a").on("click", function() {
-            bootstrap_alert('Coming soon...', WARNINGS.ALERT_INFO);
+            bootstrap_alert('This is a demo of report three!', WARNINGS.ALERT_SECONDARY);
+            const URL_AIP_CONTENTS = "/reporter/original_derivatives/";
+            var storageServiceID = $('#ss').val();
+            var url = (
+              window.location.origin +
+              URL_AIP_CONTENTS +
+              '?amss_id=' +
+              storageServiceID
+            );
+            window.open(url);
         });
     });
 </script>
