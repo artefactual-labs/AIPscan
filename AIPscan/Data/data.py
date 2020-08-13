@@ -2,8 +2,6 @@
 
 from datetime import datetime
 
-from flask import Blueprint
-
 from AIPscan.models import (
     aips as aip_model,
     originals,
@@ -50,19 +48,27 @@ def aip_overview(storage_service_id, original_files=True):
         else:
             files = copies.query.filter_by(aip_id=aip.id)
         for file_ in files:
-            if file_.puid in report:
-                report[file_.puid]["Count"] = report[file_.puid]["Count"] + 1
-                if aip.uuid not in report[file_.puid]["AIPs"]:
-                    report[file_.puid]["AIPs"].append(aip.uuid)
+            # Originals have PUIDs but Preservation Masters don't.
+            # Return a key (PUID or Format Name) for our report based on that.
+            try:
+                format_key = file_.puid
+            except AttributeError:
+                format_key = file_.format
+            if format_key in report:
+                report[format_key]["Count"] = report[format_key]["Count"] + 1
+                if aip.uuid not in report[format_key]["AIPs"]:
+                    report[format_key]["AIPs"].append(aip.uuid)
             else:
-                report[file_.puid] = {}
-                report[file_.puid]["Count"] = 1
-                report[file_.puid]["Name"] = file_.format
-                report[file_.puid]["Version"] = file_.format_version
-                if report[file_.puid].get("AIPs") is None:
-                    report[file_.puid]["AIPs"] = []
-                report[file_.puid]["AIPs"].append(aip.uuid)
-
+                report[format_key] = {}
+                report[format_key]["Count"] = 1
+                try:
+                    report[format_key]["Version"] = file_.format_version
+                    report[format_key]["Name"] = file_.format
+                except AttributeError:
+                    pass
+                if report[format_key].get("AIPs") is None:
+                    report[format_key]["AIPs"] = []
+                report[format_key]["AIPs"].append(aip.uuid)
     return report
 
 
@@ -80,14 +86,22 @@ def aip_overview_two(storage_service_id, original_files=True):
         report[aip.uuid]["AipSize"] = 0
         report[aip.uuid]["Formats"] = {}
         files = None
+        format_key = None
         if original_files is True:
             files = originals.query.filter_by(aip_id=aip.id)
         else:
             files = copies.query.filter_by(aip_id=aip.id)
         for file_ in files:
-            if file_.puid is None:
+            try:
+                format_key = file_.puid
+            except AttributeError:
+                format_key = file_.format
+            if format_key is None:
                 continue
-            formats[file_.puid] = "{} {}".format(file_.format, file_.format_version)
+            try:
+                formats[format_key] = "{} {}".format(file_.format, file_.format_version)
+            except AttributeError:
+                formats[format_key] = "{}".format(file_.format)
             size = report[aip.uuid]["AipSize"]
             try:
                 report[aip.uuid]["AipSize"] = size + file_.size
@@ -95,16 +109,19 @@ def aip_overview_two(storage_service_id, original_files=True):
             except TypeError:
                 report[aip.uuid]["AipSize"] = size
                 pass
-            if file_.puid not in report[aip.uuid]["Formats"]:
-                report[aip.uuid]["Formats"][file_.puid] = {}
-                report[aip.uuid]["Formats"][file_.puid]["Count"] = 1
-                report[aip.uuid]["Formats"][file_.puid]["Name"] = file_.format
-                report[aip.uuid]["Formats"][file_.puid][
-                    "Version"
-                ] = file_.format_version
+            if format_key not in report[aip.uuid]["Formats"]:
+                report[aip.uuid]["Formats"][format_key] = {}
+                report[aip.uuid]["Formats"][format_key]["Count"] = 1
+                try:
+                    report[aip.uuid]["Formats"][format_key][
+                        "Version"
+                    ] = file_.format_version
+                    report[aip.uuid]["Formats"][format_key]["Name"] = file_.format
+                except AttributeError:
+                    pass
             else:
-                count = report[aip.uuid]["Formats"][file_.puid]["Count"]
-                report[aip.uuid]["Formats"][file_.puid]["Count"] = count + 1
+                count = report[aip.uuid]["Formats"][format_key]["Count"]
+                report[aip.uuid]["Formats"][format_key]["Count"] = count + 1
 
     report["Formats"] = formats
     report["StorageName"] = storage_service.name

@@ -6,8 +6,10 @@ Return 'unkempt' data from AIPscan so that it can be filtered, cut, and
 remixed as the caller desires. Data is 'unkempt' not raw. No data is
 raw. No data is without bias.
 """
+from distutils.util import strtobool
 
-from flask_restx import Namespace, Resource, fields
+from flask import request
+from flask_restx import Namespace, Resource
 from AIPscan.Data import data
 
 api = Namespace("data", description="Retrieve data from AIPscan to shape as you desire")
@@ -20,21 +22,56 @@ data = api.model('Data', {
 """
 
 
-@api.route("/aip-overview/<amss_id>")
+def parse_bool(val, default=True):
+    try:
+        return bool(strtobool(val))
+    except (ValueError, AttributeError):
+        return default
+
+
+@api.route("/aip-overview/<storage_service_id>")
 class FMTList(Resource):
-    @api.doc("list_formats")
-    # @api.marshal_list_with(data)
-    def get(self, amss_id):
+    @api.doc(
+        "list_formats",
+        params={
+            "original_files": {
+                "description": "Return data for original files or copies",
+                "in": "query",
+                "type": "bool",
+            }
+        },
+    )
+    def get(self, storage_service_id):
         """AIP overview One"""
-        aip_data = data.aip_overview(storage_service_id=amss_id)
+        try:
+            original_files = parse_bool(request.args.get("original_files"), True)
+        except TypeError:
+            pass
+        aip_data = data.aip_overview(
+            storage_service_id=storage_service_id, original_files=original_files
+        )
         return aip_data
 
 
-@api.route("/fmt-overview/<amss_id>")
+@api.route("/fmt-overview/<storage_service_id>")
 class AIPList(Resource):
-    @api.doc("list_aips")
-    # @api.marshal_list_with(data)
-    def get(self, amss_id):
+    @api.doc(
+        "list_formats",
+        params={
+            "original_files": {
+                "description": "Return data for original files or copies",
+                "in": "query",
+                "type": "bool",
+            }
+        },
+    )
+    def get(self, storage_service_id):
         """AIP overview two"""
-        aip_data = data.aip_overview_two(storage_service_id=amss_id)
+        try:
+            original_files = parse_bool(request.args.get("original_files"), True)
+        except TypeError:
+            pass
+        aip_data = data.aip_overview_two(
+            storage_service_id=storage_service_id, original_files=original_files
+        )
         return aip_data
