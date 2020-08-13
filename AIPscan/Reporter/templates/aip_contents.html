@@ -23,7 +23,6 @@
 </div>
 
 <table id="aips-1" class="table table-striped table-bordered">
-
 	<thead>
       {% if rows %}
       	<tr>
@@ -46,33 +45,7 @@
       {% endif %}
       <tbody>
     <thead>
-
-	<!--
-      <thead>
-      <tr>
-      <th><strong>Format</strong></th>
-      <th width="15%"><strong>Count</strong></th>
-      <th width="15%"><strong>Size in bytes</strong></th>
-      <th width="15%"><strong>Size</strong></th>
-      </tr>
-      </thead>
-    -->
-      <!--
-      {% if formatCount %}
-        {% for key,value in formatCount.items() %}
-          <tr>
-            <td>{{ key }}</td>
-            <td>{{ value["count"] }}</td>
-            <td>{% if value["size"] == None %} 0
-              {% else %}{{ value["size"] }}
-              {% endif %}</td>
-            <td>{{ value["humansize"] }}</td>
-          </tr>
-        {% endfor %}
-      {% endif %}
-  		-->
   </table>
-
 </div>
 </body>
 </html>
