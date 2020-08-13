@@ -75,3 +75,12 @@ class AIPList(Resource):
             storage_service_id=storage_service_id, original_files=original_files
         )
         return aip_data
+
+
+@api.route("/derivative-overview/<storage_service_id>")
+class DerivativeList(Resource):
+    @api.doc("list_aips")
+    def get(self, storage_service_id):
+        """AIP overview two"""
+        aip_data = data.derivative_overview(storage_service_id=storage_service_id)
+        return aip_data

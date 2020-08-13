@@ -126,3 +126,55 @@ def aip_overview_two(storage_service_id, original_files=True):
     report["Formats"] = formats
     report["StorageName"] = storage_service.name
     return report
+
+
+# PICTURAE TODO: We should be able to do this in the SQLAlchemy filter
+# but I can't quite get it to work yet.
+def _has_derivatives(files):
+    for file_ in files:
+        if file_.related_uuid is not None:
+            return True
+    return False
+
+
+def derivative_overview(storage_service_id):
+    """Return a summary of derivatives across AIPs with a mapping
+    created between the original format and the preservation copy.
+    """
+    report = {}
+    storage_service = _get_storage_service(storage_service_id)
+    aips = aip_model.query.filter_by(storage_service_id=storage_service.id).all()
+    all_aips = []
+    for aip in aips:
+        files = originals.query.filter_by(aip_id=aip.id)
+        if not _has_derivatives(files):
+            continue
+        aip_report = {}
+        aip_report["TransferName"] = aip.transfer_name
+        # Alias our dictionary for ease of use.
+        aip_report["FileCount"] = files.count()
+        aip_report["DerivativeCount"] = 0
+        derivative_pairings = []
+        for file_ in files:
+            file_derivative_pair = {}
+            derivative_uuid = file_.related_uuid
+            if derivative_uuid is not None:
+                derivative = copies.query.filter_by(related_uuid=file_.uuid).first()
+                aip_report["DerivativeCount"] += 1
+                file_derivative_pair["DerivativeUUID"] = derivative_uuid
+                file_derivative_pair["OriginalUUID"] = file_.uuid
+                format_version = file_.format_version
+                if format_version is None:
+                    format_version = ""
+                file_derivative_pair["OriginalFormat"] = "{} {} ({})".format(
+                    file_.format, format_version, file_.puid
+                )
+                file_derivative_pair["DerivativeFormat"] = "{}".format(
+                    derivative.format
+                )
+                derivative_pairings.append(file_derivative_pair)
+        aip_report["RelatedPairing"] = derivative_pairings
+        all_aips.append(aip_report)
+    report["AllAips"] = all_aips
+    report["StorageName"] = storage_service.name
+    return report
