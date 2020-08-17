@@ -15,6 +15,7 @@ from AIPscan.models import (
 
 
 FIELD_AIP_NAME = "AipName"
+FIELD_AIPS = "AIPs"
 FIELD_AIP_SIZE = "AipSize"
 FIELD_ALL_AIPS = "AllAips"
 
@@ -66,10 +67,6 @@ def _format_date(date_string):
 def aip_overview(storage_service_id, original_files=True):
     """Return a summary overview of all AIPs in a given storage service
     """
-    FIELD_COUNT = "Count"
-    FIELD_AIPS = "AIPs"
-    FIELD_VERSION = "Version"
-    FIELD_NAME = "Name"
     report = {}
     storage_service = _get_storage_service(storage_service_id)
     aips = aip_model.query.filter_by(storage_service_id=storage_service.id).all()
