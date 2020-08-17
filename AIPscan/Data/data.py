@@ -14,6 +14,34 @@ from AIPscan.models import (
 )
 
 
+FIELD_AIP_NAME = "AipName"
+FIELD_AIP_SIZE = "AipSize"
+FIELD_ALL_AIPS = "AllAips"
+
+FIELD_COUNT = "Count"
+FIELD_CREATED_DATE = "CreatedDate"
+
+FIELD_DERIVATIVE_COUNT = "DerivativeCount"
+FIELD_DERIVATIVE_FORMAT = "DerivativeFormat"
+FIELD_DERIVATIVE_UUID = "DerivativeUUID"
+
+FIELD_FILE_COUNT = "FileCount"
+FIELD_FORMATS = "Formats"
+
+FIELD_NAME = "Name"
+
+FIELD_ORIGINAL_UUID = "OriginalUUID"
+FIELD_ORIGINAL_FORMAT = "OriginalFormat"
+
+FIELD_RELATED_PAIRING = "RelatedPairing"
+
+FIELD_STORAGE_NAME = "StorageName"
+
+FIELD_TRANSFER_NAME = "TransferName"
+
+FIELD_VERSION = "Version"
+
+
 def _get_storage_service(storage_service_id):
     DEFAULT_STORAGE_SERVICE_ID = 1
     if storage_service_id == 0 or storage_service_id is None:
@@ -79,14 +107,6 @@ def aip_overview(storage_service_id, original_files=True):
 def aip_overview_two(storage_service_id, original_files=True):
     """Return a summary overview of all AIPs in a given storage service
     """
-    FIELD_AIP_NAME = "AipName"
-    FIELD_CREATED_DATE = "CreatedDate"
-    FIELD_AIP_SIZE = "AipSize"
-    FIELD_FORMATS = "Formats"
-    FIELD_COUNT = "Count"
-    FIELD_NAME = "Name"
-    FIELD_VERSION = "Version"
-    FIELD_STORAGE_NAME = "StorageName"
     report = {}
     formats = {}
     storage_service = _get_storage_service(storage_service_id)
@@ -155,16 +175,6 @@ def derivative_overview(storage_service_id):
     """Return a summary of derivatives across AIPs with a mapping
     created between the original format and the preservation copy.
     """
-    FIELD_TRANSFER_NAME = "TransferName"
-    FIELD_FILE_COUNT = "FileCount"
-    FIELD_DERIVATIVE_COUNT = "DerivativeCount"
-    FIELD_DERIVATIVE_UUID = "DerivativeUUID"
-    FIELD_ORIGINAL_UUID = "OriginalUUID"
-    FIELD_ORIGINAL_FORMAT = "OriginalFormat"
-    FIELD_DERIVATIVE_FORMAT = "DerivativeFormat"
-    FIELD_RELATED_PAIRING = "RelatedPairing"
-    FIELD_ALL_AIPS = "AllAips"
-    FIELD_STORAGE_NAME = "StorageName"
     report = {}
     storage_service = _get_storage_service(storage_service_id)
     aips = aip_model.query.filter_by(storage_service_id=storage_service.id).all()

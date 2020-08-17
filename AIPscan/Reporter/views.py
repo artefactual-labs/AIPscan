@@ -374,35 +374,34 @@ def aip_contents():
     """Return AIP contents organized by format."""
     storage_service_id = request.args.get("amss_id")
     aip_data = data.aip_overview_two(storage_service_id=storage_service_id)
-    COL_UUID = "UUID"
-    COL_AIPNAME = "AipName"
-    COL_CREATED = "CreatedDate"
-    COL_SIZE = "AipSize"
-    COL_FORMATS = "Formats"
-    COL_COUNT = "Count"
-    COL_NAME = "StorageName"
-    headers = [COL_UUID, COL_AIPNAME, COL_CREATED, COL_SIZE]
-    format_lookup = aip_data[COL_FORMATS]
-    format_headers = list(aip_data[COL_FORMATS].keys())
-    storage_service_name = aip_data[COL_NAME]
-    aip_data.pop(COL_FORMATS, None)
-    aip_data.pop(COL_NAME, None)
+    FIELD_UUID = "UUID"
+    headers = [
+        FIELD_UUID,
+        data.FIELD_AIP_NAME,
+        data.FIELD_CREATED_DATE,
+        data.FIELD_AIP_SIZE,
+    ]
+    format_lookup = aip_data[data.FIELD_FORMATS]
+    format_headers = list(aip_data[data.FIELD_FORMATS].keys())
+    storage_service_name = aip_data[data.FIELD_STORAGE_NAME]
+    aip_data.pop(data.FIELD_FORMATS, None)
+    aip_data.pop(data.FIELD_STORAGE_NAME, None)
     rows = []
     for k, v in aip_data.items():
         row = []
         for header in headers:
-            if header == COL_UUID:
+            if header == FIELD_UUID:
                 row.append(k)
-            elif header == COL_SIZE:
+            elif header == data.FIELD_AIP_SIZE:
                 row.append(GetHumanReadableFilesize(v.get(header)))
-            elif header != COL_FORMATS:
+            elif header != data.FIELD_FORMATS:
                 row.append(v.get(header))
-        formats = v.get(COL_FORMATS)
+        formats = v.get(data.FIELD_FORMATS)
         for format_header in format_headers:
             format_ = formats.get(format_header)
             count = 0
             if format_:
-                count = format_.get(COL_COUNT, 0)
+                count = format_.get(data.FIELD_COUNT, 0)
             row.append(count)
         rows.append(row)
     headers = headers + format_headers
@@ -426,27 +425,27 @@ def original_derivatives():
     tables = []
     storage_service_id = request.args.get("amss_id")
     aip_data = data.derivative_overview(storage_service_id=storage_service_id)
-    COL_NAME = "StorageName"
-    ALL_AIPS = "AllAips"
+    COL_NAME = data.FIELD_STORAGE_NAME
+    ALL_AIPS = data.FIELD_ALL_AIPS
     storage_service_name = aip_data[COL_NAME]
     for aip in aip_data[ALL_AIPS]:
         aip_row = []
-        transfer_name = aip["TransferName"]
-        for pairing in aip["RelatedPairing"]:
+        transfer_name = aip[data.FIELD_TRANSFER_NAME]
+        for pairing in aip[data.FIELD_RELATED_PAIRING]:
             row = []
             row.append(transfer_name)
-            row.append(pairing["OriginalUUID"])
-            row.append(pairing["OriginalFormat"])
-            row.append(pairing["DerivativeUUID"])
-            row.append(pairing["DerivativeFormat"])
+            row.append(pairing[data.FIELD_ORIGINAL_UUID])
+            row.append(pairing[data.FIELD_ORIGINAL_FORMAT])
+            row.append(pairing[data.FIELD_DERIVATIVE_UUID])
+            row.append(pairing[data.FIELD_DERIVATIVE_FORMAT])
             aip_row.append(row)
         tables.append(aip_row)
     headers = [
-        "TransferName",
-        "OriginalUUID",
-        "OriginalFormat",
-        "DerivativeUUID",
-        "DerivativeFormat",
+        data.FIELD_TRANSFER_NAME,
+        data.FIELD_ORIGINAL_UUID,
+        data.FIELD_ORIGINAL_FORMAT,
+        data.FIELD_DERIVATIVE_UUID,
+        data.FIELD_DERIVATIVE_FORMAT,
     ]
     aip_count = len(tables)
     return render_template(
