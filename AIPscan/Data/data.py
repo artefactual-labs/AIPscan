@@ -38,6 +38,10 @@ def _format_date(date_string):
 def aip_overview(storage_service_id, original_files=True):
     """Return a summary overview of all AIPs in a given storage service
     """
+    FIELD_COUNT = "Count"
+    FIELD_AIPS = "AIPs"
+    FIELD_VERSION = "Version"
+    FIELD_NAME = "Name"
     report = {}
     storage_service = _get_storage_service(storage_service_id)
     aips = aip_model.query.filter_by(storage_service_id=storage_service.id).all()
@@ -55,36 +59,44 @@ def aip_overview(storage_service_id, original_files=True):
             except AttributeError:
                 format_key = file_.format
             if format_key in report:
-                report[format_key]["Count"] = report[format_key]["Count"] + 1
-                if aip.uuid not in report[format_key]["AIPs"]:
-                    report[format_key]["AIPs"].append(aip.uuid)
+                report[format_key][FIELD_COUNT] = report[format_key][FIELD_COUNT] + 1
+                if aip.uuid not in report[format_key][FIELD_AIPS]:
+                    report[format_key][FIELD_AIPS].append(aip.uuid)
             else:
                 report[format_key] = {}
-                report[format_key]["Count"] = 1
+                report[format_key][FIELD_COUNT] = 1
                 try:
-                    report[format_key]["Version"] = file_.format_version
-                    report[format_key]["Name"] = file_.format
+                    report[format_key][FIELD_VERSION] = file_.format_version
+                    report[format_key][FIELD_NAME] = file_.format
                 except AttributeError:
                     pass
-                if report[format_key].get("AIPs") is None:
-                    report[format_key]["AIPs"] = []
-                report[format_key]["AIPs"].append(aip.uuid)
+                if report[format_key].get(FIELD_AIPS) is None:
+                    report[format_key][FIELD_AIPS] = []
+                report[format_key][FIELD_AIPS].append(aip.uuid)
     return report
 
 
 def aip_overview_two(storage_service_id, original_files=True):
     """Return a summary overview of all AIPs in a given storage service
     """
+    FIELD_AIP_NAME = "AipName"
+    FIELD_CREATED_DATE = "CreatedDate"
+    FIELD_AIP_SIZE = "AipSize"
+    FIELD_FORMATS = "Formats"
+    FIELD_COUNT = "Count"
+    FIELD_NAME = "Name"
+    FIELD_VERSION = "Version"
+    FIELD_STORAGE_NAME = "StorageName"
     report = {}
     formats = {}
     storage_service = _get_storage_service(storage_service_id)
     aips = aip_model.query.filter_by(storage_service_id=storage_service.id).all()
     for aip in aips:
         report[aip.uuid] = {}
-        report[aip.uuid]["AipName"] = aip.transfer_name
-        report[aip.uuid]["CreatedDate"] = _format_date(aip.create_date)
-        report[aip.uuid]["AipSize"] = 0
-        report[aip.uuid]["Formats"] = {}
+        report[aip.uuid][FIELD_AIP_NAME] = aip.transfer_name
+        report[aip.uuid][FIELD_CREATED_DATE] = _format_date(aip.create_date)
+        report[aip.uuid][FIELD_AIP_SIZE] = 0
+        report[aip.uuid][FIELD_FORMATS] = {}
         files = None
         format_key = None
         if original_files is True:
@@ -102,29 +114,31 @@ def aip_overview_two(storage_service_id, original_files=True):
                 formats[format_key] = "{} {}".format(file_.format, file_.format_version)
             except AttributeError:
                 formats[format_key] = "{}".format(file_.format)
-            size = report[aip.uuid]["AipSize"]
+            size = report[aip.uuid][FIELD_AIP_SIZE]
             try:
-                report[aip.uuid]["AipSize"] = size + file_.size
+                report[aip.uuid][FIELD_AIP_SIZE] = size + file_.size
             # TODO: Find out why size is sometimes None.
             except TypeError:
-                report[aip.uuid]["AipSize"] = size
+                report[aip.uuid][FIELD_AIP_SIZE] = size
                 pass
-            if format_key not in report[aip.uuid]["Formats"]:
-                report[aip.uuid]["Formats"][format_key] = {}
-                report[aip.uuid]["Formats"][format_key]["Count"] = 1
+            if format_key not in report[aip.uuid][FIELD_FORMATS]:
+                report[aip.uuid][FIELD_FORMATS][format_key] = {}
+                report[aip.uuid][FIELD_FORMATS][format_key][FIELD_COUNT] = 1
                 try:
-                    report[aip.uuid]["Formats"][format_key][
-                        "Version"
+                    report[aip.uuid][FIELD_FORMATS][format_key][
+                        FIELD_VERSION
                     ] = file_.format_version
-                    report[aip.uuid]["Formats"][format_key]["Name"] = file_.format
+                    report[aip.uuid][FIELD_FORMATS][format_key][
+                        FIELD_NAME
+                    ] = file_.format
                 except AttributeError:
                     pass
             else:
-                count = report[aip.uuid]["Formats"][format_key]["Count"]
-                report[aip.uuid]["Formats"][format_key]["Count"] = count + 1
+                count = report[aip.uuid][FIELD_FORMATS][format_key][FIELD_COUNT]
+                report[aip.uuid][FIELD_FORMATS][format_key][FIELD_COUNT] = count + 1
 
-    report["Formats"] = formats
-    report["StorageName"] = storage_service.name
+    report[FIELD_FORMATS] = formats
+    report[FIELD_STORAGE_NAME] = storage_service.name
     return report
 
 
@@ -141,6 +155,16 @@ def derivative_overview(storage_service_id):
     """Return a summary of derivatives across AIPs with a mapping
     created between the original format and the preservation copy.
     """
+    FIELD_TRANSFER_NAME = "TransferName"
+    FIELD_FILE_COUNT = "FileCount"
+    FIELD_DERIVATIVE_COUNT = "DerivativeCount"
+    FIELD_DERIVATIVE_UUID = "DerivativeUUID"
+    FIELD_ORIGINAL_UUID = "OriginalUUID"
+    FIELD_ORIGINAL_FORMAT = "OriginalFormat"
+    FIELD_DERIVATIVE_FORMAT = "DerivativeFormat"
+    FIELD_RELATED_PAIRING = "RelatedPairing"
+    FIELD_ALL_AIPS = "AllAips"
+    FIELD_STORAGE_NAME = "StorageName"
     report = {}
     storage_service = _get_storage_service(storage_service_id)
     aips = aip_model.query.filter_by(storage_service_id=storage_service.id).all()
@@ -150,31 +174,30 @@ def derivative_overview(storage_service_id):
         if not _has_derivatives(files):
             continue
         aip_report = {}
-        aip_report["TransferName"] = aip.transfer_name
-        # Alias our dictionary for ease of use.
-        aip_report["FileCount"] = files.count()
-        aip_report["DerivativeCount"] = 0
+        aip_report[FIELD_TRANSFER_NAME] = aip.transfer_name
+        aip_report[FIELD_FILE_COUNT] = files.count()
+        aip_report[FIELD_DERIVATIVE_COUNT] = 0
         derivative_pairings = []
         for file_ in files:
             file_derivative_pair = {}
             derivative_uuid = file_.related_uuid
             if derivative_uuid is not None:
                 derivative = copies.query.filter_by(related_uuid=file_.uuid).first()
-                aip_report["DerivativeCount"] += 1
-                file_derivative_pair["DerivativeUUID"] = derivative_uuid
-                file_derivative_pair["OriginalUUID"] = file_.uuid
+                aip_report[FIELD_DERIVATIVE_COUNT] += 1
+                file_derivative_pair[FIELD_DERIVATIVE_UUID] = derivative_uuid
+                file_derivative_pair[FIELD_ORIGINAL_UUID] = file_.uuid
                 format_version = file_.format_version
                 if format_version is None:
                     format_version = ""
-                file_derivative_pair["OriginalFormat"] = "{} {} ({})".format(
+                file_derivative_pair[FIELD_ORIGINAL_FORMAT] = "{} {} ({})".format(
                     file_.format, format_version, file_.puid
                 )
-                file_derivative_pair["DerivativeFormat"] = "{}".format(
+                file_derivative_pair[FIELD_DERIVATIVE_FORMAT] = "{}".format(
                     derivative.format
                 )
                 derivative_pairings.append(file_derivative_pair)
-        aip_report["RelatedPairing"] = derivative_pairings
+        aip_report[FIELD_RELATED_PAIRING] = derivative_pairings
         all_aips.append(aip_report)
-    report["AllAips"] = all_aips
-    report["StorageName"] = storage_service.name
+    report[FIELD_ALL_AIPS] = all_aips
+    report[FIELD_STORAGE_NAME] = storage_service.name
     return report
