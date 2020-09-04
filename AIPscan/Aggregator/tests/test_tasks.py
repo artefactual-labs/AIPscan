@@ -4,7 +4,7 @@ from datetime import datetime
 
 import pytest
 
-from AIPscan.Aggregator import tasks, task_helpers
+from AIPscan.Aggregator import task_helpers
 
 
 @pytest.mark.parametrize(
@@ -20,7 +20,7 @@ from AIPscan.Aggregator import tasks, task_helpers
 def test_tz_neutral_dates(input_date, output_date, now_year):
     """Ensure datetime values are handled sensibly across regions.
     """
-    result_date = tasks._tz_neutral_date(input_date)
+    result_date = task_helpers._tz_neutral_date(input_date)
     if now_year is True:
         year = datetime.now().strftime("%Y-%m-%d")
         output_date = "{}{}".format(year, input_date)
