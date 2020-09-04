@@ -1,17 +1,14 @@
 # -*- coding: utf-8 -*-
 
-from celery import Celery
-
-from celery.result import AsyncResult
-
-from AIPscan import celery
-import requests
-import json
 from datetime import datetime
+import json
 import lxml
+from lxml import etree as ET
 import metsrw
 import os
-import xml.etree.ElementTree as ET
+import requests
+
+from AIPscan import celery
 from AIPscan import db
 from AIPscan.models import (
     fetch_jobs,
@@ -19,8 +16,6 @@ from AIPscan.models import (
     originals,
     copies,
     events,
-    agents,
-    event_agents,
     # Custom celery Models.
     package_tasks,
     get_mets_tasks,
