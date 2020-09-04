@@ -26,6 +26,10 @@ from AIPscan.models import (
     get_mets_tasks,
 )
 
+from AIPscan.Aggregator.task_helpers import (
+    get_mets_url,
+)
+
 from dateutil.parser import parse, ParserError
 
 
@@ -228,17 +232,7 @@ def get_mets(
     """
 
     # request METS file
-    mets_response = requests.get(
-        apiUrl["baseUrl"]
-        + "/api/v2/file/"
-        + packageUUID
-        + "/extract_file/?relative_path_to_file="
-        + relativePathToMETS
-        + "&username="
-        + apiUrl["userName"]
-        + "&api_key="
-        + apiUrl["apiKey"]
-    )
+    mets_response = requests.get(get_mets_url(apiUrl, packageUUID, relativePathToMETS))
 
     # save METS files to disk
     # create package list numbered subdirectory if it doesn't exist

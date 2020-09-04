@@ -4,7 +4,7 @@ from datetime import datetime
 
 import pytest
 
-from AIPscan.Aggregator import tasks
+from AIPscan.Aggregator import tasks, task_helpers
 
 
 @pytest.mark.parametrize(
@@ -27,3 +27,22 @@ def test_tz_neutral_dates(input_date, output_date, now_year):
     else:
         output_date = datetime.strptime(output_date, "%Y-%m-%dT%H:%M:%S")
         assert result_date == output_date
+
+
+api_url_1 = {"baseUrl": "http://example.com", "userName": "1234", "apiKey": "1234"}
+
+
+@pytest.mark.parametrize(
+    "api_url, package_uuid, path_to_mets, result",
+    [
+        (
+            api_url_1,
+            "1234",
+            "1234",
+            "http://example.com/api/v2/file/1234/extract_file/?relative_path_to_file=1234&username=1234&api_key=1234",
+        )
+    ],
+)
+def test_get_mets_url(api_url, package_uuid, path_to_mets, result):
+    mets_url = task_helpers.get_mets_url(api_url, package_uuid, path_to_mets)
+    assert mets_url == result
