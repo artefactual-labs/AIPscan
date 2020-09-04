@@ -5,12 +5,12 @@ from celery import Celery
 from celery.result import AsyncResult
 
 from AIPscan import celery
-import os
 import requests
 import json
 from datetime import datetime
 import lxml
 import metsrw
+import os
 import xml.etree.ElementTree as ET
 from AIPscan import db
 from AIPscan.models import (
@@ -26,9 +26,7 @@ from AIPscan.models import (
     get_mets_tasks,
 )
 
-from AIPscan.Aggregator.task_helpers import (
-    get_mets_url,
-)
+from AIPscan.Aggregator.task_helpers import get_mets_url, create_numbered_subdirs
 
 from dateutil.parser import parse, ParserError
 
@@ -231,32 +229,15 @@ def get_mets(
     request METS XML file from Archivematica AIP package and parse it
     """
 
-    # request METS file
+    # Request the METS file.
     mets_response = requests.get(get_mets_url(apiUrl, packageUUID, relativePathToMETS))
 
-    # save METS files to disk
-    # create package list numbered subdirectory if it doesn't exist
-    if not os.path.exists(
-        "AIPscan/Aggregator/downloads/" + timestampStr + "/mets/" + str(packageListNo)
-    ):
-        os.makedirs(
-            "AIPscan/Aggregator/downloads/"
-            + timestampStr
-            + "/mets/"
-            + str(packageListNo)
-        )
+    numbered_subdir = create_numbered_subdirs(timestampStr, packageListNo)
 
-    downloadFile = (
-        "AIPscan/Aggregator/downloads/"
-        + timestampStr
-        + "/mets/"
-        + str(packageListNo)
-        + "/METS."
-        + packageUUID
-        + ".xml"
-    )
-    # cache a local copy of the METS file
-    with open(downloadFile, "wb") as file:
+    # Output METS to a convenient location to later be parsed.
+    mets_file = "METS.{}.xml".format(packageUUID)
+    download_file = os.path.join(numbered_subdir, mets_file)
+    with open(download_file, "wb") as file:
         file.write(mets_response.content)
 
     # Load and Parse the METS. Because this function parses the whole
@@ -266,7 +247,7 @@ def get_mets(
     # NB. Any failures at this point are critical and so let's hope that
     # the source data is good.
     try:
-        mets = metsrw.METSDocument.fromfile(downloadFile)
+        mets = metsrw.METSDocument.fromfile(download_file)
     except AttributeError as err:
         # We have an attribute error associated with archivematica/issues#1129.
         #
@@ -274,7 +255,7 @@ def get_mets(
         #
         # PICTURAE TODO: We need a pretty log output.
         #
-        err = "{}: {}".format(err, downloadFile)
+        err = "{}: {}".format(err, download_file)
         print(err)
         return
     except lxml.etree.Error as err:
@@ -283,14 +264,14 @@ def get_mets(
         # response code in this instance. I didn't grab the exact error
         # code, so to recreate, delete an AIP on the server and don't
         # tell the storage service about it. Then try to download it.
-        err = "{}: {}".format(err, downloadFile)
+        err = "{}: {}".format(err, download_file)
         print(err)
         return
 
     # metsrw library does not give access to original Transfer Name
     # which is often more useful to end-users than the AIP uuid
     # so we'll take the extra processing hit here to retrieve it
-    metsTree = ET.parse(downloadFile)
+    metsTree = ET.parse(download_file)
     dmdSec1 = metsTree.find("{http://www.loc.gov/METS/}dmdSec[@ID='dmdSec_1']")
     for element in dmdSec1.getiterator():
         if element.tag == "{http://www.loc.gov/premis/v3}originalName":
