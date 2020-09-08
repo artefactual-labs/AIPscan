@@ -4,8 +4,15 @@
 information from an AIP METS file.
 """
 import lxml
+import requests
 
 import metsrw
+
+from AIPscan.Aggregator.task_helpers import (
+    create_numbered_subdirs,
+    download_mets,
+    get_mets_url,
+)
 
 
 class METSError(Exception):
@@ -69,3 +76,22 @@ def get_aip_original_name(mets):
         raise METSError()
 
     return original_name
+
+
+def _download_mets(
+    api_url, package_uuid, relative_path_to_mets, timestamp, package_list_no
+):
+    """Download METS from the storage service."""
+
+    # Request the METS file.
+    mets_response = requests.get(
+        get_mets_url(api_url, package_uuid, relative_path_to_mets)
+    )
+
+    # Create a directory to download the METS to.
+    numbered_subdir = create_numbered_subdirs(timestamp, package_list_no)
+
+    # Output METS to a convenient location to later be parsed.
+    download_file = download_mets(mets_response, package_uuid, numbered_subdir)
+
+    return download_file
