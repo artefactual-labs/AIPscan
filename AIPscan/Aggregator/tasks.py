@@ -469,6 +469,6 @@ def process_aip_data(aip, aip_uuid, mets):
                 related_uuid=related_uuid,
             )
 
-    aip.originals_count = originals.query.filter_by(aip_id=aip.uuid).count()
-    aip.copies_count = copies.query.filter_by(aip_id=aip.uuid).count()
+    aip.originals_count = originals.query.filter_by(aip_id=aip.id).count()
+    aip.copies_count = copies.query.filter_by(aip_id=aip.id).count()
     db.session.commit()

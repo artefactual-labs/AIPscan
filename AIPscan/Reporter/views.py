@@ -49,30 +49,12 @@ def translate_headers(headers):
 
 
 @reporter.route("/view_aips/", methods=["GET"])
-@reporter.route("/view_aips/<id>", methods=["GET"])
-def view_aips(id=0):
-
-    # CR: This is a really good attempt at being robust. There are a few things
-    # we can do here to simplify it though. And a couple of other things we
-    # might want to consider.
-    #
-    # Variable naming:
-    #
-    #    * 'storageService' should be 'storage_service' as we try to use snake
-    #       case in Python with CamelCase reserved for classes. After a while
-    #       it really helps to differentiate things.
-    #
-    # Logic:
-    #
-    #    * I suspect this isn't quite doing what we want it to do, even though
-    #      it works, but I think this can come out of simplifying it. I'll
-    #      propose an alternative below and see what you think.
-    #
-    """
-
+@reporter.route("/view_aips/<storage_service_id>", methods=["GET"])
+def view_aips(storage_service_id=0):
+    """Provide an overview of the AIPs in the storage service."""
     DEFAULT_STORAGE_SERVICE_ID = 1
     storage_services_ = {}
-    storage_id = int(id)
+    storage_id = int(storage_service_id)
     if storage_id == 0 or storage_id is None:
         storage_id = DEFAULT_STORAGE_SERVICE_ID
     storage_service = storage_services.query.get(storage_id)
@@ -89,43 +71,6 @@ def view_aips(id=0):
         storageServiceId=storage_id,
         totalAIPs=aips_count,
         AIPs=aips_,
-    )
-
-    """
-    # The variable names are tough eh? Maybe we can expand the model names so
-    # we can use our nice shorter names for local vars? Let's have a think
-    # though.
-    #
-
-    if id != 0:
-        storageService = storage_services.query.get(id)
-        storageServiceId = storageService.id
-    else:
-        storageService = storage_services.query.filter_by(default=1).first()
-        if storageService:
-            storageServiceId = storageService.id
-        else:
-            storageService = storage_services.query.first()
-            if storageService:
-                storageServiceId = storageService.id
-            else:
-                storageServiceId = 0
-
-    if storageService:
-        AIPs = aips.query.filter_by(storage_service_id=storageService.id).all()
-        totalAIPs = aips.query.filter_by(storage_service_id=storageService.id).count()
-    else:
-        AIPs = None
-        totalAIPs = 0
-
-    storageServices = storage_services.query.all()
-
-    return render_template(
-        "view_aips.html",
-        storageServices=storageServices,
-        storageServiceId=storageServiceId,
-        totalAIPs=totalAIPs,
-        AIPs=AIPs,
     )
 
 

@@ -19,7 +19,7 @@
 <a href="{{ url_for('aggregator.edit_storage_service', id=storageService.id) }}"><button type="button" class="btn btn-info">Edit</button></a>
 <a href="{{ url_for('aggregator.delete_storage_service', id= storageService.id) }}"<button type="button" class="btn btn-danger">Delete</button></a>
 {% if metsFetchJobs %}
-<a href="{{ url_for('reporter.view_aips', id=storageService.id) }}"><button type="button" class="btn btn-success">View AIPs</button></a>
+<a href="{{ url_for('reporter.view_aips', storage_service_id=storageService.id) }}"><button type="button" class="btn btn-success">View AIPs</button></a>
 {% endif %}
 
 </div>
