@@ -2,8 +2,6 @@
 
 from datetime import datetime
 import json
-import lxml
-import metsrw
 import requests
 
 from AIPscan import celery
@@ -24,10 +22,13 @@ from AIPscan.Aggregator.task_helpers import (
     create_numbered_subdirs,
     _tz_neutral_date,
     download_mets,
-    METSError,
 )
 
-from AIPscan.Aggregator.mets_parse_helpers import get_aip_original_name
+from AIPscan.Aggregator.mets_parse_helpers import (
+    get_aip_original_name,
+    METSError,
+    parse_mets_with_metsrw,
+)
 
 
 def write_packages_json(count, timestampStr, packages):
@@ -231,38 +232,19 @@ def get_mets(
 
     Download a METS file from an AIP that is stored in the storage
     service and then parse the results into the AIPscan database.
+
+    This function relies on being able to use mets-reader-writer which
+    is the primary object we will be passing about.
     """
 
     download_file = _download_mets(
         apiUrl, packageUUID, relativePathToMETS, timestampStr, packageListNo
     )
 
-    # Load and Parse the METS. Because this function parses the whole
-    # METS into memory it has  the potential to fail, so we need to
-    # catch certain failures.
-    #
-    # NB. Any failures at this point are critical and so let's hope that
-    # the source data is good.
     try:
-        mets = metsrw.METSDocument.fromfile(download_file)
-    except AttributeError as err:
-        # We have an attribute error associated with archivematica/issues#1129.
-        #
-        # https://github.com/archivematica/Issues/issues/1129
-        #
-        # PICTURAE TODO: We need a pretty log output.
-        #
-        err = "{}: {}".format(err, download_file)
-        print(err)
-        return
-    except lxml.etree.Error as err:
-        # We have another undetermined storage service error, e.g. the
-        # package no longer exists. We might also want to check the
-        # response code in this instance. I didn't grab the exact error
-        # code, so to recreate, delete an AIP on the server and don't
-        # tell the storage service about it. Then try to download it.
-        err = "{}: {}".format(err, download_file)
-        print(err)
+        mets = parse_mets_with_metsrw(download_file)
+    except METSError:
+        # An error we need to log and report back to the user.
         return
 
     try:
