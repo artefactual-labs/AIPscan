@@ -174,20 +174,18 @@ def process_aip_data(aip, aip_uuid, mets):
         try:
             for premis_object in aip_file.get_premis_objects():
                 file_size = premis_object.size
-                if (
-                    str(premis_object.format_registry_key)
-                ) != "(('format_registry_key',),)":
-                    if (str(premis_object.format_registry_key)) != "()":
-                        puid = premis_object.format_registry_key
+                key_alias = premis_object.format_registry_key
+                if not isinstance(key_alias, tuple):
+                    puid = key_alias
                 file_format = premis_object.format_name
-                if (str(premis_object.format_version)) != "(('format_version',),)":
-                    if (str(premis_object.format_version)) != "()":
-                        format_version = premis_object.format_version
+                version_alias = premis_object.format_version
+                if not isinstance(version_alias, tuple):
+                    format_version = version_alias
                 checksum_type = premis_object.message_digest_algorithm
                 checksum_value = premis_object.message_digest
-                if str(premis_object.related_object_identifier_value) != "()":
-                    related_uuid = premis_object.related_object_identifier_value
-
+                related_uuid_alias = premis_object.related_object_identifier_value
+                if not isinstance(related_uuid_alias, tuple):
+                    related_uuid = related_uuid_alias
         except AttributeError:
             # File error/warning to log. Obviously this format may
             # be incorrect so it is our best guess.
@@ -195,7 +193,6 @@ def process_aip_data(aip, aip_uuid, mets):
             puid = "fmt/468"
 
         if aip_file.use == ORIGINAL_OBJECT:
-
             _add_file_original(
                 aip_id=aip.id,
                 aip_file=aip_file,
