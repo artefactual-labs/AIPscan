@@ -3,7 +3,6 @@
 from datetime import datetime
 import json
 import lxml
-from lxml import etree as ET
 import metsrw
 import requests
 
@@ -25,7 +24,10 @@ from AIPscan.Aggregator.task_helpers import (
     create_numbered_subdirs,
     _tz_neutral_date,
     download_mets,
+    METSError,
 )
+
+from AIPscan.Aggregator.mets_parse_helpers import get_aip_original_name
 
 
 def write_packages_json(count, timestampStr, packages):
@@ -263,15 +265,12 @@ def get_mets(
         print(err)
         return
 
-    # metsrw library does not give access to original Transfer Name
-    # which is often more useful to end-users than the AIP uuid
-    # so we'll take the extra processing hit here to retrieve it
-    metsTree = ET.parse(download_file)
-    dmdSec1 = metsTree.find("{http://www.loc.gov/METS/}dmdSec[@ID='dmdSec_1']")
-    for element in dmdSec1.getiterator():
-        if element.tag == "{http://www.loc.gov/premis/v3}originalName":
-            originalName = element.text[:-37]
-            break
+    try:
+        originalName = get_aip_original_name(mets)
+    except METSError:
+        # Some other error with the METS file that we might want to
+        # log and act upon.
+        originalName = ""
 
     # add AIP record to database
     aip = aips(
@@ -314,7 +313,7 @@ def get_mets(
                     if str(premis_object.related_object_identifier_value) != "()":
                         relatedUuid = premis_object.related_object_identifier_value
 
-            except:
+            except AttributeError:
                 format = "ISO Disk Image File"
                 puid = "fmt/468"
                 pass
