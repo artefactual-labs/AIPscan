@@ -34,6 +34,47 @@ def create_aip_object(
     return aip
 
 
+def _create_event_objs(aip_file, file_obj):
+    """Retrieve information about events associated with a file and
+    add that information to the database.
+    """
+    for premis_event in aip_file.get_premis_events():
+        event_type = premis_event.event_type
+        event_uuid = premis_event.event_identifier_value
+        event_date = _tz_neutral_date(premis_event.event_date_time)
+
+        # We have a strange issue with this logged: https://github.com/archivematica/Issues/issues/743
+        event_detail, event_outcome, event_outcome_detail = None, None, None
+        if not isinstance(premis_event.event_detail, tuple):
+            event_detail = premis_event.event_detail
+        if not isinstance(premis_event.event_outcome, tuple):
+            event_outcome = premis_event.event_outcome
+        if not isinstance(premis_event.event_outcome_detail_note, tuple):
+            event_outcome_detail = premis_event.event_outcome_detail_note
+
+        original_id = file_obj.id
+
+        if (
+            event_detail is None
+            and event_outcome is None
+            and event_outcome_detail is None
+        ):
+            continue
+
+        event = events(
+            type=event_type,
+            uuid=event_uuid,
+            date=event_date,
+            detail=event_detail,
+            outcome=event_outcome,
+            outcome_detail=event_outcome_detail,
+            original_id=original_id,
+        )
+
+        db.session.add(event)
+        db.session.commit()
+
+
 def _add_file_original(
     aip_id,
     aip_file,
@@ -66,39 +107,7 @@ def _add_file_original(
     db.session.add(file_obj)
     db.session.commit()
 
-    for premis_event in aip_file.get_premis_events():
-        type = premis_event.event_type
-        event_uuid = premis_event.event_identifier_value
-        date = _tz_neutral_date(premis_event.event_date_time)
-        if str(premis_event.event_detail) != "(('event_detail',),)":
-            detail = premis_event.event_detail
-        else:
-            detail = None
-        if str(premis_event.event_outcome) != "(('event_outcome',),)":
-            outcome = premis_event.event_outcome
-        else:
-            outcome = None
-        if (
-            str(premis_event.event_outcome_detail_note)
-            != "(('event_outcome_detail_note',),)"
-        ):
-            outcomeDetail = premis_event.event_outcome_detail_note
-        else:
-            outcomeDetail = None
-        originalId = file_obj.id
-
-        event = events(
-            type=type,
-            uuid=event_uuid,
-            date=date,
-            detail=detail,
-            outcome=outcome,
-            outcome_detail=outcomeDetail,
-            original_id=originalId,
-        )
-
-        db.session.add(event)
-        db.session.commit()
+    _create_event_objs(aip_file, file_obj)
 
 
 def _add_file_preservation(
