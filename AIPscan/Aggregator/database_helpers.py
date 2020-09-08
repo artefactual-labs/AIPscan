@@ -34,7 +34,7 @@ def create_aip_object(
     return aip
 
 
-def _create_event_objs(aip_file, file_obj):
+def _create_event_objs(aip_file, file_obj_id):
     """Retrieve information about events associated with a file and
     add that information to the database.
     """
@@ -42,7 +42,6 @@ def _create_event_objs(aip_file, file_obj):
         event_type = premis_event.event_type
         event_uuid = premis_event.event_identifier_value
         event_date = _tz_neutral_date(premis_event.event_date_time)
-
         # We have a strange issue with this logged: https://github.com/archivematica/Issues/issues/743
         event_detail, event_outcome, event_outcome_detail = None, None, None
         if not isinstance(premis_event.event_detail, tuple):
@@ -51,16 +50,7 @@ def _create_event_objs(aip_file, file_obj):
             event_outcome = premis_event.event_outcome
         if not isinstance(premis_event.event_outcome_detail_note, tuple):
             event_outcome_detail = premis_event.event_outcome_detail_note
-
-        original_id = file_obj.id
-
-        if (
-            event_detail is None
-            and event_outcome is None
-            and event_outcome_detail is None
-        ):
-            continue
-
+        original_id = file_obj_id
         event = events(
             type=event_type,
             uuid=event_uuid,
@@ -70,7 +60,6 @@ def _create_event_objs(aip_file, file_obj):
             outcome_detail=event_outcome_detail,
             original_id=original_id,
         )
-
         db.session.add(event)
         db.session.commit()
 
@@ -107,7 +96,7 @@ def _add_file_original(
     db.session.add(file_obj)
     db.session.commit()
 
-    _create_event_objs(aip_file, file_obj)
+    _create_event_objs(aip_file, file_obj.id)
 
 
 def _add_file_preservation(
