@@ -58,3 +58,15 @@ def create_numbered_subdirs(timestamp, package_list_number):
         os.makedirs(numbered_subdir)
 
     return numbered_subdir
+
+
+def download_mets(http_response, package_uuid, subdir):
+    """Given a http response containing our METS data, create the path
+    we want to store our METS at, and then stream the response into a
+    file.
+    """
+    mets_file = "METS.{}.xml".format(package_uuid)
+    download_file = os.path.join(subdir, mets_file)
+    with open(download_file, "wb") as file:
+        file.write(http_response.content)
+    return download_file

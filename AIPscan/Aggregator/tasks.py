@@ -5,7 +5,6 @@ import json
 import lxml
 from lxml import etree as ET
 import metsrw
-import os
 import requests
 
 from AIPscan import celery
@@ -25,6 +24,7 @@ from AIPscan.Aggregator.task_helpers import (
     get_mets_url,
     create_numbered_subdirs,
     _tz_neutral_date,
+    download_mets,
 )
 
 
@@ -196,6 +196,25 @@ def package_lists_request(self, apiUrl, timestampStr):
     }
 
 
+def _download_mets(
+    api_url, package_uuid, relative_path_to_mets, timestamp, package_list_no
+):
+    """Download METS from the storage service."""
+
+    # Request the METS file.
+    mets_response = requests.get(
+        get_mets_url(api_url, package_uuid, relative_path_to_mets)
+    )
+
+    # Create a directory to download the METS to.
+    numbered_subdir = create_numbered_subdirs(timestamp, package_list_no)
+
+    # Output METS to a convenient location to later be parsed.
+    download_file = download_mets(mets_response, package_uuid, numbered_subdir)
+
+    return download_file
+
+
 @celery.task()
 def get_mets(
     packageUUID,
@@ -206,20 +225,15 @@ def get_mets(
     storageServiceId,
     fetchJobId,
 ):
+    """Request METS XML file from the storage service and parse.
+
+    Download a METS file from an AIP that is stored in the storage
+    service and then parse the results into the AIPscan database.
     """
-    request METS XML file from Archivematica AIP package and parse it
-    """
 
-    # Request the METS file.
-    mets_response = requests.get(get_mets_url(apiUrl, packageUUID, relativePathToMETS))
-
-    numbered_subdir = create_numbered_subdirs(timestampStr, packageListNo)
-
-    # Output METS to a convenient location to later be parsed.
-    mets_file = "METS.{}.xml".format(packageUUID)
-    download_file = os.path.join(numbered_subdir, mets_file)
-    with open(download_file, "wb") as file:
-        file.write(mets_response.content)
+    download_file = _download_mets(
+        apiUrl, packageUUID, relativePathToMETS, timestampStr, packageListNo
+    )
 
     # Load and Parse the METS. Because this function parses the whole
     # METS into memory it has  the potential to fail, so we need to
