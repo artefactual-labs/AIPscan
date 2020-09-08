@@ -4,8 +4,6 @@
 database.
 """
 
-from datetime import datetime
-
 from celery.utils.log import get_task_logger
 
 from AIPscan import db
@@ -25,7 +23,7 @@ def create_aip_object(
     aip = aips(
         package_uuid,
         transfer_name=transfer_name,
-        create_date=datetime.strptime(create_date, "%Y-%m-%dT%H:%M:%S"),
+        create_date=_tz_neutral_date(create_date),
         originals_count=None,
         copies_count=None,
         storage_service_id=storage_service_id,
@@ -63,7 +61,7 @@ def _add_file_original(
         related_uuid=related_uuid,
     )
 
-    logger.info("Adding original %s %s", file_obj, aip_id)
+    logger.debug("Adding original %s %s", file_obj, aip_id)
 
     db.session.add(file_obj)
     db.session.commit()
@@ -119,7 +117,6 @@ def _add_file_preservation(
     for premis_event in aip_file.get_premis_events():
         if (premis_event.event_type) == "creation":
             event_date = (premis_event.event_date_time)[0:19]
-            normalizationDate = datetime.strptime(event_date, "%Y-%m-%dT%H:%M:%S")
             event_date = _tz_neutral_date(premis_event.event_date_time)
 
     file_obj = copies(
@@ -134,7 +131,7 @@ def _add_file_preservation(
         normalization_date=event_date,
     )
 
-    logger.info("Adding preservation %s", file_obj)
+    logger.debug("Adding preservation %s", file_obj)
 
     db.session.add(file_obj)
     db.session.commit()
