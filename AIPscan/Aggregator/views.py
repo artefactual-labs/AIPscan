@@ -11,14 +11,14 @@ from AIPscan.models import (
     get_mets_tasks,
 )
 
+from AIPscan.Aggregator.task_helpers import get_packages_directory
+
 from AIPscan.Aggregator.forms import StorageServiceForm
 from AIPscan.Aggregator import tasks
 import os
 import shutil
 from datetime import datetime
 from celery.result import AsyncResult
-import sqlite3
-import time
 
 aggregator = Blueprint("aggregator", __name__, template_folder="templates")
 
@@ -165,7 +165,7 @@ def new_fetch_job(id):
 
     # create a subdirectory for the download job using a timestamp as its name
     dateTimeObjStart = datetime.now().replace(microsecond=0)
-    timestampStr = dateTimeObjStart.strftime("%Y-%m-%d--%H-%M-%S")
+    timestampStr = dateTimeObjStart.strftime("%Y-%m-%d-%H-%M-%S")
     timestamp = dateTimeObjStart.strftime("%Y-%m-%d %H:%M:%S")
     os.makedirs("AIPscan/Aggregator/downloads/" + timestampStr + "/packages/")
     os.makedirs("AIPscan/Aggregator/downloads/" + timestampStr + "/mets/")
@@ -184,9 +184,11 @@ def new_fetch_job(id):
     db.session.add(fetchJob)
     db.session.commit()
 
+    packages_directory = get_packages_directory(timestampStr)
+
     # send the METS fetch job to a background job that will coordinate other workers
     task = tasks.workflow_coordinator.delay(
-        apiUrl, timestampStr, storageService.id, fetchJob.id
+        apiUrl, timestampStr, storageService.id, fetchJob.id, packages_directory
     )
 
     """

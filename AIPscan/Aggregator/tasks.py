@@ -12,10 +12,10 @@ from AIPscan import db
 from AIPscan.models import (
     fetch_jobs,
     # Custom celery Models.
-    package_tasks,
     get_mets_tasks,
 )
 
+from AIPscan.Aggregator.celery_helpers import write_celery_update
 from AIPscan.Aggregator.database_helpers import create_aip_object, process_aip_data
 
 from AIPscan.Aggregator.mets_parse_helpers import (
@@ -35,12 +35,12 @@ class TaskError(Exception):
     """
 
 
-def write_packages_json(count, timestampStr, packages):
+def write_packages_json(count, packages, packages_directory):
     """Write package JSON to disk"""
-    file_name = "packages{}.json".format(count)
     json_download_file = os.path.join(
-        "AIPscan", "Aggregator", "downloads", timestampStr, "packages", file_name
+        packages_directory, "packages{}.json".format(count)
     )
+    logger.info("Packages file is downloaded to '%s'", json_download_file)
     try:
         with open(json_download_file, "w") as json_file:
             json.dump(packages, json_file, indent=4)
@@ -50,24 +50,18 @@ def write_packages_json(count, timestampStr, packages):
 
 
 @celery.task(bind=True)
-def workflow_coordinator(self, apiUrl, timestampStr, storageServiceId, fetchJobId):
+def workflow_coordinator(
+    self, apiUrl, timestampStr, storageServiceId, fetchJobId, packages_directory
+):
+
+    logger.info("Packages directory is: %s", packages_directory)
 
     # send package list request to a worker
-    package_lists_task = package_lists_request.delay(apiUrl, timestampStr)
-
-    """
-    # Sending state updates back to Flask only works once, then the server needs
-    # a restart for it to work again. The compromise is to write task ID to dbase
-
-    self.update_state(meta={"package_lists_taskId": package_lists_task.id},)
-    """
-
-    package_task = package_tasks(
-        package_task_id=package_lists_task.id,
-        workflow_coordinator_id=workflow_coordinator.request.id,
+    package_lists_task = package_lists_request.delay(
+        apiUrl, timestampStr, packages_directory
     )
-    db.session.add(package_task)
-    db.session.commit()
+
+    write_celery_update(package_lists_task, workflow_coordinator)
 
     # Wait for package lists task to finish downloading all package
     # lists.
@@ -80,36 +74,24 @@ def workflow_coordinator(self, apiUrl, timestampStr, storageServiceId, fetchJobI
         # Re-raise.
         raise (package_lists_task.info)
 
-    packages_directory = os.path.join(
-        "AIPscan",
-        "Aggregator",
-        "downloads",
-        package_lists_task.info["timestampStr"],
-        "packages",
-        "packages",
-    )
-
     totalPackageLists = package_lists_task.info["totalPackageLists"]
     totalPackages = package_lists_task.info["totalPackages"]
 
     totalDeletedAIPs = 0
     totalAIPs = 0
 
-    # get relative paths to METS file in the AIPs
-    # create a new worker to download and parse each one separately
-    # to take advantage of asynchronous tasks. The bottleneck will be SS api
-    # response to multiple METS requests so get the same worker to do parsing
-    # rather than synchronously download all METS first and then do parsing.
+    # Create a new worker to download and parse each METS separately.
     for packageListNo in range(1, totalPackageLists + 1):
-        json_file_name = "{}{}.json".format(packages_directory, packageListNo)
-        with open(json_file_name, "r") as packagesJson:
+        json_file_path = os.path.join(
+            packages_directory, "packages{}.json".format(packageListNo)
+        )
+        with open(json_file_path, "r") as packagesJson:
             list = json.load(packagesJson)
             for package in list["objects"]:
                 # count number of deleted AIPs
                 if package["status"] == "DELETED":
                     totalDeletedAIPs += 1
-
-                # only scan AIP packages, ignore replicated and deleted packages
+                # Only scan AIPs, i.e. ignore deleted and replicated packages.
                 if (
                     package["package_type"] == "AIP"
                     and package["replicated_package"] is None
@@ -157,7 +139,7 @@ def workflow_coordinator(self, apiUrl, timestampStr, storageServiceId, fetchJobI
 
 
 @celery.task(bind=True)
-def package_lists_request(self, apiUrl, timestampStr):
+def package_lists_request(self, apiUrl, timestamp, packages_directory):
     """Request package lists from the storage service. Package lists
     will contain details of the AIPs that we want to download.
     """
@@ -202,13 +184,13 @@ def package_lists_request(self, apiUrl, timestampStr):
     limit = int(apiUrl["limit"])
     totalPackageLists = int(totalPackages / limit) + (totalPackages % limit > 0)
 
-    write_packages_json(packagesCount, timestampStr, packages)
+    write_packages_json(packagesCount, packages, packages_directory)
 
     while nextUrl is not None:
         next = requests.get(apiUrl["baseUrl"] + nextUrl)
         nextPackages = next.json()
         packagesCount += 1
-        write_packages_json(packagesCount, timestampStr, nextPackages)
+        write_packages_json(packagesCount, nextPackages, packages_directory)
         nextUrl = nextPackages["meta"]["next"]
         self.update_state(
             state="IN PROGRESS",
@@ -222,7 +204,7 @@ def package_lists_request(self, apiUrl, timestampStr):
     return {
         "totalPackageLists": totalPackageLists,
         "totalPackages": totalPackages,
-        "timestampStr": timestampStr,
+        "timestampStr": timestamp,
     }
 
 

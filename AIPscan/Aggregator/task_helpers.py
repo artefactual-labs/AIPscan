@@ -9,6 +9,13 @@ import os
 from dateutil.parser import parse, ParserError
 
 
+def get_packages_directory(timestamp):
+    """Create a path which we will use to store packages downloaded from
+    the storage service plus other metadata.
+    """
+    return os.path.join("AIPscan", "Aggregator", "downloads", timestamp, "packages")
+
+
 def _tz_neutral_date(date):
     """Convert inconsistent dates consistently. Dates are round-tripped
     back to a Python datetime object as anticipated by the database.
