@@ -2,6 +2,7 @@
 
 from datetime import datetime
 import json
+import os
 import requests
 
 from celery.utils.log import get_task_logger
@@ -27,16 +28,24 @@ from AIPscan.Aggregator.mets_parse_helpers import (
 logger = get_task_logger(__name__)
 
 
+class TaskError(Exception):
+    """Exception to call when there is a problem downloading from the
+    storage service. The exception is known and asks for user
+    intervention.
+    """
+
+
 def write_packages_json(count, timestampStr, packages):
-    with open(
-        "AIPscan/Aggregator/downloads/"
-        + timestampStr
-        + "/packages/packages"
-        + str(count)
-        + ".json",
-        "w",
-    ) as json_file:
-        json.dump(packages, json_file, indent=4)
+    """Write package JSON to disk"""
+    file_name = "packages{}.json".format(count)
+    json_download_file = os.path.join(
+        "AIPscan", "Aggregator", "downloads", timestampStr, "packages", file_name
+    )
+    try:
+        with open(json_download_file, "w") as json_file:
+            json.dump(packages, json_file, indent=4)
+    except json.JSONDecodeError:
+        logger.error("Cannot decode JSON from %s", json_download_file)
     return
 
 
@@ -60,17 +69,26 @@ def workflow_coordinator(self, apiUrl, timestampStr, storageServiceId, fetchJobI
     db.session.add(package_task)
     db.session.commit()
 
-    # wait for package lists task to finish downloading all package lists
+    # Wait for package lists task to finish downloading all package
+    # lists.
     task = package_lists_request.AsyncResult(package_lists_task.id, app=celery)
     while True:
         if (task.state == "SUCCESS") or (task.state == "FAILURE"):
             break
 
-    packagesDirectory = (
-        "AIPscan/Aggregator/downloads/"
-        + package_lists_task.info["timestampStr"]
-        + "/packages/packages"
+    if isinstance(package_lists_task.info, TaskError):
+        # Re-raise.
+        raise (package_lists_task.info)
+
+    packages_directory = os.path.join(
+        "AIPscan",
+        "Aggregator",
+        "downloads",
+        package_lists_task.info["timestampStr"],
+        "packages",
+        "packages",
     )
+
     totalPackageLists = package_lists_task.info["totalPackageLists"]
     totalPackages = package_lists_task.info["totalPackages"]
 
@@ -83,9 +101,8 @@ def workflow_coordinator(self, apiUrl, timestampStr, storageServiceId, fetchJobI
     # response to multiple METS requests so get the same worker to do parsing
     # rather than synchronously download all METS first and then do parsing.
     for packageListNo in range(1, totalPackageLists + 1):
-        with open(
-            packagesDirectory + str(packageListNo) + ".json", "r"
-        ) as packagesJson:
+        json_file_name = "{}{}.json".format(packages_directory, packageListNo)
+        with open(json_file_name, "r") as packagesJson:
             list = json.load(packagesJson)
             for package in list["objects"]:
                 # count number of deleted AIPs
@@ -137,33 +154,47 @@ def workflow_coordinator(self, apiUrl, timestampStr, storageServiceId, fetchJobI
     obj.total_aips = totalAIPs
     obj.total_deleted_aips = totalDeletedAIPs
     db.session.commit()
-    return
 
 
 @celery.task(bind=True)
 def package_lists_request(self, apiUrl, timestampStr):
-    """
-    make requests for package information to Archivematica Storage Service
+    """Request package lists from the storage service. Package lists
+    will contain details of the AIPs that we want to download.
     """
 
     packagesCount = 1
     dateTimeObjStart = datetime.now().replace(microsecond=0)
 
-    # initial packages request
-    firstPackages = requests.get(
-        apiUrl["baseUrl"]
-        + "/api/v2/file/"
-        + "?limit="
-        + apiUrl["limit"]
-        + "&offset="
-        + apiUrl["offset"]
-        + "&username="
-        + apiUrl["userName"]
-        + "&api_key="
-        + apiUrl["apiKey"]
+    base_url = apiUrl.get("baseUrl", "")
+    limit = apiUrl.get("limit", "")
+    offset = apiUrl.get("offset", "")
+    user_name = apiUrl.get("userName")
+    api_key = apiUrl.get("apiKey", "")
+
+    request_url_without_api_key = "{}/api/v2/file/?limit={}&offset={}".format(
+        base_url, limit, offset
+    )
+    request_url = "{}&username={}&api_key={}".format(
+        request_url_without_api_key, user_name, api_key
     )
 
-    packages = firstPackages.json()
+    # initial packages request
+    response = requests.get(request_url)
+
+    if response.status_code != requests.codes.ok:
+        err = "Check the URL and API details, cannot connect to: `{}`".format(
+            request_url_without_api_key
+        )
+        logger.error(err)
+        raise TaskError("Bad response from server: {}".format(err))
+
+    try:
+        packages = response.json()
+    except json.JSONDecodeError:
+        err = "Response is OK, but cannot decode JSON from server"
+        logger.error(err)
+        raise TaskError(err)
+
     nextUrl = packages["meta"]["next"]
     # calculate how many package list files will be downloaded based on total
     # number of packages and the download limit
