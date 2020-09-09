@@ -46,7 +46,95 @@ def write_packages_json(count, packages, packages_directory):
             json.dump(packages, json_file, indent=4)
     except json.JSONDecodeError:
         logger.error("Cannot decode JSON from %s", json_download_file)
-    return
+
+
+def start_mets_task(
+    packageUUID,
+    relativePathToMETS,
+    apiUrl,
+    timestampStr,
+    packageListNo,
+    storageServiceId,
+    fetchJobId,
+):
+    """Initiate a get_mets task worker and record the event in the
+    celery database.
+    """
+    # call worker to download and parse METS File
+    get_mets_task = get_mets.delay(
+        packageUUID,
+        relativePathToMETS,
+        apiUrl,
+        timestampStr,
+        packageListNo,
+        storageServiceId,
+        fetchJobId,
+    )
+    mets_task = get_mets_tasks(
+        get_mets_task_id=get_mets_task.id,
+        workflow_coordinator_id=workflow_coordinator.request.id,
+        package_uuid=packageUUID,
+        status=None,
+    )
+    db.session.add(mets_task)
+    db.session.commit()
+
+
+def _retrieve_uuid_and_path_from_package_object(package_obj):
+    """Given a JSON dictionary describing a package in the storage
+    service parse out the details into something that can be added to
+    the database and then acted upon by AIPscan.
+    """
+    packageUUID = package_obj["uuid"]
+
+    # build relative path to METS file
+    if package_obj["current_path"].endswith(".7z"):
+        relativePath = package_obj["current_path"][40:-3]
+    else:
+        relativePath = package_obj["current_path"][40:]
+    relativePathToMETS = relativePath + "/data/METS." + package_obj["uuid"] + ".xml"
+
+    return packageUUID, relativePathToMETS
+
+
+def parse_packages_and_load_mets(
+    json_file_path, apiUrl, timestampStr, packageListNo, storageServiceId, fetchJobId
+):
+    """Parse packages documents from the storage service and initiate
+    the load mets functions of AIPscan. Results are written to the
+    database.
+    """
+    totalDeletedAIPs, total_dips, total_replicated, totalAIPs = 0, 0, 0, 0
+    with open(json_file_path, "r") as packagesJson:
+        package_list = json.load(packagesJson)
+    for package_obj in package_list.get("objects", []):
+        if package_obj["status"] == "DELETED":
+            totalDeletedAIPs += 1
+            continue
+        if package_obj["package_type"] == "DIP":
+            total_dips += 1
+            continue
+        if package_obj["replicated_package"] is not None:
+            total_replicated += 1
+        if (
+            package_obj["package_type"] == "AIP"
+            and package_obj["replicated_package"] is None
+            and package_obj["status"] != "DELETED"
+        ):
+            totalAIPs += 1
+            packageUUID, relativePathToMETS = _retrieve_uuid_and_path_from_package_object(
+                package_obj
+            )
+            start_mets_task(
+                packageUUID,
+                relativePathToMETS,
+                apiUrl,
+                timestampStr,
+                packageListNo,
+                storageServiceId,
+                fetchJobId,
+            )
+    return totalDeletedAIPs, total_dips, total_replicated, totalAIPs
 
 
 @celery.task(bind=True)
@@ -85,49 +173,14 @@ def workflow_coordinator(
         json_file_path = os.path.join(
             packages_directory, "packages{}.json".format(packageListNo)
         )
-        with open(json_file_path, "r") as packagesJson:
-            list = json.load(packagesJson)
-            for package in list["objects"]:
-                # count number of deleted AIPs
-                if package["status"] == "DELETED":
-                    totalDeletedAIPs += 1
-                # Only scan AIPs, i.e. ignore deleted and replicated packages.
-                if (
-                    package["package_type"] == "AIP"
-                    and package["replicated_package"] is None
-                    and package["status"] != "DELETED"
-                ):
-                    totalAIPs += 1
-                    packageUUID = package["uuid"]
-
-                    # build relative path to METS file
-                    if package["current_path"].endswith(".7z"):
-                        relativePath = package["current_path"][40:-3]
-                    else:
-                        relativePath = package["current_path"][40:]
-                    relativePathToMETS = (
-                        relativePath + "/data/METS." + package["uuid"] + ".xml"
-                    )
-
-                    # call worker to download and parse METS File
-                    get_mets_task = get_mets.delay(
-                        packageUUID,
-                        relativePathToMETS,
-                        apiUrl,
-                        timestampStr,
-                        packageListNo,
-                        storageServiceId,
-                        fetchJobId,
-                    )
-
-                    mets_task = get_mets_tasks(
-                        get_mets_task_id=get_mets_task.id,
-                        workflow_coordinator_id=workflow_coordinator.request.id,
-                        package_uuid=packageUUID,
-                        status=None,
-                    )
-                    db.session.add(mets_task)
-                    db.session.commit()
+        parse_packages_and_load_mets(
+            json_file_path,
+            apiUrl,
+            timestampStr,
+            packageListNo,
+            storageServiceId,
+            fetchJobId,
+        )
 
     # PICTURAE TODO: Do we need a try catch here in case the value
     # returns None.

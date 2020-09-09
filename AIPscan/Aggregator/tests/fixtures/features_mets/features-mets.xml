@@ -1,0 +1,153 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Minimized METS to with different features we might need to deal
+with when parsing.-->
+<mets:mets xmlns:mets="http://www.loc.gov/METS/" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.loc.gov/METS/ http://www.loc.gov/standards/mets/version1121/mets.xsd">
+  <mets:metsHdr CREATEDATE="2020-09-08T15:17:50"/>
+  <mets:dmdSec ID="dmdSec_1">
+    <mets:mdWrap MDTYPE="PREMIS:OBJECT">
+      <mets:xmlData>
+        <premis:object xmlns:premis="http://www.loc.gov/premis/v3" xsi:type="premis:intellectualEntity" xsi:schemaLocation="http://www.loc.gov/premis/v3 http://www.loc.gov/standards/premis/v3/premis.xsd" version="3.0">
+          <premis:objectIdentifier>
+            <premis:objectIdentifierType>UUID</premis:objectIdentifierType>
+            <premis:objectIdentifierValue>ab793f82-27b0-4c2e-ac3e-621bab5af8f1</premis:objectIdentifierValue>
+          </premis:objectIdentifier>
+          <premis:objectIdentifier>
+            <premis:objectIdentifierType>ULID</premis:objectIdentifierType>
+            <premis:objectIdentifierValue>01D9T8MJM9NEQ390H239VT50CQ</premis:objectIdentifierValue>
+          </premis:objectIdentifier>
+          <premis:objectIdentifier>
+            <premis:objectIdentifierType>EXID</premis:objectIdentifierType>
+            <premis:objectIdentifierValue>https://example.com/AIP/id/1348554167</premis:objectIdentifierValue>
+          </premis:objectIdentifier>
+          <premis:originalName>myTransfer-ab793f82-27b0-4c2e-ac3e-621bab5af8f1</premis:originalName>
+        </premis:object>
+      </mets:xmlData>
+    </mets:mdWrap>
+  </mets:dmdSec>
+  <mets:dmdSec ID="dmdSec_2">
+    <mets:mdWrap MDTYPE="PREMIS:OBJECT">
+      <mets:xmlData>
+        <premis:object xmlns:premis="http://www.loc.gov/premis/v3" xsi:type="premis:intellectualEntity" xsi:schemaLocation="http://www.loc.gov/premis/v3 http://www.loc.gov/standards/premis/v3/premis.xsd" version="3.0">
+          <premis:objectIdentifier>
+            <premis:objectIdentifierType>UUID</premis:objectIdentifierType>
+            <premis:objectIdentifierValue>adf6f4ea-cd56-41c0-a161-973b8a09808e</premis:objectIdentifierValue>
+          </premis:objectIdentifier>
+          <premis:originalName>%transferDirectory%objects/my-transfer/</premis:originalName>
+        </premis:object>
+      </mets:xmlData>
+    </mets:mdWrap>
+  </mets:dmdSec>
+  <mets:dmdSec ID="dmdSec_3">
+    <mets:mdWrap MDTYPE="DC">
+      <mets:xmlData>
+        <dcterms:dublincore xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xsi:schemaLocation="http://purl.org/dc/terms/ https://dublincore.org/schemas/xmls/qdc/2008/02/11/dcterms.xsd">
+          <dc:title>Scope sample collection</dc:title>
+          <dc:creator>Creator One</dc:creator>
+          <dc:subject>Subject One</dc:subject>
+          <dc:subject>Subject Two</dc:subject>
+          <dc:subject>Subject Three</dc:subject>
+          <dc:subject></dc:subject>
+          <dc:subject></dc:subject>
+          <dc:description>Dublin core descriptive information</dc:description>
+          <dc:publisher>Publisher one</dc:publisher>
+          <dc:publisher>Publisher two</dc:publisher>
+          <dc:contributor>Contributor one</dc:contributor>
+          <dc:contributor>Controbutor two</dc:contributor>
+          <dc:date></dc:date>
+          <dc:type></dc:type>
+          <dc:format>Format one</dc:format>
+          <dc:format>Format two</dc:format>
+          <dc:identifier>id:one</dc:identifier>
+          <dc:identifier>id:two</dc:identifier>
+          <dc:source>Source one</dc:source>
+          <dc:source>Source two</dc:source>
+          <dc:language>en</dc:language>
+          <dc:language>fr</dc:language>
+          <dc:relation></dc:relation>
+          <dc:coverage></dc:coverage>
+          <dc:rights></dc:rights>
+        </dcterms:dublincore>
+      </mets:xmlData>
+    </mets:mdWrap>
+  </mets:dmdSec>
+  <mets:amdSec ID="amdSec_1">
+    <mets:techMD ID="techMD_1">
+      <mets:mdWrap MDTYPE="PREMIS:OBJECT">
+        <mets:xmlData>
+          <premis:object xmlns:premis="http://www.loc.gov/premis/v3" xsi:type="premis:file" xsi:schemaLocation="http://www.loc.gov/premis/v3 http://www.loc.gov/standards/premis/v3/premis.xsd" version="3.0">
+            <premis:objectIdentifier>
+              <premis:objectIdentifierType>UUID</premis:objectIdentifierType>
+              <premis:objectIdentifierValue>cd577393-5738-4ffc-81fb-8e47e2f5871b</premis:objectIdentifierValue>
+            </premis:objectIdentifier>
+            <premis:objectCharacteristics>
+              <premis:compositionLevel>0</premis:compositionLevel>
+              <premis:fixity>
+                <premis:messageDigestAlgorithm>sha256</premis:messageDigestAlgorithm>
+                <premis:messageDigest>555da75a404558aea84bf31c812185a57cb529bc99a9600219fe558dfc7e5915</premis:messageDigest>
+              </premis:fixity>
+              <premis:size>131362</premis:size>
+              <premis:format>
+                <premis:formatDesignation>
+                  <premis:formatName>JPEG</premis:formatName>
+                  <premis:formatVersion>1.01</premis:formatVersion>
+                </premis:formatDesignation>
+                <premis:formatRegistry>
+                  <premis:formatRegistryName>PRONOM</premis:formatRegistryName>
+                  <premis:formatRegistryKey>fmt/43</premis:formatRegistryKey>
+                </premis:formatRegistry>
+              </premis:format>
+              <premis:creatingApplication>
+                <premis:dateCreatedByApplication>2018-08-02</premis:dateCreatedByApplication>
+              </premis:creatingApplication>
+            </premis:objectCharacteristics>
+            <premis:originalName>%transferDirectory%objects/0A2/Cv7a7v7WAAADJTO.jpg</premis:originalName>
+          </premis:object>
+        </mets:xmlData>
+      </mets:mdWrap>
+    </mets:techMD>
+  </mets:amdSec>
+  <mets:fileSec>
+    <mets:fileGrp USE="original">
+      <mets:file GROUPID="Group-cd577393-5738-4ffc-81fb-8e47e2f5871b" ID="file-cd577393-5738-4ffc-81fb-8e47e2f5871b" ADMID="amdSec_1">
+        <mets:FLocat xlink:href="objects/0A2/Cv7a7v7WAAADJTO.jpg" LOCTYPE="OTHER" OTHERLOCTYPE="SYSTEM"/>
+      </mets:file>
+    </mets:fileGrp>
+    <mets:fileGrp USE="submissionDocumentation">
+      <mets:file GROUPID="Group-ce294d78-03c8-4a48-9cc5-2d98304e1f9f" ID="file-ce294d78-03c8-4a48-9cc5-2d98304e1f9f">
+        <mets:FLocat xlink:href="objects/submissionDocumentation/transfer-0A-7ce2ea03-18b3-424f-9827-1cb9bc65b448/METS.xml" LOCTYPE="OTHER" OTHERLOCTYPE="SYSTEM"/>
+      </mets:file>
+    </mets:fileGrp>
+    <mets:fileGrp USE="metadata">
+      <mets:file GROUPID="Group-895fe9dd-20a4-47b8-bc13-e57563e1ba0d" ID="file-895fe9dd-20a4-47b8-bc13-e57563e1ba0d">
+        <mets:FLocat xlink:href="objects/metadata/transfers/0A-7ce2ea03-18b3-424f-9827-1cb9bc65b448/directory_tree.txt" LOCTYPE="OTHER" OTHERLOCTYPE="SYSTEM"/>
+      </mets:file>
+    </mets:fileGrp>
+  </mets:fileSec>
+  <mets:structMap ID="structMap_1" LABEL="Archivematica default" TYPE="physical">
+    <mets:div LABEL="0A-74220a00-b06d-4a60-ab96-90573d1ef2de" TYPE="Directory" DMDID="dmdSec_1">
+      <mets:div LABEL="objects" TYPE="Directory" DMDID="dmdSec_3">
+        <mets:div LABEL="0A2" TYPE="Directory" DMDID="dmdSec_2">
+          <mets:div LABEL="Cv7a7v7WAAADJTO.jpg" TYPE="Item">
+            <mets:fptr FILEID="file-cd577393-5738-4ffc-81fb-8e47e2f5871b"/>
+          </mets:div>
+        </mets:div>
+        <mets:div LABEL="metadata" TYPE="Directory">
+          <mets:div LABEL="transfers" TYPE="Directory">
+            <mets:div LABEL="0A-7ce2ea03-18b3-424f-9827-1cb9bc65b448" TYPE="Directory">
+              <mets:div LABEL="directory_tree.txt" TYPE="Item">
+                <mets:fptr FILEID="file-895fe9dd-20a4-47b8-bc13-e57563e1ba0d"/>
+              </mets:div>
+            </mets:div>
+          </mets:div>
+        </mets:div>
+        <mets:div LABEL="submissionDocumentation" TYPE="Directory">
+          <mets:div LABEL="transfer-0A-7ce2ea03-18b3-424f-9827-1cb9bc65b448" TYPE="Directory">
+            <mets:div LABEL="METS.xml" TYPE="Item">
+              <mets:fptr FILEID="file-ce294d78-03c8-4a48-9cc5-2d98304e1f9f"/>
+            </mets:div>
+          </mets:div>
+        </mets:div>
+      </mets:div>
+    </mets:div>
+  </mets:structMap>
+</mets:mets>
