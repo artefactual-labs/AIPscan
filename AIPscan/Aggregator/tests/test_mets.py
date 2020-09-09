@@ -20,6 +20,9 @@ FIXTURES_DIR = "fixtures"
     ],
 )
 def test_get_aip_original_name(fixture_path, transfer_name):
+    """Make sure that we can reliably get original name from the METS
+    file given we haven't any mets-reader-writer helpers.
+    """
     script_dir = os.path.dirname(os.path.realpath(__file__))
     mets_file = os.path.join(script_dir, FIXTURES_DIR, fixture_path)
     mets = metsrw.METSDocument.fromfile(mets_file)

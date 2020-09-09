@@ -19,6 +19,9 @@ FIXTURES_DIR = "fixtures"
     ],
 )
 def test_event_creation(fixture_path, event_count, mocker):
+    """Make sure that we're seeing all of the events associated with
+    an AIP and that they are potentially written to the database okay.
+    """
     script_dir = os.path.dirname(os.path.realpath(__file__))
     mets_file = os.path.join(script_dir, FIXTURES_DIR, fixture_path)
     mets = metsrw.METSDocument.fromfile(mets_file)
