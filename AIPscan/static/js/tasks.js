@@ -38,7 +38,8 @@ function package_list_task_status(taskId, showcount, fetchJobId){
         return
       }
       else {
-        $('#console').append('<div class="log">' + state + '"Downloading AIP METS files</div>')
+        output = "".concat('<div class="log">', state, ': Downloading AIP METS files</div>')
+        $('#console').append(output)
         if (showcount == false) {
           if ('message' in data){
             $('#console').append('<div class="log">' + data["message"] +'</div>')
