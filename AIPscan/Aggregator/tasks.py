@@ -25,7 +25,10 @@ from AIPscan.Aggregator.mets_parse_helpers import (
     parse_mets_with_metsrw,
 )
 
-from AIPscan.Aggregator.task_helpers import process_package_object
+from AIPscan.Aggregator.task_helpers import (
+    process_package_object,
+    format_api_url_with_limit_offset,
+)
 
 logger = get_task_logger(__name__)
 
@@ -199,9 +202,10 @@ def package_lists_request(self, apiUrl, timestamp, packages_directory):
     user_name = apiUrl.get("userName")
     api_key = apiUrl.get("apiKey", "")
 
-    request_url_without_api_key = "{}/api/v2/file/?limit={}&offset={}".format(
+    request_url_without_api_key = format_api_url_with_limit_offset(
         base_url, limit, offset
     )
+
     request_url = "{}&username={}&api_key={}".format(
         request_url_without_api_key, user_name, api_key
     )

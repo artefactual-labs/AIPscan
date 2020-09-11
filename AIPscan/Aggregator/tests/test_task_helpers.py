@@ -40,6 +40,29 @@ api_url_1 = {"baseUrl": "http://example.com", "userName": "1234", "apiKey": "123
 
 
 @pytest.mark.parametrize(
+    "base_url, limit, offset, result",
+    [
+        (
+            "http://subdomain.example.com:0000/",
+            20,
+            10,
+            "http://subdomain.example.com:0000/api/v2/file/?limit=20&offset=10",
+        ),
+        (
+            "http://example.com:0000",
+            30,
+            99,
+            "http://example.com:0000/api/v2/file/?limit=30&offset=99",
+        ),
+    ],
+)
+def test_format_api_url(base_url, limit, offset, result):
+    assert (
+        task_helpers.format_api_url_with_limit_offset(base_url, limit, offset) == result
+    )
+
+
+@pytest.mark.parametrize(
     "api_url, package_uuid, path_to_mets, result",
     [
         (

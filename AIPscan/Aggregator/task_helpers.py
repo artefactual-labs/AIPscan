@@ -11,6 +11,15 @@ from dateutil.parser import parse, ParserError
 from AIPscan.Aggregator.types import StorageServicePackage
 
 
+def format_api_url_with_limit_offset(base_url, limit, offset):
+    """Format the API URL here because ,aking sure the URL is subtly
+    tricky.
+    """
+    return "{}/api/v2/file/?limit={}&offset={}".format(
+        base_url.rstrip("/"), limit, offset
+    )
+
+
 def get_packages_directory(timestamp):
     """Create a path which we will use to store packages downloaded from
     the storage service plus other metadata.
