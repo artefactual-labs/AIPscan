@@ -59,7 +59,7 @@ worker: `celery -A AIPscan.Aggregator.tasks worker --loglevel=info`
 
 ## Usage
 
-### Connecting to a stroage service and initiating AIPScan's use
+### Connecting to a storage service and initiating AIPScan's use
 
 * Go to [`localhost:5000`][usage-1] in a browser.
 * Select "New Storage Service"
