@@ -25,6 +25,8 @@ from AIPscan.Aggregator.mets_parse_helpers import (
     parse_mets_with_metsrw,
 )
 
+from AIPscan.Aggregator.task_helpers import process_package_object
+
 logger = get_task_logger(__name__)
 
 
@@ -80,73 +82,49 @@ def start_mets_task(
     db.session.commit()
 
 
-def _retrieve_uuid_and_path_from_package_object(package_obj):
-    """Given a JSON dictionary describing a package in the storage
-    service parse out the details into something that can be added to
-    the database and then acted upon by AIPscan.
-    """
-    packageUUID = package_obj["uuid"]
-
-    # build relative path to METS file
-    if package_obj["current_path"].endswith(".7z"):
-        relativePath = package_obj["current_path"][40:-3]
-    else:
-        relativePath = package_obj["current_path"][40:]
-    relativePathToMETS = relativePath + "/data/METS." + package_obj["uuid"] + ".xml"
-
-    return packageUUID, relativePathToMETS
-
-
 def parse_packages_and_load_mets(
-    json_file_path, apiUrl, timestampStr, packageListNo, storageServiceId, fetchJobId
+    json_file_path,
+    api_url,
+    timestamp,
+    package_list_no,
+    storage_service_id,
+    fetch_job_id,
 ):
     """Parse packages documents from the storage service and initiate
     the load mets functions of AIPscan. Results are written to the
     database.
     """
-    totalDeletedAIPs, total_dips, total_replicated, totalAIPs = 0, 0, 0, 0
+    OBJECTS = "objects"
+    packages = []
     with open(json_file_path, "r") as packagesJson:
         package_list = json.load(packagesJson)
-    for package_obj in package_list.get("objects", []):
-        if package_obj["status"] == "DELETED":
-            totalDeletedAIPs += 1
+    for package_obj in package_list.get(OBJECTS, []):
+        package = process_package_object(package_obj)
+        packages.append(package)
+        if not package.is_aip():
             continue
-        if package_obj["package_type"] == "DIP":
-            total_dips += 1
-            continue
-        if package_obj["replicated_package"] is not None:
-            total_replicated += 1
-        if (
-            package_obj["package_type"] == "AIP"
-            and package_obj["replicated_package"] is None
-            and package_obj["status"] != "DELETED"
-        ):
-            totalAIPs += 1
-            packageUUID, relativePathToMETS = _retrieve_uuid_and_path_from_package_object(
-                package_obj
-            )
-            start_mets_task(
-                packageUUID,
-                relativePathToMETS,
-                apiUrl,
-                timestampStr,
-                packageListNo,
-                storageServiceId,
-                fetchJobId,
-            )
-    return totalDeletedAIPs, total_dips, total_replicated, totalAIPs
+        start_mets_task(
+            package.uuid,
+            package.get_relative_path(),
+            api_url,
+            timestamp,
+            package_list_no,
+            storage_service_id,
+            fetch_job_id,
+        )
+    return packages
 
 
 @celery.task(bind=True)
 def workflow_coordinator(
-    self, apiUrl, timestampStr, storageServiceId, fetchJobId, packages_directory
+    self, api_url, timestamp, storage_service_id, fetch_job_id, packages_directory
 ):
 
     logger.info("Packages directory is: %s", packages_directory)
 
-    # send package list request to a worker
+    # Send package list request to a worker.
     package_lists_task = package_lists_request.delay(
-        apiUrl, timestampStr, packages_directory
+        api_url, timestamp, packages_directory
     )
 
     write_celery_update(package_lists_task, workflow_coordinator)
@@ -162,32 +140,47 @@ def workflow_coordinator(
         # Re-raise.
         raise (package_lists_task.info)
 
-    totalPackageLists = package_lists_task.info["totalPackageLists"]
-    totalPackages = package_lists_task.info["totalPackages"]
+    total_package_lists = package_lists_task.info["totalPackageLists"]
 
-    totalDeletedAIPs = 0
-    totalAIPs = 0
-
-    # Create a new worker to download and parse each METS separately.
-    for packageListNo in range(1, totalPackageLists + 1):
+    all_packages = []
+    for package_list_no in range(1, total_package_lists + 1):
         json_file_path = os.path.join(
-            packages_directory, "packages{}.json".format(packageListNo)
+            packages_directory, "packages{}.json".format(package_list_no)
         )
-        parse_packages_and_load_mets(
+        # Process packages and create a new worker to download and parse
+        # each METS separately.
+        packages = parse_packages_and_load_mets(
             json_file_path,
-            apiUrl,
-            timestampStr,
-            packageListNo,
-            storageServiceId,
-            fetchJobId,
+            api_url,
+            timestamp,
+            package_list_no,
+            storage_service_id,
+            fetch_job_id,
         )
+        all_packages = all_packages + packages
 
-    # PICTURAE TODO: Do we need a try catch here in case the value
-    # returns None.
-    obj = fetch_jobs.query.filter_by(id=fetchJobId).first()
-    obj.total_packages = totalPackages
-    obj.total_aips = totalAIPs
-    obj.total_deleted_aips = totalDeletedAIPs
+    total_packages = package_lists_task.info["totalPackages"]
+
+    total_aips = len([package for package in all_packages if package.is_aip()])
+    total_sips = len([package for package in all_packages if package.is_sip()])
+    total_dips = len([package for package in all_packages if package.is_dip()])
+    total_deleted_aips = len(
+        [package for package in all_packages if package.is_deleted()]
+    )
+    total_replicas = len([package for package in all_packages if package.is_replica()])
+
+    summary = "aips: '{}'; sips: '{}'; dips: '{}'; deleted: '{}'; replicated: '{}'".format(
+        total_aips, total_sips, total_dips, total_deleted_aips, total_replicas
+    )
+    logger.info("%s", summary)
+
+    obj = fetch_jobs.query.filter_by(id=fetch_job_id).first()
+    obj.total_packages = total_packages
+    obj.total_aips = total_aips
+    obj.total_dips = total_dips
+    obj.total_sips = total_sips
+    obj.total_replicas = total_replicas
+    obj.total_deleted_aips = total_deleted_aips
     db.session.commit()
 
 

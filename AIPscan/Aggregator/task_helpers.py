@@ -8,12 +8,51 @@ import os
 
 from dateutil.parser import parse, ParserError
 
+from AIPscan.Aggregator.types import StorageServicePackage
+
 
 def get_packages_directory(timestamp):
     """Create a path which we will use to store packages downloaded from
     the storage service plus other metadata.
     """
     return os.path.join("AIPscan", "Aggregator", "downloads", timestamp, "packages")
+
+
+def process_package_object(package_obj):
+    """Process a package object as retrieve from the storage service
+    and return a StorageServicePackage type to the caller for further
+    analysis.
+    """
+    package = StorageServicePackage()
+
+    STATUS = "status"
+    TYPE = "package_type"
+    REPL = "replicated_package"
+    CURRENT_PATH = "current_path"
+    UUID = "uuid"
+
+    PKG_AIP = "AIP"
+    PKG_SIP = "transfer"
+    PKG_DIP = "DIP"
+    PKG_DEL = "DELETED"
+
+    # Accumulate state. The package object should be able to evaluate
+    # itself accordingly.
+    if package_obj[TYPE] == PKG_AIP:
+        package.aip = True
+    if package_obj.get(TYPE) == PKG_DIP:
+        package.dip = True
+    if package_obj.get(TYPE) == PKG_SIP:
+        package.sip = True
+    if package_obj.get(STATUS) == PKG_DEL:
+        package.deleted = True
+    if package_obj.get(REPL) is not None:
+        package.replica = True
+
+    package.uuid = package_obj.get(UUID)
+    package.current_path = package_obj.get(CURRENT_PATH)
+
+    return package
 
 
 def _tz_neutral_date(date):

@@ -4,7 +4,7 @@
         "next": null,
         "offset": 0,
         "previous": null,
-        "total_count": 8
+        "total_count": 9
     },
     "objects": [
         {
@@ -140,6 +140,22 @@
             "size": 12783453,
             "status": "UPLOADED",
             "uuid": "59f70134-eeca-4886-888e-b2013a08571e"
+        },
+        {
+            "current_full_path": "/var/archivematica/sharedDirectory/www/AIPsStore/transferBacklog/originals/backlog-fbdcd607-270e-4dff-9a01-d11b7c2a0200",
+            "current_location": "/api/v2/location/7fe31789-90e0-4ad3-a669-18517737fc25/",
+            "current_path": "originals/backlog-fbdcd607-270e-4dff-9a01-d11b7c2a0200",
+            "encrypted": false,
+            "misc_attributes": {},
+            "origin_pipeline": "/api/v2/pipeline/dbb92514-1572-4a81-87ee-06408672e7a6/",
+            "package_type": "transfer",
+            "related_packages": [],
+            "replicas": [],
+            "replicated_package": null,
+            "resource_uri": "/api/v2/file/fbdcd607-270e-4dff-9a01-d11b7c2a0200/",
+            "size": 175439,
+            "status": "UPLOADED",
+            "uuid": "fbdcd607-270e-4dff-9a01-d11b7c2a0200"
         }
     ]
 }
