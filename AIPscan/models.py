@@ -130,11 +130,12 @@ class originals(db.Model):
     name = db.Column(db.String(255), index=True)
     uuid = db.Column(db.String(255), index=True)
     size = db.Column(db.Integer())
+    last_modified_date = db.Column(db.DateTime())
     puid = db.Column(db.String(255), index=True)
-    format = db.Column(db.String(255))
+    file_format = db.Column(db.String(255))
     format_version = db.Column(db.String(255))
     checksum_type = db.Column(db.String(255))
-    checksum_value = db.Column(db.String(255))
+    checksum_value = db.Column(db.String(255), index=True)
     related_uuid = db.Column(db.String(255), index=True)
     aip_id = db.Column(db.Integer(), db.ForeignKey("aips.id"), nullable=False)
     events = db.relationship(
@@ -146,8 +147,9 @@ class originals(db.Model):
         name,
         uuid,
         size,
+        last_modified_date,
         puid,
-        format,
+        file_format,
         format_version,
         checksum_type,
         checksum_value,
@@ -157,8 +159,9 @@ class originals(db.Model):
         self.name = name
         self.uuid = uuid
         self.size = size
+        self.last_modified_date = last_modified_date
         self.puid = puid
-        self.format = format
+        self.file_format = file_format
         self.format_version = format_version
         self.checksum_type = checksum_type
         self.checksum_value = checksum_value
@@ -174,9 +177,9 @@ class copies(db.Model):
     name = db.Column(db.String(255), index=True)
     uuid = db.Column(db.String(255), index=True)
     size = db.Column(db.Integer())
-    format = db.Column(db.String(255))
+    file_format = db.Column(db.String(255))
     checksum_type = db.Column(db.String(255))
-    checksum_value = db.Column(db.String(255))
+    checksum_value = db.Column(db.String(255), index=True)
     related_uuid = db.Column(db.String(255), index=True)
     normalization_date = db.Column(db.DateTime())
     aip_id = db.Column(db.Integer(), db.ForeignKey("aips.id"), nullable=False)
@@ -186,7 +189,7 @@ class copies(db.Model):
         name,
         uuid,
         size,
-        format,
+        file_format,
         checksum_type,
         checksum_value,
         related_uuid,
@@ -196,7 +199,7 @@ class copies(db.Model):
         self.name = name
         self.uuid = uuid
         self.size = size
-        self.format = format
+        self.file_format = file_format
         self.checksum_type = checksum_type
         self.checksum_value = checksum_value
         self.related_uuid = related_uuid

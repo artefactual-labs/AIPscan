@@ -61,11 +61,12 @@ def _tz_neutral_date(date):
     Where a date is unknown or can't be parsed, we return the UNIX EPOCH
     in lieu of another sensible value.
     """
-    EPOCH = datetime.strptime("1970-01-01T00:00:01", "%Y-%m-%dT%H:%M:%S")
+    date_time_pattern = "%Y-%m-%dT%H:%M:%S"
+    EPOCH = datetime.strptime("1970-01-01T00:00:01", date_time_pattern)
     try:
         date = parse(date)
-        date = date.strftime("%Y-%m-%dT%H:%M:%S")
-        date = datetime.strptime(date, "%Y-%m-%dT%H:%M:%S")
+        date = date.strftime(date_time_pattern)
+        date = datetime.strptime(date, date_time_pattern)
     except ParserError:
         date = EPOCH
     return date

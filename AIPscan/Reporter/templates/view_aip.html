@@ -28,7 +28,8 @@
         <td>{{ original.name }}</td>
         <td>{{ original.uuid }}</td>
         <td>{{ original.size }}</td>
-        <td>{{ original.puid }}</td>
+        <td>{{ original.last_modified_date.strftime('%Y-%m-%d') }}</td>
+        <td><a href="http://www.nationalarchives.gov.uk/PRONOM/{{ original.puid }}" target="_blank">{{ original.puid }}</a></td>
         <td>{{ original.format }} {% if original.format_version != None %} {{original.format_version}}{% endif %}</td>
         <td><a href="{{ url_for('reporter.view_original', id=original.id ) }}"><button type="button" class="btn btn-info" style="margin-bottom: 5px;">Events</button></a>
         {% if original.related_uuid != None %}<a href="{{ url_for('reporter.view_copy', uuid=original.related_uuid ) }}"><button type="button" class="btn btn-info" style="margin-bottom: 5px;">Preservation copy</button></a>{% endif %}

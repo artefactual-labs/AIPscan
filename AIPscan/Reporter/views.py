@@ -171,7 +171,7 @@ def report_formats_count():
             elif ingestEvent.date > dayafter:
                 continue
             else:
-                format = original.format
+                format = original.file_format
                 size = original.size
                 originalsCount += 1
 
@@ -243,7 +243,7 @@ def chart_formats_count():
             elif ingestEvent.date > dayafter:
                 continue
             else:
-                formatLabels.append(original.format)
+                formatLabels.append(original.file_format)
                 originalsCount += 1
 
     formatCounts = Counter(formatLabels)
@@ -296,7 +296,7 @@ def plot_formats_count():
             elif ingestEvent.date > dayafter:
                 continue
             else:
-                format = original.format
+                format = original.file_format
                 size = original.size
                 originalsCount += 1
 

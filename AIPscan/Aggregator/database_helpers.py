@@ -70,6 +70,7 @@ def _add_file_original(
     file_name,
     file_uuid,
     file_size,
+    last_modified_date,
     puid,
     file_format,
     format_version,
@@ -83,8 +84,9 @@ def _add_file_original(
         name=file_name,
         uuid=file_uuid,
         size=file_size,
+        last_modified_date=last_modified_date,
         puid=puid,
-        format=file_format,
+        file_format=file_format,
         format_version=format_version,
         checksum_type=checksum_type,
         checksum_value=checksum_value,
@@ -122,7 +124,7 @@ def _add_file_preservation(
         name=file_name,
         uuid=file_uuid,
         size=file_size,
-        format=file_format,
+        file_format=file_format,
         checksum_type=checksum_type,
         checksum_value=checksum_value,
         related_uuid=related_uuid,
@@ -159,11 +161,15 @@ def process_aip_data(aip, aip_uuid, mets):
         related_uuid = None
         checksum_type = None
         checksum_value = None
+        last_modified_date = None
 
         try:
             for premis_object in aip_file.get_premis_objects():
                 file_size = premis_object.size
                 key_alias = premis_object.format_registry_key
+                last_modified_date = _tz_neutral_date(
+                    premis_object.date_created_by_application
+                )
                 if not isinstance(key_alias, tuple):
                     puid = key_alias
                 file_format = premis_object.format_name
@@ -188,6 +194,7 @@ def process_aip_data(aip, aip_uuid, mets):
                 file_name=file_name,
                 file_uuid=file_uuid,
                 file_size=file_size,
+                last_modified_date=last_modified_date,
                 puid=puid,
                 file_format=file_format,
                 format_version=format_version,

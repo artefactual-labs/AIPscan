@@ -82,7 +82,7 @@ def aip_overview(storage_service_id, original_files=True):
             try:
                 format_key = file_.puid
             except AttributeError:
-                format_key = file_.format
+                format_key = file_.file_format
             if format_key in report:
                 report[format_key][FIELD_COUNT] = report[format_key][FIELD_COUNT] + 1
                 if aip.uuid not in report[format_key][FIELD_AIPS]:
@@ -92,7 +92,7 @@ def aip_overview(storage_service_id, original_files=True):
                 report[format_key][FIELD_COUNT] = 1
                 try:
                     report[format_key][FIELD_VERSION] = file_.format_version
-                    report[format_key][FIELD_NAME] = file_.format
+                    report[format_key][FIELD_NAME] = file_.file_format
                 except AttributeError:
                     pass
                 if report[format_key].get(FIELD_AIPS) is None:
@@ -124,13 +124,15 @@ def aip_overview_two(storage_service_id, original_files=True):
             try:
                 format_key = file_.puid
             except AttributeError:
-                format_key = file_.format
+                format_key = file_.file_format
             if format_key is None:
                 continue
             try:
-                formats[format_key] = "{} {}".format(file_.format, file_.format_version)
+                formats[format_key] = "{} {}".format(
+                    file_.file_format, file_.format_version
+                )
             except AttributeError:
-                formats[format_key] = "{}".format(file_.format)
+                formats[format_key] = "{}".format(file_.file_format)
             size = report[aip.uuid][FIELD_AIP_SIZE]
             try:
                 report[aip.uuid][FIELD_AIP_SIZE] = size + file_.size
@@ -147,7 +149,7 @@ def aip_overview_two(storage_service_id, original_files=True):
                     ] = file_.format_version
                     report[aip.uuid][FIELD_FORMATS][format_key][
                         FIELD_NAME
-                    ] = file_.format
+                    ] = file_.file_format
                 except AttributeError:
                     pass
             else:
@@ -197,10 +199,10 @@ def derivative_overview(storage_service_id):
                 if format_version is None:
                     format_version = ""
                 file_derivative_pair[FIELD_ORIGINAL_FORMAT] = "{} {} ({})".format(
-                    file_.format, format_version, file_.puid
+                    file_.file_format, format_version, file_.puid
                 )
                 file_derivative_pair[FIELD_DERIVATIVE_FORMAT] = "{}".format(
-                    derivative.format
+                    derivative.file_format
                 )
                 derivative_pairings.append(file_derivative_pair)
         aip_report[FIELD_RELATED_PAIRING] = derivative_pairings
