@@ -36,41 +36,57 @@ def test_tz_neutral_dates(input_date, output_date, now_year):
         assert result_date == output_date
 
 
-api_url_1 = {"baseUrl": "http://example.com", "userName": "1234", "apiKey": "1234"}
-
-
 @pytest.mark.parametrize(
-    "base_url, limit, offset, result",
+    "url_api_dict, base_url, url_without_api_key, url_with_api_key",
     [
         (
-            "http://subdomain.example.com:0000/",
-            20,
-            10,
-            "http://subdomain.example.com:0000/api/v2/file/?limit=20&offset=10",
+            {
+                "baseUrl": "http://example.com:9000/",
+                "limit": "23",
+                "offset": "13",
+                "userName": "test",
+                "apiKey": "mykey",
+            },
+            "http://example.com:9000",
+            "http://example.com:9000/api/v2/file/?limit=23&offset=13",
+            "http://example.com:9000/api/v2/file/?limit=23&offset=13&username=test&api_key=mykey",
         ),
         (
-            "http://example.com:0000",
-            30,
-            99,
-            "http://example.com:0000/api/v2/file/?limit=30&offset=99",
+            {
+                "baseUrl": "http://subdomain.example.com:8000/",
+                "limit": "10",
+                "offset": "99",
+                "userName": "anothertest",
+                "apiKey": "myotherkey",
+            },
+            "http://subdomain.example.com:8000",
+            "http://subdomain.example.com:8000/api/v2/file/?limit=10&offset=99",
+            "http://subdomain.example.com:8000/api/v2/file/?limit=10&offset=99&username=anothertest&api_key=myotherkey",
         ),
     ],
 )
-def test_format_api_url(base_url, limit, offset, result):
-    assert (
-        task_helpers.format_api_url_with_limit_offset(base_url, limit, offset) == result
-    )
+def test_format_api_url(url_api_dict, base_url, url_without_api_key, url_with_api_key):
+    res1, res2, res3 = task_helpers.format_api_url_with_limit_offset(url_api_dict)
+    assert res1 == base_url
+    assert res2 == url_without_api_key
+    assert res3 == url_with_api_key
 
 
 @pytest.mark.parametrize(
     "api_url, package_uuid, path_to_mets, result",
     [
         (
-            api_url_1,
+            {"baseUrl": "http://example.com", "userName": "1234", "apiKey": "1234"},
             "1234",
             "1234",
             "http://example.com/api/v2/file/1234/extract_file/?relative_path_to_file=1234&username=1234&api_key=1234",
-        )
+        ),
+        (
+            {"baseUrl": "http://example.com/", "userName": "1234", "apiKey": "1234"},
+            "1234",
+            "1234",
+            "http://example.com/api/v2/file/1234/extract_file/?relative_path_to_file=1234&username=1234&api_key=1234",
+        ),
     ],
 )
 def test_get_mets_url(api_url, package_uuid, path_to_mets, result):

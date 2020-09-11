@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from datetime import datetime
 import json
 import os
 import requests
@@ -187,73 +186,72 @@ def workflow_coordinator(
     db.session.commit()
 
 
-@celery.task(bind=True)
-def package_lists_request(self, apiUrl, timestamp, packages_directory):
-    """Request package lists from the storage service. Package lists
-    will contain details of the AIPs that we want to download.
+def _make_request(request_url, request_url_without_api_key):
+    """Make our request to the storage service and return a valid
+    response to our caller or raise a TaskError for celery.
     """
-
-    packagesCount = 1
-    dateTimeObjStart = datetime.now().replace(microsecond=0)
-
-    base_url = apiUrl.get("baseUrl", "")
-    limit = apiUrl.get("limit", "")
-    offset = apiUrl.get("offset", "")
-    user_name = apiUrl.get("userName")
-    api_key = apiUrl.get("apiKey", "")
-
-    request_url_without_api_key = format_api_url_with_limit_offset(
-        base_url, limit, offset
-    )
-
-    request_url = "{}&username={}&api_key={}".format(
-        request_url_without_api_key, user_name, api_key
-    )
-
-    # initial packages request
     response = requests.get(request_url)
-
     if response.status_code != requests.codes.ok:
         err = "Check the URL and API details, cannot connect to: `{}`".format(
             request_url_without_api_key
         )
         logger.error(err)
         raise TaskError("Bad response from server: {}".format(err))
-
     try:
         packages = response.json()
     except json.JSONDecodeError:
         err = "Response is OK, but cannot decode JSON from server"
         logger.error(err)
         raise TaskError(err)
+    return packages
 
-    nextUrl = packages["meta"]["next"]
-    # calculate how many package list files will be downloaded based on total
-    # number of packages and the download limit
-    totalPackages = int(packages["meta"]["total_count"])
-    limit = int(apiUrl["limit"])
-    totalPackageLists = int(totalPackages / limit) + (totalPackages % limit > 0)
 
-    write_packages_json(packagesCount, packages, packages_directory)
-
-    while nextUrl is not None:
-        next = requests.get(apiUrl["baseUrl"] + nextUrl)
-        nextPackages = next.json()
-        packagesCount += 1
-        write_packages_json(packagesCount, nextPackages, packages_directory)
-        nextUrl = nextPackages["meta"]["next"]
+@celery.task(bind=True)
+def package_lists_request(self, apiUrl, timestamp, packages_directory):
+    """Request package lists from the storage service. Package lists
+    will contain details of the AIPs that we want to download.
+    """
+    META = "meta"
+    NEXT = "next"
+    LIMIT = "limit"
+    COUNT = "total_count"
+    IN_PROGRESS = "IN PROGRESS"
+    base_url, request_url_without_api_key, request_url = format_api_url_with_limit_offset(
+        apiUrl
+    )
+    # First packages request.
+    packages = _make_request(request_url, request_url_without_api_key)
+    packages_count = 1
+    # Calculate how many package list files will be downloaded based on
+    # total number of packages and the download limit
+    total_packages = int(packages.get(META, {}).get(COUNT, 0))
+    total_package_lists = int(total_packages / int(apiUrl.get(LIMIT))) + (
+        total_packages % int(apiUrl.get(LIMIT)) > 0
+    )
+    # There may be more packages to download to let's access those here.
+    # TODO: `request_url_without_api_key` at this point will not be as
+    # accurate. If we have more time, modify `format_api_url_with_limit_offset(...)`
+    # to work with raw offset and limit data to make up for the fact
+    # that an API key is plain-encoded in next_url.
+    next_url = packages.get(META, {}).get(NEXT, None)
+    write_packages_json(packages_count, packages, packages_directory)
+    while next_url is not None:
+        next_request = "{}{}".format(base_url, next_url)
+        next_packages = _make_request(next_request, request_url_without_api_key)
+        packages_count += 1
+        write_packages_json(packages_count, next_packages, packages_directory)
+        next_url = next_packages.get(META, {}).get(NEXT, None)
         self.update_state(
-            state="IN PROGRESS",
+            state=IN_PROGRESS,
             meta={
-                "message": "Total packages: "
-                + str(totalPackages)
-                + " Total package lists: "
-                + str(totalPackageLists)
+                "message": "Total packages: {} Total package lists: {}".format(
+                    total_packages, total_package_lists
+                )
             },
         )
     return {
-        "totalPackageLists": totalPackageLists,
-        "totalPackages": totalPackages,
+        "totalPackageLists": total_package_lists,
+        "totalPackages": total_packages,
         "timestampStr": timestamp,
     }
 

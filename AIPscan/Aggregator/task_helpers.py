@@ -11,13 +11,22 @@ from dateutil.parser import parse, ParserError
 from AIPscan.Aggregator.types import StorageServicePackage
 
 
-def format_api_url_with_limit_offset(base_url, limit, offset):
-    """Format the API URL here because ,aking sure the URL is subtly
-    tricky.
+def format_api_url_with_limit_offset(api_url):
+    """Format the API URL here to make sure it is as correct as
+    possible.
     """
-    return "{}/api/v2/file/?limit={}&offset={}".format(
-        base_url.rstrip("/"), limit, offset
+    base_url = api_url.get("baseUrl", "").rstrip("/")
+    limit = int(api_url.get("limit", ""))
+    offset = api_url.get("offset", "")
+    user_name = api_url.get("userName")
+    api_key = api_url.get("apiKey", "")
+    request_url_without_api_key = "{}/api/v2/file/?limit={}&offset={}".format(
+        base_url, limit, offset
     )
+    request_url = "{}&username={}&api_key={}".format(
+        request_url_without_api_key, user_name, api_key
+    )
+    return base_url, request_url_without_api_key, request_url
 
 
 def get_packages_directory(timestamp):
@@ -90,7 +99,7 @@ def get_mets_url(api_url, package_uuid, path_to_mets):
     api_key = "apiKey"
 
     mets_url = "{}/api/v2/file/{}/extract_file/?relative_path_to_file={}&username={}&api_key={}".format(
-        api_url[am_url],
+        api_url[am_url].rstrip("/"),
         package_uuid,
         path_to_mets,
         api_url[user_name],
