@@ -2,11 +2,20 @@
 
 {% block content %}
 
-<div class="alert alert-secondary"><strong>AIP: {{ aip.transfer_name }}  {{ aip.uuid }}</strong>
-<br />Storage service: <a href="{{ url_for('aggregator.storage_service', id=storageService.id ) }}">{{ storageService.name }}</a> (<a href="{{ url_for('reporter.view_aips', id=storageService.id ) }}">{{ totalAIPs }} AIPs</a>)
-<br />Creation date: {{ aip.create_date }}
-<br />Originals: {{ aip.originals_count }}
-<br />Preservation copies: {{ aip.copies_count }}
+<div class="alert alert-secondary">
+  <strong>AIP: {{ aip.transfer_name }}  {{ aip.uuid }}</strong>
+  <br />
+  Storage service:
+  <a href="{{ url_for('aggregator.storage_service', id=storageService.id ) }}">
+    {{ storageService.name }}
+  </a> (<a href="{{ url_for('reporter.view_aips', storage_service_id=storageService.id ) }}">
+    {{ totalAIPs }} AIPs</a>)
+<br />
+  Creation date: {{ aip.create_date }}
+<br />
+  Originals: {{ aip.originals_count }}
+<br />
+  Preservation copies: {{ aip.copies_count }}
 </div>
 
 <h3>Original files</h3>
@@ -29,10 +38,25 @@
         <td>{{ original.uuid }}</td>
         <td>{{ original.size }}</td>
         <td>{{ original.last_modified_date.strftime('%Y-%m-%d') }}</td>
-        <td><a href="http://www.nationalarchives.gov.uk/PRONOM/{{ original.puid }}" target="_blank">{{ original.puid }}</a></td>
-        <td>{{ original.format }} {% if original.format_version != None %} {{original.format_version}}{% endif %}</td>
-        <td><a href="{{ url_for('reporter.view_original', id=original.id ) }}"><button type="button" class="btn btn-info" style="margin-bottom: 5px;">Events</button></a>
-        {% if original.related_uuid != None %}<a href="{{ url_for('reporter.view_copy', uuid=original.related_uuid ) }}"><button type="button" class="btn btn-info" style="margin-bottom: 5px;">Preservation copy</button></a>{% endif %}
+        <td>
+          <a href="http://www.nationalarchives.gov.uk/PRONOM/{{ original.puid }}"
+              target="_blank">{{ original.puid }}</a>
+        </td>
+        <td>
+          {{ original.format }} {% if original.format_version != None %} {{original.format_version}}{% endif %}
+        </td>
+        <td>
+          <a href="{{ url_for('reporter.view_original', original_file_id=original.id ) }}">
+            <button type="button" class="btn btn-info" style="margin-bottom: 5px;">
+              Events
+            </button>
+          </a>
+        {% if original.related_uuid != None %}
+        <a href="{{ url_for('reporter.view_copy', preservation_copy_id=original.related_uuid ) }}">
+          <button type="button" class="btn btn-info" style="margin-bottom: 5px;">
+            Preservation copy
+          </button>
+        </a>{% endif %}
       </td>
       </tr>
     {% endfor %}

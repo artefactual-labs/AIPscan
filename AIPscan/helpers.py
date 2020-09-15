@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
-def GetHumanReadableFilesize(size, precision=2):
+def get_human_readable_file_size(size, precision=2):
     suffixes = ["B", "KiB", "MiB", "GiB", "TiB"]
     suffixIndex = 0
     while size > 1024 and suffixIndex < 4:

@@ -38,7 +38,7 @@
         <td>{{ aip.create_date }}</td>
         <td>{{ aip.originals_count }}</td>
         <td>{{ aip.copies_count }}</td>
-        <td><a href="{{ url_for('reporter.view_aip', id = aip.id) }}"><button type="button" class="btn btn-info">View</button></a></td>
+        <td><a href="{{ url_for('reporter.view_aip', aip_id = aip.id) }}"><button type="button" class="btn btn-info">View</button></a></td>
       </tr>
     {% endfor %}
   {% endif %}

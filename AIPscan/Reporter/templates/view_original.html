@@ -5,16 +5,64 @@
 <h3>Original file: {{ original.name }}</h3>
 
 <table class="table table-bordered table-condensed" style="margin-top: 20px;">
-  <tr><td width=20%><strong>AIP</strong></td><td><a href="{{ url_for('reporter.view_aip', id=aip.id ) }}"">{{ aip.transfer_name }}  {{ aip.uuid }}</a></td></tr>
+  <tr>
+    <td width=20%>
+      <strong>AIP</strong>
+    </td>
+    <td>
+      <a href="{{ url_for('reporter.view_aip', aip_id=aip.id ) }}"">
+        {{ aip.transfer_name }}  {{ aip.uuid }}
+      </a>
+    </td>
+  </tr>
   <tr><td width=20%><strong>UUID</strong></td><td>{{ original.uuid }}</td></tr>
   <tr><td width=20%><strong>Size</strong></td><td>{{ size }}</td></tr>
-  <tr><td width=20%><strong>Last modified date</strong></td><td>{{ original.last_modified_date.strftime('%Y-%m-%d') }}</td></tr>
-  <tr><td width=20%><strong>PUID</strong></td><td><a href="http://www.nationalarchives.gov.uk/PRONOM/{{ original.puid }}" target="_blank">{{ original.puid }}</a></td></tr>
-  <tr><td width=20%><strong>Format</strong></td><td>{{ original.file_format }} {% if original.format_version != None %} {{original.format_version}}{% endif %}</td></tr>
-  <tr><td width=20%><strong>Checksum type</strong></td><td>{{ original.checksum_type }}</td></tr>
-  <tr><td width=20%><strong>Checksum value</strong></td><td>{{ original.checksum_value }}</td></tr>
+  <tr>
+    <td width=20%>
+      <strong>Last modified date</strong>
+    </td>
+    <td>{{ original.last_modified_date.strftime('%Y-%m-%d') }}</td>
+  </tr>
+  <tr>
+    <td width=20%>
+      <strong>PUID</strong>
+    </td>
+    <td>
+      <a href="http://www.nationalarchives.gov.uk/PRONOM/{{ original.puid }}"
+          target="_blank">{{ original.puid }}
+      </a>
+    </td>
+  </tr>
+  <tr>
+    <td width=20%>
+      <strong>Format</strong>
+    </td>
+    <td>{{ original.file_format }} {% if original.format_version != None %} {{original.format_version}}{% endif %}
+    </td>
+  </tr>
+  <tr><td width=20%>
+    <strong>Checksum type</strong>
+  </td>
+  <td>{{ original.checksum_type }}</td></tr>
+  <tr>
+    <td width=20%>
+      <strong>Checksum value</strong>
+    </td>
+    <td>
+      {{ original.checksum_value }}
+    </td>
+  </tr>
   {% if copy != None %}
-  <tr><td width=20%><strong>Preservation copy</strong></td><td><a href="{{ url_for('reporter.view_copy', uuid=copy.uuid ) }}"">{{ copy.name }}</td></tr>
+  <tr>
+    <td width=20%>
+      <strong>Preservation copy</strong>
+    </td>
+    <td>
+      <a href="{{ url_for('reporter.view_copy', preservation_copy_id=copy.uuid ) }}"">
+        {{ copy.name }}
+      </a>
+    </td>
+  </tr>
   {% endif %}
 </table>
 
@@ -23,7 +71,12 @@
 {% if original_events %}
     {% for event in original_events %}
     <table class="table table-bordered table-condensed">
-      <tr style="background-color: #D3D3D3;"><td width=20%><strong>Event type</strong></td><td>{{ event.type }}</td></tr>
+      <tr style="background-color: #D3D3D3;">
+        <td width=20%>
+          <strong>Event type</strong>
+        </td>
+        <td>{{ event.type }}</td>
+      </tr>
       <tr><td width=20%><strong>UUID</strong></td><td>{{ event.uuid }}</td></tr>
       <tr><td width=20%><strong>Date</strong></td><td>{{ event.date }}</td></tr>
       {% if event.detail != None %}
@@ -33,7 +86,12 @@
       <tr><td width=20%><strong>Outcome</strong></td><td>{{ event.outcome }}</td></tr>
       {% endif %}
       {% if event.outcome_detail != None %}
-      <tr><td width=20%><strong>Outcome Detail</strong></td><td>{{ event.outcome_detail }}</td></tr>
+      <tr>
+        <td width=20%>
+          <strong>Outcome Detail</strong>
+        </td>
+        <td>{{ event.outcome_detail }}</td>
+      </tr>
       {% endif %}
     </table>
     <br />
