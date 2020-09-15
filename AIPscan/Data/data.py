@@ -2,16 +2,7 @@
 
 from datetime import datetime
 
-from AIPscan.models import (
-    aips as aip_model,
-    originals,
-    events,
-    agents,
-    event_agents,
-    copies,
-    fetch_jobs,
-    storage_services,
-)
+from AIPscan.models import aips as aip_model, originals, copies, storage_services
 
 
 FIELD_AIP_NAME = "AipName"

@@ -15,8 +15,8 @@ CELERY_BROKER_URL = "amqp://guest@localhost//"
 We get different protocol errors for these connection strings depending
 on which we use and where.
 
-	* SQLAlchemy: Can't load plugin: sqlalchemy.dialects:db.sqlite ("db+sqlite://")
-	* Celery: No module named sqlite ("sqlite://")
+    * SQLAlchemy: Can't load plugin: sqlalchemy.dialects:db.sqlite ("db+sqlite://")
+    * Celery: No module named sqlite ("sqlite://")
 """
 CELERY_RESULT_BACKEND = "db+sqlite:///celerytasks.db"
 SQLALCHEMY_CELERY_BACKEND = "sqlite:///" + os.path.join(basedir, "celerytasks.db")

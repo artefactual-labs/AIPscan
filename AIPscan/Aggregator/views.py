@@ -141,7 +141,6 @@ def delete_storage_service(id):
     db.session.delete(storageService)
     db.session.commit()
     flash("Storage service '{}' is deleted".format(storageService.name))
-    storageServices = storage_services.query.all()
     return redirect(url_for("aggregator.ss"))
 
 
