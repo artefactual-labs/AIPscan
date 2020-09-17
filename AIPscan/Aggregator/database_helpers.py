@@ -142,12 +142,32 @@ def process_aip_data(aip, aip_uuid, mets):
     need for reporting.
     """
 
+    # we should only see Directory and "File" types in this field.
+    DIRECTORY_TYPE = "Directory"
+
+    # Objects grouped by use in the fileGrp.
     ORIGINAL_OBJECT = "original"
     PRESERVATION_OBJECT = "preservation"
+    METADATA_OBJECT = "metadata"
+    SUBMISSION_OBJECT = "submissionDocumentation"
+
+    # Derivative is a USE introduced in the Dataverse analysis.
+    DERIVATION_OBJECT = "derivative"
+
+    # Tuples of objects to make comparison easier below.
+    KNOWN_UNUSED_TYPES = (METADATA_OBJECT, SUBMISSION_OBJECT)
+    OBJECT_TYPES = (ORIGINAL_OBJECT, PRESERVATION_OBJECT, DERIVATION_OBJECT)
+    DERIVATIVE_TYPES = (PRESERVATION_OBJECT, DERIVATION_OBJECT)
 
     for aip_file in mets.all_files():
-        if aip_file.use != ORIGINAL_OBJECT and aip_file.use != PRESERVATION_OBJECT:
+        if aip_file.type == DIRECTORY_TYPE:
+            # Only processing files at this stage.
+            continue
+        if aip_file.use not in (OBJECT_TYPES + KNOWN_UNUSED_TYPES):
             # Move onto the next file quickly.
+            logger.info(
+                "Unknown file use returned by metsrw all_files() %s", aip_file.use
+            )
             continue
 
         tasks.get_mets.update_state(state="IN PROGRESS")
@@ -203,7 +223,7 @@ def process_aip_data(aip, aip_uuid, mets):
                 related_uuid=related_uuid,
             )
 
-        if aip_file.use == PRESERVATION_OBJECT:
+        if aip_file.use in DERIVATIVE_TYPES:
             _add_file_preservation(
                 aip_id=aip.id,
                 aip_file=aip_file,
