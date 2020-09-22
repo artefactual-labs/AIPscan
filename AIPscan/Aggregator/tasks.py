@@ -294,7 +294,7 @@ def get_mets(
     except METSError:
         # Some other error with the METS file that we might want to
         # log and act upon.
-        originalName = ""
+        originalName = packageUUID
 
     aip = create_aip_object(
         package_uuid=packageUUID,

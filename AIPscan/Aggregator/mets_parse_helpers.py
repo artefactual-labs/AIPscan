@@ -44,36 +44,43 @@ def parse_mets_with_metsrw(mets_file):
 
 
 def get_aip_original_name(mets):
-    """Retrieve PREMIS original name from a METSDocument object."""
+    """Retrieve PREMIS original name from a METSDocument object.
+
+    If the original name cannot be reliably retrieved from the METS file
+    a METSError exception is returned to be handled by the caller as
+    desired.
+    """
 
     # Negated as we're going to want to remove this length of values.
     NAMESUFFIX = -len("-00000000-0000-0000-0000-000000000000")
 
+    # The transfer directory prefix is a directory prefix that can also
+    # exist in a dmdSec intellectual entity and we want to identify and
+    # ignore those.
+    TRANSFER_DIR_PREFIX = "%transferDirectory%"
+
     NAMESPACES = {u"premis": u"http://www.loc.gov/premis/v3"}
     ELEM_ORIGINAL_NAME_PATTERN = ".//premis:originalName"
 
-    FIRST_DMDSEC = "dmdSec_1"
-
     original_name = ""
     for fsentry in mets.all_files():
-        try:
-            dmdsec = fsentry.dmdsecs[0]
-            if dmdsec.id_string != FIRST_DMDSEC:
-                continue
+        for dmdsec in fsentry.dmdsecs:
             dmd_element = dmdsec.serialize()
             full_name = dmd_element.find(
                 ELEM_ORIGINAL_NAME_PATTERN, namespaces=NAMESPACES
             )
+            if full_name is not None and full_name.text.startswith(TRANSFER_DIR_PREFIX):
+                # We don't want this value, it will usually represent an
+                # directory entity.
+                continue
             try:
                 original_name = full_name.text[:NAMESUFFIX]
             except AttributeError:
-                pass
-            break
-        except IndexError:
-            pass
+                continue
 
+    # There should be a transfer name in every METS.
     if original_name == "":
-        raise METSError()
+        raise METSError("Cannot locate transfer name in METS")
 
     return original_name
 
