@@ -18,6 +18,7 @@ from AIPscan.Reporter import (  # noqa: F401
     report_aip_contents,
     report_formats_count,
     report_originals_with_derivatives,
+    report_largest_files,
 )
 
 

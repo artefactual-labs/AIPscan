@@ -5,13 +5,14 @@
 <h2 class="h3">File: {{ file_.name }}</h2>
 
 <table class="table table-bordered table-condensed" style="margin-top: 20px;">
+  <tr><td width=20%><strong>Filepath</strong></td><td>{{ file_.filepath }}</td></tr>
   <tr>
     <td width=20%>
       <strong>AIP</strong>
     </td>
     <td>
       <a href="{{ url_for('reporter.view_aip', aip_id=aip.id ) }}">
-        {{ aip.transfer_name }}  {{ aip.uuid }}
+        {{ aip.transfer_name }}-{{ aip.uuid }}
       </a>
     </td>
   </tr>

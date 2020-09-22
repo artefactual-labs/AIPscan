@@ -84,3 +84,33 @@ class DerivativeList(Resource):
         """AIP overview two"""
         aip_data = data.derivative_overview(storage_service_id=storage_service_id)
         return aip_data
+
+
+@api.route("/largest-files/<storage_service_id>")
+class LargestFileList(Resource):
+    @api.doc(
+        "list_formats",
+        params={
+            "file_type": {
+                "description": "Optional file type filter (original or preservation)",
+                "in": "query",
+                "type": "str",
+            },
+            "limit": {
+                "description": "Number of results to return (default is 20)",
+                "in": "query",
+                "type": "int",
+            },
+        },
+    )
+    def get(self, storage_service_id, file_type=None, limit=20):
+        """Largest files"""
+        file_type = request.args.get("file_type", None)
+        try:
+            limit = int(request.args.get("limit", 20))
+        except ValueError:
+            pass
+        file_data = data.largest_files(
+            storage_service_id=storage_service_id, file_type=file_type, limit=limit
+        )
+        return file_data

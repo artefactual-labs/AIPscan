@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>{{ storage_service_name }}: Largest files</title>
+  <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/custom.css') }}">
+  
+  <script type="text/javascript" language="javascript" src="{{ url_for('static', filename='js/jquery-3.3.1.js') }}"></script>
+
+  {% include "datatable.html" %}
+</head>
+<body>
+
+<div class="container-fluid" style="margin: 20px 0;">
+
+<div class="alert alert-secondary" style="height: 100px;">
+<a class="noprint" onClick="window.print();return false">
+	<button type="button" class="btn btn-info" style="float:right;">Print</button>
+</a>
+<strong>Report: Largest files</strong>
+<br>
+<strong>Storage Service:</strong> {{ storage_service_name }}
+<br>
+{% if file_type == "original" %}
+  <strong>File type:</strong> Original files
+{% elif file_type == "preservation" %}
+  <strong>File type:</strong> Preservation files
+{% else %}
+  <strong>File type:</strong> All files
+{% endif %}
+
+<!-- Hidden elements we want available from JS for URL generation -->
+<span id="storageServiceID" style="display:none;">{{ storage_service_id }}</span>
+<span id="limit" style="display:none;">{{ limit }}</span>
+</div>
+
+<div class="noprint" style="margin-bottom: 10px;">
+  <strong>File type:</strong>
+  <select id="fileTypeSelector" class="form-control" style="width:auto;">
+  {% if file_type == "original" %}
+    <option value="all">All files</option>
+    <option value="original" selected>Original files</option>
+    <option value="preservation">Preservation files</option>
+  {% elif file_type == "preservation" %}
+    <option value="all">All files</option>
+    <option value="original">Original files</option>
+    <option value="preservation" selected>Preservation files</option>
+  {% else %}
+    <option value="all" selected>All files</option>
+    <option value="original">Original files</option>
+    <option value="preservation">Preservation files</option>
+  {% endif %}
+  </select>
+</div>
+
+{% if files %}
+  <table id="largest-files-1" class="table table-striped table-bordered">
+  	<thead>
+      <tr>
+      {% for column in columns %}
+        <th>{{ column }}</th>
+      {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for file_ in files %}
+        <tr>
+          <td>
+            {{ file_["Name"] }}
+            <br>
+            <span class="text-muted"><small>UUID: {{ file_["UUID"] }}</small></span>
+          </td>
+          <td>{{ file_["Size"] | filesizeformat }}</td>
+          {% if file_["Version"] %}
+            <td>{{ file_["Format"] }} ({{ file_["Version"] }})</td>
+          {% else %}
+            <td>{{ file_["Format"] }}</td>
+          {% endif %}
+          {% if file_["PUID"] %}
+            <td>{{ file_["PUID"] }}</td>
+          {% else %}
+            <td>n/a</td>
+          {% endif %}
+          <td>{{ file_["FileType"] }}</td>
+          <td>
+            {{ file_["AIPName"] }}
+            <br>
+            <span class="text-muted"><small>UUID: {{ file_["AIPUUID"] }}</small></span>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <p class="h4" style="margin-top:20px;">No files to display.</p>
+{% endif %}
+
+</div>
+
+<script>
+// Todo: Move this into separate JS file and include from base template
+$(document).ready(function() {
+  $("#fileTypeSelector").on("change", function() {
+    var fileType = $('#fileTypeSelector').val();
+    var storageServiceId = $('#storageServiceID').text();
+    var limit = $('#limit').text();
+    var url = window.location.origin +
+      '/reporter/largest_files?' +
+      'amss_id=' +
+      storageServiceId +
+      '&file_type=' +
+      fileType +
+      '&limit=' +
+      limit;
+    window.location.href = url;
+  });
+});
+</script>
+</body>
+</html>

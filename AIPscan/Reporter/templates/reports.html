@@ -65,6 +65,13 @@
             <td><a href="#"><button type="button" id="report4a" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a></td>
         </tr>
 
+        <tr>
+            <td>Largest files</td>
+            <td></td>
+            <td></td>
+            <td><a href="#"><button type="button" id="report9a" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a></td>
+        </tr>
+
     </table>
 
 </div>
@@ -187,6 +194,17 @@
             var url = (
               window.location.origin +
               URL_AIP_CONTENTS +
+              '?amss_id=' +
+              storageServiceID
+            );
+            window.open(url);
+        });
+        $("#report9a").on("click", function() {
+            const URL_LARGEST_FILES = "/reporter/largest_files/";
+            var storageServiceID = $('#ss').val();
+            var url = (
+              window.location.origin +
+              URL_LARGEST_FILES +
               '?amss_id=' +
               storageServiceID
             );

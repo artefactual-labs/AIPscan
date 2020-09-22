@@ -5,10 +5,13 @@ from datetime import datetime
 from AIPscan.models import AIP, File, FileType, StorageService
 
 
-FIELD_AIP_NAME = "AipName"
+FIELD_AIP = "AIP"
+FIELD_AIP_ID = "AIPID"
+FIELD_AIP_NAME = "AIPName"
+FIELD_AIP_SIZE = "AIPSize"
+FIELD_AIP_UUID = "AIPUUID"
 FIELD_AIPS = "AIPs"
-FIELD_AIP_SIZE = "AipSize"
-FIELD_ALL_AIPS = "AllAips"
+FIELD_ALL_AIPS = "AllAIPs"
 
 FIELD_COUNT = "Count"
 FIELD_CREATED_DATE = "CreatedDate"
@@ -17,7 +20,11 @@ FIELD_DERIVATIVE_COUNT = "DerivativeCount"
 FIELD_DERIVATIVE_FORMAT = "DerivativeFormat"
 FIELD_DERIVATIVE_UUID = "DerivativeUUID"
 
+FIELD_FILES = "Files"
 FIELD_FILE_COUNT = "FileCount"
+FIELD_FILE_TYPE = "FileType"
+FIELD_FILENAME = "Filename"
+FIELD_FORMAT = "Format"
 FIELD_FORMATS = "Formats"
 
 FIELD_NAME = "Name"
@@ -25,8 +32,11 @@ FIELD_NAME = "Name"
 FIELD_ORIGINAL_UUID = "OriginalUUID"
 FIELD_ORIGINAL_FORMAT = "OriginalFormat"
 
+FIELD_PUID = "PUID"
+
 FIELD_RELATED_PAIRING = "RelatedPairing"
 
+FIELD_SIZE = "Size"
 FIELD_STORAGE_NAME = "StorageName"
 
 FIELD_TRANSFER_NAME = "TransferName"
@@ -202,5 +212,83 @@ def derivative_overview(storage_service_id):
 
     report[FIELD_ALL_AIPS] = all_aips
     report[FIELD_STORAGE_NAME] = storage_service.name
+
+    return report
+
+
+def _largest_files_query(storage_service_id, file_type, limit):
+    """Fetch file information from database for largest files query
+
+    This is separated into its own helper function to aid in testing.
+    """
+    VALID_FILE_TYPES = set(item.value for item in FileType)
+    if file_type is not None and file_type in VALID_FILE_TYPES:
+        files = (
+            File.query.join(AIP)
+            .join(StorageService)
+            .filter(StorageService.id == storage_service_id)
+            .filter(File.file_type == file_type)
+            .order_by(File.size.desc())
+            .limit(limit)
+        )
+    else:
+        files = (
+            File.query.join(AIP)
+            .join(StorageService)
+            .filter(StorageService.id == storage_service_id)
+            .order_by(File.size.desc())
+            .limit(limit)
+        )
+    return files
+
+
+def largest_files(storage_service_id, file_type=None, limit=20):
+    """Return a summary of the largest files in a given Storage Service
+
+    :param storage_service_id: Storage Service ID.
+    :param file_type: Optional filter for type of file to return
+    (acceptable values are "original" or "preservation").
+    :param limit: Upper limit of number of results to return.
+
+    :returns: "report" dict containing following fields:
+        report["StorageName"]: Name of Storage Service queried
+        report["Files"]: List of result files ordered desc by size
+    """
+    report = {}
+    report[FIELD_FILES] = []
+    storage_service = _get_storage_service(storage_service_id)
+    report[FIELD_STORAGE_NAME] = storage_service.name
+
+    files = _largest_files_query(storage_service_id, file_type, limit)
+
+    for file_ in files:
+        file_info = {}
+
+        file_info["id"] = file_.id
+        file_info[FIELD_UUID] = file_.uuid
+        file_info[FIELD_NAME] = file_.name
+        file_info[FIELD_SIZE] = int(file_.size)
+        file_info[FIELD_AIP_ID] = file_.aip_id
+        file_info[FIELD_FILE_TYPE] = file_.file_type.value
+
+        try:
+            file_info[FIELD_FORMAT] = file_.file_format
+        except AttributeError:
+            pass
+        try:
+            file_info[FIELD_VERSION] = file_.format_version
+        except AttributeError:
+            pass
+        try:
+            file_info[FIELD_PUID] = file_.puid
+        except AttributeError:
+            pass
+
+        matching_aip = AIP.query.get(file_.aip_id)
+        if matching_aip is not None:
+            file_info[FIELD_AIP_NAME] = matching_aip.transfer_name
+            file_info[FIELD_AIP_UUID] = matching_aip.uuid
+
+        report[FIELD_FILES].append(file_info)
 
     return report
