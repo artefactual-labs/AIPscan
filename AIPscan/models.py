@@ -210,7 +210,7 @@ class copies(db.Model):
         return "<Copies '{}'>".format(self.name)
 
 
-event_agents = db.Table(
+EventAgents = db.Table(
     "event_agents",
     db.Column("event_id", db.Integer, db.ForeignKey("events.id")),
     db.Column("agent_id", db.Integer, db.ForeignKey("agents.id")),
@@ -227,7 +227,7 @@ class events(db.Model):
     outcome_detail = db.Column(db.String(255))
     original_id = db.Column(db.Integer(), db.ForeignKey("originals.id"), nullable=False)
     event_agents = db.relationship(
-        "agents", secondary=event_agents, backref=db.backref("events", lazy="dynamic")
+        "Agents", secondary=EventAgents, backref=db.backref("events", lazy="dynamic")
     )
 
     def __init__(self, type, uuid, date, detail, outcome, outcome_detail, original_id):
@@ -243,14 +243,16 @@ class events(db.Model):
         return "<Events '{}'>".format(self.type)
 
 
-class agents(db.Model):
+class Agents(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
-    type = db.Column(db.String(255), index=True)
-    value = db.Column(db.String(255), index=True)
+    linking_type_value = db.Column(db.String(255), index=True)
+    agent_type = db.Column(db.String(255), index=True)
+    agent_value = db.Column(db.String(255), index=True)
 
-    def __init__(self, type, value):
-        self.type = type
-        self.value = value
+    def __init__(self, linking_type_value, agent_type, agent_value):
+        self.linking_type_value = linking_type_value
+        self.agent_type = agent_type
+        self.agent_value = agent_value
 
     def __repr__(self):
-        return "<Agents '{}'>".format(self.value)
+        return "<Agents '{}: {}'>".format(self.agent_type, self.agent_value)

@@ -7,13 +7,132 @@ database.
 from celery.utils.log import get_task_logger
 
 from AIPscan import db
-from AIPscan.models import aips, originals, copies, events
+from AIPscan.models import Agents, EventAgents, aips, originals, copies, events
 
 from AIPscan.Aggregator.task_helpers import _tz_neutral_date
-
 from AIPscan.Aggregator import tasks
 
 logger = get_task_logger(__name__)
+
+
+ORIGINAL_OBJECT = "original"
+PRESERVATION_OBJECT = "preservation"
+
+
+def _extract_event_detail(premis_event, file_obj_id):
+    """Extract the detail from the event and write a new event object
+    to the database"""
+    event_type = premis_event.event_type
+    event_uuid = premis_event.event_identifier_value
+    event_date = _tz_neutral_date(premis_event.event_date_time)
+    # We have a strange issue with this logged: https://github.com/archivematica/Issues/issues/743
+    event_detail, event_outcome, event_outcome_detail = None, None, None
+    if not isinstance(premis_event.event_detail, tuple):
+        event_detail = premis_event.event_detail
+    if not isinstance(premis_event.event_outcome, tuple):
+        event_outcome = premis_event.event_outcome
+    if not isinstance(premis_event.event_outcome_detail_note, tuple):
+        event_outcome_detail = premis_event.event_outcome_detail_note
+    original_id = file_obj_id
+    event = events(
+        type=event_type,
+        uuid=event_uuid,
+        date=event_date,
+        detail=event_detail,
+        outcome=event_outcome,
+        outcome_detail=event_outcome_detail,
+        original_id=original_id,
+    )
+    return event
+
+
+def _create_agent_type_id(identifier_type, identifier_value):
+    """Create a key-pair string for the linking_type_value in the db.
+    """
+    return "{}-{}".format(identifier_type, identifier_value)
+
+
+def _create_event_agent_relationship(event_id, agent_identifier):
+    """Generator object helper for looping through an event's agents and
+    returning the event-agent IDs.
+    """
+    for agent_ in agent_identifier:
+        id_ = _create_agent_type_id(
+            agent_.linking_agent_identifier_type, agent_.linking_agent_identifier_value
+        )
+        existing_agent = Agents.query.filter_by(linking_type_value=id_).first()
+        event_relationship = EventAgents.insert().values(
+            event_id=event_id, agent_id=existing_agent.id
+        )
+        yield event_relationship
+
+
+def create_event_objects(aip_file, file_obj_id):
+    """Retrieve information about events associated with a file and
+    add that information to the database.
+    """
+    for premis_event in aip_file.get_premis_events():
+        event = _extract_event_detail(premis_event, file_obj_id)
+        db.session.add(event)
+        for event_relationship in _create_event_agent_relationship(
+            event.id, premis_event.linking_agent_identifier
+        ):
+            db.session.execute(event_relationship)
+        db.session.commit()
+
+
+def _extract_agent_detail(agent):
+    """Pull the agent information from the agent record and return an
+    agent object ready to insert into the database.
+    """
+    linking_type_value = agent[0]
+    agent_type = agent[1]
+    agent_value = agent[2]
+    return Agents(
+        linking_type_value=linking_type_value,
+        agent_type=agent_type,
+        agent_value=agent_value,
+    )
+
+
+def create_agent_objects(unique_agents):
+    """Add our agents to the database. The list is already the
+    equivalent of a set by the time it reaches here and so we don't
+    need to perform any de-duplication.
+    """
+    for agent in unique_agents:
+        agent_obj = _extract_agent_detail(agent)
+        exists = Agents.query.filter_by(
+            linking_type_value=agent_obj.linking_type_value,
+            agent_type=agent_obj.agent_type,
+            agent_value=agent_obj.agent_value,
+        ).count()
+        if exists:
+            continue
+        logger.info("Adding: %s", agent_obj)
+        db.session.add(agent_obj)
+    db.session.commit()
+
+
+def _get_unique_agents(all_agents, agents_list):
+    """Return unique agents associated with a file in the AIP. Returns
+    a list of tuples organized by (linking_type_value, type,
+    value), e.g. (Archivematica user pk 4, Archivematica User, Eric).
+    Linking type and value become one because only together are these
+    two considered useful, they just happen to exist as two elements
+    in the PREMIS dictionary.
+    """
+    agents = []
+    linking_type_value = ""
+    for agent in all_agents:
+        linking_type_value = _create_agent_type_id(
+            agent.agent_identifier[0].agent_identifier_type,
+            agent.agent_identifier[0].agent_identifier_value,
+        )
+        agent_tuple = (linking_type_value, agent.type, agent.name)
+        if agent_tuple not in agents_list:
+            agents.append(agent_tuple)
+    return agents
 
 
 def create_aip_object(
@@ -32,36 +151,6 @@ def create_aip_object(
     db.session.add(aip)
     db.session.commit()
     return aip
-
-
-def _create_event_objs(aip_file, file_obj_id):
-    """Retrieve information about events associated with a file and
-    add that information to the database.
-    """
-    for premis_event in aip_file.get_premis_events():
-        event_type = premis_event.event_type
-        event_uuid = premis_event.event_identifier_value
-        event_date = _tz_neutral_date(premis_event.event_date_time)
-        # We have a strange issue with this logged: https://github.com/archivematica/Issues/issues/743
-        event_detail, event_outcome, event_outcome_detail = None, None, None
-        if not isinstance(premis_event.event_detail, tuple):
-            event_detail = premis_event.event_detail
-        if not isinstance(premis_event.event_outcome, tuple):
-            event_outcome = premis_event.event_outcome
-        if not isinstance(premis_event.event_outcome_detail_note, tuple):
-            event_outcome_detail = premis_event.event_outcome_detail_note
-        original_id = file_obj_id
-        event = events(
-            type=event_type,
-            uuid=event_uuid,
-            date=event_date,
-            detail=event_detail,
-            outcome=event_outcome,
-            outcome_detail=event_outcome_detail,
-            original_id=original_id,
-        )
-        db.session.add(event)
-        db.session.commit()
 
 
 def _add_file_original(
@@ -98,7 +187,7 @@ def _add_file_original(
     db.session.add(file_obj)
     db.session.commit()
 
-    _create_event_objs(aip_file, file_obj.id)
+    create_event_objects(aip_file, file_obj.id)
 
 
 def _add_file_preservation(
@@ -137,14 +226,21 @@ def _add_file_preservation(
     db.session.commit()
 
 
-def process_aip_data(aip, aip_uuid, mets):
-    """Process the METS for as much information about the AIP as we
-    need for reporting.
+def collect_mets_agents(mets):
+    """Collect all of the unique agents in the METS file to write to the
+    database.
     """
+    agents = []
+    for aip_file in mets.all_files():
+        if aip_file.use != ORIGINAL_OBJECT and aip_file.use != PRESERVATION_OBJECT:
+            continue
+        agents = agents + _get_unique_agents(aip_file.get_premis_agents(), agents)
+    logger.info("Total  agents: %d", len(agents))
+    return agents
 
-    ORIGINAL_OBJECT = "original"
-    PRESERVATION_OBJECT = "preservation"
 
+def process_mets(aip, aip_uuid, mets):
+    """Process the mets file into the database."""
     for aip_file in mets.all_files():
         if aip_file.use != ORIGINAL_OBJECT and aip_file.use != PRESERVATION_OBJECT:
             # Move onto the next file quickly.
@@ -152,6 +248,10 @@ def process_aip_data(aip, aip_uuid, mets):
 
         tasks.get_mets.update_state(state="IN PROGRESS")
 
+        # Setup initial values that we're going to commit to the
+        # database. If we don't find them in the AIP data then with the
+        # current architecture we require placeholders to avoid
+        # attribute errors.
         file_uuid = aip_file.file_uuid
         file_name = aip_file.label
         file_size = None
@@ -219,3 +319,11 @@ def process_aip_data(aip, aip_uuid, mets):
     aip.originals_count = originals.query.filter_by(aip_id=aip.id).count()
     aip.copies_count = copies.query.filter_by(aip_id=aip.id).count()
     db.session.commit()
+
+
+def process_aip_data(aip, aip_uuid, mets):
+    """Process the METS for as much information about the AIP as we
+    need for reporting.
+    """
+    create_agent_objects(collect_mets_agents(mets))
+    process_mets(aip, aip_uuid, mets)
