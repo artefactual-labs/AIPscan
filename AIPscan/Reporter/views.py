@@ -79,7 +79,7 @@ def view_original(original_file_id):
     detailed view of a an original file within a given AIP.
     """
     original = originals.query.get(original_file_id)
-    original_events = events.query.filter_by(id=original_file_id).all()
+    original_events = events.query.filter_by(original_id=original_file_id).all()
     size = get_human_readable_file_size(original.size)
     aip = aips.query.get(original.aip_id)
     copy = copies.query.filter_by(uuid=original.related_uuid).first()
