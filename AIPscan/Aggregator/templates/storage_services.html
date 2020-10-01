@@ -11,11 +11,11 @@
   <th><strong>URL</strong></th>
   </tr>
   </thead>
-  {% if storageServices %}
-    {% for storageService in storageServices %}
+  {% if storage_services %}
+    {% for storage_service in storage_services %}
       <tr>
-        <td><a href="storage_service/{{ storageService.id }}">{{ storageService.name }}</a></td>
-        <td>{{ storageService.url }}</td>
+        <td><a href="storage_service/{{ storage_service.id }}">{{ storage_service.name }}</a></td>
+        <td>{{ storage_service.url }}</td>
       </tr>
     {% endfor %}
   {% endif %}

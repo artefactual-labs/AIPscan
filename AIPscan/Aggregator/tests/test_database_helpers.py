@@ -6,7 +6,7 @@ import metsrw
 import pytest
 
 from AIPscan.Aggregator import database_helpers
-from AIPscan.models import Agents
+from AIPscan.models import Agent
 
 FIXTURES_DIR = "fixtures"
 
@@ -27,13 +27,13 @@ def test_event_creation(mocker, fixture_path, event_count, agent_link_multiplier
     script_dir = os.path.dirname(os.path.realpath(__file__))
     mets_file = os.path.join(script_dir, FIXTURES_DIR, fixture_path)
     mets = metsrw.METSDocument.fromfile(mets_file)
-    mocker.patch("AIPscan.models.events")
+    mocker.patch("AIPscan.models.Event")
     agent_find_match = mocker.patch(
         "AIPscan.Aggregator.database_helpers._create_agent_type_id"
     )
     mocker.patch(
         "sqlalchemy.orm.query.Query.first",
-        return_value=Agents(
+        return_value=Agent(
             linking_type_value="some_type_value",
             agent_type="an_agent_type",
             agent_value="an_agent_value",

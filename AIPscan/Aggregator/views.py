@@ -4,8 +4,8 @@ from flask import Blueprint, render_template, redirect, request, flash, url_for,
 from AIPscan import db, app, celery
 
 from AIPscan.models import (
-    fetch_jobs,
-    storage_services,
+    FetchJob,
+    StorageService,
     # Custom celery Models.
     package_tasks,
     get_mets_tasks,
@@ -43,64 +43,64 @@ def _format_date(date_string):
 @aggregator.route("/", methods=["GET"])
 def ss_default():
     # load the default storage service
-    storageService = storage_services.query.filter_by(default=True).first()
-    if storageService is None:
+    storage_service = StorageService.query.filter_by(default=True).first()
+    if storage_service is None:
         # no default is set, retrieve the first storage service
-        storageService = storage_services.query.first()
+        storage_service = StorageService.query.first()
         # there are no storage services defined at all
-        if storageService is None:
+        if storage_service is None:
             return redirect(url_for("aggregator.ss"))
-    metsFetchJobs = fetch_jobs.query.filter_by(
-        storage_service_id=storageService.id
+    mets_fetch_jobs = FetchJob.query.filter_by(
+        storage_service_id=storage_service.id
     ).all()
     return render_template(
         "storage_service.html",
-        storageService=storageService,
-        metsFetchJobs=metsFetchJobs,
+        storage_service=storage_service,
+        mets_fetch_jobs=mets_fetch_jobs,
     )
 
 
 @aggregator.route("/storage_service/<id>", methods=["GET"])
 def storage_service(id):
-    storageService = storage_services.query.get(id)
-    metsFetchJobs = fetch_jobs.query.filter_by(storage_service_id=id).all()
+    storage_service = StorageService.query.get(id)
+    mets_fetch_jobs = FetchJob.query.filter_by(storage_service_id=id).all()
     return render_template(
         "storage_service.html",
-        storageService=storageService,
-        metsFetchJobs=metsFetchJobs,
+        storage_service=storage_service,
+        mets_fetch_jobs=mets_fetch_jobs,
     )
 
 
 @aggregator.route("/storage_services", methods=["GET"])
 def ss():
-    storageServices = storage_services.query.all()
-    return render_template("storage_services.html", storageServices=storageServices)
+    storage_services = StorageService.query.all()
+    return render_template("storage_services.html", storage_services=storage_services)
 
 
 @aggregator.route("/edit_storage_service/<id>", methods=["GET", "POST"])
 def edit_storage_service(id):
     form = StorageServiceForm()
-    storageService = storage_services.query.get(id)
+    storage_service = StorageService.query.get(id)
     if request.method == "GET":
-        form.name.data = storageService.name
-        form.url.data = storageService.url
-        form.user_name.data = storageService.user_name
-        form.download_limit.data = storageService.download_limit
-        form.download_offset.data = storageService.download_offset
-        form.api_key.data = storageService.api_key
-        form.default.data = storageService.default
+        form.name.data = storage_service.name
+        form.url.data = storage_service.url
+        form.user_name.data = storage_service.user_name
+        form.download_limit.data = storage_service.download_limit
+        form.download_offset.data = storage_service.download_offset
+        form.api_key.data = storage_service.api_key
+        form.default.data = storage_service.default
     if form.validate_on_submit():
-        storageService.name = form.name.data
-        storageService.url = form.url.data
-        storageService.user_name = form.user_name.data
-        storageService.api_key = form.api_key.data
-        storageService.download_limit = form.download_limit.data
-        storageService.download_offset = form.download_offset.data
+        storage_service.name = form.name.data
+        storage_service.url = form.url.data
+        storage_service.user_name = form.user_name.data
+        storage_service.api_key = form.api_key.data
+        storage_service.download_limit = form.download_limit.data
+        storage_service.download_offset = form.download_offset.data
         if form.default.data is True:
-            storageServices = storage_services.query.all()
-            for ss in storageServices:
+            storage_services = StorageService.query.all()
+            for ss in storage_services:
                 ss.default = False
-        storageService.default = form.default.data
+        storage_service.default = form.default.data
         db.session.commit()
         flash("Storage service {} updated".format(form.name.data))
         return redirect(url_for("aggregator.ss"))
@@ -113,7 +113,7 @@ def edit_storage_service(id):
 def new_storage_service():
     form = StorageServiceForm()
     if form.validate_on_submit():
-        ss = storage_services(
+        ss = StorageService(
             name=form.name.data,
             url=form.url.data,
             user_name=form.user_name.data,
@@ -133,14 +133,14 @@ def new_storage_service():
 
 @aggregator.route("/delete_storage_service/<id>", methods=["GET"])
 def delete_storage_service(id):
-    storageService = storage_services.query.get(id)
-    metsFetchJobs = fetch_jobs.query.filter_by(storage_service_id=id).all()
-    for metsFetchJob in metsFetchJobs:
-        if os.path.exists(metsFetchJob.download_directory):
-            shutil.rmtree(metsFetchJob.download_directory)
-    db.session.delete(storageService)
+    storage_service = StorageService.query.get(id)
+    mets_fetch_jobs = FetchJob.query.filter_by(storage_service_id=id).all()
+    for mets_fetch_job in mets_fetch_jobs:
+        if os.path.exists(mets_fetch_job.download_directory):
+            shutil.rmtree(mets_fetch_job.download_directory)
+    db.session.delete(storage_service)
     db.session.commit()
-    flash("Storage service '{}' is deleted".format(storageService.name))
+    flash("Storage service '{}' is deleted".format(storage_service.name))
     return redirect(url_for("aggregator.ss"))
 
 
@@ -149,13 +149,13 @@ def new_fetch_job(id):
 
     # this function is triggered by the Javascript attached to the "New Fetch Job" button
 
-    storageService = storage_services.query.get(id)
-    apiUrl = {
-        "baseUrl": storageService.url,
-        "userName": storageService.user_name,
-        "apiKey": storageService.api_key,
-        "offset": str(storageService.download_offset),
-        "limit": str(storageService.download_limit),
+    storage_service = StorageService.query.get(id)
+    api_url = {
+        "baseUrl": storage_service.url,
+        "userName": storage_service.user_name,
+        "apiKey": storage_service.api_key,
+        "offset": str(storage_service.download_offset),
+        "limit": str(storage_service.download_limit),
     }
 
     # create "downloads/" directory if it doesn't exist
@@ -163,31 +163,31 @@ def new_fetch_job(id):
         os.makedirs("AIPscan/Aggregator/downloads/")
 
     # create a subdirectory for the download job using a timestamp as its name
-    dateTimeObjStart = datetime.now().replace(microsecond=0)
-    timestampStr = dateTimeObjStart.strftime("%Y-%m-%d-%H-%M-%S")
-    timestamp = dateTimeObjStart.strftime("%Y-%m-%d %H:%M:%S")
-    os.makedirs("AIPscan/Aggregator/downloads/" + timestampStr + "/packages/")
-    os.makedirs("AIPscan/Aggregator/downloads/" + timestampStr + "/mets/")
+    datetime_obj_start = datetime.now().replace(microsecond=0)
+    timestamp_str = datetime_obj_start.strftime("%Y-%m-%d-%H-%M-%S")
+    timestamp = datetime_obj_start.strftime("%Y-%m-%d %H:%M:%S")
+    os.makedirs("AIPscan/Aggregator/downloads/" + timestamp_str + "/packages/")
+    os.makedirs("AIPscan/Aggregator/downloads/" + timestamp_str + "/mets/")
 
     # create a fetch_job record in the aipscan database
     # write fetch job info to database
-    fetchJob = fetch_jobs(
+    fetch_job = FetchJob(
         total_packages=None,
         total_deleted_aips=None,
         total_aips=None,
-        download_start=dateTimeObjStart,
+        download_start=datetime_obj_start,
         download_end=None,
-        download_directory="AIPscan/Aggregator/downloads/" + timestampStr + "/",
-        storage_service_id=storageService.id,
+        download_directory="AIPscan/Aggregator/downloads/" + timestamp_str + "/",
+        storage_service_id=storage_service.id,
     )
-    db.session.add(fetchJob)
+    db.session.add(fetch_job)
     db.session.commit()
 
-    packages_directory = get_packages_directory(timestampStr)
+    packages_directory = get_packages_directory(timestamp_str)
 
     # send the METS fetch job to a background job that will coordinate other workers
     task = tasks.workflow_coordinator.delay(
-        apiUrl, timestampStr, storageService.id, fetchJob.id, packages_directory
+        api_url, timestamp_str, storage_service.id, fetch_job.id, packages_directory
     )
 
     """
@@ -212,20 +212,20 @@ def new_fetch_job(id):
 
     # Send response back to JavaScript function that was triggered by
     # the 'New Fetch Job' button.
-    response = {"timestamp": timestamp, "taskId": task_id, "fetchJobId": fetchJob.id}
+    response = {"timestamp": timestamp, "taskId": task_id, "fetchJobId": fetch_job.id}
     return jsonify(response)
 
 
 @aggregator.route("/delete_fetch_job/<id>", methods=["GET"])
 def delete_fetch_job(id):
-    fetchJob = fetch_jobs.query.get(id)
-    storageService = storage_services.query.get(fetchJob.storage_service_id)
-    if os.path.exists(fetchJob.download_directory):
-        shutil.rmtree(fetchJob.download_directory)
-    db.session.delete(fetchJob)
+    fetch_job = FetchJob.query.get(id)
+    storage_service = StorageService.query.get(fetch_job.storage_service_id)
+    if os.path.exists(fetch_job.download_directory):
+        shutil.rmtree(fetch_job.download_directory)
+    db.session.delete(fetch_job)
     db.session.commit()
-    flash("Fetch job {} is deleted".format(fetchJob.download_start))
-    return redirect(url_for("aggregator.storage_service", id=storageService.id))
+    flash("Fetch job {} is deleted".format(fetch_job.download_start))
+    return redirect(url_for("aggregator.storage_service", id=storage_service.id))
 
 
 @aggregator.route("/package_list_task_status/<taskid>")
@@ -287,7 +287,7 @@ def get_mets_task_status(coordinatorid):
         response = {"state": "PENDING"}
         return jsonify(response)
     downloadEnd = datetime.now().replace(microsecond=0)
-    obj = fetch_jobs.query.filter_by(id=fetchJobId).first()
+    obj = FetchJob.query.filter_by(id=fetchJobId).first()
     start = obj.download_start
     downloadStart = _format_date(start)
     obj.download_end = downloadEnd

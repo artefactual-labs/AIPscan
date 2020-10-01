@@ -17,7 +17,7 @@
     <div style="padding-left: 1.25rem;">
         <strong>Storage service:</strong>
         <select id="ss" method="GET" action="/" class="form-control" style="width:auto;">
-            {% for ss in storageServices %}
+            {% for ss in storage_services %}
             {% if ss.default == 1 %}
             <option value="{{ ss.id }}" SELECTED>{{ ss.name }}</option>
             {% else %}
@@ -38,9 +38,9 @@
 
         <tr>
             <td>File format count</td>
-            <td><input id="startdate1" type="text" value="{{ startdate }}">
+            <td><input id="startdate1" type="text" value="{{ start_date }}">
             </td>
-            <td><input type="text" id="enddate1" value="{{ enddate }}"></td>
+            <td><input type="text" id="enddate1" value="{{ end_date }}"></td>
             <td><a href=""><button type="button" id="report1a" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a><a href=""><button type="button" id="report1b" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Pie Chart</button></a><a href=""><button type="button" id="report1c" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Scatter Plot</button></a></td>
         </tr>
 

@@ -2,7 +2,7 @@
 
 from datetime import datetime
 
-from AIPscan.models import aips as aip_model, originals, copies, storage_services
+from AIPscan.models import AIP, File, FileType, StorageService
 
 
 FIELD_AIP_NAME = "AipName"
@@ -31,6 +31,8 @@ FIELD_STORAGE_NAME = "StorageName"
 
 FIELD_TRANSFER_NAME = "TransferName"
 
+FIELD_UUID = "UUID"
+
 FIELD_VERSION = "Version"
 
 
@@ -38,8 +40,8 @@ def _get_storage_service(storage_service_id):
     DEFAULT_STORAGE_SERVICE_ID = 1
     if storage_service_id == 0 or storage_service_id is None:
         storage_service_id = DEFAULT_STORAGE_SERVICE_ID
-    storage_service = storage_services.query.get(storage_service_id)
-    return storage_services.query.first() if not storage_service else storage_service
+    storage_service = StorageService.query.get(storage_service_id)
+    return StorageService.query.first() if not storage_service else storage_service
 
 
 def _split_ms(date_string):
@@ -60,13 +62,13 @@ def aip_overview(storage_service_id, original_files=True):
     """
     report = {}
     storage_service = _get_storage_service(storage_service_id)
-    aips = aip_model.query.filter_by(storage_service_id=storage_service.id).all()
+    aips = AIP.query.filter_by(storage_service_id=storage_service.id).all()
     for aip in aips:
         files = None
         if original_files is True:
-            files = originals.query.filter_by(aip_id=aip.id)
+            files = File.query.filter_by(aip_id=aip.id, file_type=FileType.original)
         else:
-            files = copies.query.filter_by(aip_id=aip.id)
+            files = File.query.filter_by(aip_id=aip.id, file_type=FileType.preservation)
         for file_ in files:
             # Originals have PUIDs but Preservation Masters don't.
             # Return a key (PUID or Format Name) for our report based on that.
@@ -98,7 +100,7 @@ def aip_overview_two(storage_service_id, original_files=True):
     report = {}
     formats = {}
     storage_service = _get_storage_service(storage_service_id)
-    aips = aip_model.query.filter_by(storage_service_id=storage_service.id).all()
+    aips = AIP.query.filter_by(storage_service_id=storage_service.id).all()
     for aip in aips:
         report[aip.uuid] = {}
         report[aip.uuid][FIELD_AIP_NAME] = aip.transfer_name
@@ -108,9 +110,9 @@ def aip_overview_two(storage_service_id, original_files=True):
         files = None
         format_key = None
         if original_files is True:
-            files = originals.query.filter_by(aip_id=aip.id)
+            files = File.query.filter_by(aip_id=aip.id, file_type=FileType.original)
         else:
-            files = copies.query.filter_by(aip_id=aip.id)
+            files = File.query.filter_by(aip_id=aip.id, file_type=FileType.preservation)
         for file_ in files:
             try:
                 format_key = file_.puid
@@ -152,52 +154,53 @@ def aip_overview_two(storage_service_id, original_files=True):
     return report
 
 
-# PICTURAE TODO: We should be able to do this in the SQLAlchemy filter
-# but I can't quite get it to work yet.
-def _has_derivatives(files):
-    for file_ in files:
-        if file_.related_uuid is not None:
-            return True
-    return False
-
-
 def derivative_overview(storage_service_id):
     """Return a summary of derivatives across AIPs with a mapping
     created between the original format and the preservation copy.
     """
     report = {}
     storage_service = _get_storage_service(storage_service_id)
-    aips = aip_model.query.filter_by(storage_service_id=storage_service.id).all()
+    aips = AIP.query.filter_by(storage_service_id=storage_service.id).all()
     all_aips = []
     for aip in aips:
-        files = originals.query.filter_by(aip_id=aip.id)
-        if not _has_derivatives(files):
+        if not aip.preservation_file_count > 0:
             continue
+
         aip_report = {}
         aip_report[FIELD_TRANSFER_NAME] = aip.transfer_name
-        aip_report[FIELD_FILE_COUNT] = files.count()
-        aip_report[FIELD_DERIVATIVE_COUNT] = 0
-        derivative_pairings = []
-        for file_ in files:
+        aip_report[FIELD_UUID] = aip.uuid
+        aip_report[FIELD_FILE_COUNT] = aip.original_file_count
+        aip_report[FIELD_DERIVATIVE_COUNT] = aip.preservation_file_count
+        aip_report[FIELD_RELATED_PAIRING] = []
+
+        original_files = File.query.filter_by(
+            aip_id=aip.id, file_type=FileType.original
+        )
+        for original_file in original_files:
+            preservation_derivative = File.query.filter_by(
+                file_type=FileType.preservation, original_file_id=original_file.id
+            ).first()
+
+            if preservation_derivative is None:
+                continue
+
             file_derivative_pair = {}
-            derivative_uuid = file_.related_uuid
-            if derivative_uuid is not None:
-                derivative = copies.query.filter_by(related_uuid=file_.uuid).first()
-                aip_report[FIELD_DERIVATIVE_COUNT] += 1
-                file_derivative_pair[FIELD_DERIVATIVE_UUID] = derivative_uuid
-                file_derivative_pair[FIELD_ORIGINAL_UUID] = file_.uuid
-                format_version = file_.format_version
-                if format_version is None:
-                    format_version = ""
-                file_derivative_pair[FIELD_ORIGINAL_FORMAT] = "{} {} ({})".format(
-                    file_.file_format, format_version, file_.puid
-                )
-                file_derivative_pair[FIELD_DERIVATIVE_FORMAT] = "{}".format(
-                    derivative.file_format
-                )
-                derivative_pairings.append(file_derivative_pair)
-        aip_report[FIELD_RELATED_PAIRING] = derivative_pairings
+            file_derivative_pair[FIELD_DERIVATIVE_UUID] = preservation_derivative.uuid
+            file_derivative_pair[FIELD_ORIGINAL_UUID] = original_file.uuid
+            original_format_version = original_file.format_version
+            if original_format_version is None:
+                original_format_version = ""
+            file_derivative_pair[FIELD_ORIGINAL_FORMAT] = "{} {} ({})".format(
+                original_file.file_format, original_format_version, original_file.puid
+            )
+            file_derivative_pair[FIELD_DERIVATIVE_FORMAT] = "{}".format(
+                preservation_derivative.file_format
+            )
+            aip_report[FIELD_RELATED_PAIRING].append(file_derivative_pair)
+
         all_aips.append(aip_report)
+
     report[FIELD_ALL_AIPS] = all_aips
     report[FIELD_STORAGE_NAME] = storage_service.name
+
     return report

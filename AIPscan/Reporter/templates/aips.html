@@ -2,15 +2,15 @@
 
 {% block content %}
 
-<div class="alert alert-header"><strong>AIPs ({{ totalAIPs }})</strong></div>
+<div class="alert alert-header"><strong>AIPs ({{ aips_count }})</strong></div>
 
 <div class="container-fluid">
 
-<div style="margin-bottom: 20px;"">
+<div style="margin-bottom: 20px;">
   <strong>Storage service:</strong>
     <select id="ss" method="GET" action="/" class="form-control" style="width:auto;">
-        {% for ss in storageServices %}
-          {% if ss.id == storageServiceId %}
+        {% for ss in storage_services %}
+          {% if ss.id == storage_service_id %}
             <option value="{{ ss.id }}" SELECTED>{{ ss.name }}</option>
           {% else %}
            <option value="{{ ss.id }}">{{ ss.name }}</option>
@@ -30,15 +30,15 @@
   <th><strong>Action</strong></th>
   </tr>
   </thead>
-  {% if AIPs %}
-    {% for aip in AIPs %}
+  {% if aips %}
+    {% for aip in aips %}
       <tr>
-        <td>{{ aip.transfer_name }}</td>
-        <td>{{ aip.uuid }}</td>
-        <td>{{ aip.create_date }}</td>
-        <td>{{ aip.originals_count }}</td>
-        <td>{{ aip.copies_count }}</td>
-        <td><a href="{{ url_for('reporter.view_aip', aip_id = aip.id) }}"><button type="button" class="btn btn-info">View</button></a></td>
+        <td>{{ aip["transfer_name"] }}</td>
+        <td>{{ aip["uuid"] }}</td>
+        <td>{{ aip["create_date"] }}</td>
+        <td>{{ aip["originals_count"] }}</td>
+        <td>{{ aip["copies_count"] }}</td>
+        <td><a href='{{ url_for("reporter.view_aip", aip_id = aip["id"]) }}'><button type="button" class="btn btn-info">View</button></a></td>
       </tr>
     {% endfor %}
   {% endif %}
@@ -48,7 +48,7 @@
 $(document).ready(function(){
   $("#ss").change(function(){
     var storageServiceId = $('#ss').val();
-    var url = window.location.origin + '/reporter/view_aips/' + storageServiceId
+    var url = window.location.origin + '/reporter/aips/' + storageServiceId
     window.location.href = url;
   });
 });

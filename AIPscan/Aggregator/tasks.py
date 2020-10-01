@@ -9,7 +9,7 @@ from celery.utils.log import get_task_logger
 from AIPscan import celery
 from AIPscan import db
 from AIPscan.models import (
-    fetch_jobs,
+    FetchJob,
     # Custom celery Models.
     get_mets_tasks,
 )
@@ -176,7 +176,7 @@ def workflow_coordinator(
     )
     logger.info("%s", summary)
 
-    obj = fetch_jobs.query.filter_by(id=fetch_job_id).first()
+    obj = FetchJob.query.filter_by(id=fetch_job_id).first()
     obj.total_packages = total_packages
     obj.total_aips = total_aips
     obj.total_dips = total_dips
@@ -216,9 +216,11 @@ def package_lists_request(self, apiUrl, timestamp, packages_directory):
     LIMIT = "limit"
     COUNT = "total_count"
     IN_PROGRESS = "IN PROGRESS"
-    base_url, request_url_without_api_key, request_url = format_api_url_with_limit_offset(
-        apiUrl
-    )
+    (
+        base_url,
+        request_url_without_api_key,
+        request_url,
+    ) = format_api_url_with_limit_offset(apiUrl)
     # First packages request.
     packages = _make_request(request_url, request_url_without_api_key)
     packages_count = 1
@@ -258,13 +260,13 @@ def package_lists_request(self, apiUrl, timestamp, packages_directory):
 
 @celery.task()
 def get_mets(
-    packageUUID,
-    relativePathToMETS,
-    apiUrl,
-    timestampStr,
-    packageListNo,
-    storageServiceId,
-    fetchJobId,
+    package_uuid,
+    relative_path_to_mets,
+    api_url,
+    timestamp_str,
+    package_list_no,
+    storage_service_id,
+    fetch_job_id,
 ):
     """Request METS XML file from the storage service and parse.
 
@@ -274,13 +276,11 @@ def get_mets(
     This function relies on being able to use mets-reader-writer which
     is the primary object we will be passing about.
 
-    TODO:
-        * Make variable names snake_case.
-        * Log METS errors.
+    TODO: Log METS errors.
     """
 
     download_file = _download_mets(
-        apiUrl, packageUUID, relativePathToMETS, timestampStr, packageListNo
+        api_url, package_uuid, relative_path_to_mets, timestamp_str, package_list_no
     )
 
     try:
@@ -290,18 +290,18 @@ def get_mets(
         return
 
     try:
-        originalName = get_aip_original_name(mets)
+        original_name = get_aip_original_name(mets)
     except METSError:
         # Some other error with the METS file that we might want to
         # log and act upon.
-        originalName = packageUUID
+        original_name = package_uuid
 
     aip = create_aip_object(
-        package_uuid=packageUUID,
-        transfer_name=originalName,
+        package_uuid=package_uuid,
+        transfer_name=original_name,
         create_date=mets.createdate,
-        storage_service_id=storageServiceId,
-        fetch_job_id=fetchJobId,
+        storage_service_id=storage_service_id,
+        fetch_job_id=fetch_job_id,
     )
 
-    process_aip_data(aip, packageUUID, mets)
+    process_aip_data(aip, mets)

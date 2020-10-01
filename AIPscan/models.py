@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import enum
 
 from AIPscan import db
 
@@ -17,7 +18,8 @@ class get_mets_tasks(db.Model):
     status = db.Column(db.String())
 
 
-class storage_services(db.Model):
+class StorageService(db.Model):
+    __tablename__ = "storage_service"
     id = db.Column(db.Integer(), primary_key=True)
     name = db.Column(db.String(255), index=True, unique=True)
     url = db.Column(db.String(255))
@@ -27,7 +29,7 @@ class storage_services(db.Model):
     download_offset = db.Column(db.Integer())
     default = db.Column(db.Boolean)
     fetch_jobs = db.relationship(
-        "fetch_jobs", cascade="all,delete", backref="storage_services", lazy=True
+        "FetchJob", cascade="all,delete", backref="storage_service", lazy=True
     )
 
     def __init__(
@@ -42,10 +44,11 @@ class storage_services(db.Model):
         self.default = default
 
     def __repr__(self):
-        return "<Storage Services '{}'>".format(self.name)
+        return "<Storage Service '{}'>".format(self.name)
 
 
-class fetch_jobs(db.Model):
+class FetchJob(db.Model):
+    __tablename__ = "fetch_job"
     id = db.Column(db.Integer(), primary_key=True)
     total_packages = db.Column(db.Integer())
     total_aips = db.Column(db.Integer())
@@ -57,11 +60,9 @@ class fetch_jobs(db.Model):
     download_end = db.Column(db.DateTime())
     download_directory = db.Column(db.String(255))
     storage_service_id = db.Column(
-        db.Integer(), db.ForeignKey("storage_services.id"), nullable=False
+        db.Integer(), db.ForeignKey("storage_service.id"), nullable=False
     )
-    aips = db.relationship(
-        "aips", cascade="all,delete", backref="fetch_jobs", lazy=True
-    )
+    aips = db.relationship("AIP", cascade="all,delete", backref="fetch_job", lazy=True)
 
     def __init__(
         self,
@@ -82,142 +83,120 @@ class fetch_jobs(db.Model):
         self.storage_service_id = storage_service_id
 
     def __repr__(self):
-        return "<Fetch Jobs '{}'>".format(self.download_start)
+        return "<Fetch Job '{}'>".format(self.download_start)
 
 
-class aips(db.Model):
+class AIP(db.Model):
+    __tablename__ = "aip"
     id = db.Column(db.Integer(), primary_key=True)
     uuid = db.Column(db.String(255), index=True)
     transfer_name = db.Column(db.String(255))
     create_date = db.Column(db.DateTime())
-    originals_count = db.Column(db.Integer())
-    copies_count = db.Column(db.Integer())
     storage_service_id = db.Column(
-        db.Integer(), db.ForeignKey("storage_services.id"), nullable=False
+        db.Integer(), db.ForeignKey("storage_service.id"), nullable=False
     )
     fetch_job_id = db.Column(
-        db.Integer(), db.ForeignKey("fetch_jobs.id"), nullable=False
+        db.Integer(), db.ForeignKey("fetch_job.id"), nullable=False
     )
-    originals = db.relationship(
-        "originals", cascade="all,delete", backref="aips", lazy=True
-    )
-    copies = db.relationship("copies", cascade="all,delete", backref="aips", lazy=True)
+    files = db.relationship("File", cascade="all,delete", backref="aip", lazy=True)
 
     def __init__(
-        self,
-        uuid,
-        transfer_name,
-        create_date,
-        originals_count,
-        copies_count,
-        storage_service_id,
-        fetch_job_id,
+        self, uuid, transfer_name, create_date, storage_service_id, fetch_job_id
     ):
         self.uuid = uuid
         self.transfer_name = transfer_name
         self.create_date = create_date
-        self.originals_count = originals_count
-        self.copies_count = copies_count
         self.storage_service_id = storage_service_id
         self.fetch_job_id = fetch_job_id
 
     def __repr__(self):
-        return "<AIPs '{}'>".format(self.transfer_name)
+        return "<AIP '{}'>".format(self.transfer_name)
+
+    @property
+    def original_file_count(self):
+        return File.query.filter_by(aip_id=self.id, file_type=FileType.original).count()
+
+    @property
+    def preservation_file_count(self):
+        return File.query.filter_by(
+            aip_id=self.id, file_type=FileType.preservation
+        ).count()
 
 
-class originals(db.Model):
+class FileType(enum.Enum):
+    original = "original"
+    preservation = "preservation"
+
+
+class File(db.Model):
+    __tablename__ = "file"
     id = db.Column(db.Integer(), primary_key=True)
     name = db.Column(db.String(255), index=True)
+    filepath = db.Column(db.Text(), nullable=True)  # Accommodate long filepaths.
     uuid = db.Column(db.String(255), index=True)
+    file_type = db.Column(db.Enum(FileType))
     size = db.Column(db.Integer())
-    last_modified_date = db.Column(db.DateTime())
+    # Date created maps to PREMIS dateCreatedByApplication for original
+    # files, which in practice is almost always date last modified, and
+    # to normalization date for preservation files.
+    date_created = db.Column(db.DateTime())
     puid = db.Column(db.String(255), index=True)
     file_format = db.Column(db.String(255))
     format_version = db.Column(db.String(255))
     checksum_type = db.Column(db.String(255))
     checksum_value = db.Column(db.String(255), index=True)
-    related_uuid = db.Column(db.String(255), index=True)
-    aip_id = db.Column(db.Integer(), db.ForeignKey("aips.id"), nullable=False)
-    events = db.relationship(
-        "events", cascade="all,delete", backref="originals", lazy=True
+
+    original_file_id = db.Column(db.Integer(), db.ForeignKey("file.id"))
+    original_file = db.relationship(
+        "File", remote_side=[id], backref=db.backref("derivatives")
     )
+
+    aip_id = db.Column(db.Integer(), db.ForeignKey("aip.id"), nullable=False)
+    events = db.relationship("Event", cascade="all,delete", backref="file", lazy=True)
 
     def __init__(
         self,
         name,
+        filepath,
         uuid,
         size,
-        last_modified_date,
-        puid,
+        date_created,
         file_format,
-        format_version,
         checksum_type,
         checksum_value,
-        related_uuid,
         aip_id,
+        file_type=FileType.original,
+        format_version=None,
+        puid=None,
+        original_file_id=None,
     ):
         self.name = name
+        self.filepath = filepath
         self.uuid = uuid
+        self.file_type = file_type
         self.size = size
-        self.last_modified_date = last_modified_date
+        self.date_created = date_created
         self.puid = puid
         self.file_format = file_format
         self.format_version = format_version
         self.checksum_type = checksum_type
         self.checksum_value = checksum_value
-        self.related_uuid = related_uuid
+        self.original_file_id = original_file_id
         self.aip_id = aip_id
 
     def __repr__(self):
-        return "<Originals '{}'>".format(self.name)
+        return "<File '{}' - '{}'".format(self.id, self.name)
 
 
-class copies(db.Model):
-    id = db.Column(db.Integer(), primary_key=True)
-    name = db.Column(db.String(255), index=True)
-    uuid = db.Column(db.String(255), index=True)
-    size = db.Column(db.Integer())
-    file_format = db.Column(db.String(255))
-    checksum_type = db.Column(db.String(255))
-    checksum_value = db.Column(db.String(255), index=True)
-    related_uuid = db.Column(db.String(255), index=True)
-    normalization_date = db.Column(db.DateTime())
-    aip_id = db.Column(db.Integer(), db.ForeignKey("aips.id"), nullable=False)
-
-    def __init__(
-        self,
-        name,
-        uuid,
-        size,
-        file_format,
-        checksum_type,
-        checksum_value,
-        related_uuid,
-        normalization_date,
-        aip_id,
-    ):
-        self.name = name
-        self.uuid = uuid
-        self.size = size
-        self.file_format = file_format
-        self.checksum_type = checksum_type
-        self.checksum_value = checksum_value
-        self.related_uuid = related_uuid
-        self.normalization_date = normalization_date
-        self.aip_id = aip_id
-
-    def __repr__(self):
-        return "<Copies '{}'>".format(self.name)
-
-
-EventAgents = db.Table(
+EventAgent = db.Table(
     "event_agents",
-    db.Column("event_id", db.Integer, db.ForeignKey("events.id")),
-    db.Column("agent_id", db.Integer, db.ForeignKey("agents.id")),
+    db.Column("event_id", db.Integer, db.ForeignKey("event.id")),
+    db.Column("agent_id", db.Integer, db.ForeignKey("agent.id")),
 )
 
 
-class events(db.Model):
+class Event(db.Model):
+    __tablename__ = "event"
     id = db.Column(db.Integer(), primary_key=True)
     type = db.Column(db.String(255), index=True)
     uuid = db.Column(db.String(255), index=True)
@@ -225,25 +204,26 @@ class events(db.Model):
     detail = db.Column(db.String(255))
     outcome = db.Column(db.String(255))
     outcome_detail = db.Column(db.String(255))
-    original_id = db.Column(db.Integer(), db.ForeignKey("originals.id"), nullable=False)
+    file_id = db.Column(db.Integer(), db.ForeignKey("file.id"), nullable=False)
     event_agents = db.relationship(
-        "Agents", secondary=EventAgents, backref=db.backref("events", lazy="dynamic")
+        "Agent", secondary=EventAgent, backref=db.backref("Event", lazy="dynamic")
     )
 
-    def __init__(self, type, uuid, date, detail, outcome, outcome_detail, original_id):
+    def __init__(self, type, uuid, date, detail, outcome, outcome_detail, file_id):
         self.type = type
         self.uuid = uuid
         self.date = date
         self.detail = detail
         self.outcome = outcome
         self.outcome_detail = outcome_detail
-        self.original_id = original_id
+        self.file_id = file_id
 
     def __repr__(self):
-        return "<Events '{}'>".format(self.type)
+        return "<Event '{}'>".format(self.type)
 
 
-class Agents(db.Model):
+class Agent(db.Model):
+    __tablename__ = "agent"
     id = db.Column(db.Integer(), primary_key=True)
     linking_type_value = db.Column(db.String(255), index=True)
     agent_type = db.Column(db.String(255), index=True)
@@ -255,4 +235,4 @@ class Agents(db.Model):
         self.agent_value = agent_value
 
     def __repr__(self):
-        return "<Agents '{}: {}'>".format(self.agent_type, self.agent_value)
+        return "<Agent '{}: {}'>".format(self.agent_type, self.agent_value)

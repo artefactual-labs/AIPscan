@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 
 from flask import render_template, request
 
-from AIPscan.models import aips, events, originals, storage_services
+from AIPscan.models import AIP, Event, File, FileType, StorageService
 from AIPscan.helpers import get_human_readable_file_size
 from AIPscan.Reporter import reporter
 
@@ -29,21 +29,24 @@ def report_formats_count():
     day_after = end + timedelta(days=1)
 
     storage_service_id = request.args.get("ssId")
-    storage_service = storage_services.query.get(storage_service_id)
-    packages = aips.query.filter_by(storage_service_id=storage_service_id).all()
+    storage_service = StorageService.query.get(storage_service_id)
+    aips = AIP.query.filter_by(storage_service_id=storage_service_id).all()
 
     format_count = {}
     originals_count = 0
 
-    for aip in packages:
-        original_files = originals.query.filter_by(aip_id=aip.id)
+    for aip in aips:
+        originals_count += aip.original_file_count
+        original_files = File.query.filter_by(
+            aip_id=aip.id, file_type=FileType.original
+        )
         for original in original_files:
             # Note that original files in packages do not have a PREMIS ingestion
             # event. Therefore "message digest calculation" is used to get the
             # ingest date for all originals. This event typically happens within
             # the same second or seconds of the ingestion event and is done for all files.
-            ingest_event = events.query.filter_by(
-                original_id=original.id, type="message digest calculation"
+            ingest_event = Event.query.filter_by(
+                file_id=original.id, type="message digest calculation"
             ).first()
             if ingest_event.date < day_before:
                 continue
@@ -52,7 +55,6 @@ def report_formats_count():
             else:
                 file_format = original.file_format
                 size = original.size
-                originals_count += 1
 
                 if file_format in format_count:
                     format_count[file_format]["count"] += 1
@@ -102,22 +104,25 @@ def chart_formats_count():
     day_after = end + timedelta(days=1)
 
     storage_service_id = request.args.get("ssId")
-    storage_service = storage_services.query.get(storage_service_id)
-    packages = aips.query.filter_by(storage_service_id=storage_service_id).all()
+    storage_service = StorageService.query.get(storage_service_id)
+    aips = AIP.query.filter_by(storage_service_id=storage_service_id).all()
 
     format_labels = []
     format_counts = []
     originals_count = 0
 
-    for aip in packages:
-        original_files = originals.query.filter_by(aip_id=aip.id)
+    for aip in aips:
+        originals_count += aip.original_file_count
+        original_files = File.query.filter_by(
+            aip_id=aip.id, file_type=FileType.original
+        )
         for original in original_files:
             # Note that original files in packages do not have a PREMIS ingestion
             # event. Therefore "message digest calculation" is used to get the
             # ingest date for all originals. This event typically happens within
             # the same second or seconds of the ingestion event and is done for all files.
-            ingest_event = events.query.filter_by(
-                original_id=original.id, type="message digest calculation"
+            ingest_event = Event.query.filter_by(
+                file_id=original.id, type="message digest calculation"
             ).first()
             if ingest_event.date < day_before:
                 continue
@@ -125,7 +130,6 @@ def chart_formats_count():
                 continue
             else:
                 format_labels.append(original.file_format)
-                originals_count += 1
 
     format_counts = Counter(format_labels)
     labels = list(format_counts.keys())
@@ -159,21 +163,24 @@ def plot_formats_count():
     day_after = end + timedelta(days=1)
 
     storage_service_id = request.args.get("ssId")
-    storage_service = storage_services.query.get(storage_service_id)
-    packages = aips.query.filter_by(storage_service_id=storage_service_id).all()
+    storage_service = StorageService.query.get(storage_service_id)
+    aips = AIP.query.filter_by(storage_service_id=storage_service_id).all()
 
     format_count = {}
     originals_count = 0
 
-    for aip in packages:
-        original_files = originals.query.filter_by(aip_id=aip.id)
+    for aip in aips:
+        originals_count += aip.original_file_count
+        original_files = File.query.filter_by(
+            aip_id=aip.id, file_type=FileType.original
+        )
         for original in original_files:
             # Note that original files in packages do not have a PREMIS ingestion
             # event. Therefore "message digest calculation" is used to get the
             # ingest date for all originals. This event typically happens within
             # the same second or seconds of the ingestion event and is done for all files.
-            ingest_event = events.query.filter_by(
-                original_id=original.id, type="message digest calculation"
+            ingest_event = Event.query.filter_by(
+                file_id=original.id, type="message digest calculation"
             ).first()
             if ingest_event.date < day_before:
                 continue
@@ -182,7 +189,6 @@ def plot_formats_count():
             else:
                 file_format = original.file_format
                 size = original.size
-                originals_count += 1
 
                 if file_format in format_count:
                     format_count[file_format]["count"] += 1

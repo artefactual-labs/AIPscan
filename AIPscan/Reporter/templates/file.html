@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2 class="h3">File: {{ file_.name }}</h2>
+
+<table class="table table-bordered table-condensed" style="margin-top: 20px;">
+  <tr>
+    <td width=20%>
+      <strong>AIP</strong>
+    </td>
+    <td>
+      <a href="{{ url_for('reporter.view_aip', aip_id=aip.id ) }}">
+        {{ aip.transfer_name }}  {{ aip.uuid }}
+      </a>
+    </td>
+  </tr>
+  <tr><td width=20%><strong>File type</strong><td>{{ file_.file_type.value }}</td></tr>
+  <tr><td width=20%><strong>UUID</strong></td><td>{{ file_.uuid }}</td></tr>
+  <tr><td width=20%><strong>Size</strong></td><td>{{ file_.size | filesizeformat }}</td></tr>
+  <tr>
+    <td width=20%>
+      {% if original_filename %}
+        <strong>Normalized date</strong>
+      {% else %}
+        <strong>Last modified date</strong>
+      {% endif %}
+    </td>
+    <td>{{ file_.date_created.strftime('%Y-%m-%d') }}</td>
+  </tr>
+  <tr>
+    <td width=20%>
+      <strong>PUID</strong>
+    </td>
+    <td>
+      {% if file_.puid %}
+        <a href="http://www.nationalarchives.gov.uk/PRONOM/{{ file_.puid }}"
+          target="_blank">{{ file_.puid }}
+        </a>
+      {% else %}
+        n/a
+      {% endif %}
+    </td>
+  </tr>
+  <tr>
+    <td width=20%>
+      <strong>Format</strong>
+    </td>
+    <td>
+      {{ file_.file_format }}
+      {% if file_.format_version != None %}
+        <span> ({{ file_.format_version }})</span>
+      {% endif %}
+    </td>
+  </tr>
+  <tr><td width=20%>
+    <strong>Checksum type</strong>
+  </td>
+  <td>{{ file_.checksum_type }}</td></tr>
+  <tr>
+    <td width=20%>
+      <strong>Checksum value</strong>
+    </td>
+    <td>
+      {{ file_.checksum_value }}
+    </td>
+  </tr>
+  {% if preservation_file %}
+    <tr>
+      <td width=20%>
+        <strong>Preservation copy</strong>
+      </td>
+      <td>
+        <a href="{{ url_for('reporter.view_file', file_id=preservation_file.id) }}">
+          {{ preservation_file.name }}
+        </a>
+      </td>
+    </tr>
+  {% endif %}
+  {% if original_filename %}
+    <tr>
+      <td width=20%>
+        <strong>Original file</strong>
+      </td>
+      <td>
+        <a href="{{ url_for('reporter.view_file', file_id=file_.original_file_id) }}">
+          {{ original_filename }}
+        </a>
+      </td>
+    </tr>
+  {% endif %}
+</table>
+
+<h3>PREMIS Events</h3>
+
+{% if events %}
+    {% for event in events %}
+    <table class="table table-bordered table-condensed">
+      <tr style="background-color: #D3D3D3;">
+        <td width=20%>
+          <strong>Event type</strong>
+        </td>
+        <td>{{ event.type }}</td>
+      </tr>
+      <tr><td width=20%><strong>UUID</strong></td><td>{{ event.uuid }}</td></tr>
+      <tr><td width=20%><strong>Date</strong></td><td>{{ event.date }}</td></tr>
+      {% if event.detail != None %}
+      <tr><td width=20%><strong>Detail</strong></td><td>{{ event.detail }}</td></tr>
+      {% endif %}
+      {% if event.outcome != None %}
+      <tr><td width=20%><strong>Outcome</strong></td><td>{{ event.outcome }}</td></tr>
+      {% endif %}
+      {% if event.outcome_detail != None %}
+      <tr>
+        <td width=20%>
+          <strong>Outcome Detail</strong>
+        </td>
+        <td>{{ event.outcome_detail }}</td>
+      </tr>
+      {% endif %}
+    </table>
+    <br />
+    {% endfor %}
+  {% endif %}
+
+{% endblock %}
