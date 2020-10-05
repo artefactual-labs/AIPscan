@@ -140,7 +140,7 @@ def create_aip_object(
 ):
     """Create an AIP object and save it to the database."""
     aip = aips(
-        package_uuid,
+        uuid=package_uuid,
         transfer_name=transfer_name,
         create_date=_tz_neutral_date(create_date),
         originals_count=None,
