@@ -75,6 +75,8 @@ def create_event_objects(fs_entry, file_id):
     for premis_event in fs_entry.get_premis_events():
         event = _extract_event_detail(premis_event, file_id)
         db.session.add(event)
+        db.session.commit()
+
         for event_relationship in _create_event_agent_relationship(
             event.id, premis_event.linking_agent_identifier
         ):
