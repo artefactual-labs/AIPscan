@@ -48,7 +48,7 @@ def ss_default():
         storage_service = StorageService.query.first()
         # there are no storage services defined at all
         if storage_service is None:
-            return redirect(url_for("aggregator.ss"))
+            return redirect(url_for("aggregator.storage_services"))
     mets_fetch_jobs = FetchJob.query.filter_by(
         storage_service_id=storage_service.id
     ).all()
@@ -71,7 +71,7 @@ def storage_service(id):
 
 
 @aggregator.route("/storage_services", methods=["GET"])
-def ss():
+def storage_services():
     storage_services = StorageService.query.all()
     return render_template("storage_services.html", storage_services=storage_services)
 
@@ -102,7 +102,7 @@ def edit_storage_service(id):
         storage_service.default = form.default.data
         db.session.commit()
         flash("Storage service {} updated".format(form.name.data))
-        return redirect(url_for("aggregator.ss"))
+        return redirect(url_for("aggregator.storage_services"))
     return render_template(
         "edit_storage_service.html", title="Storage Service", form=form
     )
@@ -124,7 +124,7 @@ def new_storage_service():
         db.session.add(ss)
         db.session.commit()
         flash("New storage service {} created".format(form.name.data))
-        return redirect(url_for("aggregator.ss"))
+        return redirect(url_for("aggregator.storage_services"))
     return render_template(
         "edit_storage_service.html", title="Storage Service", form=form
     )
@@ -140,7 +140,7 @@ def delete_storage_service(id):
     db.session.delete(storage_service)
     db.session.commit()
     flash("Storage service '{}' is deleted".format(storage_service.name))
-    return redirect(url_for("aggregator.ss"))
+    return redirect(url_for("aggregator.storage_services"))
 
 
 @aggregator.route("/new_fetch_job/<id>", methods=["POST"])

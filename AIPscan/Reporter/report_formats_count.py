@@ -12,7 +12,7 @@ from flask import render_template, request
 
 from AIPscan.models import AIP, Event, File, FileType, StorageService
 from AIPscan.helpers import get_human_readable_file_size
-from AIPscan.Reporter import reporter
+from AIPscan.Reporter import reporter, request_params
 
 
 @reporter.route("/report_formats_count/", methods=["GET"])
@@ -20,15 +20,15 @@ def report_formats_count():
     """Report (tabular) on all file formats and their counts and size on
     disk across all AIPs in the storage service.
     """
-    start_date = request.args.get("startdate")
-    end_date = request.args.get("enddate")
+    start_date = request.args.get(request_params["start_date"])
+    end_date = request.args.get(request_params["end_date"])
     # make date range inclusive
     start = datetime.strptime(start_date, "%Y-%m-%d")
     end = datetime.strptime(end_date, "%Y-%m-%d")
     day_before = start - timedelta(days=1)
     day_after = end + timedelta(days=1)
 
-    storage_service_id = request.args.get("ssId")
+    storage_service_id = request.args.get(request_params["storage_service_id"])
     storage_service = StorageService.query.get(storage_service_id)
     aips = AIP.query.filter_by(storage_service_id=storage_service_id).all()
 
@@ -95,15 +95,15 @@ def report_formats_count():
 def chart_formats_count():
     """Report (pie chart) on all file formats and their counts and size
     on disk across all AIPs in the storage service."""
-    start_date = request.args.get("startdate")
-    end_date = request.args.get("enddate")
+    start_date = request.args.get(request_params["start_date"])
+    end_date = request.args.get(request_params["end_date"])
     # make date range inclusive
     start = datetime.strptime(start_date, "%Y-%m-%d")
     end = datetime.strptime(end_date, "%Y-%m-%d")
     day_before = start - timedelta(days=1)
     day_after = end + timedelta(days=1)
 
-    storage_service_id = request.args.get("ssId")
+    storage_service_id = request.args.get(request_params["storage_service_id"])
     storage_service = StorageService.query.get(storage_service_id)
     aips = AIP.query.filter_by(storage_service_id=storage_service_id).all()
 
@@ -154,15 +154,15 @@ def plot_formats_count():
     """Report (scatter) on all file formats and their counts and size on
     disk across all AIPs in the storage service.
     """
-    start_date = request.args.get("startdate")
-    end_date = request.args.get("enddate")
+    start_date = request.args.get(request_params["start_date"])
+    end_date = request.args.get(request_params["end_date"])
     # make date range inclusive
     start = datetime.strptime(start_date, "%Y-%m-%d")
     end = datetime.strptime(end_date, "%Y-%m-%d")
     day_before = start - timedelta(days=1)
     day_after = end + timedelta(days=1)
 
-    storage_service_id = request.args.get("ssId")
+    storage_service_id = request.args.get(request_params["storage_service_id"])
     storage_service = StorageService.query.get(storage_service_id)
     aips = AIP.query.filter_by(storage_service_id=storage_service_id).all()
 

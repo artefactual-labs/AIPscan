@@ -6,20 +6,43 @@ files with singular responsibility for a report.
 """
 
 from datetime import datetime
-
-from flask import render_template
+from flask import render_template, request
 
 from AIPscan.models import AIP, File, FileType, Event, FetchJob, StorageService
-from AIPscan.Reporter import reporter
+from AIPscan.Reporter import reporter, sort_puids, request_params
+
 
 # Flask's idiom requires code using routing decorators to be imported
 # up-front. But that means it might not be called directly by a module.
 from AIPscan.Reporter import (  # noqa: F401
     report_aip_contents,
+    report_aips_by_format,
+    report_aips_by_puid,
     report_formats_count,
     report_originals_with_derivatives,
     report_largest_files,
 )
+
+
+def _get_storage_service(storage_service_id):
+    """Get Storage Service from specified ID.
+
+    If the requested Storage Service ID is invalid, return (in order of
+    preference) one of the following:
+    - First default Storage Service
+    - First Storage Service
+    - None
+
+    :param storage_service_id: Storage Service ID
+
+    :returns: StorageService object or None
+    """
+    storage_service = StorageService.query.get(storage_service_id)
+    if storage_service is None:
+        storage_service = StorageService.query.filter_by(default=True).first()
+    if storage_service is None:
+        storage_service = StorageService.query.first()
+    return storage_service
 
 
 @reporter.route("/aips/", methods=["GET"])
@@ -133,16 +156,51 @@ def view_file(file_id):
 
 @reporter.route("/reports/", methods=["GET"])
 def reports():
-    """Reports returns a standard page in AIPscan that lists the
-    in-built reports available to the caller.
+    """Reports page lists available built-in reports
+
+    Storage Service ID can be specified as an optional parameter. If
+    one is not specified, use the default Storage Service.
     """
-    all_storage_services = StorageService.query.all()
+    storage_service_id = request.args.get(request_params["storage_service_id"])
+    storage_service = _get_storage_service(storage_service_id)
+
+    original_file_formats = []
+    preservation_file_formats = []
+    original_puids = []
+    preservation_puids = []
+
+    # Original file formats and PUIDs should be present for any Storage
+    # Service with ingested files.
+    try:
+        original_file_formats = storage_service.unique_original_file_formats
+        original_puids = sort_puids(storage_service.unique_original_puids)
+    except AttributeError:
+        pass
+
+    # Preservation file formats and PUIDs may be present depending on
+    # a number of factors such as processing configuration choices,
+    # normalization rules, and use of manual normalization.
+    try:
+        preservation_file_formats = storage_service.unique_preservation_file_formats
+    except AttributeError:
+        pass
+    try:
+        preservation_puids = sort_puids(storage_service.unique_preservation_puids)
+    except AttributeError:
+        pass
+
     now = datetime.now()
     start_date = str(datetime(now.year, 1, 1))[:-9]
     end_date = str(datetime(now.year, now.month, now.day))[:-9]
+
     return render_template(
         "reports.html",
-        storage_services=all_storage_services,
+        storage_service=storage_service,
+        storage_services=StorageService.query.all(),
+        original_file_formats=original_file_formats,
+        preservation_file_formats=preservation_file_formats,
+        original_puids=original_puids,
+        preservation_puids=preservation_puids,
         start_date=start_date,
         end_date=end_date,
     )

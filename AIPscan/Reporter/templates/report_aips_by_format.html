@@ -1,0 +1,46 @@
+{% extends "report_base.html" %}
+
+{% block content %}
+
+  <div class="alert alert-secondary">
+    <a class="noprint" onClick="window.print();return false">
+    	<button type="button" class="btn btn-info" style="float:right;">Print</button>
+    </a>
+    <strong>Report: AIPs by File Format</strong>
+    <br>
+    <strong>Storage Service:</strong> {{ storage_service_name }}</strong>
+    <br>
+    <strong>File format:</strong> {{ file_format }}
+    <br>
+    {% if original_files %}
+      <strong>File type:</strong> original files
+    {% else %}
+      <strong>File type:</strong> preservation files
+    {% endif %}
+  </div>
+
+  {% if aips %}
+    <table class="table table-striped table-bordered">
+    	<thead>
+        <tr>
+        {% for column in columns %}
+          <th>{{ column }}</th>
+        {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for aip in aips %}
+          <tr>
+            <td>{{ aip["AIPName"] }}</td>
+            <td>{{ aip["UUID"] }}</td>
+            <td>{{ aip["Count"] }}</td>
+            <td>{{ aip["Size"] | filesizeformat }} </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="h4" style="margin-top:20px;">No AIPs with file format "{{ file_format }}" to display.</p>
+  {% endif %}
+
+{% endblock %}

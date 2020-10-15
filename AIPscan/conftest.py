@@ -8,7 +8,7 @@ from AIPscan import db, create_app
 
 
 @pytest.fixture
-def app_instance():
+def app_instance(scope="session"):
     """Pytest fixture that returns an instance of our application.
 
     This fixture provides a Flask application context for tests using

@@ -2,35 +2,33 @@
 
 {% block content %}
 
-<!--TODO container-fluid is also present on base.html should this be a
-    different class?
--->
-<div class="container-fluid">
+<div class="container-alert"></div>
 
-    <!-- TODO: Same question as container-fluid for consistency across the
-         application.
-    -->
-    <div class="container-alert"></div>
+<div class="alert alert-header"><strong>Reports</strong></div>
 
-    <div class="alert alert-header"><strong>Reports</strong></div>
+{% if storage_services %}
 
-    <div style="padding-left: 1.25rem;">
+    <div style="padding-left: 1em;">
         <strong>Storage service:</strong>
         <select id="ss" method="GET" action="/" class="form-control" style="width:auto;">
             {% for ss in storage_services %}
-            {% if ss.default == 1 %}
-            <option value="{{ ss.id }}" SELECTED>{{ ss.name }}</option>
-            {% else %}
-            <option value="{{ ss.id }}">{{ ss.name }}</option>
-            {% endif %}
+              {% if ss.id == storage_service.id %}
+                <option value="{{ ss.id }}" SELECTED>{{ ss.name }}</option>
+              {% else %}
+                <option value="{{ ss.id }}">{{ ss.name }}</option>
+              {% endif %}
             {% endfor %}
         </select>
     </div>
+
+    <!-- Original file formats indicates data has been fetched for this Storage Service -->
+    {% if original_file_formats %}
 
     <table class="table table-striped table-bordered" style="margin: 1.25rem;">
 
         <tr>
             <th>Report</th>
+            <th>File format/PUID</th>
             <th><img src="{{ url_for('static', filename='assets/calendar-icon.png') }}" style="height: 1.5em; margin-right: 5px;" />Start date</th>
             <th><img src="{{ url_for('static', filename='assets/calendar-icon.png') }}" style="height: 1.5em; margin-right: 5px;" />End date</th>
             <th>Format</th>
@@ -38,6 +36,7 @@
 
         <tr>
             <td>File format count</td>
+            <td></td>
             <td><input id="startdate1" type="text" value="{{ start_date }}">
             </td>
             <td><input type="text" id="enddate1" value="{{ end_date }}"></td>
@@ -48,11 +47,13 @@
             <td>AIP contents</td>
             <td></td>
             <td></td>
+            <td></td>
             <td><a href="#"><button type="button" id="report2a" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a></td>
         </tr>
 
         <tr>
             <td>Format version count</td>
+            <td></td>
             <td></td>
             <td></td>
             <td><a href="#"><button type="button" id="report3a" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a></td>
@@ -62,6 +63,7 @@
             <td>Preservation copy count</td>
             <td></td>
             <td></td>
+            <td></td>
             <td><a href="#"><button type="button" id="report4a" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a></td>
         </tr>
 
@@ -69,12 +71,104 @@
             <td>Largest files</td>
             <td></td>
             <td></td>
+            <td></td>
             <td><a href="#"><button type="button" id="report9a" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a></td>
         </tr>
 
+        <tr>
+            <td>
+                File format
+                <br>
+                <span class="text-muted">AIPs containing original files in given file format.</span>
+            </td>
+            <td>
+              <select id="originalFormatSelect" method="GET" action="/" class="form-control" style="width:auto;">
+                {% for file_format in original_file_formats %}
+                  <option value="{{ file_format }}">{{ file_format }}</option>
+                {% endfor %}
+              </select>
+            </td>
+            <td></td>
+            <td></td>
+            <td><a href="#"><button type="button" id="aipsByOriginalFormat" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a></td>
+        </tr>
+
+        <tr>
+            <td>
+                File format version
+                <br>
+                <span class="text-muted">AIPs containing original files in given file format version, specified by PUID.</span>
+            </td>
+            <td>
+              <select id="originalPUIDSelect" method="GET" action="/" class="form-control" style="width:auto;">
+                {% for puid in original_puids %}
+                  <option value="{{ puid }}">{{ puid }}</option>
+                {% endfor %}
+              </select>
+            </td>
+            <td></td>
+            <td></td>
+            <td><a href="#"><button type="button" id="aipsByOriginalPUID" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a></td>
+        </tr>
+
+        {% if preservation_file_formats %}
+            <tr>
+                <td>
+                    File format (preservation)
+                    <br>
+                    <span class="text-muted">AIPs containing normalized preservation derivatives in given file format.</span>
+                </td>
+                <td>
+                  <select id="preservationFormatSelect" method="GET" action="/" class="form-control" style="width:auto;">
+                    {% for file_format in preservation_file_formats %}
+                      <option value="{{ file_format }}">{{ file_format }}</option>
+                    {% endfor %}
+                  </select>
+                </td>
+                <td></td>
+                <td></td>
+                <td><a href="#"><button type="button" id="aipsByPreservationFormat" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a></td>
+            </tr>
+        {% endif %}
+
+        {% if preservation_puids %}
+            <tr>
+                <td>
+                    File format version (preservation)
+                    <br>
+                    <span class="text-muted">AIPs containing normalized preservation derivatives in given file format version, specified by PUID.</span>
+                </td>
+                <td>
+                  <select id="preservationPUIDSelect" method="GET" action="/" class="form-control" style="width:auto;">
+                    {% for puid in preservation_puids %}
+                      <option value="{{ puid }}">{{ puid }}</option>
+                    {% endfor %}
+                  </select>
+                </td>
+                <td></td>
+                <td></td>
+                <td><a href="#"><button type="button" id="aipsByPreservationPUID" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a></td>
+            </tr>
+        {% endif %}
+
     </table>
 
-</div>
+    {% else %}
+
+    <div style="padding:1em;">
+        No data available. Run a Fetch Job to populate AIPscan with data from this Storage Service or select a different Storage Service.
+    </div>
+
+    {% endif %}
+
+{% else %}
+
+    <div style="padding:1em;">
+        Storage Service information is not yet available for reporting. <a href="{{ url_for('aggregator.storage_services') }}">Configure a Storage Service</a> and run a Fetch Job to get started.</a>
+    </div>
+
+{% endif %}
+
 
 <!-- TODO: Let's get this into a separate JS and import it... -->
 <script>
@@ -89,7 +183,7 @@
     //
     // TODO: Are there more idiomatic approaches? 🤷
     bootstrap_alert = function(message, alertType) {
-      $("body > div.container-fluid > div > div.container-alert").html(
+      $("body > div > div.container-alert").html(
         '<div class="alert alert-' +
         alertType +
         '"><a class="close" data-dismiss="alert">×</a><span>' +
@@ -99,6 +193,18 @@
     }
 
     $(document).ready(function() {
+        // Refresh page with storage_service_id parameter when user selects a
+        // Storage Service from the dropdown list. This enables us to provide
+        // lists of the file formats and PUIDs in a given Storage Service to
+        // the reports template for use in dropdown selectors.
+        $("#ss").on("change", function() {
+          var storageServiceId = $('#ss').val();
+          var url = window.location.origin +
+            '/reporter/reports?' +
+            'amss_id=' +
+            storageServiceId;
+          window.location.href = url;
+        });
         $("#startdate1").datepicker({
             dateFormat: 'yy-mm-dd',
             onSelect: function(date) {
@@ -129,11 +235,11 @@
             } else {
                 var storageServiceId = $('#ss').val();
                 var url = window.location.origin +
-                    '/reporter/report_formats_count?startdate=' +
+                    '/reporter/report_formats_count?start_date=' +
                     startdate +
-                    '&enddate=' +
+                    '&end_date=' +
                     enddate +
-                    '&ssId=' +
+                    '&amss_id=' +
                     storageServiceId
                 window.open(url);
             }
@@ -146,11 +252,11 @@
             } else {
                 var storageServiceId = $('#ss').val();
                 var url = window.location.origin +
-                    '/reporter/chart_formats_count?startdate=' +
+                    '/reporter/chart_formats_count?start_date=' +
                     startdate +
-                    '&enddate=' +
+                    '&end_date=' +
                     enddate +
-                    '&ssId=' +
+                    '&amss_id=' +
                     storageServiceId
                 window.open(url);
             }
@@ -163,11 +269,11 @@
             } else {
                 var storageServiceId = $('#ss').val();
                 var url = window.location.origin +
-                    '/reporter/plot_formats_count?startdate=' +
+                    '/reporter/plot_formats_count?start_date=' +
                     startdate +
-                    '&enddate=' +
+                    '&end_date=' +
                     enddate +
-                    '&ssId=' +
+                    '&amss_id=' +
                     storageServiceId
                 window.open(url);
             }
@@ -207,6 +313,66 @@
               URL_LARGEST_FILES +
               '?amss_id=' +
               storageServiceID
+            );
+            window.open(url);
+        });
+        $("#aipsByOriginalFormat").on("click", function() {
+            const URL_AIP_CONTENTS = "/reporter/aips_by_file_format/";
+            var storageServiceID = $('#ss').val();
+            var fileFormat = $('#originalFormatSelect').val();
+            var url = (
+              window.location.origin +
+              URL_AIP_CONTENTS +
+              '?amss_id=' +
+              storageServiceID +
+              '&file_format=' +
+              fileFormat +
+              '&original_files=True'
+            );
+            window.open(url);
+        });
+        $("#aipsByPreservationFormat").on("click", function() {
+            const URL_AIP_CONTENTS = "/reporter/aips_by_file_format/";
+            var storageServiceID = $('#ss').val();
+            var fileFormat = $('#preservationFormatSelect').val();
+            var url = (
+              window.location.origin +
+              URL_AIP_CONTENTS +
+              '?amss_id=' +
+              storageServiceID +
+              '&file_format=' +
+              fileFormat +
+              '&original_files=False'
+            );
+            window.open(url);
+        });
+        $("#aipsByOriginalPUID").on("click", function() {
+            const URL_AIP_CONTENTS = "/reporter/aips_by_puid/";
+            var storageServiceID = $('#ss').val();
+            var puid = $('#originalPUIDSelect').val();
+            var url = (
+              window.location.origin +
+              URL_AIP_CONTENTS +
+              '?amss_id=' +
+              storageServiceID +
+              '&puid=' +
+              puid +
+              '&original_files=True'
+            );
+            window.open(url);
+        });
+        $("#aipsByPreservationPUID").on("click", function() {
+            const URL_AIP_CONTENTS = "/reporter/aips_by_puid/";
+            var storageServiceID = $('#ss').val();
+            var puid = $('#preservationPUIDSelect').val();
+            var url = (
+              window.location.origin +
+              URL_AIP_CONTENTS +
+              '?amss_id=' +
+              storageServiceID +
+              '&puid=' +
+              puid +
+              '&original_files=False'
             );
             window.open(url);
         });

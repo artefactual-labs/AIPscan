@@ -10,3 +10,4 @@ config.pyc
 aipscan.db
 celerytasks.db
 AIPscan/Aggregator/downloads/
+.tox/

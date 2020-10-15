@@ -7,7 +7,7 @@ the different file formats associated with both.
 from flask import render_template, request
 
 from AIPscan.Data import data
-from AIPscan.Reporter import reporter, translate_headers
+from AIPscan.Reporter import reporter, translate_headers, request_params
 
 
 @reporter.route("/original_derivatives/", methods=["GET"])
@@ -16,7 +16,7 @@ def original_derivatives():
     exist.
     """
     aips_with_preservation_files = []
-    storage_service_id = request.args.get("amss_id")
+    storage_service_id = request.args.get(request_params["storage_service_id"])
     derivative_data = data.derivative_overview(storage_service_id=storage_service_id)
     storage_service_name = derivative_data[data.FIELD_STORAGE_NAME]
 

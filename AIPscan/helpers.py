@@ -1,5 +1,14 @@
 # -*- coding: utf-8 -*-
 
+from distutils.util import strtobool
+
+
+def parse_bool(val, default=True):
+    try:
+        return bool(strtobool(val))
+    except (ValueError, AttributeError):
+        return default
+
 
 def get_human_readable_file_size(size, precision=2):
     suffixes = ["B", "KiB", "MiB", "GiB", "TiB"]

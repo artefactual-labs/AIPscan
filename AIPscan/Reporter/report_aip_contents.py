@@ -4,13 +4,13 @@ from flask import render_template, request
 
 from AIPscan.Data import data
 from AIPscan.helpers import get_human_readable_file_size
-from AIPscan.Reporter import reporter, translate_headers
+from AIPscan.Reporter import reporter, translate_headers, request_params
 
 
 @reporter.route("/aip_contents/", methods=["GET"])
 def aip_contents():
     """Return AIP contents organized by format."""
-    storage_service_id = request.args.get("amss_id")
+    storage_service_id = request.args.get(request_params["storage_service_id"])
     aip_data = data.aip_overview_two(storage_service_id=storage_service_id)
     FIELD_UUID = "UUID"
     headers = [

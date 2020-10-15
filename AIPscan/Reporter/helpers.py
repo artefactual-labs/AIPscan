@@ -2,8 +2,24 @@
 
 """Code shared across reporting modules but not outside of reporting.
 """
+from natsort import natsorted
 
 from AIPscan.Data import data
+
+
+def sort_puids(puids):
+    """Return PUIDs sorted in natural sorting order.
+
+    Python sorts strings containining integers in ASCII order - i.e.
+    ["fmt/1", "fmt/10", "fmt/2"]. Since this is different than what end
+    users expect, this helper uses the natsort library to reorder PUIDs
+    into natural sort order - i.e. ["fmt/1", "fmt/2", "fmt/10"].
+
+    :param puids: List of PUIDs
+
+    :returns: Sorted list of PUIDs
+    """
+    return natsorted(puids)
 
 
 def translate_headers(headers):

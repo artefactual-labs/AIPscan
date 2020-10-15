@@ -2,8 +2,10 @@
 
 from datetime import datetime
 
+from AIPscan import db
 from AIPscan.models import AIP, File, FileType, StorageService
 
+VALID_FILE_TYPES = set(item.value for item in FileType)
 
 FIELD_AIP = "AIP"
 FIELD_AIP_ID = "AIPID"
@@ -47,11 +49,17 @@ FIELD_VERSION = "Version"
 
 
 def _get_storage_service(storage_service_id):
-    DEFAULT_STORAGE_SERVICE_ID = 1
-    if storage_service_id == 0 or storage_service_id is None:
-        storage_service_id = DEFAULT_STORAGE_SERVICE_ID
-    storage_service = StorageService.query.get(storage_service_id)
-    return StorageService.query.first() if not storage_service else storage_service
+    """Return Storage Service with ID or None.
+
+    Unlike elsewhere in our application, here we do not fall back to
+    a different StorageService if the user-supplied ID is invalid to
+    prevent inaccurate information from being returned.
+
+    :param storage_service_id: Storage Service ID
+
+    :returns: StorageService object or None
+    """
+    return StorageService.query.get(storage_service_id)
 
 
 def _split_ms(date_string):
@@ -221,7 +229,6 @@ def _largest_files_query(storage_service_id, file_type, limit):
 
     This is separated into its own helper function to aid in testing.
     """
-    VALID_FILE_TYPES = set(item.value for item in FileType)
     if file_type is not None and file_type in VALID_FILE_TYPES:
         files = (
             File.query.join(AIP)
@@ -292,3 +299,126 @@ def largest_files(storage_service_id, file_type=None, limit=20):
         report[FIELD_FILES].append(file_info)
 
     return report
+
+
+def _query_aips_by_file_format_or_puid(
+    storage_service_id, search_string, original_files=True, file_format=True
+):
+    """Fetch information on all AIPs with given format or PUID from db.
+
+    :param storage_service_id: Storage Service ID (int)
+    :param search_string: File format or PUID (str)
+    :param original_files: Flag indicating whether returned data
+    describes original (default) or preservation files (bool)
+    :param file_format: Flag indicating whether to filter on file
+    format (default) or PUID (bool)
+
+    :returns: SQLAlchemy query results
+    """
+    AIP_ID = "id"
+    TRANSFER_NAME = "name"
+    AIP_UUID = "uuid"
+    FILE_COUNT = "file_count"
+    FILE_SIZE = "total_size"
+    aips = (
+        db.session.query(
+            AIP.id.label(AIP_ID),
+            AIP.transfer_name.label(TRANSFER_NAME),
+            AIP.uuid.label(AIP_UUID),
+            db.func.count(File.id).label(FILE_COUNT),
+            db.func.sum(File.size).label(FILE_SIZE),
+        )
+        .join(File)
+        .join(StorageService)
+        .filter(StorageService.id == storage_service_id)
+        .group_by(AIP.id)
+        .order_by(db.func.count(File.id).desc(), db.func.sum(File.size).desc())
+    )
+
+    if original_files is False:
+        aips = aips.filter(File.file_type == FileType.preservation.value)
+    else:
+        aips = aips.filter(File.file_type == FileType.original.value)
+
+    if file_format:
+        return aips.filter(File.file_format == search_string)
+    return aips.filter(File.puid == search_string)
+
+
+def _aips_by_file_format_or_puid(
+    storage_service_id, search_string, original_files=True, file_format=True
+):
+    """Return overview of all AIPs containing original files in format
+
+    :param storage_service_id: Storage Service ID (int)
+    :param search_string: File format name or PUID (str)
+    :param original_files: Flag indicating whether returned data
+    describes original (default) or preservation files (bool)
+    :param file_format: Flag indicating whether to filter on file
+    format (default) or PUID (bool)
+
+    :returns: "report" dict containing following fields:
+        report["StorageName"]: Name of Storage Service queried
+        report["AIPs"]: List of result AIPs ordered desc by count
+    """
+    report = {}
+
+    storage_service = _get_storage_service(storage_service_id)
+    report[FIELD_STORAGE_NAME] = storage_service.name
+
+    if file_format:
+        report[FIELD_FORMAT] = search_string
+    else:
+        report[FIELD_PUID] = search_string
+
+    report[FIELD_AIPS] = []
+    results = _query_aips_by_file_format_or_puid(
+        storage_service_id, search_string, original_files, file_format
+    )
+    for result in results:
+        aip_info = {}
+
+        aip_info["id"] = result.id
+        aip_info[FIELD_AIP_NAME] = result.name
+        aip_info[FIELD_UUID] = result.uuid
+        aip_info[FIELD_COUNT] = result.file_count
+        aip_info[FIELD_SIZE] = result.total_size
+
+        report[FIELD_AIPS].append(aip_info)
+
+    return report
+
+
+def aips_by_file_format(storage_service_id, file_format, original_files=True):
+    """Return overview of AIPs containing original files in format.
+
+    :param storage_service_id: Storage Service ID (int)
+    :param file_format: File format name (str)
+    :param original_files: Flag indicating whether returned data
+    describes original (default) or preservation files (bool)
+
+    :returns: Report dict provided by _aips_by_file_format_or_puid
+    """
+    return _aips_by_file_format_or_puid(
+        storage_service_id=storage_service_id,
+        search_string=file_format,
+        original_files=original_files,
+    )
+
+
+def aips_by_puid(storage_service_id, puid, original_files=True):
+    """Return overview of AIPs containing original files in format.
+
+    :param storage_service_id: Storage Service ID (int)
+    :param puid: PUID (str)
+    :param original_files: Flag indicating whether returned data
+    describes original (default) or preservation files (bool)
+
+    :returns: Report dict provided by _aips_by_file_format_or_puid
+    """
+    return _aips_by_file_format_or_puid(
+        storage_service_id=storage_service_id,
+        search_string=puid,
+        original_files=original_files,
+        file_format=False,
+    )
