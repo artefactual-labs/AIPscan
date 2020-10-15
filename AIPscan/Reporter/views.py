@@ -6,16 +6,19 @@ files with singular responsibility for a report.
 """
 
 from datetime import datetime
-
-from flask import render_template
+from flask import render_template, request
+from natsort import natsorted
 
 from AIPscan.models import AIP, File, FileType, Event, FetchJob, StorageService
 from AIPscan.Reporter import reporter
+
 
 # Flask's idiom requires code using routing decorators to be imported
 # up-front. But that means it might not be called directly by a module.
 from AIPscan.Reporter import (  # noqa: F401
     report_aip_contents,
+    report_aips_by_format,
+    report_aips_by_puid,
     report_formats_count,
     report_originals_with_derivatives,
     report_largest_files,
@@ -133,16 +136,30 @@ def view_file(file_id):
 
 @reporter.route("/reports/", methods=["GET"])
 def reports():
-    """Reports returns a standard page in AIPscan that lists the
-    in-built reports available to the caller.
+    """Reports page lists available built-in reports
+
+    Storage Service ID can be specified as an optional parameter. If
+    one is not specified, use the default Storage Service.
     """
+    storage_service_id = request.args.get("amss_id")
+    if storage_service_id is not None:
+        storage_service = StorageService.query.get(storage_service_id)
+    else:
+        storage_service = StorageService.query.filter_by(default=True).first()
     all_storage_services = StorageService.query.all()
+    file_formats = storage_service.unique_file_formats
+    # Sort PUIDs "naturally" - i.e. ["fmt/1", "fmt/2", "fmt/10"] rather
+    # than Python's default ["fmt/1", "fmt/10", "fmt/2"].
+    puids = natsorted(storage_service.unique_puids)
     now = datetime.now()
     start_date = str(datetime(now.year, 1, 1))[:-9]
     end_date = str(datetime(now.year, now.month, now.day))[:-9]
     return render_template(
         "reports.html",
+        storage_service=storage_service,
         storage_services=all_storage_services,
+        file_formats=file_formats,
+        puids=puids,
         start_date=start_date,
         end_date=end_date,
     )

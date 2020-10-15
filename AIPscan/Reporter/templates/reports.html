@@ -18,11 +18,11 @@
         <strong>Storage service:</strong>
         <select id="ss" method="GET" action="/" class="form-control" style="width:auto;">
             {% for ss in storage_services %}
-            {% if ss.default == 1 %}
-            <option value="{{ ss.id }}" SELECTED>{{ ss.name }}</option>
-            {% else %}
-            <option value="{{ ss.id }}">{{ ss.name }}</option>
-            {% endif %}
+              {% if ss.id == storage_service.id %}
+                <option value="{{ ss.id }}" SELECTED>{{ ss.name }}</option>
+              {% else %}
+                <option value="{{ ss.id }}">{{ ss.name }}</option>
+              {% endif %}
             {% endfor %}
         </select>
     </div>
@@ -31,6 +31,7 @@
 
         <tr>
             <th>Report</th>
+            <th>File format/PUID</th>
             <th><img src="{{ url_for('static', filename='assets/calendar-icon.png') }}" style="height: 1.5em; margin-right: 5px;" />Start date</th>
             <th><img src="{{ url_for('static', filename='assets/calendar-icon.png') }}" style="height: 1.5em; margin-right: 5px;" />End date</th>
             <th>Format</th>
@@ -38,6 +39,7 @@
 
         <tr>
             <td>File format count</td>
+            <td></td>
             <td><input id="startdate1" type="text" value="{{ start_date }}">
             </td>
             <td><input type="text" id="enddate1" value="{{ end_date }}"></td>
@@ -48,11 +50,13 @@
             <td>AIP contents</td>
             <td></td>
             <td></td>
+            <td></td>
             <td><a href="#"><button type="button" id="report2a" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a></td>
         </tr>
 
         <tr>
             <td>Format version count</td>
+            <td></td>
             <td></td>
             <td></td>
             <td><a href="#"><button type="button" id="report3a" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a></td>
@@ -62,6 +66,7 @@
             <td>Preservation copy count</td>
             <td></td>
             <td></td>
+            <td></td>
             <td><a href="#"><button type="button" id="report4a" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a></td>
         </tr>
 
@@ -69,7 +74,36 @@
             <td>Largest files</td>
             <td></td>
             <td></td>
+            <td></td>
             <td><a href="#"><button type="button" id="report9a" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a></td>
+        </tr>
+
+        <tr>
+            <td>AIPs by file format</td>
+            <td>
+              <select id="formatDropdownSelect" method="GET" action="/" class="form-control" style="width:auto;">
+                {% for file_format in file_formats %}
+                  <option value="{{ file_format }}">{{ file_format }}</option>
+                {% endfor %}
+              </select>
+            </td>
+            <td></td>
+            <td></td>
+            <td><a href="#"><button type="button" id="aipsByFormat" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a></td>
+        </tr>
+
+        <tr>
+            <td>AIPs by PUID</td>
+            <td>
+              <select id="puidDropdownSelect" method="GET" action="/" class="form-control" style="width:auto;">
+                {% for puid in puids %}
+                  <option value="{{ puid }}">{{ puid }}</option>
+                {% endfor %}
+             </select>
+            </td>
+            <td></td>
+            <td></td>
+            <td><a href="#"><button type="button" id="aipsByPUID" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a></td>
         </tr>
 
     </table>
@@ -99,6 +133,18 @@
     }
 
     $(document).ready(function() {
+        // Refresh page with storage_service_id parameter when user selects a
+        // Storage Service from the dropdown list. This enables us to provide
+        // lists of the file formats and PUIDs in a given Storage Service to
+        // the reports template for use in dropdown selectors.
+        $("#ss").on("change", function() {
+          var storageServiceId = $('#ss').val();
+          var url = window.location.origin +
+            '/reporter/reports?' +
+            'amss_id=' +
+            storageServiceId;
+          window.location.href = url;
+        });
         $("#startdate1").datepicker({
             dateFormat: 'yy-mm-dd',
             onSelect: function(date) {
@@ -207,6 +253,34 @@
               URL_LARGEST_FILES +
               '?amss_id=' +
               storageServiceID
+            );
+            window.open(url);
+        });
+        $("#aipsByFormat").on("click", function() {
+            const URL_AIP_CONTENTS = "/reporter/aips_by_file_format/";
+            var storageServiceID = $('#ss').val();
+            var fileFormat = $('#formatDropdownSelect').val();
+            var url = (
+              window.location.origin +
+              URL_AIP_CONTENTS +
+              '?amss_id=' +
+              storageServiceID +
+              '&file_format=' +
+              fileFormat
+            );
+            window.open(url);
+        });
+        $("#aipsByPUID").on("click", function() {
+            const URL_AIP_CONTENTS = "/reporter/aips_by_puid/";
+            var storageServiceID = $('#ss').val();
+            var puid = $('#puidDropdownSelect').val();
+            var url = (
+              window.location.origin +
+              URL_AIP_CONTENTS +
+              '?amss_id=' +
+              storageServiceID +
+              '&puid=' +
+              puid
             );
             window.open(url);
         });

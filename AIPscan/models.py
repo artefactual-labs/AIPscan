@@ -46,6 +46,28 @@ class StorageService(db.Model):
     def __repr__(self):
         return "<Storage Service '{}'>".format(self.name)
 
+    @property
+    def unique_file_formats(self):
+        formats = (
+            db.session.query(File.file_format.distinct().label("name"))
+            .join(AIP)
+            .join(StorageService)
+            .filter(StorageService.id == self.id)
+            .order_by(File.file_format)
+        )
+        return [format_.name for format_ in formats]
+
+    @property
+    def unique_puids(self):
+        puids = (
+            db.session.query(File.puid.distinct().label("puid"))
+            .join(AIP)
+            .join(StorageService)
+            .filter(StorageService.id == self.id)
+            .order_by(File.puid)
+        )
+        return [puid.puid for puid in puids if puid.puid is not None]
+
 
 class FetchJob(db.Model):
     __tablename__ = "fetch_job"

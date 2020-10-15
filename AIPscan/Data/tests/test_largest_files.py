@@ -1,11 +1,19 @@
 # -*- coding: utf-8 -*-
-
 import datetime
 import pytest
 import uuid
 
 from AIPscan.Data import data
-from AIPscan.models import AIP, File, FileType, StorageService
+from AIPscan.Data.tests import (
+    MOCK_AIP,
+    MOCK_AIP_NAME,
+    MOCK_AIP_UUID,
+    MOCK_STORAGE_SERVICE,
+    MOCK_STORAGE_SERVICE_ID,
+    MOCK_STORAGE_SERVICE_NAME,
+)
+from AIPscan.models import File, FileType
+
 
 TEST_FILES = [
     File(
@@ -49,28 +57,6 @@ TEST_FILES = [
     ),
 ]
 
-MOCK_STORAGE_SERVICE_ID = 1
-MOCK_STORAGE_SERVICE_NAME = "some name"
-TEST_STORAGE_SERVICE = StorageService(
-    name=MOCK_STORAGE_SERVICE_NAME,
-    url="http://example.com",
-    user_name="test",
-    api_key="test",
-    download_limit=20,
-    download_offset=10,
-    default=False,
-)
-
-MOCK_AIP_NAME = "Test transfer"
-MOCK_AIP_UUID = uuid.uuid4()
-TEST_AIP = AIP(
-    uuid=MOCK_AIP_UUID,
-    transfer_name=MOCK_AIP_NAME,
-    create_date=datetime.datetime.now(),
-    storage_service_id=MOCK_STORAGE_SERVICE_ID,
-    fetch_job_id=1,
-)
-
 
 @pytest.mark.parametrize(
     "file_data, file_count", [([], 0), (TEST_FILES, 3), (TEST_FILES[:2], 2)]
@@ -82,10 +68,10 @@ def test_largest_files(mocker, file_data, file_count):
     mock_query.return_value = file_data
 
     mock_get_ss = mocker.patch("AIPscan.Data.data._get_storage_service")
-    mock_get_ss.return_value = TEST_STORAGE_SERVICE
+    mock_get_ss.return_value = MOCK_STORAGE_SERVICE
 
     mock_get_aip = mocker.patch("sqlalchemy.orm.query.Query.get")
-    mock_get_aip.return_value = TEST_AIP
+    mock_get_aip.return_value = MOCK_AIP
 
     report = data.largest_files(MOCK_STORAGE_SERVICE_ID)
     report_files = report[data.FIELD_FILES]
@@ -108,10 +94,10 @@ def test_largest_files_elements(mocker, test_file, has_format_version, has_puid)
     mock_query.return_value = [test_file]
 
     mock_get_ss = mocker.patch("AIPscan.Data.data._get_storage_service")
-    mock_get_ss.return_value = TEST_STORAGE_SERVICE
+    mock_get_ss.return_value = MOCK_STORAGE_SERVICE
 
     mock_get_aip = mocker.patch("sqlalchemy.orm.query.Query.get")
-    mock_get_aip.return_value = TEST_AIP
+    mock_get_aip.return_value = MOCK_AIP
 
     report = data.largest_files(MOCK_STORAGE_SERVICE_ID)
     report_file = report[data.FIELD_FILES][0]

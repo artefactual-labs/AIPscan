@@ -2,6 +2,7 @@
 
 from datetime import datetime
 
+from AIPscan import db
 from AIPscan.models import AIP, File, FileType, StorageService
 
 
@@ -290,5 +291,125 @@ def largest_files(storage_service_id, file_type=None, limit=20):
             file_info[FIELD_AIP_UUID] = matching_aip.uuid
 
         report[FIELD_FILES].append(file_info)
+
+    return report
+
+
+def _aips_by_format_query(storage_service_id, file_format):
+    """Fetch information on all AIPs with given format from database
+
+    This is separated into its own helper function to aid in testing.
+
+    :param storage_service_id: Storage Service ID (int)
+    :param file_format: File format (str)
+
+    :returns: SQLAlchemy query results
+    """
+    aips = (
+        db.session.query(
+            AIP.id.label("id"),
+            AIP.transfer_name.label("name"),
+            AIP.uuid.label("uuid"),
+            db.func.count(File.id).label("file_count"),
+            db.func.sum(File.size).label("total_size"),
+        )
+        .join(File)
+        .join(StorageService)
+        .filter(StorageService.id == storage_service_id)
+        .filter(File.file_format == file_format)
+        .group_by(AIP.id)
+        .order_by(db.func.count(File.id).desc(), db.func.sum(File.size).desc())
+    )
+    return aips
+
+
+def aips_by_file_format(storage_service_id, file_format):
+    """Return overview of all AIPs containing original files in format
+
+    :param storage_service_id: Storage Service ID (int)
+    :param file_format: File format name (str)
+
+    :returns: "report" dict containing following fields:
+        report["StorageName"]: Name of Storage Service queried
+        report["AIPs"]: List of result AIPs ordered desc by count
+    """
+    report = {}
+    storage_service = _get_storage_service(storage_service_id)
+    report[FIELD_STORAGE_NAME] = storage_service.name
+    report[FIELD_FORMAT] = file_format
+    report[FIELD_AIPS] = []
+
+    results = _aips_by_format_query(storage_service_id, file_format)
+
+    for result in results:
+        aip_info = {}
+
+        aip_info["id"] = result.id
+        aip_info[FIELD_AIP_NAME] = result.name
+        aip_info[FIELD_UUID] = result.uuid
+        aip_info[FIELD_COUNT] = result.file_count
+        aip_info[FIELD_SIZE] = result.total_size
+
+        report[FIELD_AIPS].append(aip_info)
+
+    return report
+
+
+def _aips_by_puid_query(storage_service_id, puid):
+    """Fetch information on all AIPs with given PUID from database
+
+    This is separated into its own helper function to aid in testing.
+
+    :param storage_service_id: Storage Service ID (int)
+    :param puid: PRONOM ID (str)
+
+    :returns: SQLAlchemy query results
+    """
+    aips = (
+        db.session.query(
+            AIP.id.label("id"),
+            AIP.transfer_name.label("name"),
+            AIP.uuid.label("uuid"),
+            db.func.count(File.id).label("file_count"),
+            db.func.sum(File.size).label("total_size"),
+        )
+        .join(File)
+        .join(StorageService)
+        .filter(StorageService.id == storage_service_id)
+        .filter(File.puid == puid)
+        .group_by(AIP.id)
+        .order_by(db.func.count(File.id).desc(), db.func.sum(File.size).desc())
+    )
+    return aips
+
+
+def aips_by_puid(storage_service_id, puid):
+    """Return overview of all AIPs containing original files with PUID
+
+    :param storage_service_id: Storage Service ID.
+    :param puid: PRONOM ID used to specify file format.
+
+    :returns: "report" dict containing following fields:
+        report["StorageName"]: Name of Storage Service queried
+        report["AIPs"]: List of result AIPs ordered desc by count
+    """
+    report = {}
+    storage_service = _get_storage_service(storage_service_id)
+    report[FIELD_STORAGE_NAME] = storage_service.name
+    report[FIELD_PUID] = puid
+    report[FIELD_AIPS] = []
+
+    results = _aips_by_puid_query(storage_service_id, puid)
+
+    for result in results:
+        aip_info = {}
+
+        aip_info["id"] = result.id
+        aip_info[FIELD_AIP_NAME] = result.name
+        aip_info[FIELD_UUID] = result.uuid
+        aip_info[FIELD_COUNT] = result.file_count
+        aip_info[FIELD_SIZE] = result.total_size
+
+        report[FIELD_AIPS].append(aip_info)
 
     return report

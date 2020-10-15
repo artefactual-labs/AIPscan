@@ -114,3 +114,43 @@ class LargestFileList(Resource):
             storage_service_id=storage_service_id, file_type=file_type, limit=limit
         )
         return file_data
+
+
+@api.route("/storage_service/<storage_service_id>/file-format")
+class AIPsByFormatList(Resource):
+    @api.doc(
+        "list_aips_by_format",
+        params={
+            "file_format": {
+                "description": "File format name (must be exact match)",
+                "in": "query",
+                "type": "str",
+            }
+        },
+    )
+    def get(self, storage_service_id):
+        """AIPs containing file format"""
+        file_format = request.args.get("file_format")
+        if not file_format:
+            return {"success": "False", "error": "Must specify a file format."}
+        aip_data = data.aips_by_file_format(
+            storage_service_id=storage_service_id, file_format=file_format
+        )
+        return aip_data
+
+
+@api.route("/storage_service/<storage_service_id>/puid")
+class AIPsByPUIDList(Resource):
+    @api.doc(
+        "list_aips_by_puid",
+        params={
+            "puid": {"description": "PRONOM ID (PUID)", "in": "query", "type": "str"}
+        },
+    )
+    def get(self, storage_service_id):
+        """AIPs containing PUID"""
+        puid = request.args.get("puid")
+        if not puid:
+            return {"success": "False", "error": "Must specify a PUID."}
+        aip_data = data.aips_by_puid(storage_service_id=storage_service_id, puid=puid)
+        return aip_data
