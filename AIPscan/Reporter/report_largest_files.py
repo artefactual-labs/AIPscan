@@ -16,7 +16,6 @@ def largest_files():
         limit = int(request.args.get("limit", 20))
     except ValueError:
         pass
-    # TODO: Make limit configurable - currently set to default of 20
     file_data = data.largest_files(
         storage_service_id=storage_service_id, file_type=file_type, limit=limit
     )
