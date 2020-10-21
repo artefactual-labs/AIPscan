@@ -6,6 +6,7 @@ Return 'unkempt' data from AIPscan so that it can be filtered, cut, and
 remixed as the caller desires. Data is 'unkempt' not raw. No data is
 raw. No data is without bias.
 """
+from datetime import datetime
 from distutils.util import strtobool
 
 from flask import request
@@ -125,7 +126,17 @@ class AIPsByFormatList(Resource):
                 "description": "File format name (must be exact match)",
                 "in": "query",
                 "type": "str",
-            }
+            },
+            "start_date": {
+                "description": "Start date (inclusive)",
+                "in": "query",
+                "type": "datetime",
+            },
+            "end_date": {
+                "description": "End date (inclusive)",
+                "in": "query",
+                "type": "datetime",
+            },
         },
     )
     def get(self, storage_service_id):
@@ -133,8 +144,26 @@ class AIPsByFormatList(Resource):
         file_format = request.args.get("file_format")
         if not file_format:
             return {"success": "False", "error": "Must specify a file format."}
+
+        start_date = request.args.get("start_date")
+        if start_date is not None:
+            try:
+                start_date = datetime.strptime(start_date, "%Y-%m-%d")
+            except ValueError:
+                return {"success": "False", "error": "Invalid start_date value."}
+
+        end_date = request.args.get("end_date")
+        if end_date is not None:
+            try:
+                end_date = datetime.strptime(end_date, "%Y-%m-%d")
+            except ValueError:
+                return {"success": "False", "error": "Invalid end_date value."}
+
         aip_data = data.aips_by_file_format(
-            storage_service_id=storage_service_id, file_format=file_format
+            storage_service_id=storage_service_id,
+            file_format=file_format,
+            start_date=start_date,
+            end_date=end_date,
         )
         return aip_data
 
@@ -144,7 +173,17 @@ class AIPsByPUIDList(Resource):
     @api.doc(
         "list_aips_by_puid",
         params={
-            "puid": {"description": "PRONOM ID (PUID)", "in": "query", "type": "str"}
+            "puid": {"description": "PRONOM ID (PUID)", "in": "query", "type": "str"},
+            "start_date": {
+                "description": "Start date (inclusive)",
+                "in": "query",
+                "type": "datetime",
+            },
+            "end_date": {
+                "description": "End date (inclusive)",
+                "in": "query",
+                "type": "datetime",
+            },
         },
     )
     def get(self, storage_service_id):
@@ -152,5 +191,26 @@ class AIPsByPUIDList(Resource):
         puid = request.args.get("puid")
         if not puid:
             return {"success": "False", "error": "Must specify a PUID."}
-        aip_data = data.aips_by_puid(storage_service_id=storage_service_id, puid=puid)
+
+        start_date = request.args.get("start_date")
+        if start_date is not None:
+            try:
+                start_date = datetime.strptime(start_date, "%Y-%m-%d")
+            except ValueError:
+                return {"success": "False", "error": "Invalid start_date value."}
+
+        end_date = request.args.get("end_date")
+        if end_date is not None:
+            try:
+                end_date = datetime.strptime(end_date, "%Y-%m-%d")
+            except ValueError:
+                return {"success": "False", "error": "Invalid end_date value."}
+
+        aip_data = data.aips_by_puid(
+            storage_service_id=storage_service_id,
+            puid=puid,
+            start_date=start_date,
+            end_date=end_date,
+        )
+
         return aip_data

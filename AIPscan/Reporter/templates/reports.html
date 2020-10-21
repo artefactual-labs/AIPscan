@@ -87,8 +87,8 @@
                 {% endfor %}
               </select>
             </td>
-            <td></td>
-            <td></td>
+            <td><input id="aipsByFormatStartDate" type="text" value="{{ start_date }}"></td>
+            <td><input id="aipsByFormatEndDate" type="text" value="{{ end_date }}"></td>
             <td><a href="#"><button type="button" id="aipsByFormat" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a></td>
         </tr>
 
@@ -101,8 +101,8 @@
                 {% endfor %}
              </select>
             </td>
-            <td></td>
-            <td></td>
+            <td><input id="aipsByPUIDStartDate" type="text" value="{{ start_date }}"></td>
+            <td><input id="aipsByPUIDEndDate" type="text" value="{{ end_date }}"></td>
             <td><a href="#"><button type="button" id="aipsByPUID" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a></td>
         </tr>
 
@@ -256,31 +256,87 @@
             );
             window.open(url);
         });
+        $('#aipsByFormatStartDate').datepicker({
+            dateFormat: 'yy-mm-dd',
+            onSelect: function(date) {
+                var endDate = $('#aipsByFormatEndDate').val();
+                if (endDate != '') {
+                    if (endDate < date) {
+                        alert('The start date must be before the end date');
+                    }
+                }
+            }
+        });
+        $('#aipsByFormatEndDate').datepicker({
+            dateFormat: 'yy-mm-dd',
+            onSelect: function(date) {
+                var startdate = $('#aipsByFormatStartDate').val();
+                if (startdate != '') {
+                    if (startdate > date) {
+                        alert('The start date must be before the end date');
+                    }
+                }
+            }
+        });
         $("#aipsByFormat").on("click", function() {
             const URL_AIP_CONTENTS = "/reporter/aips_by_file_format/";
             var storageServiceID = $('#ss').val();
             var fileFormat = $('#formatDropdownSelect').val();
+            var startDate = $('#aipsByFormatStartDate').val();
+            var endDate = $('#aipsByFormatEndDate').val();
             var url = (
               window.location.origin +
               URL_AIP_CONTENTS +
               '?amss_id=' +
               storageServiceID +
               '&file_format=' +
-              fileFormat
+              fileFormat +
+              '&start_date=' +
+              startDate +
+              '&end_date=' +
+              endDate
             );
             window.open(url);
+        });
+        $('#aipsByPUIDStartDate').datepicker({
+            dateFormat: 'yy-mm-dd',
+            onSelect: function(date) {
+                var endDate = $('#aipsByPUIDEndDate').val();
+                if (endDate != '') {
+                    if (endDate < date) {
+                        alert('The start date must be before the end date');
+                    }
+                }
+            }
+        });
+        $('#aipsByPUIDEndDate').datepicker({
+            dateFormat: 'yy-mm-dd',
+            onSelect: function(date) {
+                var startdate = $('#aipsByPUIDStartDate').val();
+                if (startdate != '') {
+                    if (startdate > date) {
+                        alert('The start date must be before the end date');
+                    }
+                }
+            }
         });
         $("#aipsByPUID").on("click", function() {
             const URL_AIP_CONTENTS = "/reporter/aips_by_puid/";
             var storageServiceID = $('#ss').val();
             var puid = $('#puidDropdownSelect').val();
+            var startDate = $('#aipsByPUIDStartDate').val();
+            var endDate = $('#aipsByPUIDEndDate').val();
             var url = (
               window.location.origin +
               URL_AIP_CONTENTS +
               '?amss_id=' +
               storageServiceID +
               '&puid=' +
-              puid
+              puid +
+              '&start_date=' +
+              startDate +
+              '&end_date=' +
+              endDate
             );
             window.open(url);
         });

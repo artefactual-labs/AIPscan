@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from AIPscan import db
 from AIPscan.models import AIP, File, FileType, StorageService
@@ -295,6 +295,23 @@ def largest_files(storage_service_id, file_type=None, limit=20):
     return report
 
 
+def prepare_datetimes_for_query(start_date, end_date):
+    """Prepare start_date and end_date parameters for use in queries."""
+    if start_date is None:
+        start_date = datetime.min
+
+    if end_date is None:
+        end_date = datetime.max
+    else:
+        # Since our date parameters will come in as dates but AIP
+        # timestamps are more granular, add one day to end_date and
+        # compare using less than (not less than or equal to) in the
+        # query to ensure date is inclusive.
+        end_date = end_date + timedelta(days=1)
+
+    return start_date, end_date
+
+
 def _aips_by_format_query(storage_service_id, file_format):
     """Fetch information on all AIPs with given format from database
 
@@ -323,16 +340,22 @@ def _aips_by_format_query(storage_service_id, file_format):
     return aips
 
 
-def aips_by_file_format(storage_service_id, file_format):
+def aips_by_file_format(
+    storage_service_id, file_format, start_date=None, end_date=None
+):
     """Return overview of all AIPs containing original files in format
 
     :param storage_service_id: Storage Service ID (int)
     :param file_format: File format name (str)
+    :start_date: Optional inclusive start date (datetime object)
+    :end_date: Optional inclusive end date (datetime object)
 
     :returns: "report" dict containing following fields:
         report["StorageName"]: Name of Storage Service queried
         report["AIPs"]: List of result AIPs ordered desc by count
     """
+    start_date, end_date = prepare_datetimes_for_query(start_date, end_date)
+
     report = {}
     storage_service = _get_storage_service(storage_service_id)
     report[FIELD_STORAGE_NAME] = storage_service.name
@@ -355,16 +378,20 @@ def aips_by_file_format(storage_service_id, file_format):
     return report
 
 
-def _aips_by_puid_query(storage_service_id, puid):
+def _aips_by_puid_query(storage_service_id, puid, start_date=None, end_date=None):
     """Fetch information on all AIPs with given PUID from database
 
     This is separated into its own helper function to aid in testing.
 
     :param storage_service_id: Storage Service ID (int)
     :param puid: PRONOM ID (str)
+    :start_date: Optional inclusive start date (datetime object)
+    :end_date: Optional inclusive end date (datetime object)
 
     :returns: SQLAlchemy query results
     """
+    start_date, end_date = prepare_datetimes_for_query(start_date, end_date)
+
     aips = (
         db.session.query(
             AIP.id.label("id"),
@@ -377,17 +404,22 @@ def _aips_by_puid_query(storage_service_id, puid):
         .join(StorageService)
         .filter(StorageService.id == storage_service_id)
         .filter(File.puid == puid)
+        .filter(AIP.create_date >= start_date)
+        .filter(AIP.create_date < end_date)
         .group_by(AIP.id)
         .order_by(db.func.count(File.id).desc(), db.func.sum(File.size).desc())
     )
+
     return aips
 
 
-def aips_by_puid(storage_service_id, puid):
+def aips_by_puid(storage_service_id, puid, start_date=None, end_date=None):
     """Return overview of all AIPs containing original files with PUID
 
     :param storage_service_id: Storage Service ID.
     :param puid: PRONOM ID used to specify file format.
+    :start_date: Optional inclusive start date (datetime object)
+    :end_date: Optional inclusive end date (datetime object)
 
     :returns: "report" dict containing following fields:
         report["StorageName"]: Name of Storage Service queried
@@ -399,7 +431,7 @@ def aips_by_puid(storage_service_id, puid):
     report[FIELD_PUID] = puid
     report[FIELD_AIPS] = []
 
-    results = _aips_by_puid_query(storage_service_id, puid)
+    results = _aips_by_puid_query(storage_service_id, puid, start_date, end_date)
 
     for result in results:
         aip_info = {}

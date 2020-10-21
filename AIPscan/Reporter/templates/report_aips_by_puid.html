@@ -2,7 +2,7 @@
 
 {% block content %}
 
-  <div class="alert alert-secondary" style="height: 125px;">
+  <div class="alert alert-secondary">
     <a class="noprint" onClick="window.print();return false">
     	<button type="button" class="btn btn-info" style="float:right;">Print</button>
     </a>
@@ -14,6 +14,14 @@
     {% if file_format %}
       <br>
       <strong>File format/version:</strong> {{ file_format }}
+    {% endif %}
+    {% if start_date %}
+      <br>
+      <strong>Start date:</strong> {{ start_date.strftime('%Y-%m-%d') }}
+    {% endif %}
+    {% if end_date %}
+      <br>
+      <strong>End date:</strong> {{ end_date.strftime('%Y-%m-%d') }}
     {% endif %}
   </div>
 
