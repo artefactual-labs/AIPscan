@@ -9,6 +9,7 @@ from AIPscan.models import AIP, File, FileType, StorageService
 FIELD_AIP = "AIP"
 FIELD_AIP_ID = "AIPID"
 FIELD_AIP_NAME = "AIPName"
+FIELD_AIP_NAME_WITH_UUID = "AIPNameWithUUID"
 FIELD_AIP_SIZE = "AIPSize"
 FIELD_AIP_UUID = "AIPUUID"
 FIELD_AIPS = "AIPs"
@@ -368,6 +369,7 @@ def aips_by_file_format(
         aip_info = {}
 
         aip_info["id"] = result.id
+        aip_info[FIELD_AIP_NAME_WITH_UUID] = "{}-{}".format(result.name, result.uuid)
         aip_info[FIELD_AIP_NAME] = result.name
         aip_info[FIELD_UUID] = result.uuid
         aip_info[FIELD_COUNT] = result.file_count
