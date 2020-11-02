@@ -55,7 +55,7 @@ and AIPScan will automatically be able to connect to the queue at `:5672`.
 ### Celery
 
 * In another terminal window, from the AIPscan root directory, start a Celery
-worker: `celery -A AIPscan.Aggregator.tasks worker --loglevel=info`
+worker: `celery worker -A AIPscan.worker.celery --loglevel=info`
 
 ## Usage
 

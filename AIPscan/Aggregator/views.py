@@ -1,8 +1,17 @@
 # -*- coding: utf-8 -*-
 
-from flask import Blueprint, render_template, redirect, request, flash, url_for, jsonify
-from AIPscan import db, app, celery
+from datetime import datetime
+import os
+import shutil
 
+from celery.result import AsyncResult
+from flask import Blueprint, render_template, redirect, request, flash, url_for, jsonify
+
+from AIPscan import db
+from AIPscan.Aggregator.task_helpers import get_packages_directory
+from AIPscan.Aggregator.forms import StorageServiceForm
+from AIPscan.Aggregator import tasks
+from AIPscan.extensions import celery
 from AIPscan.models import (
     FetchJob,
     StorageService,
@@ -10,15 +19,6 @@ from AIPscan.models import (
     package_tasks,
     get_mets_tasks,
 )
-
-from AIPscan.Aggregator.task_helpers import get_packages_directory
-
-from AIPscan.Aggregator.forms import StorageServiceForm
-from AIPscan.Aggregator import tasks
-import os
-import shutil
-from datetime import datetime
-from celery.result import AsyncResult
 
 aggregator = Blueprint("aggregator", __name__, template_folder="templates")
 
@@ -39,7 +39,6 @@ def _format_date(date_string):
     return formatted_date.strftime(DATE_FORMAT_PARTIAL)
 
 
-@app.route("/")
 @aggregator.route("/", methods=["GET"])
 def ss_default():
     # load the default storage service
