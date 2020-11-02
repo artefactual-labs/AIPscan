@@ -6,8 +6,8 @@ import requests
 
 from celery.utils.log import get_task_logger
 
-from AIPscan import celery
 from AIPscan import db
+from AIPscan.extensions import celery
 from AIPscan.models import (
     FetchJob,
     # Custom celery Models.
@@ -15,7 +15,7 @@ from AIPscan.models import (
 )
 
 from AIPscan.Aggregator.celery_helpers import write_celery_update
-from AIPscan.Aggregator.database_helpers import create_aip_object, process_aip_data
+from AIPscan.Aggregator import database_helpers
 
 from AIPscan.Aggregator.mets_parse_helpers import (
     _download_mets,
@@ -296,7 +296,7 @@ def get_mets(
         # log and act upon.
         original_name = package_uuid
 
-    aip = create_aip_object(
+    aip = database_helpers.create_aip_object(
         package_uuid=package_uuid,
         transfer_name=original_name,
         create_date=mets.createdate,
@@ -304,4 +304,4 @@ def get_mets(
         fetch_job_id=fetch_job_id,
     )
 
-    process_aip_data(aip, mets)
+    database_helpers.process_aip_data(aip, mets)

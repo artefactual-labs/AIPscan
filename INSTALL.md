@@ -43,8 +43,8 @@ After=network.target
 [Service]
 User=archivematica
 Group=archivematica
-WorkingDirectory=/usr/share/archivematica//AIPscan
-ExecStart=/usr/share/archivematica/virtualenvs/AIPscan/bin/gunicorn --workers 3 --bind localhost:4573 wsgi:app
+WorkingDirectory=/usr/share/archivematica/AIPscan
+ExecStart=/usr/share/archivematica/virtualenvs/AIPscan/bin/gunicorn --workers 3 --bind localhost:4573 "AIPscan:create_app()"
 ExecReload=/bin/kill -s HUP $MAINPID
 ExecStop=/bin/kill -s TERM $MAINPID
 PrivateTmp=true
@@ -165,7 +165,7 @@ After=network.target
 User=archivematica
 
 WorkingDirectory=/usr/share/archivematica/AIPscan
-ExecStart=/usr/share/archivematica/virtualenvs/AIPscan/bin/celery -A AIPscan.Aggregator.tasks worker
+ExecStart=/usr/share/archivematica/virtualenvs/AIPscan/bin/celery -A AIPscan.worker.celery worker
 ExecReload=/bin/kill -s HUP $MAINPID
 ExecStop=/bin/kill -s TERM $MAINPID
 PrivateTmp=true
@@ -198,9 +198,9 @@ sudo systemctl status celery
  Main PID: 26842 (celery)
     Tasks: 3 (limit: 4915)
    CGroup: /system.slice/celery.service
-           ├─26842 /usr/share/archivematica/virtualenvs/AIPscan/bin/python3 /usr/share/archivematica/virtualenvs/AIPscan/bin/celery -A AIPscan.Aggregator.tasks worker
-           ├─26860 /usr/share/archivematica/virtualenvs/AIPscan/bin/python3 /usr/share/archivematica/virtualenvs/AIPscan/bin/celery -A AIPscan.Aggregator.tasks worker
-           └─26861 /usr/share/archivematica/virtualenvs/AIPscan/bin/python3 /usr/share/archivematica/virtualenvs/AIPscan/bin/celery -A AIPscan.Aggregator.tasks worker
+           ├─26842 /usr/share/archivematica/virtualenvs/AIPscan/bin/python3 /usr/share/archivematica/virtualenvs/AIPscan/bin/celery -A AIPscan.worker.celery worker
+           ├─26860 /usr/share/archivematica/virtualenvs/AIPscan/bin/python3 /usr/share/archivematica/virtualenvs/AIPscan/bin/celery -A AIPscan.worker.celery worker
+           └─26861 /usr/share/archivematica/virtualenvs/AIPscan/bin/python3 /usr/share/archivematica/virtualenvs/AIPscan/bin/celery -A AIPscan.worker.celery worker
 ```
 
 ### Conclusion

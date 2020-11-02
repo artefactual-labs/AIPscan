@@ -17,9 +17,9 @@ Below are the developer quickstart instructions. See [INSTALL](INSTALL.md) for p
 * Clone files and cd to directory:  `git clone https://github.com/artefactual-labs/AIPscan && cd AIPscan`
 * Set up virtualenv in the project root directory: `virtualenv venv`
 * Activate virtualenv: `source venv/bin/activate`
-* Install requirements (this includes Flask & Celery): `pip install -r requirements/base.txt`
-* Create AIPscan and Celery databases: `python create_aipscan_db.py`
-* In a terminal window, start the Flask dev server: `python run.py`
+* Install requirements (this includes Flask & Celery): `pip install -r requirements.txt`
+* Enable DEBUG mode if desired for development: `export FLASK_CONFIG=dev`
+* In a terminal window, start the Flask server: `python run.py`
 
 ### RabbitMQ
 
@@ -31,7 +31,7 @@ needed. There are two options to running RabbitMQ at present:
 * With docker installed, run the following command:
 
   ```bash
-  sudo docker run --rm \
+  docker run --rm \
     -it \
     --hostname my-rabbit \
     -p 15672:15672 \
@@ -57,7 +57,7 @@ and AIPScan will automatically be able to connect to the queue at `:5672`.
 ### Celery
 
 * In another terminal window, from the AIPscan root directory, start a Celery
-worker: `celery -A AIPscan.Aggregator.tasks worker --loglevel=info`
+worker: `celery worker -A AIPscan.worker.celery --loglevel=info`
 
 ## Usage
 

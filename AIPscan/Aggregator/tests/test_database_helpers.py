@@ -1,14 +1,36 @@
 # -*- coding: utf-8 -*-
-
 import os
+import uuid
 
 import metsrw
 import pytest
 
 from AIPscan.Aggregator import database_helpers
-from AIPscan.models import Agent
+from AIPscan.models import Agent, AIP
 
 FIXTURES_DIR = "fixtures"
+
+
+def test_create_aip(app_instance):
+    """Test AIP creation."""
+    PACKAGE_UUID = str(uuid.uuid4())
+    TRANSFER_NAME = "some name"
+    STORAGE_SERVICE_ID = 1
+    FETCH_JOB_ID = 1
+
+    database_helpers.create_aip_object(
+        package_uuid=PACKAGE_UUID,
+        transfer_name=TRANSFER_NAME,
+        create_date="2020-11-02",
+        storage_service_id=STORAGE_SERVICE_ID,
+        fetch_job_id=FETCH_JOB_ID,
+    )
+
+    aip = AIP.query.filter_by(uuid=PACKAGE_UUID).first()
+    assert aip is not None
+    assert aip.transfer_name == TRANSFER_NAME
+    assert aip.storage_service_id == STORAGE_SERVICE_ID
+    assert aip.fetch_job_id == FETCH_JOB_ID
 
 
 @pytest.mark.parametrize(
@@ -19,7 +41,9 @@ FIXTURES_DIR = "fixtures"
         (os.path.join("images_mets", "images.xml"), 76, 3),
     ],
 )
-def test_event_creation(mocker, fixture_path, event_count, agent_link_multiplier):
+def test_event_creation(
+    app_instance, mocker, fixture_path, event_count, agent_link_multiplier
+):
     """Make sure that we're seeing all of the events associated with
     an AIP and that they are potentially written to the database okay.
     Make sure too that the event_agent_relationship is established.
@@ -56,7 +80,7 @@ def test_event_creation(mocker, fixture_path, event_count, agent_link_multiplier
         (os.path.join("images_mets", "images.xml"), 3),
     ],
 )
-def test_collect_agents(fixture_path, number_of_unique_agents):
+def test_collect_agents(app_instance, fixture_path, number_of_unique_agents):
     """Make sure that we retrieve only unique Agents from the METS to
     then add to the database. Agents are "repeated" per PREMIS:OBJECT
     in METS.

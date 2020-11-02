@@ -75,7 +75,7 @@ TEST_AIP = AIP(
 @pytest.mark.parametrize(
     "file_data, file_count", [([], 0), (TEST_FILES, 3), (TEST_FILES[:2], 2)]
 )
-def test_largest_files(mocker, file_data, file_count):
+def test_largest_files(app_instance, mocker, file_data, file_count):
     """Test that return value conforms to expected structure.
     """
     mock_query = mocker.patch("AIPscan.Data.data._largest_files_query")
@@ -101,7 +101,9 @@ def test_largest_files(mocker, file_data, file_count):
         (TEST_FILES[2], True, False),
     ],
 )
-def test_largest_files_elements(mocker, test_file, has_format_version, has_puid):
+def test_largest_files_elements(
+    app_instance, mocker, test_file, has_format_version, has_puid
+):
     """Test that returned file data matches expected values.
     """
     mock_query = mocker.patch("AIPscan.Data.data._largest_files_query")
