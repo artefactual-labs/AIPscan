@@ -10,12 +10,14 @@ from AIPscan.Home.views import home
 
 from AIPscan import db
 from AIPscan.celery import configure_celery
+from config import CONFIGS
 
 
-def create_app():
+def create_app(config_name="default"):
     """Flask app factory, returns app instance."""
     app = Flask(__name__)
-    app.config.from_object("config")
+
+    app.config.from_object(CONFIGS[config_name])
 
     app.register_blueprint(aggregator, url_prefix="/aggregator")
     app.register_blueprint(reporter, url_prefix="/reporter")
