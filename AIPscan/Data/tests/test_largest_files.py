@@ -78,8 +78,6 @@ TEST_AIP = AIP(
 def test_largest_files(app_instance, mocker, file_data, file_count):
     """Test that return value conforms to expected structure.
     """
-    app_instance.app_context().push()
-
     mock_query = mocker.patch("AIPscan.Data.data._largest_files_query")
     mock_query.return_value = file_data
 
@@ -108,8 +106,6 @@ def test_largest_files_elements(
 ):
     """Test that returned file data matches expected values.
     """
-    app_instance.app_context().push()
-
     mock_query = mocker.patch("AIPscan.Data.data._largest_files_query")
     mock_query.return_value = [test_file]
 

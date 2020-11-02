@@ -13,8 +13,6 @@ FIXTURES_DIR = "fixtures"
 
 def test_create_aip(app_instance):
     """Test AIP creation."""
-    app_instance.app_context().push()
-
     PACKAGE_UUID = str(uuid.uuid4())
     TRANSFER_NAME = "some name"
     STORAGE_SERVICE_ID = 1
@@ -50,8 +48,6 @@ def test_event_creation(
     an AIP and that they are potentially written to the database okay.
     Make sure too that the event_agent_relationship is established.
     """
-    app_instance.app_context().push()
-
     script_dir = os.path.dirname(os.path.realpath(__file__))
     mets_file = os.path.join(script_dir, FIXTURES_DIR, fixture_path)
     mets = metsrw.METSDocument.fromfile(mets_file)
@@ -89,8 +85,6 @@ def test_collect_agents(app_instance, fixture_path, number_of_unique_agents):
     then add to the database. Agents are "repeated" per PREMIS:OBJECT
     in METS.
     """
-    app_instance.app_context().push()
-
     script_dir = os.path.dirname(os.path.realpath(__file__))
     mets_file = os.path.join(script_dir, FIXTURES_DIR, fixture_path)
     mets = metsrw.METSDocument.fromfile(mets_file)

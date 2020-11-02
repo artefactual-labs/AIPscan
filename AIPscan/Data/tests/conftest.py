@@ -17,6 +17,9 @@ def app_instance():
     state to the test database from a fixture as needed for tests.
     """
     app = create_app("test")
-    with app.app_context():
-        db.create_all()
-    return app
+    context = app.app_context()
+    context.push()
+    db.create_all()
+    yield app
+    db.drop_all()
+    context.pop()
