@@ -6,7 +6,6 @@ import requests
 
 from celery.utils.log import get_task_logger
 
-# from AIPscan.extensions import celery
 from AIPscan import db
 from AIPscan.extensions import celery
 from AIPscan.models import (
