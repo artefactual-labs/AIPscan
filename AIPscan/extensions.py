@@ -1,11 +1,17 @@
 # -*- coding: utf-8 -*-
 
+"""This module contains code related to Flask extensions.
+
+The Celery instance that is initialized here is lacking application
+context, which will be provided via AIPscan.celery's configure_celery
+function.
+"""
+
 from celery import Celery
 
 from celery_config import CELERY_RESULT_BACKEND, CELERY_BROKER_URL
 
-# Celery instance that will be initialized at import time and then
-# further configured via AIPscan.celery's configure_celery method.
+
 celery = Celery(
     "tasks",
     backend=CELERY_RESULT_BACKEND,
