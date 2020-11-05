@@ -10,7 +10,7 @@ Copyright Artefactual Systems Inc (2020).
 
 ## Installation
 
-Below are the developer quickstart instructions. [Production installation](#production-installation) instructions are provided at the bottom of this page.
+Below are the developer quickstart instructions. [Production installation](#Production-installation) instructions are provided at the bottom of this page.
 
 ### AIPScan Flask server
 
@@ -89,7 +89,7 @@ worker: `celery -A AIPscan.Aggregator.tasks worker --loglevel=info`
 
 ![screencap4](screencaps/aipscan_scatterplot_report.png)
 
-##Production intallation
+## Production intallation
 
 AIPscan is a Python [Flask][fla-1] application. The Flask Werkzeug development server is not recommended for use in production. Instead, a WSGI and HTTP proxy server should be used to serve the AIPscan application. We recommend [Gunicorn][gun-1] and [Nginx][ngx-1] respectively. The following instructions are for production deployment to an Ubuntu/Debian server. Other operating systems and servers have not been tested.
 
@@ -103,7 +103,7 @@ AIPscan is a Python [Flask][fla-1] application. The Flask Werkzeug development s
 
 ### RabbitMQ
 
-* Install the RabbitMQ package: [Download Link][rabbit-MQ3]
+* [Install][rabbit-MQ3] the RabbitMQ package:
 
   ```bash
   sudo apt-get update -y
@@ -181,7 +181,7 @@ sudo nano /etc/nginx/sites-available/aipscan
 
 * Add the following content to this file and save.
 
-```bash
+```bashhttps://github.com/artefactual-labs/AIPscan/issues/72
 server {
     listen 80;
     server_name your.aipscan.server.ip.here;
@@ -279,7 +279,7 @@ sudo systemctl status celery
            └─26861 /home/artefactual/AIPscan/venv/bin/python3 /home/artefactual/AIPscan/venv/bin/celery -A AIPscan.Aggregator.tasks worker
 ```
 
-###Conclusion
+### Conclusion
 If all these steps were successful, you should now have a robust, production ready AIPscan service running at `your.aipscan.server.ip`.
 
 [am-1]: https://archivematica.org
