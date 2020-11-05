@@ -10,7 +10,8 @@ Copyright Artefactual Systems Inc (2020).
 
 ## Installation
 
-Below are the developer quickstart instructions. [Production installation](#Production-installation) instructions are provided at the bottom of this page.
+Below are the developer quickstart instructions. [Production installation](#Production-installation) 
+instructions are provided at the bottom of this page.
 
 ### AIPScan Flask server
 
@@ -91,7 +92,12 @@ worker: `celery -A AIPscan.Aggregator.tasks worker --loglevel=info`
 
 ## Production intallation
 
-AIPscan is a Python [Flask][fla-1] application. The Flask Werkzeug development server is not recommended for use in production. Instead, a WSGI and HTTP proxy server should be used to serve the AIPscan application. We recommend [Gunicorn][gun-1] and [Nginx][ngx-1] respectively. The following instructions are for production deployment to an Ubuntu/Debian server. Other operating systems and servers have not been tested.
+AIPscan is a Python [Flask][fla-1] application. The Flask Werkzeug development
+server is not recommended for use in production. Instead, a WSGI and HTTP proxy
+server should be used to serve the AIPscan application. We recommend
+[Gunicorn][gun-1] and [Nginx][ngx-1] respectively. The following instructions
+are for production deployment to an Ubuntu/Debian server. Other operating
+systems and servers have not been tested.
 
 ### AIPScan Flask server
 
@@ -118,7 +124,9 @@ AIPscan is a Python [Flask][fla-1] application. The Flask Werkzeug development s
 sudo nano /etc/systemd/system/aipscan.service
 ```
 
-* Add and save the following content to this file. Replace the `home/artefactual/AIPscan` paths to match the directory where you have installed AIPscan (e.g. `/home/ubuntu/AIPscan`).
+* Add and save the following content to this file. Replace the
+`home/artefactual/AIPscan` paths to match the directory where you have
+installed AIPscan (e.g. `/home/ubuntu/AIPscan`).
 
 ```bash
 [Unit]
@@ -173,7 +181,9 @@ sudo apt update
 sudo apt install nginx
 ```
 
-* Configure a Nginx server block for the AIPscan application. Again, replace the `/home/artefactual/AIPscan/aipscan.sock` path with the path to your AIPscan root directory (e.g. `/home/ubuntu/AIPscan/aipscan.sock`).
+* Configure a Nginx server block for the AIPscan application. Again, replace
+the `/home/artefactual/AIPscan/aipscan.sock` path with the path to your
+AIPscan root directory (e.g. `/home/ubuntu/AIPscan/aipscan.sock`).
 
 ```bash
 sudo nano /etc/nginx/sites-available/aipscan
@@ -220,7 +230,8 @@ nginx: configuration file /etc/nginx/nginx.conf test is successful
 sudo ufw status
 ```
 
-* Also, be sure to restart Nginx anytime you make any changes to the server block:
+* Also, be sure to restart Nginx anytime you make any changes to the server
+block:
 
 ```bash
 sudo systemctl restart nginx
@@ -228,13 +239,16 @@ sudo systemctl restart nginx
 
 ### Celery service
 
-* AIPscan uses Celery workers, coordinated by RabbitMQ to run background jobs. To run Celery as a persistent Ubuntu service, create the following file:
+* AIPscan uses Celery workers, coordinated by RabbitMQ to run background jobs.
+To run Celery as a persistent Ubuntu service, create the following file:
 
 ```bash
 /etc/systemd/system/celery.service
 ```
 
-* Add and save the following content, again replacing the `/home/artefactual/AIPscan` path to match the root directory of your AIPscan installation (e.g. `/home/ubuntu/AIPscan/`)
+* Add and save the following content, again replacing the 
+`/home/artefactual/AIPscan` path to match the root directory of your AIPscan
+installation (e.g. `/home/ubuntu/AIPscan/`)
 
 ```bash
 [Unit]
@@ -280,7 +294,8 @@ sudo systemctl status celery
 ```
 
 ### Conclusion
-If all these steps were successful, you should now have a robust, production ready AIPscan service running at `your.aipscan.server.ip`.
+If all these steps were successful, you should now have a robust, production
+ready AIPscan service running at `your.aipscan.server.ip`.
 
 [am-1]: https://archivematica.org
 [rabbit-MQ1]: https://www.rabbitmq.com/download.html
