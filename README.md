@@ -282,7 +282,6 @@ sudo systemctl status celery
 ###Conclusion
 If all these steps were successful, you should now have a robust, production ready AIPscan service running at `your.aipscan.server.ip`.
 
-
 [am-1]: https://archivematica.org
 [rabbit-MQ1]: https://www.rabbitmq.com/download.html
 [rabbit-MQ2]: http://localhost:15672/
