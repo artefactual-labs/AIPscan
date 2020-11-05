@@ -19,13 +19,15 @@ def create_app(config_name="default"):
 
     app.config.from_object(CONFIGS[config_name])
 
-    app.register_blueprint(aggregator, url_prefix="/aggregator")
-    app.register_blueprint(reporter, url_prefix="/reporter")
-    app.register_blueprint(user, url_prefix="/user")
-    app.register_blueprint(api)
-    app.register_blueprint(home)
+    with app.app_context():
 
-    db.init_app(app)
-    configure_celery(app)
+        app.register_blueprint(aggregator, url_prefix="/aggregator")
+        app.register_blueprint(reporter, url_prefix="/reporter")
+        app.register_blueprint(user, url_prefix="/user")
+        app.register_blueprint(api)
+        app.register_blueprint(home)
 
-    return app
+        db.init_app(app)
+        configure_celery(app)
+
+        return app
