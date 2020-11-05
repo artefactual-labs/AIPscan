@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+"""This module defines shared AIPscan pytest fixtures."""
+
 import pytest
 
 from AIPscan import db
@@ -17,9 +19,7 @@ def app_instance():
     state to the test database from a fixture as needed for tests.
     """
     app = create_app("test")
-    context = app.app_context()
-    context.push()
-    db.create_all()
-    yield app
-    db.drop_all()
-    context.pop()
+    with app.app_context():
+        db.create_all()
+        yield app
+        db.drop_all()
