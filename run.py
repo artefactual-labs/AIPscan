@@ -1,6 +1,6 @@
 import os
 
-from AIPscan.application import create_app
+from AIPscan import create_app
 
 
 if __name__ == "__main__":

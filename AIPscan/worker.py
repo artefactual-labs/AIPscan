@@ -1,4 +1,6 @@
-from AIPscan.application import create_app
+# -*- coding: utf-8 -*-
+
+from AIPscan import create_app
 from AIPscan.celery import configure_celery
 
 app = create_app()
