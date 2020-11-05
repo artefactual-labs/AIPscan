@@ -16,7 +16,6 @@ Copyright Artefactual Systems Inc (2020).
 * Set up virtualenv in the project root directory: `virtualenv venv`
 * Activate virtualenv: `source venv/bin/activate`
 * Install requirements (this includes Flask & Celery): `pip install -r requirements.txt`
-* Create database: `python create_aipscan_db.py`
 * Enable DEBUG mode if desired for development: `export FLASK_CONFIG=dev`
 * In a terminal window, start the Flask server: `python run.py`
 

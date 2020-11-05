@@ -30,4 +30,6 @@ def create_app(config_name="default"):
         db.init_app(app)
         configure_celery(app)
 
+        db.create_all()
+
         return app
