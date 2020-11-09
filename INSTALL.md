@@ -99,7 +99,7 @@ sudo nano /etc/nginx/sites-available/aipscan
 
 * Add the following content to this file and save.
 
-```bashhttps://github.com/artefactual-labs/AIPscan/issues/72
+```bash
 server {
     listen 80;
     server_name your.aipscan.server.ip.here;
@@ -148,7 +148,7 @@ sudo systemctl restart nginx
 ### Celery service
 
 * AIPscan uses Celery workers, coordinated by RabbitMQ to run background jobs.
-To run Celery as a persistent Ubuntu service, create the following file:
+To run Celery as a persistent service, create the following file:
 
 ```bash
 /etc/systemd/system/celery.service
