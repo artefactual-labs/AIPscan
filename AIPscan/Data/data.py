@@ -247,7 +247,7 @@ def largest_files(storage_service_id, file_type=None, limit=20):
 
     :param storage_service_id: Storage Service ID.
     :param file_type: Optional filter for type of file to return
-    (acceptable values are "original" or "preservation").
+        (acceptable values are "original" or "preservation").
     :param limit: Upper limit of number of results to return.
 
     :returns: "report" dict containing following fields:
