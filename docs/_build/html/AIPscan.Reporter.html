@@ -1,0 +1,258 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AIPscan.Reporter package &#8212; AIPscan 0.x documentation</title>
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="AIPscan.User package" href="AIPscan.User.html" />
+    <link rel="prev" title="AIPscan.Home package" href="AIPscan.Home.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">AIPscan</a></h1>
+
+
+
+<p class="blurb">Reporting for Archivematica</p>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="overview.html">Overview</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">AIPscan</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="AIPscan.html">AIPscan package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="AIPscan.html#subpackages">Subpackages</a></li>
+<li class="toctree-l3"><a class="reference internal" href="AIPscan.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="AIPscan.html#module-AIPscan.celery">AIPscan.celery module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="AIPscan.html#module-AIPscan.conftest">AIPscan.conftest module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="AIPscan.html#module-AIPscan.extensions">AIPscan.extensions module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="AIPscan.html#module-AIPscan.helpers">AIPscan.helpers module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="AIPscan.html#module-AIPscan.models">AIPscan.models module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="AIPscan.html#module-AIPscan.worker">AIPscan.worker module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="AIPscan.html#module-AIPscan">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.API.html">AIPscan.API package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.Data.html">AIPscan.Data package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.Aggregator.html">AIPscan.Aggregator package</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">AIPscan.Reporter package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-AIPscan.Reporter.helpers">AIPscan.Reporter.helpers module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-AIPscan.Reporter.report_aip_contents">AIPscan.Reporter.report_aip_contents module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-AIPscan.Reporter.report_formats_count">AIPscan.Reporter.report_formats_count module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-AIPscan.Reporter.report_largest_files">AIPscan.Reporter.report_largest_files module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-AIPscan.Reporter.report_originals_with_derivatives">AIPscan.Reporter.report_originals_with_derivatives module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-AIPscan.Reporter.views">AIPscan.Reporter.views module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-AIPscan.Reporter">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">AIPscan</a><ul>
+  <li><a href="AIPscan.html">AIPscan package</a><ul>
+      <li>Previous: <a href="AIPscan.Home.html" title="previous chapter">AIPscan.Home package</a></li>
+      <li>Next: <a href="AIPscan.User.html" title="next chapter">AIPscan.User package</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="aipscan-reporter-package">
+<h1>AIPscan.Reporter package<a class="headerlink" href="#aipscan-reporter-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-AIPscan.Reporter.helpers">
+<span id="aipscan-reporter-helpers-module"></span><h2>AIPscan.Reporter.helpers module<a class="headerlink" href="#module-AIPscan.Reporter.helpers" title="Permalink to this headline">¶</a></h2>
+<p>Code shared across reporting modules but not outside of reporting.</p>
+<dl class="py function">
+<dt id="AIPscan.Reporter.helpers.translate_headers">
+<code class="sig-prename descclassname">AIPscan.Reporter.helpers.</code><code class="sig-name descname">translate_headers</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">headers</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/AIPscan/Reporter/helpers.html#translate_headers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AIPscan.Reporter.helpers.translate_headers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Translate headers from something machine readable to something
+more user friendly and translatable.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-AIPscan.Reporter.report_aip_contents">
+<span id="aipscan-reporter-report-aip-contents-module"></span><h2>AIPscan.Reporter.report_aip_contents module<a class="headerlink" href="#module-AIPscan.Reporter.report_aip_contents" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="AIPscan.Reporter.report_aip_contents.aip_contents">
+<code class="sig-prename descclassname">AIPscan.Reporter.report_aip_contents.</code><code class="sig-name descname">aip_contents</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/AIPscan/Reporter/report_aip_contents.html#aip_contents"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AIPscan.Reporter.report_aip_contents.aip_contents" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return AIP contents organized by format.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-AIPscan.Reporter.report_formats_count">
+<span id="aipscan-reporter-report-formats-count-module"></span><h2>AIPscan.Reporter.report_formats_count module<a class="headerlink" href="#module-AIPscan.Reporter.report_formats_count" title="Permalink to this headline">¶</a></h2>
+<p>Report formats count consists of the tabular report, plot, and
+chart which describe the file formats present across the AIPs in a
+storage service with AIPs filtered by date range.</p>
+<dl class="py function">
+<dt id="AIPscan.Reporter.report_formats_count.chart_formats_count">
+<code class="sig-prename descclassname">AIPscan.Reporter.report_formats_count.</code><code class="sig-name descname">chart_formats_count</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/AIPscan/Reporter/report_formats_count.html#chart_formats_count"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AIPscan.Reporter.report_formats_count.chart_formats_count" title="Permalink to this definition">¶</a></dt>
+<dd><p>Report (pie chart) on all file formats and their counts and size
+on disk across all AIPs in the storage service.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="AIPscan.Reporter.report_formats_count.plot_formats_count">
+<code class="sig-prename descclassname">AIPscan.Reporter.report_formats_count.</code><code class="sig-name descname">plot_formats_count</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/AIPscan/Reporter/report_formats_count.html#plot_formats_count"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AIPscan.Reporter.report_formats_count.plot_formats_count" title="Permalink to this definition">¶</a></dt>
+<dd><p>Report (scatter) on all file formats and their counts and size on
+disk across all AIPs in the storage service.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="AIPscan.Reporter.report_formats_count.report_formats_count">
+<code class="sig-prename descclassname">AIPscan.Reporter.report_formats_count.</code><code class="sig-name descname">report_formats_count</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/AIPscan/Reporter/report_formats_count.html#report_formats_count"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AIPscan.Reporter.report_formats_count.report_formats_count" title="Permalink to this definition">¶</a></dt>
+<dd><p>Report (tabular) on all file formats and their counts and size on
+disk across all AIPs in the storage service.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-AIPscan.Reporter.report_largest_files">
+<span id="aipscan-reporter-report-largest-files-module"></span><h2>AIPscan.Reporter.report_largest_files module<a class="headerlink" href="#module-AIPscan.Reporter.report_largest_files" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="AIPscan.Reporter.report_largest_files.largest_files">
+<code class="sig-prename descclassname">AIPscan.Reporter.report_largest_files.</code><code class="sig-name descname">largest_files</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/AIPscan/Reporter/report_largest_files.html#largest_files"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AIPscan.Reporter.report_largest_files.largest_files" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return largest files.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-AIPscan.Reporter.report_originals_with_derivatives">
+<span id="aipscan-reporter-report-originals-with-derivatives-module"></span><h2>AIPscan.Reporter.report_originals_with_derivatives module<a class="headerlink" href="#module-AIPscan.Reporter.report_originals_with_derivatives" title="Permalink to this headline">¶</a></h2>
+<p>Report on original copies that have a preservation derivative and
+the different file formats associated with both.</p>
+<dl class="py function">
+<dt id="AIPscan.Reporter.report_originals_with_derivatives.original_derivatives">
+<code class="sig-prename descclassname">AIPscan.Reporter.report_originals_with_derivatives.</code><code class="sig-name descname">original_derivatives</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/AIPscan/Reporter/report_originals_with_derivatives.html#original_derivatives"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AIPscan.Reporter.report_originals_with_derivatives.original_derivatives" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a mapping between original files and derivatives if they
+exist.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-AIPscan.Reporter.views">
+<span id="aipscan-reporter-views-module"></span><h2>AIPscan.Reporter.views module<a class="headerlink" href="#module-AIPscan.Reporter.views" title="Permalink to this headline">¶</a></h2>
+<p>Views contains the primary routes for navigation around AIPscan’s
+Reporter module. Reports themselves as siphoned off into separate module
+files with singular responsibility for a report.</p>
+<dl class="py function">
+<dt id="AIPscan.Reporter.views.reports">
+<code class="sig-prename descclassname">AIPscan.Reporter.views.</code><code class="sig-name descname">reports</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/AIPscan/Reporter/views.html#reports"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AIPscan.Reporter.views.reports" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reports returns a standard page in AIPscan that lists the
+in-built reports available to the caller.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="AIPscan.Reporter.views.view_aip">
+<code class="sig-prename descclassname">AIPscan.Reporter.views.</code><code class="sig-name descname">view_aip</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">aip_id</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/AIPscan/Reporter/views.html#view_aip"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AIPscan.Reporter.views.view_aip" title="Permalink to this definition">¶</a></dt>
+<dd><p>View aip returns a standard page in AIPscan that provides a more
+detailed view of a specific AIP given an AIPs ID.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="AIPscan.Reporter.views.view_aips">
+<code class="sig-prename descclassname">AIPscan.Reporter.views.</code><code class="sig-name descname">view_aips</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">storage_service_id</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/AIPscan/Reporter/views.html#view_aips"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AIPscan.Reporter.views.view_aips" title="Permalink to this definition">¶</a></dt>
+<dd><p>View aips returns a standard page in AIPscan that provides an
+overview of the AIPs in a given storage service.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="AIPscan.Reporter.views.view_file">
+<code class="sig-prename descclassname">AIPscan.Reporter.views.</code><code class="sig-name descname">view_file</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_id</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/AIPscan/Reporter/views.html#view_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AIPscan.Reporter.views.view_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>File page displays Object and Event metadata for file</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-AIPscan.Reporter">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-AIPscan.Reporter" title="Permalink to this headline">¶</a></h2>
+<p>Initialize components which need to be shared across the report
+module, notably too the Blueprint itself.</p>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2020, Artefactual Systems Inc..
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/AIPscan.Reporter.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/artefactual-labs/AIPscan" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

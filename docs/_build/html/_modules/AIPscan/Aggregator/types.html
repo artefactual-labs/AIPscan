@@ -1,0 +1,258 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AIPscan.Aggregator.types &#8212; AIPscan 0.x documentation</title>
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">AIPscan</a></h1>
+
+
+
+<p class="blurb">Reporting for Archivematica</p>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">AIPscan</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  <li><a href="../../AIPscan.html">AIPscan</a><ul>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for AIPscan.Aggregator.types</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+
+
+<div class="viewcode-block" id="PackageError"><a class="viewcode-back" href="../../../AIPscan.Aggregator.html#AIPscan.Aggregator.types.PackageError">[docs]</a><span class="k">class</span> <span class="nc">PackageError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;There are things we cannot do with the package type unless it</span>
+<span class="sd">    is completed properly. Let the user know.</span>
+<span class="sd">    &quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="StorageServicePackage"><a class="viewcode-back" href="../../../AIPscan.Aggregator.html#AIPscan.Aggregator.types.StorageServicePackage">[docs]</a><span class="k">class</span> <span class="nc">StorageServicePackage</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Type that can record information about a storage service package</span>
+<span class="sd">    and provide helpers as to whether or not we should process it.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">default_pair_tree</span> <span class="o">=</span> <span class="s2">&quot;0000-0000-0000-0000-0000-0000-0000-0000-&quot;</span>
+    <span class="n">compressed_ext</span> <span class="o">=</span> <span class="s2">&quot;.7z&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Package constructor&quot;&quot;&quot;</span>
+
+        <span class="n">DELETED</span> <span class="o">=</span> <span class="s2">&quot;deleted&quot;</span>
+        <span class="n">REPLICA</span> <span class="o">=</span> <span class="s2">&quot;replica&quot;</span>
+        <span class="n">AIP</span> <span class="o">=</span> <span class="s2">&quot;aip&quot;</span>
+        <span class="n">DIP</span> <span class="o">=</span> <span class="s2">&quot;dip&quot;</span>
+        <span class="n">SIP</span> <span class="o">=</span> <span class="s2">&quot;sip&quot;</span>
+
+        <span class="n">UUID</span> <span class="o">=</span> <span class="s2">&quot;uuid&quot;</span>
+        <span class="n">CURRENT_PATH</span> <span class="o">=</span> <span class="s2">&quot;current_path&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">deleted</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">replica</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">aip</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dip</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sip</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">uuid</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_path</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">deleted</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">DELETED</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">deleted</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">replica</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">REPLICA</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">replica</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">aip</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">AIP</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">aip</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dip</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">DIP</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dip</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sip</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">SIP</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sip</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">uuid</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">UUID</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">uuid</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">current_path</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">CURRENT_PATH</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">uuid</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="s2">&quot;aip: &#39;</span><span class="si">{}</span><span class="s2">&#39;; dip: &#39;</span><span class="si">{}</span><span class="s2">&#39;; sip: &#39;</span><span class="si">{}</span><span class="s2">&#39;; deleted: &#39;</span><span class="si">{}</span><span class="s2">&#39;; replica: &#39;</span><span class="si">{}</span><span class="s2">&#39;;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">aip</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dip</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sip</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">deleted</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">replica</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">ret</span>
+
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Comparison operator&quot;&quot;&quot;</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">aip</span> <span class="o">!=</span> <span class="n">other</span><span class="o">.</span><span class="n">aip</span><span class="p">:</span>
+            <span class="n">ret</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dip</span> <span class="o">!=</span> <span class="n">other</span><span class="o">.</span><span class="n">dip</span><span class="p">:</span>
+            <span class="n">ret</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sip</span> <span class="o">!=</span> <span class="n">other</span><span class="o">.</span><span class="n">sip</span><span class="p">:</span>
+            <span class="n">ret</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">deleted</span> <span class="o">!=</span> <span class="n">other</span><span class="o">.</span><span class="n">deleted</span><span class="p">:</span>
+            <span class="n">ret</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">replica</span> <span class="o">!=</span> <span class="n">other</span><span class="o">.</span><span class="n">replica</span><span class="p">:</span>
+            <span class="n">ret</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">uuid</span> <span class="o">!=</span> <span class="n">other</span><span class="o">.</span><span class="n">uuid</span><span class="p">:</span>
+            <span class="n">ret</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_path</span> <span class="o">!=</span> <span class="n">other</span><span class="o">.</span><span class="n">current_path</span><span class="p">:</span>
+            <span class="n">ret</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="n">ret</span>
+
+<div class="viewcode-block" id="StorageServicePackage.is_aip"><a class="viewcode-back" href="../../../AIPscan.Aggregator.html#AIPscan.Aggregator.types.StorageServicePackage.is_aip">[docs]</a>    <span class="k">def</span> <span class="nf">is_aip</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Determine whether the package is a AIP&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">aip</span>
+            <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">deleted</span>
+            <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">replica</span>
+            <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">dip</span>
+            <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">sip</span>
+        <span class="p">):</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="StorageServicePackage.is_dip"><a class="viewcode-back" href="../../../AIPscan.Aggregator.html#AIPscan.Aggregator.types.StorageServicePackage.is_dip">[docs]</a>    <span class="k">def</span> <span class="nf">is_dip</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Determine whether the package is a DIP&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dip</span>
+            <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">deleted</span>
+            <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">replica</span>
+            <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">aip</span>
+            <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">sip</span>
+        <span class="p">):</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="StorageServicePackage.is_sip"><a class="viewcode-back" href="../../../AIPscan.Aggregator.html#AIPscan.Aggregator.types.StorageServicePackage.is_sip">[docs]</a>    <span class="k">def</span> <span class="nf">is_sip</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Determine whether the package is a SIP&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sip</span>
+            <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">deleted</span>
+            <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">replica</span>
+            <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">dip</span>
+            <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">aip</span>
+        <span class="p">):</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="StorageServicePackage.is_replica"><a class="viewcode-back" href="../../../AIPscan.Aggregator.html#AIPscan.Aggregator.types.StorageServicePackage.is_replica">[docs]</a>    <span class="k">def</span> <span class="nf">is_replica</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Determine whether the package is a replica package&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">replica</span>
+            <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">aip</span>
+            <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">deleted</span>
+            <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">sip</span>
+            <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">dip</span>
+        <span class="p">):</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="StorageServicePackage.is_deleted"><a class="viewcode-back" href="../../../AIPscan.Aggregator.html#AIPscan.Aggregator.types.StorageServicePackage.is_deleted">[docs]</a>    <span class="k">def</span> <span class="nf">is_deleted</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Determine whether the package is a deleted package&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">deleted</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="StorageServicePackage.get_relative_path"><a class="viewcode-back" href="../../../AIPscan.Aggregator.html#AIPscan.Aggregator.types.StorageServicePackage.get_relative_path">[docs]</a>    <span class="k">def</span> <span class="nf">get_relative_path</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return relative path from current_path.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dip</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">sip</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">replica</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">PackageError</span><span class="p">(</span>
+                <span class="s2">&quot;Get relative path for sip or replica packages not yet implemented&quot;</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">deleted</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">PackageError</span><span class="p">(</span><span class="s2">&quot;There are no relative paths for deleted packages&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">uuid</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">PackageError</span><span class="p">(</span><span class="s2">&quot;Cannot generate a relative path without a package UUID&quot;</span><span class="p">)</span>
+        <span class="n">rel</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">left_offset</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">default_pair_tree</span><span class="p">)</span>
+        <span class="n">right_offset</span> <span class="o">=</span> <span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">compressed_ext</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">compressed_ext</span><span class="p">):</span>
+                <span class="n">rel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_path</span><span class="p">[</span><span class="n">left_offset</span><span class="p">:</span><span class="n">right_offset</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">rel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_path</span><span class="p">[</span><span class="n">left_offset</span><span class="p">:]</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">PackageError</span><span class="p">(</span><span class="s2">&quot;Current path doesn&#39;t exist for the package&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">/data/METS.</span><span class="si">{}</span><span class="s2">.xml&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rel</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">uuid</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2020, Artefactual Systems Inc..
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+    <a href="https://github.com/artefactual-labs/AIPscan" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

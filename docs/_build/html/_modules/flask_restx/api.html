@@ -1,0 +1,1037 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>flask_restx.api &#8212; AIPscan 0.x documentation</title>
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">AIPscan</a></h1>
+
+
+
+<p class="blurb">Reporting for Archivematica</p>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">AIPscan</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for flask_restx.api</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">unicode_literals</span>
+
+<span class="kn">import</span> <span class="nn">difflib</span>
+<span class="kn">import</span> <span class="nn">inspect</span>
+<span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">chain</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">operator</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">six</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">wraps</span><span class="p">,</span> <span class="n">partial</span>
+<span class="kn">from</span> <span class="nn">types</span> <span class="kn">import</span> <span class="n">MethodType</span>
+
+<span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">url_for</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">current_app</span>
+<span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">make_response</span> <span class="k">as</span> <span class="n">original_flask_make_response</span>
+<span class="kn">from</span> <span class="nn">flask.helpers</span> <span class="kn">import</span> <span class="n">_endpoint_from_view_func</span>
+<span class="kn">from</span> <span class="nn">flask.signals</span> <span class="kn">import</span> <span class="n">got_request_exception</span>
+
+<span class="kn">from</span> <span class="nn">jsonschema</span> <span class="kn">import</span> <span class="n">RefResolver</span>
+
+<span class="kn">from</span> <span class="nn">werkzeug.utils</span> <span class="kn">import</span> <span class="n">cached_property</span>
+<span class="kn">from</span> <span class="nn">werkzeug.datastructures</span> <span class="kn">import</span> <span class="n">Headers</span>
+<span class="kn">from</span> <span class="nn">werkzeug.exceptions</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">HTTPException</span><span class="p">,</span>
+    <span class="n">MethodNotAllowed</span><span class="p">,</span>
+    <span class="n">NotFound</span><span class="p">,</span>
+    <span class="n">NotAcceptable</span><span class="p">,</span>
+    <span class="n">InternalServerError</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">werkzeug.wrappers</span> <span class="kn">import</span> <span class="n">BaseResponse</span>
+
+<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">apidoc</span>
+<span class="kn">from</span> <span class="nn">.mask</span> <span class="kn">import</span> <span class="n">ParseError</span><span class="p">,</span> <span class="n">MaskError</span>
+<span class="kn">from</span> <span class="nn">.namespace</span> <span class="kn">import</span> <span class="n">Namespace</span>
+<span class="kn">from</span> <span class="nn">.postman</span> <span class="kn">import</span> <span class="n">PostmanCollectionV1</span>
+<span class="kn">from</span> <span class="nn">.resource</span> <span class="kn">import</span> <span class="n">Resource</span>
+<span class="kn">from</span> <span class="nn">.swagger</span> <span class="kn">import</span> <span class="n">Swagger</span>
+<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">default_id</span><span class="p">,</span> <span class="n">camel_to_dash</span><span class="p">,</span> <span class="n">unpack</span>
+<span class="kn">from</span> <span class="nn">.representations</span> <span class="kn">import</span> <span class="n">output_json</span>
+<span class="kn">from</span> <span class="nn">._http</span> <span class="kn">import</span> <span class="n">HTTPStatus</span>
+
+<span class="n">RE_RULES</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s2">&quot;(&lt;.*&gt;)&quot;</span><span class="p">)</span>
+
+<span class="c1"># List headers that should never be handled by Flask-RESTX</span>
+<span class="n">HEADERS_BLACKLIST</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Content-Length&quot;</span><span class="p">,)</span>
+
+<span class="n">DEFAULT_REPRESENTATIONS</span> <span class="o">=</span> <span class="p">[(</span><span class="s2">&quot;application/json&quot;</span><span class="p">,</span> <span class="n">output_json</span><span class="p">)]</span>
+
+<span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">Api</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The main entry point for the application.</span>
+<span class="sd">    You need to initialize it with a Flask Application: ::</span>
+
+<span class="sd">    &gt;&gt;&gt; app = Flask(__name__)</span>
+<span class="sd">    &gt;&gt;&gt; api = Api(app)</span>
+
+<span class="sd">    Alternatively, you can use :meth:`init_app` to set the Flask application</span>
+<span class="sd">    after it has been constructed.</span>
+
+<span class="sd">    The endpoint parameter prefix all views and resources:</span>
+
+<span class="sd">        - The API root/documentation will be ``{endpoint}.root``</span>
+<span class="sd">        - A resource registered as &#39;resource&#39; will be available as ``{endpoint}.resource``</span>
+
+<span class="sd">    :param flask.Flask|flask.Blueprint app: the Flask application object or a Blueprint</span>
+<span class="sd">    :param str version: The API version (used in Swagger documentation)</span>
+<span class="sd">    :param str title: The API title (used in Swagger documentation)</span>
+<span class="sd">    :param str description: The API description (used in Swagger documentation)</span>
+<span class="sd">    :param str terms_url: The API terms page URL (used in Swagger documentation)</span>
+<span class="sd">    :param str contact: A contact email for the API (used in Swagger documentation)</span>
+<span class="sd">    :param str license: The license associated to the API (used in Swagger documentation)</span>
+<span class="sd">    :param str license_url: The license page URL (used in Swagger documentation)</span>
+<span class="sd">    :param str endpoint: The API base endpoint (default to &#39;api).</span>
+<span class="sd">    :param str default: The default namespace base name (default to &#39;default&#39;)</span>
+<span class="sd">    :param str default_label: The default namespace label (used in Swagger documentation)</span>
+<span class="sd">    :param str default_mediatype: The default media type to return</span>
+<span class="sd">    :param bool validate: Whether or not the API should perform input payload validation.</span>
+<span class="sd">    :param bool ordered: Whether or not preserve order models and marshalling.</span>
+<span class="sd">    :param str doc: The documentation path. If set to a false value, documentation is disabled.</span>
+<span class="sd">                (Default to &#39;/&#39;)</span>
+<span class="sd">    :param list decorators: Decorators to attach to every resource</span>
+<span class="sd">    :param bool catch_all_404s: Use :meth:`handle_error`</span>
+<span class="sd">        to handle 404 errors throughout your app</span>
+<span class="sd">    :param dict authorizations: A Swagger Authorizations declaration as dictionary</span>
+<span class="sd">    :param bool serve_challenge_on_401: Serve basic authentication challenge with 401</span>
+<span class="sd">        responses (default &#39;False&#39;)</span>
+<span class="sd">    :param FormatChecker format_checker: A jsonschema.FormatChecker object that is hooked into</span>
+<span class="sd">        the Model validator. A default or a custom FormatChecker can be provided (e.g., with custom</span>
+<span class="sd">        checkers), otherwise the default action is to not enforce any format validation.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">app</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">version</span><span class="o">=</span><span class="s2">&quot;1.0&quot;</span><span class="p">,</span>
+        <span class="n">title</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">terms_url</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">license</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">license_url</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">contact</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">contact_url</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">contact_email</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">authorizations</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">security</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;/&quot;</span><span class="p">,</span>
+        <span class="n">default_id</span><span class="o">=</span><span class="n">default_id</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="s2">&quot;default&quot;</span><span class="p">,</span>
+        <span class="n">default_label</span><span class="o">=</span><span class="s2">&quot;Default namespace&quot;</span><span class="p">,</span>
+        <span class="n">validate</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">tags</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">ordered</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">default_mediatype</span><span class="o">=</span><span class="s2">&quot;application/json&quot;</span><span class="p">,</span>
+        <span class="n">decorators</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">catch_all_404s</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">serve_challenge_on_401</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">format_checker</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">version</span> <span class="o">=</span> <span class="n">version</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">title</span> <span class="o">=</span> <span class="n">title</span> <span class="ow">or</span> <span class="s2">&quot;API&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="n">description</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">terms_url</span> <span class="o">=</span> <span class="n">terms_url</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">contact</span> <span class="o">=</span> <span class="n">contact</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">contact_email</span> <span class="o">=</span> <span class="n">contact_email</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">contact_url</span> <span class="o">=</span> <span class="n">contact_url</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">license</span> <span class="o">=</span> <span class="n">license</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">license_url</span> <span class="o">=</span> <span class="n">license_url</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">authorizations</span> <span class="o">=</span> <span class="n">authorizations</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">security</span> <span class="o">=</span> <span class="n">security</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">default_id</span> <span class="o">=</span> <span class="n">default_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ordered</span> <span class="o">=</span> <span class="n">ordered</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_validate</span> <span class="o">=</span> <span class="n">validate</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_doc</span> <span class="o">=</span> <span class="n">doc</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_doc_view</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_default_error_handler</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tags</span> <span class="o">=</span> <span class="n">tags</span> <span class="ow">or</span> <span class="p">[]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">error_handlers</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">ParseError</span><span class="p">:</span> <span class="n">mask_parse_error_handler</span><span class="p">,</span>
+            <span class="n">MaskError</span><span class="p">:</span> <span class="n">mask_error_handler</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_schema</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">models</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_refresolver</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">format_checker</span> <span class="o">=</span> <span class="n">format_checker</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">namespaces</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">ns_paths</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">representations</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">(</span><span class="n">DEFAULT_REPRESENTATIONS</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">urls</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prefix</span> <span class="o">=</span> <span class="n">prefix</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">default_mediatype</span> <span class="o">=</span> <span class="n">default_mediatype</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">decorators</span> <span class="o">=</span> <span class="n">decorators</span> <span class="k">if</span> <span class="n">decorators</span> <span class="k">else</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">catch_all_404s</span> <span class="o">=</span> <span class="n">catch_all_404s</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">serve_challenge_on_401</span> <span class="o">=</span> <span class="n">serve_challenge_on_401</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">blueprint_setup</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resources</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">blueprint</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># must come after self.app initialisation to prevent __getattr__ recursion</span>
+        <span class="c1"># in self._configure_namespace_logger</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">default_namespace</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">namespace</span><span class="p">(</span>
+            <span class="n">default</span><span class="p">,</span>
+            <span class="n">default_label</span><span class="p">,</span>
+            <span class="n">endpoint</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">{0}</span><span class="s2">-declaration&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">default</span><span class="p">),</span>
+            <span class="n">validate</span><span class="o">=</span><span class="n">validate</span><span class="p">,</span>
+            <span class="n">api</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span>
+            <span class="n">path</span><span class="o">=</span><span class="s2">&quot;/&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">app</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="o">=</span> <span class="n">app</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">init_app</span><span class="p">(</span><span class="n">app</span><span class="p">)</span>
+        <span class="c1"># super(Api, self).__init__(app, **kwargs)</span>
+
+    <span class="k">def</span> <span class="nf">init_app</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">app</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Allow to lazy register the API on a Flask application::</span>
+
+<span class="sd">        &gt;&gt;&gt; app = Flask(__name__)</span>
+<span class="sd">        &gt;&gt;&gt; api = Api()</span>
+<span class="sd">        &gt;&gt;&gt; api.init_app(app)</span>
+
+<span class="sd">        :param flask.Flask app: the Flask application object</span>
+<span class="sd">        :param str title: The API title (used in Swagger documentation)</span>
+<span class="sd">        :param str description: The API description (used in Swagger documentation)</span>
+<span class="sd">        :param str terms_url: The API terms page URL (used in Swagger documentation)</span>
+<span class="sd">        :param str contact: A contact email for the API (used in Swagger documentation)</span>
+<span class="sd">        :param str license: The license associated to the API (used in Swagger documentation)</span>
+<span class="sd">        :param str license_url: The license page URL (used in Swagger documentation)</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="o">=</span> <span class="n">app</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">title</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;title&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;description&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">description</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">terms_url</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;terms_url&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">terms_url</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">contact</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;contact&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">contact</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">contact_url</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;contact_url&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">contact_url</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">contact_email</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;contact_email&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">contact_email</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">license</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;license&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">license</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">license_url</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;license_url&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">license_url</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_add_specs</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;add_specs&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># If app is a blueprint, defer the initialization</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">app</span><span class="o">.</span><span class="n">record</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_deferred_blueprint_init</span><span class="p">)</span>
+        <span class="c1"># Flask.Blueprint has a &#39;record&#39; attribute, Flask.Api does not</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_init_app</span><span class="p">(</span><span class="n">app</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">blueprint</span> <span class="o">=</span> <span class="n">app</span>
+
+    <span class="k">def</span> <span class="nf">_init_app</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">app</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Perform initialization actions with the given :class:`flask.Flask` object.</span>
+
+<span class="sd">        :param flask.Flask app: The flask application object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_register_specs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">blueprint</span> <span class="ow">or</span> <span class="n">app</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_register_doc</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">blueprint</span> <span class="ow">or</span> <span class="n">app</span><span class="p">)</span>
+
+        <span class="n">app</span><span class="o">.</span><span class="n">handle_exception</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">error_router</span><span class="p">,</span> <span class="n">app</span><span class="o">.</span><span class="n">handle_exception</span><span class="p">)</span>
+        <span class="n">app</span><span class="o">.</span><span class="n">handle_user_exception</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">error_router</span><span class="p">,</span> <span class="n">app</span><span class="o">.</span><span class="n">handle_user_exception</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">resources</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">resource</span><span class="p">,</span> <span class="n">namespace</span><span class="p">,</span> <span class="n">urls</span><span class="p">,</span> <span class="n">kwargs</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">resources</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_register_view</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="n">resource</span><span class="p">,</span> <span class="n">namespace</span><span class="p">,</span> <span class="o">*</span><span class="n">urls</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">ns</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">namespaces</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_configure_namespace_logger</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="n">ns</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_register_apidoc</span><span class="p">(</span><span class="n">app</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_validate</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_validate</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_validate</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="k">else</span> <span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;RESTX_VALIDATE&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;RESTX_MASK_HEADER&quot;</span><span class="p">,</span> <span class="s2">&quot;X-Fields&quot;</span><span class="p">)</span>
+        <span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;RESTX_MASK_SWAGGER&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">default_namespace</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;Api does not have </span><span class="si">{0}</span><span class="s2"> attribute&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">_complete_url</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url_part</span><span class="p">,</span> <span class="n">registration_prefix</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method is used to defer the construction of the final url in</span>
+<span class="sd">        the case that the Api is created with a Blueprint.</span>
+
+<span class="sd">        :param url_part: The part of the url the endpoint is registered with</span>
+<span class="sd">        :param registration_prefix: The part of the url contributed by the</span>
+<span class="sd">            blueprint.  Generally speaking, BlueprintSetupState.url_prefix</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">parts</span> <span class="o">=</span> <span class="p">(</span><span class="n">registration_prefix</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="n">url_part</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">part</span> <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">parts</span> <span class="k">if</span> <span class="n">part</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_register_apidoc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">app</span><span class="p">):</span>
+        <span class="n">conf</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">extensions</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;restx&quot;</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">conf</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;apidoc_registered&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+            <span class="n">app</span><span class="o">.</span><span class="n">register_blueprint</span><span class="p">(</span><span class="n">apidoc</span><span class="o">.</span><span class="n">apidoc</span><span class="p">)</span>
+        <span class="n">conf</span><span class="p">[</span><span class="s2">&quot;apidoc_registered&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="k">def</span> <span class="nf">_register_specs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">app_or_blueprint</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_add_specs</span><span class="p">:</span>
+            <span class="n">endpoint</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="s2">&quot;specs&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_register_view</span><span class="p">(</span>
+                <span class="n">app_or_blueprint</span><span class="p">,</span>
+                <span class="n">SwaggerView</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">default_namespace</span><span class="p">,</span>
+                <span class="s2">&quot;/swagger.json&quot;</span><span class="p">,</span>
+                <span class="n">endpoint</span><span class="o">=</span><span class="n">endpoint</span><span class="p">,</span>
+                <span class="n">resource_class_args</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="p">,),</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">endpoint</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_register_doc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">app_or_blueprint</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_add_specs</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_doc</span><span class="p">:</span>
+            <span class="c1"># Register documentation before root if enabled</span>
+            <span class="n">app_or_blueprint</span><span class="o">.</span><span class="n">add_url_rule</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_doc</span><span class="p">,</span> <span class="s2">&quot;doc&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">render_doc</span><span class="p">)</span>
+        <span class="n">app_or_blueprint</span><span class="o">.</span><span class="n">add_url_rule</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prefix</span> <span class="ow">or</span> <span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="s2">&quot;root&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">render_root</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">register_resource</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">namespace</span><span class="p">,</span> <span class="n">resource</span><span class="p">,</span> <span class="o">*</span><span class="n">urls</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">endpoint</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;endpoint&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">endpoint</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">endpoint</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_endpoint</span><span class="p">(</span><span class="n">resource</span><span class="p">,</span> <span class="n">namespace</span><span class="p">))</span>
+
+        <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;endpoint&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">endpoint</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">endpoint</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_register_view</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="p">,</span> <span class="n">resource</span><span class="p">,</span> <span class="n">namespace</span><span class="p">,</span> <span class="o">*</span><span class="n">urls</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">resources</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">resource</span><span class="p">,</span> <span class="n">namespace</span><span class="p">,</span> <span class="n">urls</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">endpoint</span>
+
+    <span class="k">def</span> <span class="nf">_configure_namespace_logger</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">app</span><span class="p">,</span> <span class="n">namespace</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">handler</span> <span class="ow">in</span> <span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">handlers</span><span class="p">:</span>
+            <span class="n">namespace</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">handler</span><span class="p">)</span>
+        <span class="n">namespace</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">app</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">level</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_register_view</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">app</span><span class="p">,</span> <span class="n">resource</span><span class="p">,</span> <span class="n">namespace</span><span class="p">,</span> <span class="o">*</span><span class="n">urls</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">endpoint</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;endpoint&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="n">camel_to_dash</span><span class="p">(</span><span class="n">resource</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+        <span class="n">resource_class_args</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;resource_class_args&quot;</span><span class="p">,</span> <span class="p">())</span>
+        <span class="n">resource_class_kwargs</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;resource_class_kwargs&quot;</span><span class="p">,</span> <span class="p">{})</span>
+
+        <span class="c1"># NOTE: &#39;view_functions&#39; is cleaned up from Blueprint class in Flask 1.0</span>
+        <span class="k">if</span> <span class="n">endpoint</span> <span class="ow">in</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="s2">&quot;view_functions&quot;</span><span class="p">,</span> <span class="p">{}):</span>
+            <span class="n">previous_view_class</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">view_functions</span><span class="p">[</span><span class="n">endpoint</span><span class="p">]</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="s2">&quot;view_class&quot;</span><span class="p">]</span>
+
+            <span class="c1"># if you override the endpoint with a different class, avoid the</span>
+            <span class="c1"># collision by raising an exception</span>
+            <span class="k">if</span> <span class="n">previous_view_class</span> <span class="o">!=</span> <span class="n">resource</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;This endpoint (</span><span class="si">%s</span><span class="s2">) is already set to the class </span><span class="si">%s</span><span class="s2">.&quot;</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span> <span class="o">%</span> <span class="p">(</span><span class="n">endpoint</span><span class="p">,</span> <span class="n">previous_view_class</span><span class="o">.</span><span class="vm">__name__</span><span class="p">))</span>
+
+        <span class="n">resource</span><span class="o">.</span><span class="n">mediatypes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mediatypes_method</span><span class="p">()</span>  <span class="c1"># Hacky</span>
+        <span class="n">resource</span><span class="o">.</span><span class="n">endpoint</span> <span class="o">=</span> <span class="n">endpoint</span>
+
+        <span class="n">resource_func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">output</span><span class="p">(</span>
+            <span class="n">resource</span><span class="o">.</span><span class="n">as_view</span><span class="p">(</span>
+                <span class="n">endpoint</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">resource_class_args</span><span class="p">,</span> <span class="o">**</span><span class="n">resource_class_kwargs</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Apply Namespace and Api decorators to a resource</span>
+        <span class="k">for</span> <span class="n">decorator</span> <span class="ow">in</span> <span class="n">chain</span><span class="p">(</span><span class="n">namespace</span><span class="o">.</span><span class="n">decorators</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">decorators</span><span class="p">):</span>
+            <span class="n">resource_func</span> <span class="o">=</span> <span class="n">decorator</span><span class="p">(</span><span class="n">resource_func</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">url</span> <span class="ow">in</span> <span class="n">urls</span><span class="p">:</span>
+            <span class="c1"># If this Api has a blueprint</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">blueprint</span><span class="p">:</span>
+                <span class="c1"># And this Api has been setup</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">blueprint_setup</span><span class="p">:</span>
+                    <span class="c1"># Set the rule to a string directly, as the blueprint is already</span>
+                    <span class="c1"># set up.</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">blueprint_setup</span><span class="o">.</span><span class="n">add_url_rule</span><span class="p">(</span>
+                        <span class="n">url</span><span class="p">,</span> <span class="n">view_func</span><span class="o">=</span><span class="n">resource_func</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+                    <span class="p">)</span>
+                    <span class="k">continue</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># Set the rule to a function that expects the blueprint prefix</span>
+                    <span class="c1"># to construct the final url.  Allows deferment of url finalization</span>
+                    <span class="c1"># in the case that the associated Blueprint has not yet been</span>
+                    <span class="c1"># registered to an application, so we can wait for the registration</span>
+                    <span class="c1"># prefix</span>
+                    <span class="n">rule</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_complete_url</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># If we&#39;ve got no Blueprint, just build a url with no prefix</span>
+                <span class="n">rule</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_complete_url</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="c1"># Add the url to the application or blueprint</span>
+            <span class="n">app</span><span class="o">.</span><span class="n">add_url_rule</span><span class="p">(</span><span class="n">rule</span><span class="p">,</span> <span class="n">view_func</span><span class="o">=</span><span class="n">resource_func</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">output</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resource</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Wraps a resource (as a flask view function),</span>
+<span class="sd">        for cases where the resource does not directly return a response object</span>
+
+<span class="sd">        :param resource: The resource as a flask view function</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="nd">@wraps</span><span class="p">(</span><span class="n">resource</span><span class="p">)</span>
+        <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="n">resp</span> <span class="o">=</span> <span class="n">resource</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">resp</span><span class="p">,</span> <span class="n">BaseResponse</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">resp</span>
+            <span class="n">data</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">headers</span> <span class="o">=</span> <span class="n">unpack</span><span class="p">(</span><span class="n">resp</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">make_response</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">wrapper</span>
+
+    <span class="k">def</span> <span class="nf">make_response</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Looks up the representation transformer for the requested media</span>
+<span class="sd">        type, invoking the transformer to create a response object. This</span>
+<span class="sd">        defaults to default_mediatype if no transformer is found for the</span>
+<span class="sd">        requested mediatype. If default_mediatype is None, a 406 Not</span>
+<span class="sd">        Acceptable response will be sent as per RFC 2616 section 14.1</span>
+
+<span class="sd">        :param data: Python object containing response data to be transformed</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">default_mediatype</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;fallback_mediatype&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_mediatype</span>
+        <span class="p">)</span>
+        <span class="n">mediatype</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">accept_mimetypes</span><span class="o">.</span><span class="n">best_match</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">representations</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">default_mediatype</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">mediatype</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">NotAcceptable</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">mediatype</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">representations</span><span class="p">:</span>
+            <span class="n">resp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">representations</span><span class="p">[</span><span class="n">mediatype</span><span class="p">](</span><span class="n">data</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="n">resp</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s2">&quot;Content-Type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mediatype</span>
+            <span class="k">return</span> <span class="n">resp</span>
+        <span class="k">elif</span> <span class="n">mediatype</span> <span class="o">==</span> <span class="s2">&quot;text/plain&quot;</span><span class="p">:</span>
+            <span class="n">resp</span> <span class="o">=</span> <span class="n">original_flask_make_response</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">data</span><span class="p">),</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="n">resp</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s2">&quot;Content-Type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;text/plain&quot;</span>
+            <span class="k">return</span> <span class="n">resp</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">InternalServerError</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">documentation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;A decorator to specify a view function for the documentation&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_doc_view</span> <span class="o">=</span> <span class="n">func</span>
+        <span class="k">return</span> <span class="n">func</span>
+
+    <span class="k">def</span> <span class="nf">render_root</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">abort</span><span class="p">(</span><span class="n">HTTPStatus</span><span class="o">.</span><span class="n">NOT_FOUND</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">render_doc</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Override this method to customize the documentation page&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_doc_view</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_doc_view</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_doc</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">abort</span><span class="p">(</span><span class="n">HTTPStatus</span><span class="o">.</span><span class="n">NOT_FOUND</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">apidoc</span><span class="o">.</span><span class="n">ui_for</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">default_endpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resource</span><span class="p">,</span> <span class="n">namespace</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Provide a default endpoint for a resource on a given namespace.</span>
+
+<span class="sd">        Endpoints are ensured not to collide.</span>
+
+<span class="sd">        Override this method specify a custom algorithm for default endpoint.</span>
+
+<span class="sd">        :param Resource resource: the resource for which we want an endpoint</span>
+<span class="sd">        :param Namespace namespace: the namespace holding the resource</span>
+<span class="sd">        :returns str: An endpoint name</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">endpoint</span> <span class="o">=</span> <span class="n">camel_to_dash</span><span class="p">(</span><span class="n">resource</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">namespace</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_namespace</span><span class="p">:</span>
+            <span class="n">endpoint</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{ns.name}</span><span class="s2">_</span><span class="si">{endpoint}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ns</span><span class="o">=</span><span class="n">namespace</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="n">endpoint</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">endpoint</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">:</span>
+            <span class="n">suffix</span> <span class="o">=</span> <span class="mi">2</span>
+            <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="n">new_endpoint</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{base}</span><span class="s2">_</span><span class="si">{suffix}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">base</span><span class="o">=</span><span class="n">endpoint</span><span class="p">,</span> <span class="n">suffix</span><span class="o">=</span><span class="n">suffix</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">new_endpoint</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">:</span>
+                    <span class="n">endpoint</span> <span class="o">=</span> <span class="n">new_endpoint</span>
+                    <span class="k">break</span>
+                <span class="n">suffix</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="n">endpoint</span>
+
+    <span class="k">def</span> <span class="nf">get_ns_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ns</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ns_paths</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">ns</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">ns_urls</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ns</span><span class="p">,</span> <span class="n">urls</span><span class="p">):</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_ns_path</span><span class="p">(</span><span class="n">ns</span><span class="p">)</span> <span class="ow">or</span> <span class="n">ns</span><span class="o">.</span><span class="n">path</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">path</span> <span class="o">+</span> <span class="n">url</span> <span class="k">for</span> <span class="n">url</span> <span class="ow">in</span> <span class="n">urls</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">add_namespace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ns</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method registers resources from namespace for current instance of api.</span>
+<span class="sd">        You can use argument path for definition custom prefix url for namespace.</span>
+
+<span class="sd">        :param Namespace ns: the namespace</span>
+<span class="sd">        :param path: registration prefix of namespace</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">ns</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">namespaces</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">namespaces</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ns</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ns</span><span class="o">.</span><span class="n">apis</span><span class="p">:</span>
+                <span class="n">ns</span><span class="o">.</span><span class="n">apis</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+            <span class="c1"># Associate ns with prefix-path</span>
+            <span class="k">if</span> <span class="n">path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ns_paths</span><span class="p">[</span><span class="n">ns</span><span class="p">]</span> <span class="o">=</span> <span class="n">path</span>
+        <span class="c1"># Register resources</span>
+        <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">ns</span><span class="o">.</span><span class="n">resources</span><span class="p">:</span>
+            <span class="n">urls</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ns_urls</span><span class="p">(</span><span class="n">ns</span><span class="p">,</span> <span class="n">r</span><span class="o">.</span><span class="n">urls</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">register_resource</span><span class="p">(</span><span class="n">ns</span><span class="p">,</span> <span class="n">r</span><span class="o">.</span><span class="n">resource</span><span class="p">,</span> <span class="o">*</span><span class="n">urls</span><span class="p">,</span> <span class="o">**</span><span class="n">r</span><span class="o">.</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="c1"># Register models</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">definition</span> <span class="ow">in</span> <span class="n">six</span><span class="o">.</span><span class="n">iteritems</span><span class="p">(</span><span class="n">ns</span><span class="o">.</span><span class="n">models</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">models</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">definition</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">blueprint</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_configure_namespace_logger</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="p">,</span> <span class="n">ns</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">namespace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A namespace factory.</span>
+
+<span class="sd">        :returns Namespace: a new namespace instance</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;ordered&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ordered&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ordered</span><span class="p">)</span>
+        <span class="n">ns</span> <span class="o">=</span> <span class="n">Namespace</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_namespace</span><span class="p">(</span><span class="n">ns</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ns</span>
+
+    <span class="k">def</span> <span class="nf">endpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">blueprint</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;</span><span class="si">{0}</span><span class="s2">.</span><span class="si">{1}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">blueprint</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">name</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">specs_url</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The Swagger specifications absolute url (ie. `swagger.json`)</span>
+
+<span class="sd">        :rtype: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">url_for</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">endpoint</span><span class="p">(</span><span class="s2">&quot;specs&quot;</span><span class="p">),</span> <span class="n">_external</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">base_url</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The API base absolute url</span>
+
+<span class="sd">        :rtype: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">url_for</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">endpoint</span><span class="p">(</span><span class="s2">&quot;root&quot;</span><span class="p">),</span> <span class="n">_external</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">base_path</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The API path</span>
+
+<span class="sd">        :rtype: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">url_for</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">endpoint</span><span class="p">(</span><span class="s2">&quot;root&quot;</span><span class="p">),</span> <span class="n">_external</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="nd">@cached_property</span>
+    <span class="k">def</span> <span class="nf">__schema__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The Swagger specifications/schema for this API</span>
+
+<span class="sd">        :returns dict: the schema as a serializable dict</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_schema</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_schema</span> <span class="o">=</span> <span class="n">Swagger</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">as_dict</span><span class="p">()</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="c1"># Log the source exception for debugging purpose</span>
+                <span class="c1"># and return an error message</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Unable to render schema&quot;</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>  <span class="c1"># This will provide a full traceback</span>
+                <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="n">msg</span><span class="p">}</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_schema</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_own_and_child_error_handlers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">rv</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">rv</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">error_handlers</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">ns</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">namespaces</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">exception</span><span class="p">,</span> <span class="n">handler</span> <span class="ow">in</span> <span class="n">six</span><span class="o">.</span><span class="n">iteritems</span><span class="p">(</span><span class="n">ns</span><span class="o">.</span><span class="n">error_handlers</span><span class="p">):</span>
+                <span class="n">rv</span><span class="p">[</span><span class="n">exception</span><span class="p">]</span> <span class="o">=</span> <span class="n">handler</span>
+        <span class="k">return</span> <span class="n">rv</span>
+
+    <span class="k">def</span> <span class="nf">errorhandler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exception</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;A decorator to register an error handler for a given exception&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">inspect</span><span class="o">.</span><span class="n">isclass</span><span class="p">(</span><span class="n">exception</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">exception</span><span class="p">,</span> <span class="ne">Exception</span><span class="p">):</span>
+            <span class="c1"># Register an error handler for a given exception</span>
+            <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">error_handlers</span><span class="p">[</span><span class="n">exception</span><span class="p">]</span> <span class="o">=</span> <span class="n">func</span>
+                <span class="k">return</span> <span class="n">func</span>
+
+            <span class="k">return</span> <span class="n">wrapper</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Register the default error handler</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_default_error_handler</span> <span class="o">=</span> <span class="n">exception</span>
+            <span class="k">return</span> <span class="n">exception</span>
+
+    <span class="k">def</span> <span class="nf">owns_endpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">endpoint</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Tests if an endpoint name (not path) belongs to this Api.</span>
+<span class="sd">        Takes into account the Blueprint name part of the endpoint name.</span>
+
+<span class="sd">        :param str endpoint: The name of the endpoint being checked</span>
+<span class="sd">        :return: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">blueprint</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">endpoint</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">blueprint</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
+                <span class="n">endpoint</span> <span class="o">=</span> <span class="n">endpoint</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">blueprint</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="n">endpoint</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span>
+
+    <span class="k">def</span> <span class="nf">_should_use_fr_error_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Determine if error should be handled with FR or default Flask</span>
+
+<span class="sd">        The goal is to return Flask error handlers for non-FR-related routes,</span>
+<span class="sd">        and FR errors (with the correct media type) for FR endpoints. This</span>
+<span class="sd">        method currently handles 404 and 405 errors.</span>
+
+<span class="sd">        :return: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">adapter</span> <span class="o">=</span> <span class="n">current_app</span><span class="o">.</span><span class="n">create_url_adapter</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">adapter</span><span class="o">.</span><span class="n">match</span><span class="p">()</span>
+        <span class="k">except</span> <span class="n">MethodNotAllowed</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="c1"># Check if the other HTTP methods at this url would hit the Api</span>
+            <span class="n">valid_route_method</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="n">valid_methods</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">rule</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">adapter</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="n">valid_route_method</span><span class="p">,</span> <span class="n">return_rule</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">owns_endpoint</span><span class="p">(</span><span class="n">rule</span><span class="o">.</span><span class="n">endpoint</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">NotFound</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">catch_all_404s</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="c1"># Werkzeug throws other kinds of exceptions, such as Redirect</span>
+            <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">_has_fr_route</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Encapsulating the rules for whether the request was to a Flask endpoint&quot;&quot;&quot;</span>
+        <span class="c1"># 404&#39;s, 405&#39;s, which might not have a url_rule</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_should_use_fr_error_handler</span><span class="p">():</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="c1"># for all other errors, just check if FR dispatched the route</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">request</span><span class="o">.</span><span class="n">url_rule</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">owns_endpoint</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">url_rule</span><span class="o">.</span><span class="n">endpoint</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">error_router</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">original_handler</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This function decides whether the error occurred in a flask-restx</span>
+<span class="sd">        endpoint or not. If it happened in a flask-restx endpoint, our</span>
+<span class="sd">        handler will be dispatched. If it happened in an unrelated view, the</span>
+<span class="sd">        app&#39;s original error handler will be dispatched.</span>
+<span class="sd">        In the event that the error occurred in a flask-restx endpoint but</span>
+<span class="sd">        the local handler can&#39;t resolve the situation, the router will fall</span>
+<span class="sd">        back onto the original_handler as last resort.</span>
+
+<span class="sd">        :param function original_handler: the original Flask error handler for the app</span>
+<span class="sd">        :param Exception e: the exception raised while handling the request</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_has_fr_route</span><span class="p">():</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">handle_error</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">original_handler</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">original_handler</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">handle_error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Error handler for the API transforms a raised exception into a Flask response,</span>
+<span class="sd">        with the appropriate HTTP status code and body.</span>
+
+<span class="sd">        :param Exception e: the raised Exception object</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">got_request_exception</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">current_app</span><span class="o">.</span><span class="n">_get_current_object</span><span class="p">(),</span> <span class="n">exception</span><span class="o">=</span><span class="n">e</span><span class="p">)</span>
+
+        <span class="c1"># When propagate_exceptions is set, do not return the exception to the</span>
+        <span class="c1"># client if a handler is configured for the exception.</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">HTTPException</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="n">current_app</span><span class="o">.</span><span class="n">propagate_exceptions</span>
+            <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">error_handlers</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
+        <span class="p">):</span>
+
+            <span class="n">exc_type</span><span class="p">,</span> <span class="n">exc_value</span><span class="p">,</span> <span class="n">tb</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">exc_value</span> <span class="ow">is</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">raise</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">e</span>
+
+        <span class="n">include_message_in_response</span> <span class="o">=</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="s2">&quot;ERROR_INCLUDE_MESSAGE&quot;</span><span class="p">,</span> <span class="kc">True</span>
+        <span class="p">)</span>
+        <span class="n">default_data</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="n">headers</span> <span class="o">=</span> <span class="n">Headers</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">typecheck</span><span class="p">,</span> <span class="n">handler</span> <span class="ow">in</span> <span class="n">six</span><span class="o">.</span><span class="n">iteritems</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_own_and_child_error_handlers</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">typecheck</span><span class="p">):</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="n">handler</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+                <span class="n">default_data</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">headers</span> <span class="o">=</span> <span class="n">unpack</span><span class="p">(</span>
+                    <span class="n">result</span><span class="p">,</span> <span class="n">HTTPStatus</span><span class="o">.</span><span class="n">INTERNAL_SERVER_ERROR</span>
+                <span class="p">)</span>
+                <span class="k">break</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">HTTPException</span><span class="p">):</span>
+                <span class="n">code</span> <span class="o">=</span> <span class="n">HTTPStatus</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">code</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">include_message_in_response</span><span class="p">:</span>
+                    <span class="n">default_data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="s2">&quot;description&quot;</span><span class="p">,</span> <span class="n">code</span><span class="o">.</span><span class="n">phrase</span><span class="p">)}</span>
+                <span class="n">headers</span> <span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="n">get_response</span><span class="p">()</span><span class="o">.</span><span class="n">headers</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_default_error_handler</span><span class="p">:</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_default_error_handler</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+                <span class="n">default_data</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">headers</span> <span class="o">=</span> <span class="n">unpack</span><span class="p">(</span>
+                    <span class="n">result</span><span class="p">,</span> <span class="n">HTTPStatus</span><span class="o">.</span><span class="n">INTERNAL_SERVER_ERROR</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">code</span> <span class="o">=</span> <span class="n">HTTPStatus</span><span class="o">.</span><span class="n">INTERNAL_SERVER_ERROR</span>
+                <span class="k">if</span> <span class="n">include_message_in_response</span><span class="p">:</span>
+                    <span class="n">default_data</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="n">code</span><span class="o">.</span><span class="n">phrase</span><span class="p">,</span>
+                    <span class="p">}</span>
+
+        <span class="k">if</span> <span class="n">include_message_in_response</span><span class="p">:</span>
+            <span class="n">default_data</span><span class="p">[</span><span class="s2">&quot;message&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">default_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;message&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="n">default_data</span><span class="p">)</span>
+        <span class="n">fallback_mediatype</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">code</span> <span class="o">&gt;=</span> <span class="n">HTTPStatus</span><span class="o">.</span><span class="n">INTERNAL_SERVER_ERROR</span><span class="p">:</span>
+            <span class="n">exc_info</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">exc_info</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">exc_info</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">current_app</span><span class="o">.</span><span class="n">log_exception</span><span class="p">(</span><span class="n">exc_info</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="p">(</span>
+            <span class="n">code</span> <span class="o">==</span> <span class="n">HTTPStatus</span><span class="o">.</span><span class="n">NOT_FOUND</span>
+            <span class="ow">and</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ERROR_404_HELP&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="n">include_message_in_response</span>
+        <span class="p">):</span>
+            <span class="n">data</span><span class="p">[</span><span class="s2">&quot;message&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_help_on_404</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;message&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
+
+        <span class="k">elif</span> <span class="n">code</span> <span class="o">==</span> <span class="n">HTTPStatus</span><span class="o">.</span><span class="n">NOT_ACCEPTABLE</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_mediatype</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># if we are handling NotAcceptable (406), make sure that</span>
+            <span class="c1"># make_response uses a representation we support as the</span>
+            <span class="c1"># default mediatype (so that make_response doesn&#39;t throw</span>
+            <span class="c1"># another NotAcceptable error).</span>
+            <span class="n">supported_mediatypes</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">representations</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+            <span class="n">fallback_mediatype</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">supported_mediatypes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">supported_mediatypes</span> <span class="k">else</span> <span class="s2">&quot;text/plain&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Remove blacklisted headers</span>
+        <span class="k">for</span> <span class="n">header</span> <span class="ow">in</span> <span class="n">HEADERS_BLACKLIST</span><span class="p">:</span>
+            <span class="n">headers</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">header</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="n">resp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">make_response</span><span class="p">(</span>
+            <span class="n">data</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">headers</span><span class="p">,</span> <span class="n">fallback_mediatype</span><span class="o">=</span><span class="n">fallback_mediatype</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">code</span> <span class="o">==</span> <span class="n">HTTPStatus</span><span class="o">.</span><span class="n">UNAUTHORIZED</span><span class="p">:</span>
+            <span class="n">resp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unauthorized</span><span class="p">(</span><span class="n">resp</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">resp</span>
+
+    <span class="k">def</span> <span class="nf">_help_on_404</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">rules</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="p">(</span><span class="n">RE_RULES</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">rule</span><span class="o">.</span><span class="n">rule</span><span class="p">),</span> <span class="n">rule</span><span class="o">.</span><span class="n">rule</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">rule</span> <span class="ow">in</span> <span class="n">current_app</span><span class="o">.</span><span class="n">url_map</span><span class="o">.</span><span class="n">iter_rules</span><span class="p">()</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
+        <span class="n">close_matches</span> <span class="o">=</span> <span class="n">difflib</span><span class="o">.</span><span class="n">get_close_matches</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="n">rules</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="k">if</span> <span class="n">close_matches</span><span class="p">:</span>
+            <span class="c1"># If we already have a message, add punctuation and continue it.</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                <span class="p">(</span>
+                    <span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;. &quot;</span><span class="p">)</span> <span class="k">if</span> <span class="n">message</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;You have requested this URI [&quot;</span><span class="p">,</span>
+                    <span class="n">request</span><span class="o">.</span><span class="n">path</span><span class="p">,</span>
+                    <span class="s2">&quot;] but did you mean &quot;</span><span class="p">,</span>
+                    <span class="s2">&quot; or &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">((</span><span class="n">rules</span><span class="p">[</span><span class="n">match</span><span class="p">]</span> <span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">close_matches</span><span class="p">)),</span>
+                    <span class="s2">&quot; ?&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">message</span>
+
+    <span class="k">def</span> <span class="nf">as_postman</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">urlvars</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">swagger</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Serialize the API as Postman collection (v1)</span>
+
+<span class="sd">        :param bool urlvars: whether to include or not placeholders for query strings</span>
+<span class="sd">        :param bool swagger: whether to include or not the swagger.json specifications</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">PostmanCollectionV1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">swagger</span><span class="o">=</span><span class="n">swagger</span><span class="p">)</span><span class="o">.</span><span class="n">as_dict</span><span class="p">(</span><span class="n">urlvars</span><span class="o">=</span><span class="n">urlvars</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">payload</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Store the input payload in the current request context&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">request</span><span class="o">.</span><span class="n">get_json</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">refresolver</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_refresolver</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_refresolver</span> <span class="o">=</span> <span class="n">RefResolver</span><span class="o">.</span><span class="n">from_schema</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__schema__</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_refresolver</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_blueprint_setup_add_url_rule_patch</span><span class="p">(</span>
+        <span class="n">blueprint_setup</span><span class="p">,</span> <span class="n">rule</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">view_func</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Method used to patch BlueprintSetupState.add_url_rule for setup</span>
+<span class="sd">        state instance corresponding to this Api instance.  Exists primarily</span>
+<span class="sd">        to enable _complete_url&#39;s function.</span>
+
+<span class="sd">        :param blueprint_setup: The BlueprintSetupState instance (self)</span>
+<span class="sd">        :param rule: A string or callable that takes a string and returns a</span>
+<span class="sd">            string(_complete_url) that is the url rule for the endpoint</span>
+<span class="sd">            being registered</span>
+<span class="sd">        :param endpoint: See BlueprintSetupState.add_url_rule</span>
+<span class="sd">        :param view_func: See BlueprintSetupState.add_url_rule</span>
+<span class="sd">        :param **options: See BlueprintSetupState.add_url_rule</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">callable</span><span class="p">(</span><span class="n">rule</span><span class="p">):</span>
+            <span class="n">rule</span> <span class="o">=</span> <span class="n">rule</span><span class="p">(</span><span class="n">blueprint_setup</span><span class="o">.</span><span class="n">url_prefix</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">blueprint_setup</span><span class="o">.</span><span class="n">url_prefix</span><span class="p">:</span>
+            <span class="n">rule</span> <span class="o">=</span> <span class="n">blueprint_setup</span><span class="o">.</span><span class="n">url_prefix</span> <span class="o">+</span> <span class="n">rule</span>
+        <span class="n">options</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;subdomain&quot;</span><span class="p">,</span> <span class="n">blueprint_setup</span><span class="o">.</span><span class="n">subdomain</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">endpoint</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">endpoint</span> <span class="o">=</span> <span class="n">_endpoint_from_view_func</span><span class="p">(</span><span class="n">view_func</span><span class="p">)</span>
+        <span class="n">defaults</span> <span class="o">=</span> <span class="n">blueprint_setup</span><span class="o">.</span><span class="n">url_defaults</span>
+        <span class="k">if</span> <span class="s2">&quot;defaults&quot;</span> <span class="ow">in</span> <span class="n">options</span><span class="p">:</span>
+            <span class="n">defaults</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">defaults</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;defaults&quot;</span><span class="p">))</span>
+        <span class="n">blueprint_setup</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">add_url_rule</span><span class="p">(</span>
+            <span class="n">rule</span><span class="p">,</span>
+            <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">.</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">blueprint_setup</span><span class="o">.</span><span class="n">blueprint</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">endpoint</span><span class="p">),</span>
+            <span class="n">view_func</span><span class="p">,</span>
+            <span class="n">defaults</span><span class="o">=</span><span class="n">defaults</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">options</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_deferred_blueprint_init</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">setup_state</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Synchronize prefix between blueprint/api and registration options, then</span>
+<span class="sd">        perform initialization with setup_state.app :class:`flask.Flask` object.</span>
+<span class="sd">        When a :class:`flask_restx.Api` object is initialized with a blueprint,</span>
+<span class="sd">        this method is recorded on the blueprint to be run when the blueprint is later</span>
+<span class="sd">        registered to a :class:`flask.Flask` object.  This method also monkeypatches</span>
+<span class="sd">        BlueprintSetupState.add_url_rule with _blueprint_setup_add_url_rule_patch.</span>
+
+<span class="sd">        :param setup_state: The setup state object passed to deferred functions</span>
+<span class="sd">            during blueprint registration</span>
+<span class="sd">        :type setup_state: flask.blueprints.BlueprintSetupState</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">blueprint_setup</span> <span class="o">=</span> <span class="n">setup_state</span>
+        <span class="k">if</span> <span class="n">setup_state</span><span class="o">.</span><span class="n">add_url_rule</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">!=</span> <span class="s2">&quot;_blueprint_setup_add_url_rule_patch&quot;</span><span class="p">:</span>
+            <span class="n">setup_state</span><span class="o">.</span><span class="n">_original_add_url_rule</span> <span class="o">=</span> <span class="n">setup_state</span><span class="o">.</span><span class="n">add_url_rule</span>
+            <span class="n">setup_state</span><span class="o">.</span><span class="n">add_url_rule</span> <span class="o">=</span> <span class="n">MethodType</span><span class="p">(</span>
+                <span class="n">Api</span><span class="o">.</span><span class="n">_blueprint_setup_add_url_rule_patch</span><span class="p">,</span> <span class="n">setup_state</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">setup_state</span><span class="o">.</span><span class="n">first_registration</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;flask-restx blueprints can only be registered once.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init_app</span><span class="p">(</span><span class="n">setup_state</span><span class="o">.</span><span class="n">app</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">mediatypes_method</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a method that returns a list of mediatypes&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="k">lambda</span> <span class="n">resource_cls</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">mediatypes</span><span class="p">()</span> <span class="o">+</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">default_mediatype</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">mediatypes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns a list of requested mediatypes sent in the Accept header&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span>
+            <span class="n">h</span>
+            <span class="k">for</span> <span class="n">h</span><span class="p">,</span> <span class="n">q</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span>
+                <span class="n">request</span><span class="o">.</span><span class="n">accept_mimetypes</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">operator</span><span class="o">.</span><span class="n">itemgetter</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span>
+            <span class="p">)</span>
+        <span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">representation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mediatype</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Allows additional representation transformers to be declared for the</span>
+<span class="sd">        api. Transformers are functions that must be decorated with this</span>
+<span class="sd">        method, passing the mediatype the transformer represents. Three</span>
+<span class="sd">        arguments are passed to the transformer:</span>
+
+<span class="sd">        * The data to be represented in the response body</span>
+<span class="sd">        * The http status code</span>
+<span class="sd">        * A dictionary of headers</span>
+
+<span class="sd">        The transformer should convert the data appropriately for the mediatype</span>
+<span class="sd">        and return a Flask response object.</span>
+
+<span class="sd">        Ex::</span>
+
+<span class="sd">            @api.representation(&#39;application/xml&#39;)</span>
+<span class="sd">            def xml(data, code, headers):</span>
+<span class="sd">                resp = make_response(convert_data_to_xml(data), code)</span>
+<span class="sd">                resp.headers.extend(headers)</span>
+<span class="sd">                return resp</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">representations</span><span class="p">[</span><span class="n">mediatype</span><span class="p">]</span> <span class="o">=</span> <span class="n">func</span>
+            <span class="k">return</span> <span class="n">func</span>
+
+        <span class="k">return</span> <span class="n">wrapper</span>
+
+    <span class="k">def</span> <span class="nf">unauthorized</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Given a response, change it to ask for credentials&quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">serve_challenge_on_401</span><span class="p">:</span>
+            <span class="n">realm</span> <span class="o">=</span> <span class="n">current_app</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;HTTP_BASIC_AUTH_REALM&quot;</span><span class="p">,</span> <span class="s2">&quot;flask-restx&quot;</span><span class="p">)</span>
+            <span class="n">challenge</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{0}</span><span class="s1"> realm=&quot;</span><span class="si">{1}</span><span class="s1">&quot;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;Basic&quot;</span><span class="p">,</span> <span class="n">realm</span><span class="p">)</span>
+
+            <span class="n">response</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s2">&quot;WWW-Authenticate&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">challenge</span>
+        <span class="k">return</span> <span class="n">response</span>
+
+    <span class="k">def</span> <span class="nf">url_for</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resource</span><span class="p">,</span> <span class="o">**</span><span class="n">values</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generates a URL to the given resource.</span>
+
+<span class="sd">        Works like :func:`flask.url_for`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">endpoint</span> <span class="o">=</span> <span class="n">resource</span><span class="o">.</span><span class="n">endpoint</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">blueprint</span><span class="p">:</span>
+            <span class="n">endpoint</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{0}</span><span class="s2">.</span><span class="si">{1}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">blueprint</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">endpoint</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">url_for</span><span class="p">(</span><span class="n">endpoint</span><span class="p">,</span> <span class="o">**</span><span class="n">values</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">SwaggerView</span><span class="p">(</span><span class="n">Resource</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Render the Swagger specifications as JSON&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">schema</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">__schema__</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">schema</span><span class="p">,</span>
+            <span class="n">HTTPStatus</span><span class="o">.</span><span class="n">INTERNAL_SERVER_ERROR</span> <span class="k">if</span> <span class="s2">&quot;error&quot;</span> <span class="ow">in</span> <span class="n">schema</span> <span class="k">else</span> <span class="n">HTTPStatus</span><span class="o">.</span><span class="n">OK</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">mediatypes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="s2">&quot;application/json&quot;</span><span class="p">]</span>
+
+
+<span class="k">def</span> <span class="nf">mask_parse_error_handler</span><span class="p">(</span><span class="n">error</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;When a mask can&#39;t be parsed&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;Mask parse error: </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">error</span><span class="p">)},</span> <span class="n">HTTPStatus</span><span class="o">.</span><span class="n">BAD_REQUEST</span>
+
+
+<span class="k">def</span> <span class="nf">mask_error_handler</span><span class="p">(</span><span class="n">error</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;When any error occurs on mask&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;Mask error: </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">error</span><span class="p">)},</span> <span class="n">HTTPStatus</span><span class="o">.</span><span class="n">BAD_REQUEST</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2020, Artefactual Systems Inc..
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+    <a href="https://github.com/artefactual-labs/AIPscan" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

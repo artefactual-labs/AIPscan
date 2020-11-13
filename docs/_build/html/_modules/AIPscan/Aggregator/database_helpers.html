@@ -1,0 +1,403 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AIPscan.Aggregator.database_helpers &#8212; AIPscan 0.x documentation</title>
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">AIPscan</a></h1>
+
+
+
+<p class="blurb">Reporting for Archivematica</p>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">AIPscan</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  <li><a href="../../AIPscan.html">AIPscan</a><ul>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for AIPscan.Aggregator.database_helpers</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="sd">&quot;&quot;&quot;Functions to help us tease apart a METS file and write to the</span>
+<span class="sd">database.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">celery.utils.log</span> <span class="kn">import</span> <span class="n">get_task_logger</span>
+
+<span class="kn">from</span> <span class="nn">AIPscan</span> <span class="kn">import</span> <span class="n">db</span>
+<span class="kn">from</span> <span class="nn">AIPscan.models</span> <span class="kn">import</span> <span class="n">AIP</span><span class="p">,</span> <span class="n">File</span><span class="p">,</span> <span class="n">FileType</span><span class="p">,</span> <span class="n">Event</span><span class="p">,</span> <span class="n">Agent</span><span class="p">,</span> <span class="n">EventAgent</span>
+
+<span class="kn">from</span> <span class="nn">AIPscan.Aggregator.task_helpers</span> <span class="kn">import</span> <span class="n">_tz_neutral_date</span>
+<span class="kn">from</span> <span class="nn">AIPscan.Aggregator</span> <span class="kn">import</span> <span class="n">tasks</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">get_task_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<span class="n">ORIGINAL_OBJECT</span> <span class="o">=</span> <span class="s2">&quot;original&quot;</span>
+<span class="n">PRESERVATION_OBJECT</span> <span class="o">=</span> <span class="s2">&quot;preservation&quot;</span>
+
+
+<span class="k">def</span> <span class="nf">_extract_event_detail</span><span class="p">(</span><span class="n">premis_event</span><span class="p">,</span> <span class="n">file_id</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Extract the detail from the event and write a new event object</span>
+<span class="sd">    to the database&quot;&quot;&quot;</span>
+    <span class="n">event_type</span> <span class="o">=</span> <span class="n">premis_event</span><span class="o">.</span><span class="n">event_type</span>
+    <span class="n">event_uuid</span> <span class="o">=</span> <span class="n">premis_event</span><span class="o">.</span><span class="n">event_identifier_value</span>
+    <span class="n">event_date</span> <span class="o">=</span> <span class="n">_tz_neutral_date</span><span class="p">(</span><span class="n">premis_event</span><span class="o">.</span><span class="n">event_date_time</span><span class="p">)</span>
+    <span class="c1"># We have a strange issue with this logged: https://github.com/archivematica/Issues/issues/743</span>
+    <span class="n">event_detail</span><span class="p">,</span> <span class="n">event_outcome</span><span class="p">,</span> <span class="n">event_outcome_detail</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">premis_event</span><span class="o">.</span><span class="n">event_detail</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+        <span class="n">event_detail</span> <span class="o">=</span> <span class="n">premis_event</span><span class="o">.</span><span class="n">event_detail</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">premis_event</span><span class="o">.</span><span class="n">event_outcome</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+        <span class="n">event_outcome</span> <span class="o">=</span> <span class="n">premis_event</span><span class="o">.</span><span class="n">event_outcome</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">premis_event</span><span class="o">.</span><span class="n">event_outcome_detail_note</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+        <span class="n">event_outcome_detail</span> <span class="o">=</span> <span class="n">premis_event</span><span class="o">.</span><span class="n">event_outcome_detail_note</span>
+    <span class="n">event</span> <span class="o">=</span> <span class="n">Event</span><span class="p">(</span>
+        <span class="nb">type</span><span class="o">=</span><span class="n">event_type</span><span class="p">,</span>
+        <span class="n">uuid</span><span class="o">=</span><span class="n">event_uuid</span><span class="p">,</span>
+        <span class="n">date</span><span class="o">=</span><span class="n">event_date</span><span class="p">,</span>
+        <span class="n">detail</span><span class="o">=</span><span class="n">event_detail</span><span class="p">,</span>
+        <span class="n">outcome</span><span class="o">=</span><span class="n">event_outcome</span><span class="p">,</span>
+        <span class="n">outcome_detail</span><span class="o">=</span><span class="n">event_outcome_detail</span><span class="p">,</span>
+        <span class="n">file_id</span><span class="o">=</span><span class="n">file_id</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">event</span>
+
+
+<span class="k">def</span> <span class="nf">_create_agent_type_id</span><span class="p">(</span><span class="n">identifier_type</span><span class="p">,</span> <span class="n">identifier_value</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Create a key-pair string for the linking_type_value in the db.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">identifier_type</span><span class="p">,</span> <span class="n">identifier_value</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_create_event_agent_relationship</span><span class="p">(</span><span class="n">event_id</span><span class="p">,</span> <span class="n">agent_identifier</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Generator object helper for looping through an event&#39;s agents and</span>
+<span class="sd">    returning the event-agent IDs.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">agent_</span> <span class="ow">in</span> <span class="n">agent_identifier</span><span class="p">:</span>
+        <span class="n">id_</span> <span class="o">=</span> <span class="n">_create_agent_type_id</span><span class="p">(</span>
+            <span class="n">agent_</span><span class="o">.</span><span class="n">linking_agent_identifier_type</span><span class="p">,</span> <span class="n">agent_</span><span class="o">.</span><span class="n">linking_agent_identifier_value</span>
+        <span class="p">)</span>
+        <span class="n">existing_agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">linking_type_value</span><span class="o">=</span><span class="n">id_</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+        <span class="n">event_relationship</span> <span class="o">=</span> <span class="n">EventAgent</span><span class="o">.</span><span class="n">insert</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="p">(</span>
+            <span class="n">event_id</span><span class="o">=</span><span class="n">event_id</span><span class="p">,</span> <span class="n">agent_id</span><span class="o">=</span><span class="n">existing_agent</span><span class="o">.</span><span class="n">id</span>
+        <span class="p">)</span>
+        <span class="k">yield</span> <span class="n">event_relationship</span>
+
+
+<div class="viewcode-block" id="create_event_objects"><a class="viewcode-back" href="../../../AIPscan.Aggregator.html#AIPscan.Aggregator.database_helpers.create_event_objects">[docs]</a><span class="k">def</span> <span class="nf">create_event_objects</span><span class="p">(</span><span class="n">fs_entry</span><span class="p">,</span> <span class="n">file_id</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Add information about PREMIS Events associated with file to database</span>
+
+<span class="sd">    :param fs_entry: mets-reader-writer FSEntry object</span>
+<span class="sd">    :param file_id: File ID</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">premis_event</span> <span class="ow">in</span> <span class="n">fs_entry</span><span class="o">.</span><span class="n">get_premis_events</span><span class="p">():</span>
+        <span class="n">event</span> <span class="o">=</span> <span class="n">_extract_event_detail</span><span class="p">(</span><span class="n">premis_event</span><span class="p">,</span> <span class="n">file_id</span><span class="p">)</span>
+        <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+        <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">event_relationship</span> <span class="ow">in</span> <span class="n">_create_event_agent_relationship</span><span class="p">(</span>
+            <span class="n">event</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">premis_event</span><span class="o">.</span><span class="n">linking_agent_identifier</span>
+        <span class="p">):</span>
+            <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">event_relationship</span><span class="p">)</span>
+        <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span></div>
+
+
+<span class="k">def</span> <span class="nf">_extract_agent_detail</span><span class="p">(</span><span class="n">agent</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Pull the agent information from the agent record and return an</span>
+<span class="sd">    agent object ready to insert into the database.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">linking_type_value</span> <span class="o">=</span> <span class="n">agent</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">agent_type</span> <span class="o">=</span> <span class="n">agent</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">agent_value</span> <span class="o">=</span> <span class="n">agent</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">Agent</span><span class="p">(</span>
+        <span class="n">linking_type_value</span><span class="o">=</span><span class="n">linking_type_value</span><span class="p">,</span>
+        <span class="n">agent_type</span><span class="o">=</span><span class="n">agent_type</span><span class="p">,</span>
+        <span class="n">agent_value</span><span class="o">=</span><span class="n">agent_value</span><span class="p">,</span>
+    <span class="p">)</span>
+
+
+<div class="viewcode-block" id="create_agent_objects"><a class="viewcode-back" href="../../../AIPscan.Aggregator.html#AIPscan.Aggregator.database_helpers.create_agent_objects">[docs]</a><span class="k">def</span> <span class="nf">create_agent_objects</span><span class="p">(</span><span class="n">unique_agents</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Add our agents to the database. The list is already the</span>
+<span class="sd">    equivalent of a set by the time it reaches here and so we don&#39;t</span>
+<span class="sd">    need to perform any de-duplication.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">agent</span> <span class="ow">in</span> <span class="n">unique_agents</span><span class="p">:</span>
+        <span class="n">agent_obj</span> <span class="o">=</span> <span class="n">_extract_agent_detail</span><span class="p">(</span><span class="n">agent</span><span class="p">)</span>
+        <span class="n">exists</span> <span class="o">=</span> <span class="n">Agent</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span>
+            <span class="n">linking_type_value</span><span class="o">=</span><span class="n">agent_obj</span><span class="o">.</span><span class="n">linking_type_value</span><span class="p">,</span>
+            <span class="n">agent_type</span><span class="o">=</span><span class="n">agent_obj</span><span class="o">.</span><span class="n">agent_type</span><span class="p">,</span>
+            <span class="n">agent_value</span><span class="o">=</span><span class="n">agent_obj</span><span class="o">.</span><span class="n">agent_value</span><span class="p">,</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">exists</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Adding: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">agent_obj</span><span class="p">)</span>
+        <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">agent_obj</span><span class="p">)</span>
+    <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span></div>
+
+
+<span class="k">def</span> <span class="nf">_get_unique_agents</span><span class="p">(</span><span class="n">all_agents</span><span class="p">,</span> <span class="n">agents_list</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return unique agents associated with a file in the AIP. Returns</span>
+<span class="sd">    a list of tuples organized by (linking_type_value, type,</span>
+<span class="sd">    value), e.g. (Archivematica user pk 4, Archivematica User, Eric).</span>
+<span class="sd">    Linking type and value become one because only together are these</span>
+<span class="sd">    two considered useful, they just happen to exist as two elements</span>
+<span class="sd">    in the PREMIS dictionary.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">agents</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">linking_type_value</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">agent</span> <span class="ow">in</span> <span class="n">all_agents</span><span class="p">:</span>
+        <span class="n">linking_type_value</span> <span class="o">=</span> <span class="n">_create_agent_type_id</span><span class="p">(</span>
+            <span class="n">agent</span><span class="o">.</span><span class="n">agent_identifier</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">agent_identifier_type</span><span class="p">,</span>
+            <span class="n">agent</span><span class="o">.</span><span class="n">agent_identifier</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">agent_identifier_value</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">agent_tuple</span> <span class="o">=</span> <span class="p">(</span><span class="n">linking_type_value</span><span class="p">,</span> <span class="n">agent</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="n">agent</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">agent_tuple</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">agents_list</span><span class="p">:</span>
+            <span class="n">agents</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">agent_tuple</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">agents</span>
+
+
+<div class="viewcode-block" id="create_aip_object"><a class="viewcode-back" href="../../../AIPscan.Aggregator.html#AIPscan.Aggregator.database_helpers.create_aip_object">[docs]</a><span class="k">def</span> <span class="nf">create_aip_object</span><span class="p">(</span>
+    <span class="n">package_uuid</span><span class="p">,</span> <span class="n">transfer_name</span><span class="p">,</span> <span class="n">create_date</span><span class="p">,</span> <span class="n">storage_service_id</span><span class="p">,</span> <span class="n">fetch_job_id</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Create an AIP object and save it to the database.&quot;&quot;&quot;</span>
+    <span class="n">aip</span> <span class="o">=</span> <span class="n">AIP</span><span class="p">(</span>
+        <span class="n">uuid</span><span class="o">=</span><span class="n">package_uuid</span><span class="p">,</span>
+        <span class="n">transfer_name</span><span class="o">=</span><span class="n">transfer_name</span><span class="p">,</span>
+        <span class="n">create_date</span><span class="o">=</span><span class="n">_tz_neutral_date</span><span class="p">(</span><span class="n">create_date</span><span class="p">),</span>
+        <span class="n">storage_service_id</span><span class="o">=</span><span class="n">storage_service_id</span><span class="p">,</span>
+        <span class="n">fetch_job_id</span><span class="o">=</span><span class="n">fetch_job_id</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">aip</span><span class="p">)</span>
+    <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">aip</span></div>
+
+
+<span class="k">def</span> <span class="nf">_get_file_properties</span><span class="p">(</span><span class="n">fs_entry</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Retrieve file properties from FSEntry</span>
+
+<span class="sd">    :param fs_entry: mets-reader-writer FSEntry object</span>
+
+<span class="sd">    :returns: Dict of file properties</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">file_info</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;uuid&quot;</span><span class="p">:</span> <span class="n">fs_entry</span><span class="o">.</span><span class="n">file_uuid</span><span class="p">,</span>
+        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">fs_entry</span><span class="o">.</span><span class="n">label</span><span class="p">,</span>
+        <span class="s2">&quot;filepath&quot;</span><span class="p">:</span> <span class="n">fs_entry</span><span class="o">.</span><span class="n">path</span><span class="p">,</span>
+        <span class="s2">&quot;size&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="s2">&quot;date_created&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="s2">&quot;puid&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="s2">&quot;file_format&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="s2">&quot;format_version&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="s2">&quot;checksum_type&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="s2">&quot;checksum_value&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="s2">&quot;related_uuid&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">premis_object</span> <span class="ow">in</span> <span class="n">fs_entry</span><span class="o">.</span><span class="n">get_premis_objects</span><span class="p">():</span>
+            <span class="n">file_info</span><span class="p">[</span><span class="s2">&quot;size&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">premis_object</span><span class="o">.</span><span class="n">size</span>
+            <span class="n">key_alias</span> <span class="o">=</span> <span class="n">premis_object</span><span class="o">.</span><span class="n">format_registry_key</span>
+            <span class="n">file_info</span><span class="p">[</span><span class="s2">&quot;date_created&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_tz_neutral_date</span><span class="p">(</span>
+                <span class="n">premis_object</span><span class="o">.</span><span class="n">date_created_by_application</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key_alias</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+                <span class="n">file_info</span><span class="p">[</span><span class="s2">&quot;puid&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">key_alias</span>
+            <span class="n">file_info</span><span class="p">[</span><span class="s2">&quot;file_format&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">premis_object</span><span class="o">.</span><span class="n">format_name</span>
+            <span class="n">version_alias</span> <span class="o">=</span> <span class="n">premis_object</span><span class="o">.</span><span class="n">format_version</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">version_alias</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+                <span class="n">file_info</span><span class="p">[</span><span class="s2">&quot;format_version&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">version_alias</span>
+            <span class="n">file_info</span><span class="p">[</span><span class="s2">&quot;checksum_type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">premis_object</span><span class="o">.</span><span class="n">message_digest_algorithm</span>
+            <span class="n">file_info</span><span class="p">[</span><span class="s2">&quot;checksum_value&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">premis_object</span><span class="o">.</span><span class="n">message_digest</span>
+            <span class="n">related_uuid_alias</span> <span class="o">=</span> <span class="n">premis_object</span><span class="o">.</span><span class="n">related_object_identifier_value</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">related_uuid_alias</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+                <span class="n">file_info</span><span class="p">[</span><span class="s2">&quot;related_uuid&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">related_uuid_alias</span>
+    <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+        <span class="c1"># File error/warning to log. Obviously this format may</span>
+        <span class="c1"># be incorrect so it is our best guess.</span>
+        <span class="n">file_info</span><span class="p">[</span><span class="s2">&quot;file_format&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;ISO Disk Image File&quot;</span>
+        <span class="n">file_info</span><span class="p">[</span><span class="s2">&quot;puid&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;fmt/468&quot;</span>
+
+    <span class="k">return</span> <span class="n">file_info</span>
+
+
+<span class="k">def</span> <span class="nf">_add_normalization_date</span><span class="p">(</span><span class="n">file_id</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Add normalization date from PREMIS creation Event to preservation file</span>
+
+<span class="sd">    :param file_id: File ID</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">file_</span> <span class="o">=</span> <span class="n">File</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">file_id</span><span class="p">)</span>
+    <span class="n">creation_event</span> <span class="o">=</span> <span class="n">Event</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">file_id</span><span class="o">=</span><span class="n">file_</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;creation&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">creation_event</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">file_</span><span class="o">.</span><span class="n">date_created</span> <span class="o">=</span> <span class="n">creation_event</span><span class="o">.</span><span class="n">date</span>
+        <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+
+
+<span class="k">def</span> <span class="nf">_add_file</span><span class="p">(</span><span class="n">file_type</span><span class="p">,</span> <span class="n">fs_entry</span><span class="p">,</span> <span class="n">aip_id</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Add file to database</span>
+
+<span class="sd">    :param file_type: models.FileType enum</span>
+<span class="sd">    :param fs_entry: mets-reader-writer FSEntry object</span>
+<span class="sd">    :param aip_id: AIP ID</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">file_info</span> <span class="o">=</span> <span class="n">_get_file_properties</span><span class="p">(</span><span class="n">fs_entry</span><span class="p">)</span>
+
+    <span class="n">original_file_id</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">file_type</span> <span class="ow">is</span> <span class="n">FileType</span><span class="o">.</span><span class="n">preservation</span><span class="p">:</span>
+        <span class="n">original_file</span> <span class="o">=</span> <span class="n">File</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">uuid</span><span class="o">=</span><span class="n">file_info</span><span class="p">[</span><span class="s2">&quot;related_uuid&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+        <span class="n">original_file_id</span> <span class="o">=</span> <span class="n">original_file</span><span class="o">.</span><span class="n">id</span>
+
+    <span class="n">new_file</span> <span class="o">=</span> <span class="n">File</span><span class="p">(</span>
+        <span class="n">name</span><span class="o">=</span><span class="n">file_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">),</span>
+        <span class="n">filepath</span><span class="o">=</span><span class="n">file_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;filepath&quot;</span><span class="p">),</span>
+        <span class="n">uuid</span><span class="o">=</span><span class="n">file_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;uuid&quot;</span><span class="p">),</span>
+        <span class="n">file_type</span><span class="o">=</span><span class="n">file_type</span><span class="p">,</span>
+        <span class="n">size</span><span class="o">=</span><span class="n">file_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;size&quot;</span><span class="p">),</span>
+        <span class="n">date_created</span><span class="o">=</span><span class="n">file_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;date_created&quot;</span><span class="p">),</span>
+        <span class="n">puid</span><span class="o">=</span><span class="n">file_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;puid&quot;</span><span class="p">),</span>
+        <span class="n">file_format</span><span class="o">=</span><span class="n">file_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;file_format&quot;</span><span class="p">),</span>
+        <span class="n">format_version</span><span class="o">=</span><span class="n">file_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;format_version&quot;</span><span class="p">),</span>
+        <span class="n">checksum_type</span><span class="o">=</span><span class="n">file_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;checksum_type&quot;</span><span class="p">),</span>
+        <span class="n">checksum_value</span><span class="o">=</span><span class="n">file_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;checksum_value&quot;</span><span class="p">),</span>
+        <span class="n">original_file_id</span><span class="o">=</span><span class="n">original_file_id</span><span class="p">,</span>
+        <span class="n">aip_id</span><span class="o">=</span><span class="n">aip_id</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Adding file </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">new_file</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">aip_id</span><span class="p">)</span>
+
+    <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">new_file</span><span class="p">)</span>
+    <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+
+    <span class="n">create_event_objects</span><span class="p">(</span><span class="n">fs_entry</span><span class="p">,</span> <span class="n">new_file</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">file_type</span> <span class="o">==</span> <span class="n">FileType</span><span class="o">.</span><span class="n">preservation</span><span class="p">:</span>
+        <span class="n">_add_normalization_date</span><span class="p">(</span><span class="n">new_file</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="collect_mets_agents"><a class="viewcode-back" href="../../../AIPscan.Aggregator.html#AIPscan.Aggregator.database_helpers.collect_mets_agents">[docs]</a><span class="k">def</span> <span class="nf">collect_mets_agents</span><span class="p">(</span><span class="n">mets</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Collect all of the unique agents in the METS file to write to the</span>
+<span class="sd">    database.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">agents</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">aip_file</span> <span class="ow">in</span> <span class="n">mets</span><span class="o">.</span><span class="n">all_files</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">aip_file</span><span class="o">.</span><span class="n">use</span> <span class="o">!=</span> <span class="n">ORIGINAL_OBJECT</span> <span class="ow">and</span> <span class="n">aip_file</span><span class="o">.</span><span class="n">use</span> <span class="o">!=</span> <span class="n">PRESERVATION_OBJECT</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">agents</span> <span class="o">=</span> <span class="n">agents</span> <span class="o">+</span> <span class="n">_get_unique_agents</span><span class="p">(</span><span class="n">aip_file</span><span class="o">.</span><span class="n">get_premis_agents</span><span class="p">(),</span> <span class="n">agents</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Total  agents: </span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">agents</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">agents</span></div>
+
+
+<div class="viewcode-block" id="process_aip_data"><a class="viewcode-back" href="../../../AIPscan.Aggregator.html#AIPscan.Aggregator.database_helpers.process_aip_data">[docs]</a><span class="k">def</span> <span class="nf">process_aip_data</span><span class="p">(</span><span class="n">aip</span><span class="p">,</span> <span class="n">mets</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Populate database with information needed for reporting from METS file</span>
+
+<span class="sd">    :param aip: AIP object</span>
+<span class="sd">    :param mets: mets-reader-writer METSDocument object</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">tasks</span><span class="o">.</span><span class="n">get_mets</span><span class="o">.</span><span class="n">update_state</span><span class="p">(</span><span class="n">state</span><span class="o">=</span><span class="s2">&quot;IN PROGRESS&quot;</span><span class="p">)</span>
+
+    <span class="n">create_agent_objects</span><span class="p">(</span><span class="n">collect_mets_agents</span><span class="p">(</span><span class="n">mets</span><span class="p">))</span>
+
+    <span class="n">all_files</span> <span class="o">=</span> <span class="n">mets</span><span class="o">.</span><span class="n">all_files</span><span class="p">()</span>
+
+    <span class="c1"># Parse the original files first so that they are available as foreign keys</span>
+    <span class="c1"># when we parse preservation and derivative files.</span>
+    <span class="n">original_files</span> <span class="o">=</span> <span class="p">[</span><span class="n">file_</span> <span class="k">for</span> <span class="n">file_</span> <span class="ow">in</span> <span class="n">all_files</span> <span class="k">if</span> <span class="n">file_</span><span class="o">.</span><span class="n">use</span> <span class="o">==</span> <span class="s2">&quot;original&quot;</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">file_</span> <span class="ow">in</span> <span class="n">original_files</span><span class="p">:</span>
+        <span class="n">_add_file</span><span class="p">(</span><span class="n">FileType</span><span class="o">.</span><span class="n">original</span><span class="p">,</span> <span class="n">file_</span><span class="p">,</span> <span class="n">aip</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+
+    <span class="n">preservation_files</span> <span class="o">=</span> <span class="p">[</span><span class="n">file_</span> <span class="k">for</span> <span class="n">file_</span> <span class="ow">in</span> <span class="n">all_files</span> <span class="k">if</span> <span class="n">file_</span><span class="o">.</span><span class="n">use</span> <span class="o">==</span> <span class="s2">&quot;preservation&quot;</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">file_</span> <span class="ow">in</span> <span class="n">preservation_files</span><span class="p">:</span>
+        <span class="n">_add_file</span><span class="p">(</span><span class="n">FileType</span><span class="o">.</span><span class="n">preservation</span><span class="p">,</span> <span class="n">file_</span><span class="p">,</span> <span class="n">aip</span><span class="o">.</span><span class="n">id</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2020, Artefactual Systems Inc..
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+    <a href="https://github.com/artefactual-labs/AIPscan" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

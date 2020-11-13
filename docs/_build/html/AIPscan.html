@@ -1,0 +1,692 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AIPscan package &#8212; AIPscan 0.x documentation</title>
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="AIPscan.API package" href="AIPscan.API.html" />
+    <link rel="prev" title="AIPscan" href="modules.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">AIPscan</a></h1>
+
+
+
+<p class="blurb">Reporting for Archivematica</p>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="overview.html">Overview</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">AIPscan</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">AIPscan package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#subpackages">Subpackages</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-AIPscan.celery">AIPscan.celery module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-AIPscan.conftest">AIPscan.conftest module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-AIPscan.extensions">AIPscan.extensions module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-AIPscan.helpers">AIPscan.helpers module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-AIPscan.models">AIPscan.models module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-AIPscan.worker">AIPscan.worker module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-AIPscan">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.API.html">AIPscan.API package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.Data.html">AIPscan.Data package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.Aggregator.html">AIPscan.Aggregator package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.Reporter.html">AIPscan.Reporter package</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">AIPscan</a><ul>
+      <li>Previous: <a href="modules.html" title="previous chapter">AIPscan</a></li>
+      <li>Next: <a href="AIPscan.API.html" title="next chapter">AIPscan.API package</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="aipscan-package">
+<h1>AIPscan package<a class="headerlink" href="#aipscan-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="AIPscan.API.html">AIPscan.API package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.API.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.API.html#module-AIPscan.API.namespace_data">AIPscan.API.namespace_data module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.API.html#module-AIPscan.API.namespace_infos">AIPscan.API.namespace_infos module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.API.html#module-AIPscan.API.views">AIPscan.API.views module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.API.html#module-AIPscan.API">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="AIPscan.Aggregator.html">AIPscan.Aggregator package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.Aggregator.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="AIPscan.Aggregator.tests.html">AIPscan.Aggregator.tests package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="AIPscan.Aggregator.tests.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AIPscan.Aggregator.tests.html#module-AIPscan.Aggregator.tests.test_database_helpers">AIPscan.Aggregator.tests.test_database_helpers module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AIPscan.Aggregator.tests.html#module-AIPscan.Aggregator.tests.test_mets">AIPscan.Aggregator.tests.test_mets module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AIPscan.Aggregator.tests.html#module-AIPscan.Aggregator.tests.test_task_helpers">AIPscan.Aggregator.tests.test_task_helpers module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AIPscan.Aggregator.tests.html#module-AIPscan.Aggregator.tests.test_types">AIPscan.Aggregator.tests.test_types module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AIPscan.Aggregator.tests.html#module-AIPscan.Aggregator.tests">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.Aggregator.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.Aggregator.html#module-AIPscan.Aggregator.celery_helpers">AIPscan.Aggregator.celery_helpers module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.Aggregator.html#module-AIPscan.Aggregator.database_helpers">AIPscan.Aggregator.database_helpers module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.Aggregator.html#module-AIPscan.Aggregator.forms">AIPscan.Aggregator.forms module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.Aggregator.html#module-AIPscan.Aggregator.mets_parse_helpers">AIPscan.Aggregator.mets_parse_helpers module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.Aggregator.html#module-AIPscan.Aggregator.task_helpers">AIPscan.Aggregator.task_helpers module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.Aggregator.html#module-AIPscan.Aggregator.tasks">AIPscan.Aggregator.tasks module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.Aggregator.html#module-AIPscan.Aggregator.types">AIPscan.Aggregator.types module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.Aggregator.html#module-AIPscan.Aggregator.views">AIPscan.Aggregator.views module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.Aggregator.html#module-AIPscan.Aggregator">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="AIPscan.Data.html">AIPscan.Data package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.Data.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="AIPscan.Data.tests.html">AIPscan.Data.tests package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="AIPscan.Data.tests.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AIPscan.Data.tests.html#module-AIPscan.Data.tests.test_largest_files">AIPscan.Data.tests.test_largest_files module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AIPscan.Data.tests.html#module-AIPscan.Data.tests">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.Data.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.Data.html#module-AIPscan.Data.data">AIPscan.Data.data module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.Data.html#module-AIPscan.Data">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="AIPscan.Home.html">AIPscan.Home package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.Home.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.Home.html#module-AIPscan.Home.views">AIPscan.Home.views module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.Home.html#module-AIPscan.Home">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="AIPscan.Reporter.html">AIPscan.Reporter package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.Reporter.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.Reporter.html#module-AIPscan.Reporter.helpers">AIPscan.Reporter.helpers module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.Reporter.html#module-AIPscan.Reporter.report_aip_contents">AIPscan.Reporter.report_aip_contents module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.Reporter.html#module-AIPscan.Reporter.report_formats_count">AIPscan.Reporter.report_formats_count module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.Reporter.html#module-AIPscan.Reporter.report_largest_files">AIPscan.Reporter.report_largest_files module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.Reporter.html#module-AIPscan.Reporter.report_originals_with_derivatives">AIPscan.Reporter.report_originals_with_derivatives module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.Reporter.html#module-AIPscan.Reporter.views">AIPscan.Reporter.views module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.Reporter.html#module-AIPscan.Reporter">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="AIPscan.User.html">AIPscan.User package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.User.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.User.html#module-AIPscan.User.forms">AIPscan.User.forms module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.User.html#module-AIPscan.User.views">AIPscan.User.views module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.User.html#module-AIPscan.User">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-AIPscan.celery">
+<span id="aipscan-celery-module"></span><h2>AIPscan.celery module<a class="headerlink" href="#module-AIPscan.celery" title="Permalink to this headline">¶</a></h2>
+<p>This module contains code related to Celery configuration.</p>
+<dl class="py function">
+<dt id="AIPscan.celery.configure_celery">
+<code class="sig-prename descclassname">AIPscan.celery.</code><code class="sig-name descname">configure_celery</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">app</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/AIPscan/celery.html#configure_celery"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AIPscan.celery.configure_celery" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add Flask app context to celery.Task.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-AIPscan.conftest">
+<span id="aipscan-conftest-module"></span><h2>AIPscan.conftest module<a class="headerlink" href="#module-AIPscan.conftest" title="Permalink to this headline">¶</a></h2>
+<p>This module defines shared AIPscan pytest fixtures.</p>
+<dl class="py function">
+<dt id="AIPscan.conftest.app_instance">
+<code class="sig-prename descclassname">AIPscan.conftest.</code><code class="sig-name descname">app_instance</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/AIPscan/conftest.html#app_instance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AIPscan.conftest.app_instance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pytest fixture that returns an instance of our application.</p>
+<p>This fixture provides a Flask application context for tests using
+AIPscan’s test configuration.</p>
+<p>This pattern can be extended in additional fixtures to, e.g. load
+state to the test database from a fixture as needed for tests.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-AIPscan.extensions">
+<span id="aipscan-extensions-module"></span><h2>AIPscan.extensions module<a class="headerlink" href="#module-AIPscan.extensions" title="Permalink to this headline">¶</a></h2>
+<p>This module contains code related to Flask extensions.</p>
+<p>The Celery instance that is initialized here is lacking application
+context, which will be provided via AIPscan.celery’s configure_celery
+function.</p>
+</div>
+<div class="section" id="module-AIPscan.helpers">
+<span id="aipscan-helpers-module"></span><h2>AIPscan.helpers module<a class="headerlink" href="#module-AIPscan.helpers" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="AIPscan.helpers.get_human_readable_file_size">
+<code class="sig-prename descclassname">AIPscan.helpers.</code><code class="sig-name descname">get_human_readable_file_size</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">size</span></em>, <em class="sig-param"><span class="n">precision</span><span class="o">=</span><span class="default_value">2</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/AIPscan/helpers.html#get_human_readable_file_size"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AIPscan.helpers.get_human_readable_file_size" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-AIPscan.models">
+<span id="aipscan-models-module"></span><h2>AIPscan.models module<a class="headerlink" href="#module-AIPscan.models" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="AIPscan.models.AIP">
+<em class="property">class </em><code class="sig-prename descclassname">AIPscan.models.</code><code class="sig-name descname">AIP</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">uuid</span></em>, <em class="sig-param"><span class="n">transfer_name</span></em>, <em class="sig-param"><span class="n">create_date</span></em>, <em class="sig-param"><span class="n">storage_service_id</span></em>, <em class="sig-param"><span class="n">fetch_job_id</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/AIPscan/models.html#AIP"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AIPscan.models.AIP" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Model</span></code></p>
+<dl class="py attribute">
+<dt id="AIPscan.models.AIP.create_date">
+<code class="sig-name descname">create_date</code><a class="headerlink" href="#AIPscan.models.AIP.create_date" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="AIPscan.models.AIP.fetch_job_id">
+<code class="sig-name descname">fetch_job_id</code><a class="headerlink" href="#AIPscan.models.AIP.fetch_job_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="AIPscan.models.AIP.files">
+<code class="sig-name descname">files</code><a class="headerlink" href="#AIPscan.models.AIP.files" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="AIPscan.models.AIP.id">
+<code class="sig-name descname">id</code><a class="headerlink" href="#AIPscan.models.AIP.id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="AIPscan.models.AIP.original_file_count">
+<em class="property">property </em><code class="sig-name descname">original_file_count</code><a class="headerlink" href="#AIPscan.models.AIP.original_file_count" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="AIPscan.models.AIP.preservation_file_count">
+<em class="property">property </em><code class="sig-name descname">preservation_file_count</code><a class="headerlink" href="#AIPscan.models.AIP.preservation_file_count" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="AIPscan.models.AIP.storage_service_id">
+<code class="sig-name descname">storage_service_id</code><a class="headerlink" href="#AIPscan.models.AIP.storage_service_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="AIPscan.models.AIP.transfer_name">
+<code class="sig-name descname">transfer_name</code><a class="headerlink" href="#AIPscan.models.AIP.transfer_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="AIPscan.models.AIP.uuid">
+<code class="sig-name descname">uuid</code><a class="headerlink" href="#AIPscan.models.AIP.uuid" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="AIPscan.models.Agent">
+<em class="property">class </em><code class="sig-prename descclassname">AIPscan.models.</code><code class="sig-name descname">Agent</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">linking_type_value</span></em>, <em class="sig-param"><span class="n">agent_type</span></em>, <em class="sig-param"><span class="n">agent_value</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/AIPscan/models.html#Agent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AIPscan.models.Agent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Model</span></code></p>
+<dl class="py attribute">
+<dt id="AIPscan.models.Agent.Event">
+<code class="sig-name descname">Event</code><a class="headerlink" href="#AIPscan.models.Agent.Event" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="AIPscan.models.Agent.agent_type">
+<code class="sig-name descname">agent_type</code><a class="headerlink" href="#AIPscan.models.Agent.agent_type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="AIPscan.models.Agent.agent_value">
+<code class="sig-name descname">agent_value</code><a class="headerlink" href="#AIPscan.models.Agent.agent_value" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="AIPscan.models.Agent.id">
+<code class="sig-name descname">id</code><a class="headerlink" href="#AIPscan.models.Agent.id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="AIPscan.models.Agent.linking_type_value">
+<code class="sig-name descname">linking_type_value</code><a class="headerlink" href="#AIPscan.models.Agent.linking_type_value" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="AIPscan.models.Event">
+<em class="property">class </em><code class="sig-prename descclassname">AIPscan.models.</code><code class="sig-name descname">Event</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">type</span></em>, <em class="sig-param"><span class="n">uuid</span></em>, <em class="sig-param"><span class="n">date</span></em>, <em class="sig-param"><span class="n">detail</span></em>, <em class="sig-param"><span class="n">outcome</span></em>, <em class="sig-param"><span class="n">outcome_detail</span></em>, <em class="sig-param"><span class="n">file_id</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/AIPscan/models.html#Event"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AIPscan.models.Event" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Model</span></code></p>
+<dl class="py attribute">
+<dt id="AIPscan.models.Event.date">
+<code class="sig-name descname">date</code><a class="headerlink" href="#AIPscan.models.Event.date" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="AIPscan.models.Event.detail">
+<code class="sig-name descname">detail</code><a class="headerlink" href="#AIPscan.models.Event.detail" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="AIPscan.models.Event.event_agents">
+<code class="sig-name descname">event_agents</code><a class="headerlink" href="#AIPscan.models.Event.event_agents" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="AIPscan.models.Event.file">
+<code class="sig-name descname">file</code><a class="headerlink" href="#AIPscan.models.Event.file" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="AIPscan.models.Event.file_id">
+<code class="sig-name descname">file_id</code><a class="headerlink" href="#AIPscan.models.Event.file_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="AIPscan.models.Event.id">
+<code class="sig-name descname">id</code><a class="headerlink" href="#AIPscan.models.Event.id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="AIPscan.models.Event.outcome">
+<code class="sig-name descname">outcome</code><a class="headerlink" href="#AIPscan.models.Event.outcome" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="AIPscan.models.Event.outcome_detail">
+<code class="sig-name descname">outcome_detail</code><a class="headerlink" href="#AIPscan.models.Event.outcome_detail" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="AIPscan.models.Event.type">
+<code class="sig-name descname">type</code><a class="headerlink" href="#AIPscan.models.Event.type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="AIPscan.models.Event.uuid">
+<code class="sig-name descname">uuid</code><a class="headerlink" href="#AIPscan.models.Event.uuid" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="AIPscan.models.FetchJob">
+<em class="property">class </em><code class="sig-prename descclassname">AIPscan.models.</code><code class="sig-name descname">FetchJob</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">total_packages</span></em>, <em class="sig-param"><span class="n">total_aips</span></em>, <em class="sig-param"><span class="n">total_deleted_aips</span></em>, <em class="sig-param"><span class="n">download_start</span></em>, <em class="sig-param"><span class="n">download_end</span></em>, <em class="sig-param"><span class="n">download_directory</span></em>, <em class="sig-param"><span class="n">storage_service_id</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/AIPscan/models.html#FetchJob"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AIPscan.models.FetchJob" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Model</span></code></p>
+<dl class="py attribute">
+<dt id="AIPscan.models.FetchJob.aips">
+<code class="sig-name descname">aips</code><a class="headerlink" href="#AIPscan.models.FetchJob.aips" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="AIPscan.models.FetchJob.download_directory">
+<code class="sig-name descname">download_directory</code><a class="headerlink" href="#AIPscan.models.FetchJob.download_directory" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="AIPscan.models.FetchJob.download_end">
+<code class="sig-name descname">download_end</code><a class="headerlink" href="#AIPscan.models.FetchJob.download_end" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="AIPscan.models.FetchJob.download_start">
+<code class="sig-name descname">download_start</code><a class="headerlink" href="#AIPscan.models.FetchJob.download_start" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="AIPscan.models.FetchJob.id">
+<code class="sig-name descname">id</code><a class="headerlink" href="#AIPscan.models.FetchJob.id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="AIPscan.models.FetchJob.storage_service">
+<code class="sig-name descname">storage_service</code><a class="headerlink" href="#AIPscan.models.FetchJob.storage_service" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="AIPscan.models.FetchJob.storage_service_id">
+<code class="sig-name descname">storage_service_id</code><a class="headerlink" href="#AIPscan.models.FetchJob.storage_service_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="AIPscan.models.FetchJob.total_aips">
+<code class="sig-name descname">total_aips</code><a class="headerlink" href="#AIPscan.models.FetchJob.total_aips" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="AIPscan.models.FetchJob.total_deleted_aips">
+<code class="sig-name descname">total_deleted_aips</code><a class="headerlink" href="#AIPscan.models.FetchJob.total_deleted_aips" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="AIPscan.models.FetchJob.total_dips">
+<code class="sig-name descname">total_dips</code><a class="headerlink" href="#AIPscan.models.FetchJob.total_dips" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="AIPscan.models.FetchJob.total_packages">
+<code class="sig-name descname">total_packages</code><a class="headerlink" href="#AIPscan.models.FetchJob.total_packages" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="AIPscan.models.FetchJob.total_replicas">
+<code class="sig-name descname">total_replicas</code><a class="headerlink" href="#AIPscan.models.FetchJob.total_replicas" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="AIPscan.models.FetchJob.total_sips">
+<code class="sig-name descname">total_sips</code><a class="headerlink" href="#AIPscan.models.FetchJob.total_sips" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="AIPscan.models.File">
+<em class="property">class </em><code class="sig-prename descclassname">AIPscan.models.</code><code class="sig-name descname">File</code><span class="sig-paren">(</span><em class="sig-param">name</em>, <em class="sig-param">filepath</em>, <em class="sig-param">uuid</em>, <em class="sig-param">size</em>, <em class="sig-param">date_created</em>, <em class="sig-param">file_format</em>, <em class="sig-param">checksum_type</em>, <em class="sig-param">checksum_value</em>, <em class="sig-param">aip_id</em>, <em class="sig-param">file_type=&lt;FileType.original: 'original'&gt;</em>, <em class="sig-param">format_version=None</em>, <em class="sig-param">puid=None</em>, <em class="sig-param">original_file_id=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/AIPscan/models.html#File"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AIPscan.models.File" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Model</span></code></p>
+<dl class="py attribute">
+<dt id="AIPscan.models.File.aip">
+<code class="sig-name descname">aip</code><a class="headerlink" href="#AIPscan.models.File.aip" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="AIPscan.models.File.aip_id">
+<code class="sig-name descname">aip_id</code><a class="headerlink" href="#AIPscan.models.File.aip_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="AIPscan.models.File.checksum_type">
+<code class="sig-name descname">checksum_type</code><a class="headerlink" href="#AIPscan.models.File.checksum_type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="AIPscan.models.File.checksum_value">
+<code class="sig-name descname">checksum_value</code><a class="headerlink" href="#AIPscan.models.File.checksum_value" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="AIPscan.models.File.date_created">
+<code class="sig-name descname">date_created</code><a class="headerlink" href="#AIPscan.models.File.date_created" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="AIPscan.models.File.derivatives">
+<code class="sig-name descname">derivatives</code><a class="headerlink" href="#AIPscan.models.File.derivatives" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="AIPscan.models.File.events">
+<code class="sig-name descname">events</code><a class="headerlink" href="#AIPscan.models.File.events" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="AIPscan.models.File.file_format">
+<code class="sig-name descname">file_format</code><a class="headerlink" href="#AIPscan.models.File.file_format" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="AIPscan.models.File.file_type">
+<code class="sig-name descname">file_type</code><a class="headerlink" href="#AIPscan.models.File.file_type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="AIPscan.models.File.filepath">
+<code class="sig-name descname">filepath</code><a class="headerlink" href="#AIPscan.models.File.filepath" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="AIPscan.models.File.format_version">
+<code class="sig-name descname">format_version</code><a class="headerlink" href="#AIPscan.models.File.format_version" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="AIPscan.models.File.id">
+<code class="sig-name descname">id</code><a class="headerlink" href="#AIPscan.models.File.id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="AIPscan.models.File.name">
+<code class="sig-name descname">name</code><a class="headerlink" href="#AIPscan.models.File.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="AIPscan.models.File.original_file">
+<code class="sig-name descname">original_file</code><a class="headerlink" href="#AIPscan.models.File.original_file" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="AIPscan.models.File.original_file_id">
+<code class="sig-name descname">original_file_id</code><a class="headerlink" href="#AIPscan.models.File.original_file_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="AIPscan.models.File.puid">
+<code class="sig-name descname">puid</code><a class="headerlink" href="#AIPscan.models.File.puid" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="AIPscan.models.File.size">
+<code class="sig-name descname">size</code><a class="headerlink" href="#AIPscan.models.File.size" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="AIPscan.models.File.uuid">
+<code class="sig-name descname">uuid</code><a class="headerlink" href="#AIPscan.models.File.uuid" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="AIPscan.models.FileType">
+<em class="property">class </em><code class="sig-prename descclassname">AIPscan.models.</code><code class="sig-name descname">FileType</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/AIPscan/models.html#FileType"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AIPscan.models.FileType" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">enum.Enum</span></code></p>
+<p>An enumeration.</p>
+<dl class="py attribute">
+<dt id="AIPscan.models.FileType.original">
+<code class="sig-name descname">original</code><em class="property"> = 'original'</em><a class="headerlink" href="#AIPscan.models.FileType.original" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="AIPscan.models.FileType.preservation">
+<code class="sig-name descname">preservation</code><em class="property"> = 'preservation'</em><a class="headerlink" href="#AIPscan.models.FileType.preservation" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="AIPscan.models.StorageService">
+<em class="property">class </em><code class="sig-prename descclassname">AIPscan.models.</code><code class="sig-name descname">StorageService</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">url</span></em>, <em class="sig-param"><span class="n">user_name</span></em>, <em class="sig-param"><span class="n">api_key</span></em>, <em class="sig-param"><span class="n">download_limit</span></em>, <em class="sig-param"><span class="n">download_offset</span></em>, <em class="sig-param"><span class="n">default</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/AIPscan/models.html#StorageService"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AIPscan.models.StorageService" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Model</span></code></p>
+<dl class="py attribute">
+<dt id="AIPscan.models.StorageService.api_key">
+<code class="sig-name descname">api_key</code><a class="headerlink" href="#AIPscan.models.StorageService.api_key" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="AIPscan.models.StorageService.default">
+<code class="sig-name descname">default</code><a class="headerlink" href="#AIPscan.models.StorageService.default" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="AIPscan.models.StorageService.download_limit">
+<code class="sig-name descname">download_limit</code><a class="headerlink" href="#AIPscan.models.StorageService.download_limit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="AIPscan.models.StorageService.download_offset">
+<code class="sig-name descname">download_offset</code><a class="headerlink" href="#AIPscan.models.StorageService.download_offset" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="AIPscan.models.StorageService.fetch_jobs">
+<code class="sig-name descname">fetch_jobs</code><a class="headerlink" href="#AIPscan.models.StorageService.fetch_jobs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="AIPscan.models.StorageService.id">
+<code class="sig-name descname">id</code><a class="headerlink" href="#AIPscan.models.StorageService.id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="AIPscan.models.StorageService.name">
+<code class="sig-name descname">name</code><a class="headerlink" href="#AIPscan.models.StorageService.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="AIPscan.models.StorageService.url">
+<code class="sig-name descname">url</code><a class="headerlink" href="#AIPscan.models.StorageService.url" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="AIPscan.models.StorageService.user_name">
+<code class="sig-name descname">user_name</code><a class="headerlink" href="#AIPscan.models.StorageService.user_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="AIPscan.models.get_mets_tasks">
+<em class="property">class </em><code class="sig-prename descclassname">AIPscan.models.</code><code class="sig-name descname">get_mets_tasks</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/AIPscan/models.html#get_mets_tasks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AIPscan.models.get_mets_tasks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Model</span></code></p>
+<dl class="py attribute">
+<dt id="AIPscan.models.get_mets_tasks.get_mets_task_id">
+<code class="sig-name descname">get_mets_task_id</code><a class="headerlink" href="#AIPscan.models.get_mets_tasks.get_mets_task_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="AIPscan.models.get_mets_tasks.package_uuid">
+<code class="sig-name descname">package_uuid</code><a class="headerlink" href="#AIPscan.models.get_mets_tasks.package_uuid" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="AIPscan.models.get_mets_tasks.status">
+<code class="sig-name descname">status</code><a class="headerlink" href="#AIPscan.models.get_mets_tasks.status" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="AIPscan.models.get_mets_tasks.workflow_coordinator_id">
+<code class="sig-name descname">workflow_coordinator_id</code><a class="headerlink" href="#AIPscan.models.get_mets_tasks.workflow_coordinator_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="AIPscan.models.package_tasks">
+<em class="property">class </em><code class="sig-prename descclassname">AIPscan.models.</code><code class="sig-name descname">package_tasks</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/AIPscan/models.html#package_tasks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AIPscan.models.package_tasks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlalchemy.ext.declarative.api.Model</span></code></p>
+<dl class="py attribute">
+<dt id="AIPscan.models.package_tasks.package_task_id">
+<code class="sig-name descname">package_task_id</code><a class="headerlink" href="#AIPscan.models.package_tasks.package_task_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="AIPscan.models.package_tasks.workflow_coordinator_id">
+<code class="sig-name descname">workflow_coordinator_id</code><a class="headerlink" href="#AIPscan.models.package_tasks.workflow_coordinator_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-AIPscan.worker">
+<span id="aipscan-worker-module"></span><h2>AIPscan.worker module<a class="headerlink" href="#module-AIPscan.worker" title="Permalink to this headline">¶</a></h2>
+<p>This module defines and initalizes a Celery worker.</p>
+<p>Since Celery workers are run separately from the Flask application (for
+example via a systemd service), we use our Application Factory function
+to provide application context.</p>
+</div>
+<div class="section" id="module-AIPscan">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-AIPscan" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="AIPscan.create_app">
+<code class="sig-prename descclassname">AIPscan.</code><code class="sig-name descname">create_app</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">config_name</span><span class="o">=</span><span class="default_value">'default'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/AIPscan.html#create_app"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AIPscan.create_app" title="Permalink to this definition">¶</a></dt>
+<dd><p>Flask app factory, returns app instance.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2020, Artefactual Systems Inc..
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/AIPscan.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/artefactual-labs/AIPscan" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

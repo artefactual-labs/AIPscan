@@ -1,0 +1,268 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AIPscan.Aggregator.tests.test_types &#8212; AIPscan 0.x documentation</title>
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/alabaster.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+    <script src="../../../../_static/jquery.js"></script>
+    <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../index.html">AIPscan</a></h1>
+
+
+
+<p class="blurb">Reporting for Archivematica</p>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../modules.html">AIPscan</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  <li><a href="../../../AIPscan.html">AIPscan</a><ul>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for AIPscan.Aggregator.tests.test_types</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="kn">import</span> <span class="nn">pytest</span>
+
+<span class="kn">from</span> <span class="nn">AIPscan.Aggregator</span> <span class="kn">import</span> <span class="n">types</span>
+
+
+<div class="viewcode-block" id="test_storage_service_package_init"><a class="viewcode-back" href="../../../../AIPscan.Aggregator.tests.html#AIPscan.Aggregator.tests.test_types.test_storage_service_package_init">[docs]</a><span class="k">def</span> <span class="nf">test_storage_service_package_init</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Test that the type constructor works as expected.&quot;&quot;&quot;</span>
+    <span class="n">package_1</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">StorageServicePackage</span><span class="p">()</span>
+    <span class="n">package_2</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">StorageServicePackage</span><span class="p">()</span>
+    <span class="k">assert</span> <span class="n">package_1</span> <span class="o">==</span> <span class="n">package_2</span>
+    <span class="k">assert</span> <span class="n">package_1</span><span class="o">.</span><span class="n">aip</span> <span class="ow">is</span> <span class="kc">False</span>
+    <span class="k">assert</span> <span class="n">package_1</span><span class="o">.</span><span class="n">dip</span> <span class="ow">is</span> <span class="kc">False</span>
+    <span class="k">assert</span> <span class="n">package_1</span><span class="o">.</span><span class="n">sip</span> <span class="ow">is</span> <span class="kc">False</span>
+    <span class="k">assert</span> <span class="n">package_1</span><span class="o">.</span><span class="n">replica</span> <span class="ow">is</span> <span class="kc">False</span>
+    <span class="k">assert</span> <span class="n">package_1</span><span class="o">.</span><span class="n">deleted</span> <span class="ow">is</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="test_storage_service_package_eq"><a class="viewcode-back" href="../../../../AIPscan.Aggregator.tests.html#AIPscan.Aggregator.tests.test_types.test_storage_service_package_eq">[docs]</a><span class="k">def</span> <span class="nf">test_storage_service_package_eq</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Provide some other equality tests for the type.&quot;&quot;&quot;</span>
+    <span class="n">package_1</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">StorageServicePackage</span><span class="p">(</span>
+        <span class="n">deleted</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">replica</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">uuid</span><span class="o">=</span><span class="s2">&quot;1&quot;</span><span class="p">,</span> <span class="n">current_path</span><span class="o">=</span><span class="s2">&quot;2&quot;</span>
+    <span class="p">)</span>
+    <span class="n">package_2</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">StorageServicePackage</span><span class="p">(</span>
+        <span class="n">deleted</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">replica</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">uuid</span><span class="o">=</span><span class="s2">&quot;1&quot;</span><span class="p">,</span> <span class="n">current_path</span><span class="o">=</span><span class="s2">&quot;2&quot;</span>
+    <span class="p">)</span>
+    <span class="k">assert</span> <span class="n">package_1</span> <span class="o">==</span> <span class="n">package_2</span>
+    <span class="k">assert</span> <span class="n">package_1</span><span class="o">.</span><span class="n">replica</span> <span class="ow">is</span> <span class="kc">False</span>
+    <span class="k">assert</span> <span class="n">package_1</span><span class="o">.</span><span class="n">deleted</span> <span class="ow">is</span> <span class="kc">True</span>
+    <span class="n">package_3</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">StorageServicePackage</span><span class="p">(</span>
+        <span class="n">deleted</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">replica</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">aip</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">dip</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">sip</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">uuid</span><span class="o">=</span><span class="s2">&quot;6&quot;</span><span class="p">,</span> <span class="n">current_path</span><span class="o">=</span><span class="s2">&quot;7&quot;</span>
+    <span class="p">)</span>
+    <span class="n">package_4</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">StorageServicePackage</span><span class="p">(</span>
+        <span class="n">deleted</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">replica</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">aip</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">dip</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">sip</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">uuid</span><span class="o">=</span><span class="s2">&quot;6&quot;</span><span class="p">,</span> <span class="n">current_path</span><span class="o">=</span><span class="s2">&quot;7&quot;</span>
+    <span class="p">)</span>
+    <span class="k">assert</span> <span class="n">package_3</span> <span class="o">==</span> <span class="n">package_4</span>
+    <span class="k">assert</span> <span class="n">package_3</span> <span class="o">!=</span> <span class="n">package_1</span></div>
+
+
+<div class="viewcode-block" id="test_package_ness"><a class="viewcode-back" href="../../../../AIPscan.Aggregator.tests.html#AIPscan.Aggregator.tests.test_types.test_package_ness">[docs]</a><span class="k">def</span> <span class="nf">test_package_ness</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Given specific package types check that they evaluate to true</span>
+<span class="sd">    when queried.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">package</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">StorageServicePackage</span><span class="p">(</span><span class="n">aip</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">package</span><span class="o">.</span><span class="n">is_aip</span><span class="p">()</span>
+    <span class="k">assert</span> <span class="ow">not</span> <span class="n">package</span><span class="o">.</span><span class="n">is_dip</span><span class="p">()</span>
+    <span class="k">assert</span> <span class="ow">not</span> <span class="n">package</span><span class="o">.</span><span class="n">is_sip</span><span class="p">()</span>
+    <span class="k">assert</span> <span class="ow">not</span> <span class="n">package</span><span class="o">.</span><span class="n">is_deleted</span><span class="p">()</span>
+    <span class="k">assert</span> <span class="ow">not</span> <span class="n">package</span><span class="o">.</span><span class="n">is_replica</span><span class="p">()</span>
+    <span class="n">package</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">StorageServicePackage</span><span class="p">(</span><span class="n">dip</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">package</span><span class="o">.</span><span class="n">is_dip</span><span class="p">()</span>
+    <span class="k">assert</span> <span class="ow">not</span> <span class="n">package</span><span class="o">.</span><span class="n">is_aip</span><span class="p">()</span>
+    <span class="k">assert</span> <span class="ow">not</span> <span class="n">package</span><span class="o">.</span><span class="n">is_sip</span><span class="p">()</span>
+    <span class="k">assert</span> <span class="ow">not</span> <span class="n">package</span><span class="o">.</span><span class="n">is_deleted</span><span class="p">()</span>
+    <span class="k">assert</span> <span class="ow">not</span> <span class="n">package</span><span class="o">.</span><span class="n">is_replica</span><span class="p">()</span>
+    <span class="n">package</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">StorageServicePackage</span><span class="p">(</span><span class="n">sip</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">package</span><span class="o">.</span><span class="n">is_sip</span><span class="p">()</span>
+    <span class="k">assert</span> <span class="ow">not</span> <span class="n">package</span><span class="o">.</span><span class="n">is_dip</span><span class="p">()</span>
+    <span class="k">assert</span> <span class="ow">not</span> <span class="n">package</span><span class="o">.</span><span class="n">is_aip</span><span class="p">()</span>
+    <span class="k">assert</span> <span class="ow">not</span> <span class="n">package</span><span class="o">.</span><span class="n">is_deleted</span><span class="p">()</span>
+    <span class="k">assert</span> <span class="ow">not</span> <span class="n">package</span><span class="o">.</span><span class="n">is_replica</span><span class="p">()</span>
+    <span class="n">package</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">StorageServicePackage</span><span class="p">(</span><span class="n">deleted</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">package</span><span class="o">.</span><span class="n">is_deleted</span><span class="p">()</span>
+    <span class="k">assert</span> <span class="ow">not</span> <span class="n">package</span><span class="o">.</span><span class="n">is_replica</span><span class="p">()</span>
+    <span class="k">assert</span> <span class="ow">not</span> <span class="n">package</span><span class="o">.</span><span class="n">is_aip</span><span class="p">()</span>
+    <span class="k">assert</span> <span class="ow">not</span> <span class="n">package</span><span class="o">.</span><span class="n">is_dip</span><span class="p">()</span>
+    <span class="k">assert</span> <span class="ow">not</span> <span class="n">package</span><span class="o">.</span><span class="n">is_aip</span><span class="p">()</span>
+    <span class="n">package</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">StorageServicePackage</span><span class="p">(</span><span class="n">aip</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">replica</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">package</span><span class="o">.</span><span class="n">is_replica</span><span class="p">()</span>
+    <span class="k">assert</span> <span class="ow">not</span> <span class="n">package</span><span class="o">.</span><span class="n">is_deleted</span><span class="p">()</span>
+    <span class="k">assert</span> <span class="ow">not</span> <span class="n">package</span><span class="o">.</span><span class="n">is_aip</span><span class="p">()</span>
+    <span class="k">assert</span> <span class="ow">not</span> <span class="n">package</span><span class="o">.</span><span class="n">is_dip</span><span class="p">()</span>
+    <span class="k">assert</span> <span class="ow">not</span> <span class="n">package</span><span class="o">.</span><span class="n">is_aip</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="test_get_relative_path"><a class="viewcode-back" href="../../../../AIPscan.Aggregator.tests.html#AIPscan.Aggregator.tests.test_types.test_get_relative_path">[docs]</a><span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">parametrize</span><span class="p">(</span>
+    <span class="s2">&quot;package, result&quot;</span><span class="p">,</span>
+    <span class="p">[</span>
+        <span class="p">(</span>
+            <span class="n">types</span><span class="o">.</span><span class="n">StorageServicePackage</span><span class="p">(</span>
+                <span class="n">uuid</span><span class="o">=</span><span class="s2">&quot;91940daf-5c33-4670-bfc8-9108f32bca7b&quot;</span><span class="p">,</span>
+                <span class="n">current_path</span><span class="o">=</span><span class="s2">&quot;9194/0daf/5c33/4670/bfc8/9108/f32b/ca7b/repl-91940daf-5c33-4670-bfc8-9108f32bca7b.7z&quot;</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="s2">&quot;repl-91940daf-5c33-4670-bfc8-9108f32bca7b/data/METS.91940daf-5c33-4670-bfc8-9108f32bca7b.xml&quot;</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="p">(</span>
+            <span class="n">types</span><span class="o">.</span><span class="n">StorageServicePackage</span><span class="p">(</span>
+                <span class="n">uuid</span><span class="o">=</span><span class="s2">&quot;902192d9-6232-4d5f-b6c4-dfa7b8733960&quot;</span><span class="p">,</span>
+                <span class="n">current_path</span><span class="o">=</span><span class="s2">&quot;9021/92d9/6232/4d5f/b6c4/dfa7/b873/3960/repl-902192d9-6232-4d5f-b6c4-dfa7b8733960.7z&quot;</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="s2">&quot;repl-902192d9-6232-4d5f-b6c4-dfa7b8733960/data/METS.902192d9-6232-4d5f-b6c4-dfa7b8733960.xml&quot;</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="p">(</span>
+            <span class="n">types</span><span class="o">.</span><span class="n">StorageServicePackage</span><span class="p">(</span>
+                <span class="n">deleted</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">uuid</span><span class="o">=</span><span class="s2">&quot;594a03f3-d8eb-4c83-affd-aefaf75d53cc&quot;</span><span class="p">,</span>
+                <span class="n">current_path</span><span class="o">=</span><span class="s2">&quot;594a/03f3/d8eb/4c83/affd/aefa/f75d/53cc/delete_me-594a03f3-d8eb-4c83-affd-aefaf75d53cc.7z&quot;</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="kc">None</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="p">(</span>
+            <span class="n">types</span><span class="o">.</span><span class="n">StorageServicePackage</span><span class="p">(</span>
+                <span class="n">uuid</span><span class="o">=</span><span class="s2">&quot;e422c724-834c-4164-a7be-4c881043a531&quot;</span><span class="p">,</span>
+                <span class="n">current_path</span><span class="o">=</span><span class="s2">&quot;e422/c724/834c/4164/a7be/4c88/1043/a531/normalize-e422c724-834c-4164-a7be-4c881043a531.7z&quot;</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="s2">&quot;normalize-e422c724-834c-4164-a7be-4c881043a531/data/METS.e422c724-834c-4164-a7be-4c881043a531.xml&quot;</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="p">(</span>
+            <span class="n">types</span><span class="o">.</span><span class="n">StorageServicePackage</span><span class="p">(</span>
+                <span class="n">uuid</span><span class="o">=</span><span class="s2">&quot;583c009c-4255-44b9-8868-f57e4bade93c&quot;</span><span class="p">,</span>
+                <span class="n">current_path</span><span class="o">=</span><span class="s2">&quot;583c/009c/4255/44b9/8868/f57e/4bad/e93c/normal_aip-583c009c-4255-44b9-8868-f57e4bade93c.7z&quot;</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="s2">&quot;normal_aip-583c009c-4255-44b9-8868-f57e4bade93c/data/METS.583c009c-4255-44b9-8868-f57e4bade93c.xml&quot;</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="p">(</span>
+            <span class="n">types</span><span class="o">.</span><span class="n">StorageServicePackage</span><span class="p">(</span>
+                <span class="n">uuid</span><span class="o">=</span><span class="s2">&quot;846fca2b-0919-4673-804c-0f626a30cabd&quot;</span><span class="p">,</span>
+                <span class="n">current_path</span><span class="o">=</span><span class="s2">&quot;846f/ca2b/0919/4673/804c/0f62/6a30/cabd/uncomp-846fca2b-0919-4673-804c-0f626a30cabd&quot;</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="s2">&quot;uncomp-846fca2b-0919-4673-804c-0f626a30cabd/data/METS.846fca2b-0919-4673-804c-0f626a30cabd.xml&quot;</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="p">(</span>
+            <span class="n">types</span><span class="o">.</span><span class="n">StorageServicePackage</span><span class="p">(</span>
+                <span class="n">dip</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">uuid</span><span class="o">=</span><span class="s2">&quot;59f70134-eeca-4886-888e-b2013a08571e&quot;</span><span class="p">,</span>
+                <span class="n">current_path</span><span class="o">=</span><span class="s2">&quot;1555/04f5/98dd/48d1/9e97/83bc/f0a5/efa2/normcore-59f70134-eeca-4886-888e-b2013a08571e&quot;</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="kc">None</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="p">(</span>
+            <span class="n">types</span><span class="o">.</span><span class="n">StorageServicePackage</span><span class="p">(</span>
+                <span class="n">uuid</span><span class="o">=</span><span class="s2">&quot;59f70134-eeca-4886-888e-b2013a08571e&quot;</span><span class="p">,</span>
+                <span class="n">current_path</span><span class="o">=</span><span class="s2">&quot;59f7/0134/eeca/4886/888e/b201/3a08/571e/normcore-59f70134-eeca-4886-888e-b2013a08571e&quot;</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="s2">&quot;normcore-59f70134-eeca-4886-888e-b2013a08571e/data/METS.59f70134-eeca-4886-888e-b2013a08571e.xml&quot;</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="p">(</span>
+            <span class="n">types</span><span class="o">.</span><span class="n">StorageServicePackage</span><span class="p">(</span>
+                <span class="n">sip</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">uuid</span><span class="o">=</span><span class="s2">&quot;fbdcd607-270e-4dff-9a01-d11b7c2a0200&quot;</span><span class="p">,</span>
+                <span class="n">current_path</span><span class="o">=</span><span class="s2">&quot;originals/backlog-fbdcd607-270e-4dff-9a01-d11b7c2a0200&quot;</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="kc">None</span><span class="p">,</span>
+        <span class="p">),</span>
+    <span class="p">],</span>
+<span class="p">)</span>
+<span class="k">def</span> <span class="nf">test_get_relative_path</span><span class="p">(</span><span class="n">package</span><span class="p">,</span> <span class="n">result</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Given the current_path check our ability to construct a relative</span>
+<span class="sd">    path within a METS file.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">package</span><span class="o">.</span><span class="n">replica</span> <span class="ow">or</span> <span class="n">package</span><span class="o">.</span><span class="n">sip</span> <span class="ow">or</span> <span class="n">package</span><span class="o">.</span><span class="n">deleted</span> <span class="ow">or</span> <span class="n">package</span><span class="o">.</span><span class="n">dip</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">pytest</span><span class="o">.</span><span class="n">raises</span><span class="p">(</span><span class="n">types</span><span class="o">.</span><span class="n">PackageError</span><span class="p">):</span>
+            <span class="n">_</span> <span class="o">=</span> <span class="n">package</span><span class="o">.</span><span class="n">get_relative_path</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="n">package</span><span class="o">.</span><span class="n">get_relative_path</span><span class="p">()</span> <span class="o">==</span> <span class="n">result</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2020, Artefactual Systems Inc..
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+    <a href="https://github.com/artefactual-labs/AIPscan" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

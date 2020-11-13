@@ -1,0 +1,260 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AIPscan.Reporter.views &#8212; AIPscan 0.x documentation</title>
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">AIPscan</a></h1>
+
+
+
+<p class="blurb">Reporting for Archivematica</p>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">AIPscan</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  <li><a href="../../AIPscan.html">AIPscan</a><ul>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for AIPscan.Reporter.views</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="sd">&quot;&quot;&quot;Views contains the primary routes for navigation around AIPscan&#39;s</span>
+<span class="sd">Reporter module. Reports themselves as siphoned off into separate module</span>
+<span class="sd">files with singular responsibility for a report.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+
+<span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">render_template</span>
+
+<span class="kn">from</span> <span class="nn">AIPscan.models</span> <span class="kn">import</span> <span class="n">AIP</span><span class="p">,</span> <span class="n">File</span><span class="p">,</span> <span class="n">FileType</span><span class="p">,</span> <span class="n">Event</span><span class="p">,</span> <span class="n">FetchJob</span><span class="p">,</span> <span class="n">StorageService</span>
+<span class="kn">from</span> <span class="nn">AIPscan.Reporter</span> <span class="kn">import</span> <span class="n">reporter</span>
+
+<span class="c1"># Flask&#39;s idiom requires code using routing decorators to be imported</span>
+<span class="c1"># up-front. But that means it might not be called directly by a module.</span>
+<span class="kn">from</span> <span class="nn">AIPscan.Reporter</span> <span class="kn">import</span> <span class="p">(</span>  <span class="c1"># noqa: F401</span>
+    <span class="n">report_aip_contents</span><span class="p">,</span>
+    <span class="n">report_formats_count</span><span class="p">,</span>
+    <span class="n">report_originals_with_derivatives</span><span class="p">,</span>
+    <span class="n">report_largest_files</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="view_aips"><a class="viewcode-back" href="../../../AIPscan.Reporter.html#AIPscan.Reporter.views.view_aips">[docs]</a><span class="nd">@reporter</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s2">&quot;/aips/&quot;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;GET&quot;</span><span class="p">])</span>
+<span class="nd">@reporter</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s2">&quot;/aips/&lt;storage_service_id&gt;&quot;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;GET&quot;</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">view_aips</span><span class="p">(</span><span class="n">storage_service_id</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;View aips returns a standard page in AIPscan that provides an</span>
+<span class="sd">    overview of the AIPs in a given storage service.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">DEFAULT_STORAGE_SERVICE_ID</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">storage_services</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">storage_id</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">storage_service_id</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">storage_id</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">storage_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">storage_id</span> <span class="o">=</span> <span class="n">DEFAULT_STORAGE_SERVICE_ID</span>
+    <span class="n">storage_service</span> <span class="o">=</span> <span class="n">StorageService</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">storage_id</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">storage_service</span><span class="p">:</span>
+        <span class="n">aips</span> <span class="o">=</span> <span class="n">AIP</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">storage_service_id</span><span class="o">=</span><span class="n">storage_service</span><span class="o">.</span><span class="n">id</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+        <span class="n">aips_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">aip</span> <span class="ow">in</span> <span class="n">aips</span><span class="p">:</span>
+            <span class="n">aip_info</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">aip_info</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">aip</span><span class="o">.</span><span class="n">id</span>
+            <span class="n">aip_info</span><span class="p">[</span><span class="s2">&quot;transfer_name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">aip</span><span class="o">.</span><span class="n">transfer_name</span>
+            <span class="n">aip_info</span><span class="p">[</span><span class="s2">&quot;uuid&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">aip</span><span class="o">.</span><span class="n">uuid</span>
+            <span class="n">aip_info</span><span class="p">[</span><span class="s2">&quot;create_date&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">aip</span><span class="o">.</span><span class="n">create_date</span>
+            <span class="n">aip_info</span><span class="p">[</span><span class="s2">&quot;originals_count&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">aip</span><span class="o">.</span><span class="n">original_file_count</span>
+            <span class="n">aip_info</span><span class="p">[</span><span class="s2">&quot;copies_count&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">aip</span><span class="o">.</span><span class="n">preservation_file_count</span>
+            <span class="n">aips_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">aip_info</span><span class="p">)</span>
+
+        <span class="n">aips_count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">aips</span><span class="p">)</span>
+        <span class="n">storage_services</span> <span class="o">=</span> <span class="n">StorageService</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">aips_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">aips_count</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span>
+        <span class="s2">&quot;aips.html&quot;</span><span class="p">,</span>
+        <span class="n">storage_services</span><span class="o">=</span><span class="n">storage_services</span><span class="p">,</span>
+        <span class="n">storage_service_id</span><span class="o">=</span><span class="n">storage_id</span><span class="p">,</span>
+        <span class="n">aips_count</span><span class="o">=</span><span class="n">aips_count</span><span class="p">,</span>
+        <span class="n">aips</span><span class="o">=</span><span class="n">aips_list</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+<span class="c1"># Picturae TODO: Does this work with AIP UUID as well?</span>
+<div class="viewcode-block" id="view_aip"><a class="viewcode-back" href="../../../AIPscan.Reporter.html#AIPscan.Reporter.views.view_aip">[docs]</a><span class="nd">@reporter</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s2">&quot;/aip/&lt;aip_id&gt;&quot;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;GET&quot;</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">view_aip</span><span class="p">(</span><span class="n">aip_id</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;View aip returns a standard page in AIPscan that provides a more</span>
+<span class="sd">    detailed view of a specific AIP given an AIPs ID.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">aip</span> <span class="o">=</span> <span class="n">AIP</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">aip_id</span><span class="p">)</span>
+    <span class="n">fetch_job</span> <span class="o">=</span> <span class="n">FetchJob</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">aip</span><span class="o">.</span><span class="n">fetch_job_id</span><span class="p">)</span>
+    <span class="n">storage_service</span> <span class="o">=</span> <span class="n">StorageService</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">fetch_job</span><span class="o">.</span><span class="n">storage_service_id</span><span class="p">)</span>
+    <span class="n">aips_count</span> <span class="o">=</span> <span class="n">AIP</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">storage_service_id</span><span class="o">=</span><span class="n">storage_service</span><span class="o">.</span><span class="n">id</span><span class="p">)</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+    <span class="n">original_file_count</span> <span class="o">=</span> <span class="n">aip</span><span class="o">.</span><span class="n">original_file_count</span>
+    <span class="n">preservation_file_count</span> <span class="o">=</span> <span class="n">aip</span><span class="o">.</span><span class="n">preservation_file_count</span>
+    <span class="n">originals</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">original_files</span> <span class="o">=</span> <span class="n">File</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span>
+        <span class="n">aip_id</span><span class="o">=</span><span class="n">aip</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">file_type</span><span class="o">=</span><span class="n">FileType</span><span class="o">.</span><span class="n">original</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">file_</span> <span class="ow">in</span> <span class="n">original_files</span><span class="p">:</span>
+        <span class="n">original</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">original</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">file_</span><span class="o">.</span><span class="n">id</span>
+        <span class="n">original</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">file_</span><span class="o">.</span><span class="n">name</span>
+        <span class="n">original</span><span class="p">[</span><span class="s2">&quot;uuid&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">file_</span><span class="o">.</span><span class="n">uuid</span>
+        <span class="n">original</span><span class="p">[</span><span class="s2">&quot;size&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">file_</span><span class="o">.</span><span class="n">size</span>
+        <span class="n">original</span><span class="p">[</span><span class="s2">&quot;date_created&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">file_</span><span class="o">.</span><span class="n">date_created</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">original</span><span class="p">[</span><span class="s2">&quot;puid&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">file_</span><span class="o">.</span><span class="n">puid</span>
+        <span class="n">original</span><span class="p">[</span><span class="s2">&quot;file_format&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">file_</span><span class="o">.</span><span class="n">file_format</span>
+        <span class="n">original</span><span class="p">[</span><span class="s2">&quot;format_version&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">file_</span><span class="o">.</span><span class="n">format_version</span>
+        <span class="n">preservation_file</span> <span class="o">=</span> <span class="n">File</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span>
+            <span class="n">file_type</span><span class="o">=</span><span class="n">FileType</span><span class="o">.</span><span class="n">preservation</span><span class="p">,</span> <span class="n">original_file_id</span><span class="o">=</span><span class="n">file_</span><span class="o">.</span><span class="n">id</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">preservation_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">original</span><span class="p">[</span><span class="s2">&quot;preservation_file_id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">preservation_file</span><span class="o">.</span><span class="n">id</span>
+        <span class="n">originals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">original</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span>
+        <span class="s2">&quot;aip.html&quot;</span><span class="p">,</span>
+        <span class="n">aip</span><span class="o">=</span><span class="n">aip</span><span class="p">,</span>
+        <span class="n">storage_service</span><span class="o">=</span><span class="n">storage_service</span><span class="p">,</span>
+        <span class="n">aips_count</span><span class="o">=</span><span class="n">aips_count</span><span class="p">,</span>
+        <span class="n">originals</span><span class="o">=</span><span class="n">originals</span><span class="p">,</span>
+        <span class="n">original_file_count</span><span class="o">=</span><span class="n">original_file_count</span><span class="p">,</span>
+        <span class="n">preservation_file_count</span><span class="o">=</span><span class="n">preservation_file_count</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="view_file"><a class="viewcode-back" href="../../../AIPscan.Reporter.html#AIPscan.Reporter.views.view_file">[docs]</a><span class="nd">@reporter</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s2">&quot;/file/&lt;file_id&gt;&quot;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;GET&quot;</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">view_file</span><span class="p">(</span><span class="n">file_id</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;File page displays Object and Event metadata for file</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">file_</span> <span class="o">=</span> <span class="n">File</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">file_id</span><span class="p">)</span>
+    <span class="n">aip</span> <span class="o">=</span> <span class="n">AIP</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">file_</span><span class="o">.</span><span class="n">aip_id</span><span class="p">)</span>
+    <span class="n">events</span> <span class="o">=</span> <span class="n">Event</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">file_id</span><span class="o">=</span><span class="n">file_id</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+    <span class="n">preservation_file</span> <span class="o">=</span> <span class="n">File</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span>
+        <span class="n">file_type</span><span class="o">=</span><span class="n">FileType</span><span class="o">.</span><span class="n">preservation</span><span class="p">,</span> <span class="n">original_file_id</span><span class="o">=</span><span class="n">file_</span><span class="o">.</span><span class="n">id</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+
+    <span class="n">original_filename</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">file_</span><span class="o">.</span><span class="n">original_file_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">original_file</span> <span class="o">=</span> <span class="n">File</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">file_</span><span class="o">.</span><span class="n">original_file_id</span><span class="p">)</span>
+        <span class="n">original_filename</span> <span class="o">=</span> <span class="n">original_file</span><span class="o">.</span><span class="n">name</span>
+
+    <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span>
+        <span class="s2">&quot;file.html&quot;</span><span class="p">,</span>
+        <span class="n">file_</span><span class="o">=</span><span class="n">file_</span><span class="p">,</span>
+        <span class="n">aip</span><span class="o">=</span><span class="n">aip</span><span class="p">,</span>
+        <span class="n">events</span><span class="o">=</span><span class="n">events</span><span class="p">,</span>
+        <span class="n">preservation_file</span><span class="o">=</span><span class="n">preservation_file</span><span class="p">,</span>
+        <span class="n">original_filename</span><span class="o">=</span><span class="n">original_filename</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="reports"><a class="viewcode-back" href="../../../AIPscan.Reporter.html#AIPscan.Reporter.views.reports">[docs]</a><span class="nd">@reporter</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s2">&quot;/reports/&quot;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;GET&quot;</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">reports</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Reports returns a standard page in AIPscan that lists the</span>
+<span class="sd">    in-built reports available to the caller.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">all_storage_services</span> <span class="o">=</span> <span class="n">StorageService</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+    <span class="n">now</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+    <span class="n">start_date</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">datetime</span><span class="p">(</span><span class="n">now</span><span class="o">.</span><span class="n">year</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))[:</span><span class="o">-</span><span class="mi">9</span><span class="p">]</span>
+    <span class="n">end_date</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">datetime</span><span class="p">(</span><span class="n">now</span><span class="o">.</span><span class="n">year</span><span class="p">,</span> <span class="n">now</span><span class="o">.</span><span class="n">month</span><span class="p">,</span> <span class="n">now</span><span class="o">.</span><span class="n">day</span><span class="p">))[:</span><span class="o">-</span><span class="mi">9</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">render_template</span><span class="p">(</span>
+        <span class="s2">&quot;reports.html&quot;</span><span class="p">,</span>
+        <span class="n">storage_services</span><span class="o">=</span><span class="n">all_storage_services</span><span class="p">,</span>
+        <span class="n">start_date</span><span class="o">=</span><span class="n">start_date</span><span class="p">,</span>
+        <span class="n">end_date</span><span class="o">=</span><span class="n">end_date</span><span class="p">,</span>
+    <span class="p">)</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2020, Artefactual Systems Inc..
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+    <a href="https://github.com/artefactual-labs/AIPscan" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

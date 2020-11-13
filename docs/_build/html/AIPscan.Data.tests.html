@@ -1,0 +1,168 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AIPscan.Data.tests package &#8212; AIPscan 0.x documentation</title>
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="AIPscan.Home package" href="AIPscan.Home.html" />
+    <link rel="prev" title="AIPscan.Data package" href="AIPscan.Data.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">AIPscan</a></h1>
+
+
+
+<p class="blurb">Reporting for Archivematica</p>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="overview.html">Overview</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">AIPscan</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="AIPscan.html">AIPscan package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="AIPscan.html#subpackages">Subpackages</a></li>
+<li class="toctree-l3"><a class="reference internal" href="AIPscan.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="AIPscan.html#module-AIPscan.celery">AIPscan.celery module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="AIPscan.html#module-AIPscan.conftest">AIPscan.conftest module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="AIPscan.html#module-AIPscan.extensions">AIPscan.extensions module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="AIPscan.html#module-AIPscan.helpers">AIPscan.helpers module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="AIPscan.html#module-AIPscan.models">AIPscan.models module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="AIPscan.html#module-AIPscan.worker">AIPscan.worker module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="AIPscan.html#module-AIPscan">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.API.html">AIPscan.API package</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="AIPscan.Data.html">AIPscan.Data package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="AIPscan.Data.html#subpackages">Subpackages</a></li>
+<li class="toctree-l3"><a class="reference internal" href="AIPscan.Data.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="AIPscan.Data.html#module-AIPscan.Data.data">AIPscan.Data.data module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="AIPscan.Data.html#module-AIPscan.Data">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.Aggregator.html">AIPscan.Aggregator package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.Reporter.html">AIPscan.Reporter package</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">AIPscan</a><ul>
+  <li><a href="AIPscan.html">AIPscan package</a><ul>
+  <li><a href="AIPscan.Data.html">AIPscan.Data package</a><ul>
+      <li>Previous: <a href="AIPscan.Data.html" title="previous chapter">AIPscan.Data package</a></li>
+      <li>Next: <a href="AIPscan.Home.html" title="next chapter">AIPscan.Home package</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="aipscan-data-tests-package">
+<h1>AIPscan.Data.tests package<a class="headerlink" href="#aipscan-data-tests-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-AIPscan.Data.tests.test_largest_files">
+<span id="aipscan-data-tests-test-largest-files-module"></span><h2>AIPscan.Data.tests.test_largest_files module<a class="headerlink" href="#module-AIPscan.Data.tests.test_largest_files" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="AIPscan.Data.tests.test_largest_files.test_largest_files">
+<code class="sig-prename descclassname">AIPscan.Data.tests.test_largest_files.</code><code class="sig-name descname">test_largest_files</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">app_instance</span></em>, <em class="sig-param"><span class="n">mocker</span></em>, <em class="sig-param"><span class="n">file_data</span></em>, <em class="sig-param"><span class="n">file_count</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/AIPscan/Data/tests/test_largest_files.html#test_largest_files"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AIPscan.Data.tests.test_largest_files.test_largest_files" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test that return value conforms to expected structure.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="AIPscan.Data.tests.test_largest_files.test_largest_files_elements">
+<code class="sig-prename descclassname">AIPscan.Data.tests.test_largest_files.</code><code class="sig-name descname">test_largest_files_elements</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">app_instance</span></em>, <em class="sig-param"><span class="n">mocker</span></em>, <em class="sig-param"><span class="n">test_file</span></em>, <em class="sig-param"><span class="n">has_format_version</span></em>, <em class="sig-param"><span class="n">has_puid</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/AIPscan/Data/tests/test_largest_files.html#test_largest_files_elements"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AIPscan.Data.tests.test_largest_files.test_largest_files_elements" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test that returned file data matches expected values.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-AIPscan.Data.tests">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-AIPscan.Data.tests" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2020, Artefactual Systems Inc..
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/AIPscan.Data.tests.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/artefactual-labs/AIPscan" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

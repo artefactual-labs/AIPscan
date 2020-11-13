@@ -1,0 +1,419 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AIPscan.Aggregator.tasks &#8212; AIPscan 0.x documentation</title>
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">AIPscan</a></h1>
+
+
+
+<p class="blurb">Reporting for Archivematica</p>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">AIPscan</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  <li><a href="../../AIPscan.html">AIPscan</a><ul>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for AIPscan.Aggregator.tasks</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">requests</span>
+
+<span class="kn">from</span> <span class="nn">celery.utils.log</span> <span class="kn">import</span> <span class="n">get_task_logger</span>
+
+<span class="kn">from</span> <span class="nn">AIPscan</span> <span class="kn">import</span> <span class="n">db</span>
+<span class="kn">from</span> <span class="nn">AIPscan.extensions</span> <span class="kn">import</span> <span class="n">celery</span>
+<span class="kn">from</span> <span class="nn">AIPscan.models</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">FetchJob</span><span class="p">,</span>
+    <span class="c1"># Custom celery Models.</span>
+    <span class="n">get_mets_tasks</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">AIPscan.Aggregator.celery_helpers</span> <span class="kn">import</span> <span class="n">write_celery_update</span>
+<span class="kn">from</span> <span class="nn">AIPscan.Aggregator</span> <span class="kn">import</span> <span class="n">database_helpers</span>
+
+<span class="kn">from</span> <span class="nn">AIPscan.Aggregator.mets_parse_helpers</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">_download_mets</span><span class="p">,</span>
+    <span class="n">METSError</span><span class="p">,</span>
+    <span class="n">get_aip_original_name</span><span class="p">,</span>
+    <span class="n">parse_mets_with_metsrw</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">AIPscan.Aggregator.task_helpers</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">process_package_object</span><span class="p">,</span>
+    <span class="n">format_api_url_with_limit_offset</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">get_task_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="TaskError"><a class="viewcode-back" href="../../../AIPscan.Aggregator.html#AIPscan.Aggregator.tasks.TaskError">[docs]</a><span class="k">class</span> <span class="nc">TaskError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Exception to call when there is a problem downloading from the</span>
+<span class="sd">    storage service. The exception is known and asks for user</span>
+<span class="sd">    intervention.</span>
+<span class="sd">    &quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="write_packages_json"><a class="viewcode-back" href="../../../AIPscan.Aggregator.html#AIPscan.Aggregator.tasks.write_packages_json">[docs]</a><span class="k">def</span> <span class="nf">write_packages_json</span><span class="p">(</span><span class="n">count</span><span class="p">,</span> <span class="n">packages</span><span class="p">,</span> <span class="n">packages_directory</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Write package JSON to disk&quot;&quot;&quot;</span>
+    <span class="n">json_download_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+        <span class="n">packages_directory</span><span class="p">,</span> <span class="s2">&quot;packages</span><span class="si">{}</span><span class="s2">.json&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">count</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Packages file is downloaded to &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">json_download_file</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">json_download_file</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">json_file</span><span class="p">:</span>
+            <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">packages</span><span class="p">,</span> <span class="n">json_file</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">json</span><span class="o">.</span><span class="n">JSONDecodeError</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Cannot decode JSON from </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">json_download_file</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="start_mets_task"><a class="viewcode-back" href="../../../AIPscan.Aggregator.html#AIPscan.Aggregator.tasks.start_mets_task">[docs]</a><span class="k">def</span> <span class="nf">start_mets_task</span><span class="p">(</span>
+    <span class="n">packageUUID</span><span class="p">,</span>
+    <span class="n">relativePathToMETS</span><span class="p">,</span>
+    <span class="n">apiUrl</span><span class="p">,</span>
+    <span class="n">timestampStr</span><span class="p">,</span>
+    <span class="n">packageListNo</span><span class="p">,</span>
+    <span class="n">storageServiceId</span><span class="p">,</span>
+    <span class="n">fetchJobId</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Initiate a get_mets task worker and record the event in the</span>
+<span class="sd">    celery database.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># call worker to download and parse METS File</span>
+    <span class="n">get_mets_task</span> <span class="o">=</span> <span class="n">get_mets</span><span class="o">.</span><span class="n">delay</span><span class="p">(</span>
+        <span class="n">packageUUID</span><span class="p">,</span>
+        <span class="n">relativePathToMETS</span><span class="p">,</span>
+        <span class="n">apiUrl</span><span class="p">,</span>
+        <span class="n">timestampStr</span><span class="p">,</span>
+        <span class="n">packageListNo</span><span class="p">,</span>
+        <span class="n">storageServiceId</span><span class="p">,</span>
+        <span class="n">fetchJobId</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">mets_task</span> <span class="o">=</span> <span class="n">get_mets_tasks</span><span class="p">(</span>
+        <span class="n">get_mets_task_id</span><span class="o">=</span><span class="n">get_mets_task</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+        <span class="n">workflow_coordinator_id</span><span class="o">=</span><span class="n">workflow_coordinator</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+        <span class="n">package_uuid</span><span class="o">=</span><span class="n">packageUUID</span><span class="p">,</span>
+        <span class="n">status</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">mets_task</span><span class="p">)</span>
+    <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="parse_packages_and_load_mets"><a class="viewcode-back" href="../../../AIPscan.Aggregator.html#AIPscan.Aggregator.tasks.parse_packages_and_load_mets">[docs]</a><span class="k">def</span> <span class="nf">parse_packages_and_load_mets</span><span class="p">(</span>
+    <span class="n">json_file_path</span><span class="p">,</span>
+    <span class="n">api_url</span><span class="p">,</span>
+    <span class="n">timestamp</span><span class="p">,</span>
+    <span class="n">package_list_no</span><span class="p">,</span>
+    <span class="n">storage_service_id</span><span class="p">,</span>
+    <span class="n">fetch_job_id</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Parse packages documents from the storage service and initiate</span>
+<span class="sd">    the load mets functions of AIPscan. Results are written to the</span>
+<span class="sd">    database.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">OBJECTS</span> <span class="o">=</span> <span class="s2">&quot;objects&quot;</span>
+    <span class="n">packages</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">json_file_path</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">packagesJson</span><span class="p">:</span>
+        <span class="n">package_list</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">packagesJson</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">package_obj</span> <span class="ow">in</span> <span class="n">package_list</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">OBJECTS</span><span class="p">,</span> <span class="p">[]):</span>
+        <span class="n">package</span> <span class="o">=</span> <span class="n">process_package_object</span><span class="p">(</span><span class="n">package_obj</span><span class="p">)</span>
+        <span class="n">packages</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">package</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">package</span><span class="o">.</span><span class="n">is_aip</span><span class="p">():</span>
+            <span class="k">continue</span>
+        <span class="n">start_mets_task</span><span class="p">(</span>
+            <span class="n">package</span><span class="o">.</span><span class="n">uuid</span><span class="p">,</span>
+            <span class="n">package</span><span class="o">.</span><span class="n">get_relative_path</span><span class="p">(),</span>
+            <span class="n">api_url</span><span class="p">,</span>
+            <span class="n">timestamp</span><span class="p">,</span>
+            <span class="n">package_list_no</span><span class="p">,</span>
+            <span class="n">storage_service_id</span><span class="p">,</span>
+            <span class="n">fetch_job_id</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">packages</span></div>
+
+
+<span class="nd">@celery</span><span class="o">.</span><span class="n">task</span><span class="p">(</span><span class="n">bind</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">workflow_coordinator</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span> <span class="n">api_url</span><span class="p">,</span> <span class="n">timestamp</span><span class="p">,</span> <span class="n">storage_service_id</span><span class="p">,</span> <span class="n">fetch_job_id</span><span class="p">,</span> <span class="n">packages_directory</span>
+<span class="p">):</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Packages directory is: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">packages_directory</span><span class="p">)</span>
+
+    <span class="c1"># Send package list request to a worker.</span>
+    <span class="n">package_lists_task</span> <span class="o">=</span> <span class="n">package_lists_request</span><span class="o">.</span><span class="n">delay</span><span class="p">(</span>
+        <span class="n">api_url</span><span class="p">,</span> <span class="n">timestamp</span><span class="p">,</span> <span class="n">packages_directory</span>
+    <span class="p">)</span>
+
+    <span class="n">write_celery_update</span><span class="p">(</span><span class="n">package_lists_task</span><span class="p">,</span> <span class="n">workflow_coordinator</span><span class="p">)</span>
+
+    <span class="c1"># Wait for package lists task to finish downloading all package</span>
+    <span class="c1"># lists.</span>
+    <span class="n">task</span> <span class="o">=</span> <span class="n">package_lists_request</span><span class="o">.</span><span class="n">AsyncResult</span><span class="p">(</span><span class="n">package_lists_task</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">app</span><span class="o">=</span><span class="n">celery</span><span class="p">)</span>
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="s2">&quot;SUCCESS&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="s2">&quot;FAILURE&quot;</span><span class="p">):</span>
+            <span class="k">break</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">package_lists_task</span><span class="o">.</span><span class="n">info</span><span class="p">,</span> <span class="n">TaskError</span><span class="p">):</span>
+        <span class="c1"># Re-raise.</span>
+        <span class="k">raise</span> <span class="p">(</span><span class="n">package_lists_task</span><span class="o">.</span><span class="n">info</span><span class="p">)</span>
+
+    <span class="n">total_package_lists</span> <span class="o">=</span> <span class="n">package_lists_task</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;totalPackageLists&quot;</span><span class="p">]</span>
+
+    <span class="n">all_packages</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">package_list_no</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">total_package_lists</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">json_file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="n">packages_directory</span><span class="p">,</span> <span class="s2">&quot;packages</span><span class="si">{}</span><span class="s2">.json&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">package_list_no</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="c1"># Process packages and create a new worker to download and parse</span>
+        <span class="c1"># each METS separately.</span>
+        <span class="n">packages</span> <span class="o">=</span> <span class="n">parse_packages_and_load_mets</span><span class="p">(</span>
+            <span class="n">json_file_path</span><span class="p">,</span>
+            <span class="n">api_url</span><span class="p">,</span>
+            <span class="n">timestamp</span><span class="p">,</span>
+            <span class="n">package_list_no</span><span class="p">,</span>
+            <span class="n">storage_service_id</span><span class="p">,</span>
+            <span class="n">fetch_job_id</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">all_packages</span> <span class="o">=</span> <span class="n">all_packages</span> <span class="o">+</span> <span class="n">packages</span>
+
+    <span class="n">total_packages</span> <span class="o">=</span> <span class="n">package_lists_task</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;totalPackages&quot;</span><span class="p">]</span>
+
+    <span class="n">total_aips</span> <span class="o">=</span> <span class="nb">len</span><span class="p">([</span><span class="n">package</span> <span class="k">for</span> <span class="n">package</span> <span class="ow">in</span> <span class="n">all_packages</span> <span class="k">if</span> <span class="n">package</span><span class="o">.</span><span class="n">is_aip</span><span class="p">()])</span>
+    <span class="n">total_sips</span> <span class="o">=</span> <span class="nb">len</span><span class="p">([</span><span class="n">package</span> <span class="k">for</span> <span class="n">package</span> <span class="ow">in</span> <span class="n">all_packages</span> <span class="k">if</span> <span class="n">package</span><span class="o">.</span><span class="n">is_sip</span><span class="p">()])</span>
+    <span class="n">total_dips</span> <span class="o">=</span> <span class="nb">len</span><span class="p">([</span><span class="n">package</span> <span class="k">for</span> <span class="n">package</span> <span class="ow">in</span> <span class="n">all_packages</span> <span class="k">if</span> <span class="n">package</span><span class="o">.</span><span class="n">is_dip</span><span class="p">()])</span>
+    <span class="n">total_deleted_aips</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span>
+        <span class="p">[</span><span class="n">package</span> <span class="k">for</span> <span class="n">package</span> <span class="ow">in</span> <span class="n">all_packages</span> <span class="k">if</span> <span class="n">package</span><span class="o">.</span><span class="n">is_deleted</span><span class="p">()]</span>
+    <span class="p">)</span>
+    <span class="n">total_replicas</span> <span class="o">=</span> <span class="nb">len</span><span class="p">([</span><span class="n">package</span> <span class="k">for</span> <span class="n">package</span> <span class="ow">in</span> <span class="n">all_packages</span> <span class="k">if</span> <span class="n">package</span><span class="o">.</span><span class="n">is_replica</span><span class="p">()])</span>
+
+    <span class="n">summary</span> <span class="o">=</span> <span class="s2">&quot;aips: &#39;</span><span class="si">{}</span><span class="s2">&#39;; sips: &#39;</span><span class="si">{}</span><span class="s2">&#39;; dips: &#39;</span><span class="si">{}</span><span class="s2">&#39;; deleted: &#39;</span><span class="si">{}</span><span class="s2">&#39;; replicated: &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+        <span class="n">total_aips</span><span class="p">,</span> <span class="n">total_sips</span><span class="p">,</span> <span class="n">total_dips</span><span class="p">,</span> <span class="n">total_deleted_aips</span><span class="p">,</span> <span class="n">total_replicas</span>
+    <span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">summary</span><span class="p">)</span>
+
+    <span class="n">obj</span> <span class="o">=</span> <span class="n">FetchJob</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">fetch_job_id</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+    <span class="n">obj</span><span class="o">.</span><span class="n">total_packages</span> <span class="o">=</span> <span class="n">total_packages</span>
+    <span class="n">obj</span><span class="o">.</span><span class="n">total_aips</span> <span class="o">=</span> <span class="n">total_aips</span>
+    <span class="n">obj</span><span class="o">.</span><span class="n">total_dips</span> <span class="o">=</span> <span class="n">total_dips</span>
+    <span class="n">obj</span><span class="o">.</span><span class="n">total_sips</span> <span class="o">=</span> <span class="n">total_sips</span>
+    <span class="n">obj</span><span class="o">.</span><span class="n">total_replicas</span> <span class="o">=</span> <span class="n">total_replicas</span>
+    <span class="n">obj</span><span class="o">.</span><span class="n">total_deleted_aips</span> <span class="o">=</span> <span class="n">total_deleted_aips</span>
+    <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+
+
+<span class="k">def</span> <span class="nf">_make_request</span><span class="p">(</span><span class="n">request_url</span><span class="p">,</span> <span class="n">request_url_without_api_key</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Make our request to the storage service and return a valid</span>
+<span class="sd">    response to our caller or raise a TaskError for celery.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">request_url</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status_code</span> <span class="o">!=</span> <span class="n">requests</span><span class="o">.</span><span class="n">codes</span><span class="o">.</span><span class="n">ok</span><span class="p">:</span>
+        <span class="n">err</span> <span class="o">=</span> <span class="s2">&quot;Check the URL and API details, cannot connect to: `</span><span class="si">{}</span><span class="s2">`&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">request_url_without_api_key</span>
+        <span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">TaskError</span><span class="p">(</span><span class="s2">&quot;Bad response from server: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">err</span><span class="p">))</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">packages</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+    <span class="k">except</span> <span class="n">json</span><span class="o">.</span><span class="n">JSONDecodeError</span><span class="p">:</span>
+        <span class="n">err</span> <span class="o">=</span> <span class="s2">&quot;Response is OK, but cannot decode JSON from server&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">TaskError</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">packages</span>
+
+
+<span class="nd">@celery</span><span class="o">.</span><span class="n">task</span><span class="p">(</span><span class="n">bind</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">package_lists_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">apiUrl</span><span class="p">,</span> <span class="n">timestamp</span><span class="p">,</span> <span class="n">packages_directory</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Request package lists from the storage service. Package lists</span>
+<span class="sd">    will contain details of the AIPs that we want to download.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">META</span> <span class="o">=</span> <span class="s2">&quot;meta&quot;</span>
+    <span class="n">NEXT</span> <span class="o">=</span> <span class="s2">&quot;next&quot;</span>
+    <span class="n">LIMIT</span> <span class="o">=</span> <span class="s2">&quot;limit&quot;</span>
+    <span class="n">COUNT</span> <span class="o">=</span> <span class="s2">&quot;total_count&quot;</span>
+    <span class="n">IN_PROGRESS</span> <span class="o">=</span> <span class="s2">&quot;IN PROGRESS&quot;</span>
+    <span class="p">(</span>
+        <span class="n">base_url</span><span class="p">,</span>
+        <span class="n">request_url_without_api_key</span><span class="p">,</span>
+        <span class="n">request_url</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">=</span> <span class="n">format_api_url_with_limit_offset</span><span class="p">(</span><span class="n">apiUrl</span><span class="p">)</span>
+    <span class="c1"># First packages request.</span>
+    <span class="n">packages</span> <span class="o">=</span> <span class="n">_make_request</span><span class="p">(</span><span class="n">request_url</span><span class="p">,</span> <span class="n">request_url_without_api_key</span><span class="p">)</span>
+    <span class="n">packages_count</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="c1"># Calculate how many package list files will be downloaded based on</span>
+    <span class="c1"># total number of packages and the download limit</span>
+    <span class="n">total_packages</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">packages</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">META</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">COUNT</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+    <span class="n">total_package_lists</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">total_packages</span> <span class="o">/</span> <span class="nb">int</span><span class="p">(</span><span class="n">apiUrl</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">LIMIT</span><span class="p">)))</span> <span class="o">+</span> <span class="p">(</span>
+        <span class="n">total_packages</span> <span class="o">%</span> <span class="nb">int</span><span class="p">(</span><span class="n">apiUrl</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">LIMIT</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">0</span>
+    <span class="p">)</span>
+    <span class="c1"># There may be more packages to download to let&#39;s access those here.</span>
+    <span class="c1"># TODO: `request_url_without_api_key` at this point will not be as</span>
+    <span class="c1"># accurate. If we have more time, modify `format_api_url_with_limit_offset(...)`</span>
+    <span class="c1"># to work with raw offset and limit data to make up for the fact</span>
+    <span class="c1"># that an API key is plain-encoded in next_url.</span>
+    <span class="n">next_url</span> <span class="o">=</span> <span class="n">packages</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">META</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">NEXT</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">write_packages_json</span><span class="p">(</span><span class="n">packages_count</span><span class="p">,</span> <span class="n">packages</span><span class="p">,</span> <span class="n">packages_directory</span><span class="p">)</span>
+    <span class="k">while</span> <span class="n">next_url</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">next_request</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{}{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">base_url</span><span class="p">,</span> <span class="n">next_url</span><span class="p">)</span>
+        <span class="n">next_packages</span> <span class="o">=</span> <span class="n">_make_request</span><span class="p">(</span><span class="n">next_request</span><span class="p">,</span> <span class="n">request_url_without_api_key</span><span class="p">)</span>
+        <span class="n">packages_count</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">write_packages_json</span><span class="p">(</span><span class="n">packages_count</span><span class="p">,</span> <span class="n">next_packages</span><span class="p">,</span> <span class="n">packages_directory</span><span class="p">)</span>
+        <span class="n">next_url</span> <span class="o">=</span> <span class="n">next_packages</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">META</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">NEXT</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_state</span><span class="p">(</span>
+            <span class="n">state</span><span class="o">=</span><span class="n">IN_PROGRESS</span><span class="p">,</span>
+            <span class="n">meta</span><span class="o">=</span><span class="p">{</span>
+                <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;Total packages: </span><span class="si">{}</span><span class="s2"> Total package lists: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">total_packages</span><span class="p">,</span> <span class="n">total_package_lists</span>
+                <span class="p">)</span>
+            <span class="p">},</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">&quot;totalPackageLists&quot;</span><span class="p">:</span> <span class="n">total_package_lists</span><span class="p">,</span>
+        <span class="s2">&quot;totalPackages&quot;</span><span class="p">:</span> <span class="n">total_packages</span><span class="p">,</span>
+        <span class="s2">&quot;timestampStr&quot;</span><span class="p">:</span> <span class="n">timestamp</span><span class="p">,</span>
+    <span class="p">}</span>
+
+
+<span class="nd">@celery</span><span class="o">.</span><span class="n">task</span><span class="p">()</span>
+<span class="k">def</span> <span class="nf">get_mets</span><span class="p">(</span>
+    <span class="n">package_uuid</span><span class="p">,</span>
+    <span class="n">relative_path_to_mets</span><span class="p">,</span>
+    <span class="n">api_url</span><span class="p">,</span>
+    <span class="n">timestamp_str</span><span class="p">,</span>
+    <span class="n">package_list_no</span><span class="p">,</span>
+    <span class="n">storage_service_id</span><span class="p">,</span>
+    <span class="n">fetch_job_id</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Request METS XML file from the storage service and parse.</span>
+
+<span class="sd">    Download a METS file from an AIP that is stored in the storage</span>
+<span class="sd">    service and then parse the results into the AIPscan database.</span>
+
+<span class="sd">    This function relies on being able to use mets-reader-writer which</span>
+<span class="sd">    is the primary object we will be passing about.</span>
+
+<span class="sd">    TODO: Log METS errors.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">download_file</span> <span class="o">=</span> <span class="n">_download_mets</span><span class="p">(</span>
+        <span class="n">api_url</span><span class="p">,</span> <span class="n">package_uuid</span><span class="p">,</span> <span class="n">relative_path_to_mets</span><span class="p">,</span> <span class="n">timestamp_str</span><span class="p">,</span> <span class="n">package_list_no</span>
+    <span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">mets</span> <span class="o">=</span> <span class="n">parse_mets_with_metsrw</span><span class="p">(</span><span class="n">download_file</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">METSError</span><span class="p">:</span>
+        <span class="c1"># An error we need to log and report back to the user.</span>
+        <span class="k">return</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">original_name</span> <span class="o">=</span> <span class="n">get_aip_original_name</span><span class="p">(</span><span class="n">mets</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">METSError</span><span class="p">:</span>
+        <span class="c1"># Some other error with the METS file that we might want to</span>
+        <span class="c1"># log and act upon.</span>
+        <span class="n">original_name</span> <span class="o">=</span> <span class="n">package_uuid</span>
+
+    <span class="n">aip</span> <span class="o">=</span> <span class="n">database_helpers</span><span class="o">.</span><span class="n">create_aip_object</span><span class="p">(</span>
+        <span class="n">package_uuid</span><span class="o">=</span><span class="n">package_uuid</span><span class="p">,</span>
+        <span class="n">transfer_name</span><span class="o">=</span><span class="n">original_name</span><span class="p">,</span>
+        <span class="n">create_date</span><span class="o">=</span><span class="n">mets</span><span class="o">.</span><span class="n">createdate</span><span class="p">,</span>
+        <span class="n">storage_service_id</span><span class="o">=</span><span class="n">storage_service_id</span><span class="p">,</span>
+        <span class="n">fetch_job_id</span><span class="o">=</span><span class="n">fetch_job_id</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">database_helpers</span><span class="o">.</span><span class="n">process_aip_data</span><span class="p">(</span><span class="n">aip</span><span class="p">,</span> <span class="n">mets</span><span class="p">)</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2020, Artefactual Systems Inc..
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+    <a href="https://github.com/artefactual-labs/AIPscan" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>
