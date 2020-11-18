@@ -10,14 +10,16 @@ Copyright Artefactual Systems Inc (2020).
 
 ## Installation
 
+Below are the developer quickstart instructions. See [INSTALL](INSTALL.md) for production deployment instructions.
+
 ### AIPScan Flask server
 
-* Clone files and cd to directory:  `git clone https://github.com/peterVG/AIPscan && cd AIPscan`
+* Clone files and cd to directory:  `git clone https://github.com/artefactual-labs/AIPscan && cd AIPscan`
 * Set up virtualenv in the project root directory: `virtualenv venv`
 * Activate virtualenv: `source venv/bin/activate`
-* Install requirements (this includes Flask & Celery): `pip install -r requirements.txt`
-* Create database: `python create_aipscan_db.py`
-* In a terminal window, start the Flask server: `python run.py`
+* Install requirements (this includes Flask & Celery): `pip install -r requirements/base.txt`
+* Create AIPscan and Celery databases: `python create_aipscan_db.py`
+* In a terminal window, start the Flask dev server: `python run.py`
 
 ### RabbitMQ
 
