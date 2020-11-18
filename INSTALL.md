@@ -9,11 +9,13 @@ systems and servers have not been tested.
 
 ### AIPScan Flask server
 
-* Clone files and cd to directory:  `git clone https://github.com/artefactual-labs/AIPscan && cd AIPscan`
-* Set up virtualenv in the project root directory: `virtualenv venv`
-* Activate virtualenv: `source venv/bin/activate`
-* Install requirements (this includes Flask, Celery, and Gunicorn): `pip install -r requirements/base.txt`
-* Create AIPscan and Celery databases: `python create_aipscan_db.py`
+* Move to project directory: `cd /usr/share/archivematica`
+* Clone files to directory: `git clone https://github.com/artefactual-labs/AIPscan /usr/share/archivematica/AIPscan`
+* Set up the AIPscan virtualenv directory in the Archivematica virtualenvs directory:  
+    * `cd /usr/share/archivematica/virtualenvs`  
+    * `python3 -m venv AIPscan`
+*  Activate virtualenv: `source AIPscan/bin/activate`
+*  Install requirements (this will include Flask, Celery, and Gunicorn): `pip install -r requirements.txt`
 
 ### RabbitMQ
 
@@ -32,22 +34,22 @@ systems and servers have not been tested.
 sudo nano /etc/systemd/system/aipscan.service
 ```
 
-* Add and save the following content to this file. Replace the
-`home/artefactual/AIPscan` paths to match the directory where you have
-installed AIPscan (e.g. `/home/ubuntu/AIPscan`).
+* Add and save the following content to this file.
 
 ```bash
-[Unit]
 Description=Gunicorn instance to serve AIPscan
 After=network.target
 
 [Service]
-User=artefactual
-Group=www-data
-
-WorkingDirectory=/home/artefactual/AIPscan
-Environment="PATH=/home/artefactual/AIPscan/venv/bin"
-ExecStart=/home/artefactual/AIPscan/venv/bin/gunicorn --workers 3 --bind unix:aipscan.sock -m 007 wsgi:app
+User=archivematica
+Group=archivematica
+WorkingDirectory=/usr/share/archivematica//AIPscan
+ExecStart=/usr/share/archivematica/virtualenvs/AIPscan/bin/gunicorn --workers 3 --bind localhost:4573 wsgi:app
+ExecReload=/bin/kill -s HUP $MAINPID
+ExecStop=/bin/kill -s TERM $MAINPID
+PrivateTmp=true
+Restart=always
+RestartSec=30 
 
 [Install]
 WantedBy=multi-user.target
@@ -74,10 +76,10 @@ sudo systemctl status aipscan
  Main PID: 25278 (gunicorn)
     Tasks: 4 (limit: 4915)
    CGroup: /system.slice/aipscan.service
-           ├─25278 /home/artefactual/AIPscan/venv/bin/python3 /home/artefactual/AIPscan/venv/bin/gunicorn --workers 3 --bind unix:aipscan.sock -m 007 wsgi:app
-           ├─25301 /home/artefactual/AIPscan/venv/bin/python3 /home/artefactual/AIPscan/venv/bin/gunicorn --workers 3 --bind unix:aipscan.sock -m 007 wsgi:app
-           ├─26969 /home/artefactual/AIPscan/venv/bin/python3 /home/artefactual/AIPscan/venv/bin/gunicorn --workers 3 --bind unix:aipscan.sock -m 007 wsgi:app
-           └─26985 /home/artefactual/AIPscan/venv/bin/python3 /home/artefactual/AIPscan/venv/bin/gunicorn --workers 3 --bind unix:aipscan.sock -m 007 wsgi:app
+           ├─25278 /usr/share/archivematica/virtualenvs/AIPscan/bin/python3 /usr/share/archivematica/virtualenvs/AIPscan/bin/gunicorn --workers 3 --bind unix:aipscan.sock -m 007 wsgi:app
+           ├─25301 /usr/share/archivematica/virtualenvs/AIPscan/bin/python3 /usr/share/archivematica/virtualenvs/AIPscan/bin/gunicorn --workers 3 --bind unix:aipscan.sock -m 007 wsgi:app
+           ├─26969 /usr/share/archivematica/virtualenvs/AIPscan/bin/python3 /usr/share/archivematica/virtualenvs/AIPscan/bin/gunicorn --workers 3 --bind unix:aipscan.sock -m 007 wsgi:app
+           └─26985 /usr/share/archivematica/virtualenvs/AIPscan/bin/python3 /usr/share/archivematica/virtualenvs/AIPscan/bin/gunicorn --workers 3 --bind unix:aipscan.sock -m 007 wsgi:app
 ```
 
 ### Nginx web server
@@ -89,9 +91,7 @@ sudo apt update
 sudo apt install nginx
 ```
 
-* Configure a Nginx server block for the AIPscan application. Again, replace
-the `/home/artefactual/AIPscan/aipscan.sock` path with the path to your
-AIPscan root directory (e.g. `/home/ubuntu/AIPscan/aipscan.sock`).
+* Configure a Nginx server block for the AIPscan application. 
 
 ```bash
 sudo nano /etc/nginx/sites-available/aipscan
@@ -108,7 +108,7 @@ server {
         satisfy all;
 
         include proxy_params;
-        proxy_pass http://unix:/home/artefactual/AIPscan/aipscan.sock;
+        proxy_pass http://unix:/usr/share/archivematica/AIPscan/aipscan.sock;
     }
 }
 ```
@@ -154,9 +154,7 @@ To run Celery as a persistent service, create the following file:
 /etc/systemd/system/celery.service
 ```
 
-* Add and save the following content, again replacing the 
-`/home/artefactual/AIPscan` path to match the root directory of your AIPscan
-installation (e.g. `/home/ubuntu/AIPscan/`)
+* Add and save the following content:
 
 ```bash
 [Unit]
@@ -164,15 +162,18 @@ Description=Celery worker service for AIPscan
 After=network.target
 
 [Service]
-User=artefactual
+User=archivematica
 
-WorkingDirectory=/home/artefactual/AIPscan
-Environment="PATH=/home/artefactual/AIPscan/venv/bin"
-ExecStart=/home/artefactual/AIPscan/venv/bin/celery -A AIPscan.Aggregator.tasks worker
+WorkingDirectory=/usr/share/archivematica/AIPscan
+ExecStart=/usr/share/archivematica/virtualenvs/AIPscan/bin/celery -A AIPscan.Aggregator.tasks worker
+ExecReload=/bin/kill -s HUP $MAINPID
+ExecStop=/bin/kill -s TERM $MAINPID
+PrivateTmp=true
+Restart=always
+RestartSec=30
 
 [Install]
 WantedBy=multi-user.target
-```
 
 * Start the Celery service:
 
@@ -196,9 +197,9 @@ sudo systemctl status celery
  Main PID: 26842 (celery)
     Tasks: 3 (limit: 4915)
    CGroup: /system.slice/celery.service
-           ├─26842 /home/artefactual/AIPscan/venv/bin/python3 /home/artefactual/AIPscan/venv/bin/celery -A AIPscan.Aggregator.tasks worker
-           ├─26860 /home/artefactual/AIPscan/venv/bin/python3 /home/artefactual/AIPscan/venv/bin/celery -A AIPscan.Aggregator.tasks worker
-           └─26861 /home/artefactual/AIPscan/venv/bin/python3 /home/artefactual/AIPscan/venv/bin/celery -A AIPscan.Aggregator.tasks worker
+           ├─26842 /usr/share/archivematica/virtualenvs/AIPscan/bin/python3 /usr/share/archivematica/virtualenvs/AIPscan/bin/celery -A AIPscan.Aggregator.tasks worker
+           ├─26860 /usr/share/archivematica/virtualenvs/AIPscan/bin/python3 /usr/share/archivematica/virtualenvs/AIPscan/bin/celery -A AIPscan.Aggregator.tasks worker
+           └─26861 /usr/share/archivematica/virtualenvs/AIPscan/bin/python3 /usr/share/archivematica/virtualenvs/AIPscan/bin/celery -A AIPscan.Aggregator.tasks worker
 ```
 
 ### Conclusion
