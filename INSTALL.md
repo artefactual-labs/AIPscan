@@ -174,6 +174,7 @@ RestartSec=30
 
 [Install]
 WantedBy=multi-user.target
+```
 
 * Start the Celery service:
 
