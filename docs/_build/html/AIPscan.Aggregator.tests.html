@@ -1,0 +1,265 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AIPscan.Aggregator.tests package &#8212; AIPscan 0.x documentation</title>
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="AIPscan.Data package" href="AIPscan.Data.html" />
+    <link rel="prev" title="AIPscan.Aggregator package" href="AIPscan.Aggregator.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">AIPscan</a></h1>
+
+
+
+<p class="blurb">Reporting for Archivematica</p>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="overview.html">Overview</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">AIPscan</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="AIPscan.html">AIPscan package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="AIPscan.html#subpackages">Subpackages</a></li>
+<li class="toctree-l3"><a class="reference internal" href="AIPscan.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="AIPscan.html#module-AIPscan.celery">AIPscan.celery module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="AIPscan.html#module-AIPscan.conftest">AIPscan.conftest module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="AIPscan.html#module-AIPscan.extensions">AIPscan.extensions module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="AIPscan.html#module-AIPscan.helpers">AIPscan.helpers module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="AIPscan.html#module-AIPscan.models">AIPscan.models module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="AIPscan.html#module-AIPscan.worker">AIPscan.worker module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="AIPscan.html#module-AIPscan">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.API.html">AIPscan.API package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.Data.html">AIPscan.Data package</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="AIPscan.Aggregator.html">AIPscan.Aggregator package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="AIPscan.Aggregator.html#subpackages">Subpackages</a></li>
+<li class="toctree-l3"><a class="reference internal" href="AIPscan.Aggregator.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="AIPscan.Aggregator.html#module-AIPscan.Aggregator.celery_helpers">AIPscan.Aggregator.celery_helpers module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="AIPscan.Aggregator.html#module-AIPscan.Aggregator.database_helpers">AIPscan.Aggregator.database_helpers module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="AIPscan.Aggregator.html#module-AIPscan.Aggregator.forms">AIPscan.Aggregator.forms module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="AIPscan.Aggregator.html#module-AIPscan.Aggregator.mets_parse_helpers">AIPscan.Aggregator.mets_parse_helpers module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="AIPscan.Aggregator.html#module-AIPscan.Aggregator.task_helpers">AIPscan.Aggregator.task_helpers module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="AIPscan.Aggregator.html#module-AIPscan.Aggregator.tasks">AIPscan.Aggregator.tasks module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="AIPscan.Aggregator.html#module-AIPscan.Aggregator.types">AIPscan.Aggregator.types module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="AIPscan.Aggregator.html#module-AIPscan.Aggregator.views">AIPscan.Aggregator.views module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="AIPscan.Aggregator.html#module-AIPscan.Aggregator">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.Reporter.html">AIPscan.Reporter package</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">AIPscan</a><ul>
+  <li><a href="AIPscan.html">AIPscan package</a><ul>
+  <li><a href="AIPscan.Aggregator.html">AIPscan.Aggregator package</a><ul>
+      <li>Previous: <a href="AIPscan.Aggregator.html" title="previous chapter">AIPscan.Aggregator package</a></li>
+      <li>Next: <a href="AIPscan.Data.html" title="next chapter">AIPscan.Data package</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="aipscan-aggregator-tests-package">
+<h1>AIPscan.Aggregator.tests package<a class="headerlink" href="#aipscan-aggregator-tests-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-AIPscan.Aggregator.tests.test_database_helpers">
+<span id="aipscan-aggregator-tests-test-database-helpers-module"></span><h2>AIPscan.Aggregator.tests.test_database_helpers module<a class="headerlink" href="#module-AIPscan.Aggregator.tests.test_database_helpers" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="AIPscan.Aggregator.tests.test_database_helpers.test_collect_agents">
+<code class="sig-prename descclassname">AIPscan.Aggregator.tests.test_database_helpers.</code><code class="sig-name descname">test_collect_agents</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">app_instance</span></em>, <em class="sig-param"><span class="n">fixture_path</span></em>, <em class="sig-param"><span class="n">number_of_unique_agents</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/AIPscan/Aggregator/tests/test_database_helpers.html#test_collect_agents"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AIPscan.Aggregator.tests.test_database_helpers.test_collect_agents" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make sure that we retrieve only unique Agents from the METS to
+then add to the database. Agents are “repeated” per PREMIS:OBJECT
+in METS.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="AIPscan.Aggregator.tests.test_database_helpers.test_create_aip">
+<code class="sig-prename descclassname">AIPscan.Aggregator.tests.test_database_helpers.</code><code class="sig-name descname">test_create_aip</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">app_instance</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/AIPscan/Aggregator/tests/test_database_helpers.html#test_create_aip"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AIPscan.Aggregator.tests.test_database_helpers.test_create_aip" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test AIP creation.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="AIPscan.Aggregator.tests.test_database_helpers.test_event_creation">
+<code class="sig-prename descclassname">AIPscan.Aggregator.tests.test_database_helpers.</code><code class="sig-name descname">test_event_creation</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">app_instance</span></em>, <em class="sig-param"><span class="n">mocker</span></em>, <em class="sig-param"><span class="n">fixture_path</span></em>, <em class="sig-param"><span class="n">event_count</span></em>, <em class="sig-param"><span class="n">agent_link_multiplier</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/AIPscan/Aggregator/tests/test_database_helpers.html#test_event_creation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AIPscan.Aggregator.tests.test_database_helpers.test_event_creation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make sure that we’re seeing all of the events associated with
+an AIP and that they are potentially written to the database okay.
+Make sure too that the event_agent_relationship is established.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-AIPscan.Aggregator.tests.test_mets">
+<span id="aipscan-aggregator-tests-test-mets-module"></span><h2>AIPscan.Aggregator.tests.test_mets module<a class="headerlink" href="#module-AIPscan.Aggregator.tests.test_mets" title="Permalink to this headline">¶</a></h2>
+<p>Tests for METS helper functions.</p>
+<dl class="py function">
+<dt id="AIPscan.Aggregator.tests.test_mets.test_get_aip_original_name">
+<code class="sig-prename descclassname">AIPscan.Aggregator.tests.test_mets.</code><code class="sig-name descname">test_get_aip_original_name</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fixture_path</span></em>, <em class="sig-param"><span class="n">transfer_name</span></em>, <em class="sig-param"><span class="n">mets_error</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/AIPscan/Aggregator/tests/test_mets.html#test_get_aip_original_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AIPscan.Aggregator.tests.test_mets.test_get_aip_original_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make sure that we can reliably get original name from the METS
+file given we haven’t any mets-reader-writer helpers.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-AIPscan.Aggregator.tests.test_task_helpers">
+<span id="aipscan-aggregator-tests-test-task-helpers-module"></span><h2>AIPscan.Aggregator.tests.test_task_helpers module<a class="headerlink" href="#module-AIPscan.Aggregator.tests.test_task_helpers" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="AIPscan.Aggregator.tests.test_task_helpers.packages">
+<code class="sig-prename descclassname">AIPscan.Aggregator.tests.test_task_helpers.</code><code class="sig-name descname">packages</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/AIPscan/Aggregator/tests/test_task_helpers.html#packages"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AIPscan.Aggregator.tests.test_task_helpers.packages" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="AIPscan.Aggregator.tests.test_task_helpers.test_create_numbered_subdirs">
+<code class="sig-prename descclassname">AIPscan.Aggregator.tests.test_task_helpers.</code><code class="sig-name descname">test_create_numbered_subdirs</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">timestamp</span></em>, <em class="sig-param"><span class="n">package_list_number</span></em>, <em class="sig-param"><span class="n">result</span></em>, <em class="sig-param"><span class="n">mocker</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/AIPscan/Aggregator/tests/test_task_helpers.html#test_create_numbered_subdirs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AIPscan.Aggregator.tests.test_task_helpers.test_create_numbered_subdirs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Ensure that the logic that we use to create sub-directories for
+storing METS is sound.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="AIPscan.Aggregator.tests.test_task_helpers.test_format_api_url">
+<code class="sig-prename descclassname">AIPscan.Aggregator.tests.test_task_helpers.</code><code class="sig-name descname">test_format_api_url</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">url_api_dict</span></em>, <em class="sig-param"><span class="n">base_url</span></em>, <em class="sig-param"><span class="n">url_without_api_key</span></em>, <em class="sig-param"><span class="n">url_with_api_key</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/AIPscan/Aggregator/tests/test_task_helpers.html#test_format_api_url"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AIPscan.Aggregator.tests.test_task_helpers.test_format_api_url" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="AIPscan.Aggregator.tests.test_task_helpers.test_get_mets_url">
+<code class="sig-prename descclassname">AIPscan.Aggregator.tests.test_task_helpers.</code><code class="sig-name descname">test_get_mets_url</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">api_url</span></em>, <em class="sig-param"><span class="n">package_uuid</span></em>, <em class="sig-param"><span class="n">path_to_mets</span></em>, <em class="sig-param"><span class="n">result</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/AIPscan/Aggregator/tests/test_task_helpers.html#test_get_mets_url"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AIPscan.Aggregator.tests.test_task_helpers.test_get_mets_url" title="Permalink to this definition">¶</a></dt>
+<dd><p>Ensure that the URL for retrieving METS is constructed properly.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="AIPscan.Aggregator.tests.test_task_helpers.test_process_package_object">
+<code class="sig-prename descclassname">AIPscan.Aggregator.tests.test_task_helpers.</code><code class="sig-name descname">test_process_package_object</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">packages</span></em>, <em class="sig-param"><span class="n">idx</span></em>, <em class="sig-param"><span class="n">storage_service_package</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/AIPscan/Aggregator/tests/test_task_helpers.html#test_process_package_object"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AIPscan.Aggregator.tests.test_task_helpers.test_process_package_object" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test our ability to collect information from a package list
+object and parse it into a storage service package type for
+further use.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="AIPscan.Aggregator.tests.test_task_helpers.test_tz_neutral_dates">
+<code class="sig-prename descclassname">AIPscan.Aggregator.tests.test_task_helpers.</code><code class="sig-name descname">test_tz_neutral_dates</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">input_date</span></em>, <em class="sig-param"><span class="n">output_date</span></em>, <em class="sig-param"><span class="n">now_year</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/AIPscan/Aggregator/tests/test_task_helpers.html#test_tz_neutral_dates"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AIPscan.Aggregator.tests.test_task_helpers.test_tz_neutral_dates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Ensure datetime values are handled sensibly across regions.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-AIPscan.Aggregator.tests.test_types">
+<span id="aipscan-aggregator-tests-test-types-module"></span><h2>AIPscan.Aggregator.tests.test_types module<a class="headerlink" href="#module-AIPscan.Aggregator.tests.test_types" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="AIPscan.Aggregator.tests.test_types.test_get_relative_path">
+<code class="sig-prename descclassname">AIPscan.Aggregator.tests.test_types.</code><code class="sig-name descname">test_get_relative_path</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">package</span></em>, <em class="sig-param"><span class="n">result</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/AIPscan/Aggregator/tests/test_types.html#test_get_relative_path"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AIPscan.Aggregator.tests.test_types.test_get_relative_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given the current_path check our ability to construct a relative
+path within a METS file.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="AIPscan.Aggregator.tests.test_types.test_package_ness">
+<code class="sig-prename descclassname">AIPscan.Aggregator.tests.test_types.</code><code class="sig-name descname">test_package_ness</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/AIPscan/Aggregator/tests/test_types.html#test_package_ness"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AIPscan.Aggregator.tests.test_types.test_package_ness" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given specific package types check that they evaluate to true
+when queried.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="AIPscan.Aggregator.tests.test_types.test_storage_service_package_eq">
+<code class="sig-prename descclassname">AIPscan.Aggregator.tests.test_types.</code><code class="sig-name descname">test_storage_service_package_eq</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/AIPscan/Aggregator/tests/test_types.html#test_storage_service_package_eq"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AIPscan.Aggregator.tests.test_types.test_storage_service_package_eq" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provide some other equality tests for the type.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="AIPscan.Aggregator.tests.test_types.test_storage_service_package_init">
+<code class="sig-prename descclassname">AIPscan.Aggregator.tests.test_types.</code><code class="sig-name descname">test_storage_service_package_init</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/AIPscan/Aggregator/tests/test_types.html#test_storage_service_package_init"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AIPscan.Aggregator.tests.test_types.test_storage_service_package_init" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test that the type constructor works as expected.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-AIPscan.Aggregator.tests">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-AIPscan.Aggregator.tests" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2020, Artefactual Systems Inc..
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/AIPscan.Aggregator.tests.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/artefactual-labs/AIPscan" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

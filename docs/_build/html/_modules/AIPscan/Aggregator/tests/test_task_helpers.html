@@ -1,0 +1,331 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AIPscan.Aggregator.tests.test_task_helpers &#8212; AIPscan 0.x documentation</title>
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/alabaster.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+    <script src="../../../../_static/jquery.js"></script>
+    <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../index.html">AIPscan</a></h1>
+
+
+
+<p class="blurb">Reporting for Archivematica</p>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../modules.html">AIPscan</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  <li><a href="../../../AIPscan.html">AIPscan</a><ul>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for AIPscan.Aggregator.tests.test_task_helpers</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="kn">import</span> <span class="nn">pytest</span>
+
+<span class="kn">from</span> <span class="nn">AIPscan.Aggregator.types</span> <span class="kn">import</span> <span class="n">StorageServicePackage</span>
+<span class="kn">from</span> <span class="nn">AIPscan.Aggregator</span> <span class="kn">import</span> <span class="n">task_helpers</span>
+
+<span class="n">FIXTURES_DIR</span> <span class="o">=</span> <span class="s2">&quot;fixtures&quot;</span>
+
+
+<div class="viewcode-block" id="test_tz_neutral_dates"><a class="viewcode-back" href="../../../../AIPscan.Aggregator.tests.html#AIPscan.Aggregator.tests.test_task_helpers.test_tz_neutral_dates">[docs]</a><span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">parametrize</span><span class="p">(</span>
+    <span class="s2">&quot;input_date,output_date,now_year&quot;</span><span class="p">,</span>
+    <span class="p">[</span>
+        <span class="p">(</span><span class="s2">&quot;2020-05-19T08:04:16+00:00&quot;</span><span class="p">,</span> <span class="s2">&quot;2020-05-19T08:04:16&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;2020-07-30T13:27:45.757482+00:00&quot;</span><span class="p">,</span> <span class="s2">&quot;2020-07-30T13:27:45&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;2020-07-30&quot;</span><span class="p">,</span> <span class="s2">&quot;2020-07-30T00:00:00&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;T13:27:45&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;こんにちは世界&quot;</span><span class="p">,</span> <span class="s2">&quot;1970-01-01T00:00:01&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">),</span>
+    <span class="p">],</span>
+<span class="p">)</span>
+<span class="k">def</span> <span class="nf">test_tz_neutral_dates</span><span class="p">(</span><span class="n">input_date</span><span class="p">,</span> <span class="n">output_date</span><span class="p">,</span> <span class="n">now_year</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Ensure datetime values are handled sensibly across regions.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">result_date</span> <span class="o">=</span> <span class="n">task_helpers</span><span class="o">.</span><span class="n">_tz_neutral_date</span><span class="p">(</span><span class="n">input_date</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">now_year</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">year</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">output_date</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{}{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">year</span><span class="p">,</span> <span class="n">input_date</span><span class="p">)</span>
+        <span class="n">output_date</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">output_date</span><span class="p">,</span> <span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">T%H:%M:%S&quot;</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">result_date</span> <span class="o">==</span> <span class="n">output_date</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">output_date</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">output_date</span><span class="p">,</span> <span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">T%H:%M:%S&quot;</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">result_date</span> <span class="o">==</span> <span class="n">output_date</span></div>
+
+
+<div class="viewcode-block" id="test_format_api_url"><a class="viewcode-back" href="../../../../AIPscan.Aggregator.tests.html#AIPscan.Aggregator.tests.test_task_helpers.test_format_api_url">[docs]</a><span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">parametrize</span><span class="p">(</span>
+    <span class="s2">&quot;url_api_dict, base_url, url_without_api_key, url_with_api_key&quot;</span><span class="p">,</span>
+    <span class="p">[</span>
+        <span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;baseUrl&quot;</span><span class="p">:</span> <span class="s2">&quot;http://example.com:9000/&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;limit&quot;</span><span class="p">:</span> <span class="s2">&quot;23&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;offset&quot;</span><span class="p">:</span> <span class="s2">&quot;13&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;userName&quot;</span><span class="p">:</span> <span class="s2">&quot;test&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;apiKey&quot;</span><span class="p">:</span> <span class="s2">&quot;mykey&quot;</span><span class="p">,</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;http://example.com:9000&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;http://example.com:9000/api/v2/file/?limit=23&amp;offset=13&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;http://example.com:9000/api/v2/file/?limit=23&amp;offset=13&amp;username=test&amp;api_key=mykey&quot;</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;baseUrl&quot;</span><span class="p">:</span> <span class="s2">&quot;http://subdomain.example.com:8000/&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;limit&quot;</span><span class="p">:</span> <span class="s2">&quot;10&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;offset&quot;</span><span class="p">:</span> <span class="s2">&quot;99&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;userName&quot;</span><span class="p">:</span> <span class="s2">&quot;anothertest&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;apiKey&quot;</span><span class="p">:</span> <span class="s2">&quot;myotherkey&quot;</span><span class="p">,</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;http://subdomain.example.com:8000&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;http://subdomain.example.com:8000/api/v2/file/?limit=10&amp;offset=99&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;http://subdomain.example.com:8000/api/v2/file/?limit=10&amp;offset=99&amp;username=anothertest&amp;api_key=myotherkey&quot;</span><span class="p">,</span>
+        <span class="p">),</span>
+    <span class="p">],</span>
+<span class="p">)</span>
+<span class="k">def</span> <span class="nf">test_format_api_url</span><span class="p">(</span><span class="n">url_api_dict</span><span class="p">,</span> <span class="n">base_url</span><span class="p">,</span> <span class="n">url_without_api_key</span><span class="p">,</span> <span class="n">url_with_api_key</span><span class="p">):</span>
+    <span class="n">res1</span><span class="p">,</span> <span class="n">res2</span><span class="p">,</span> <span class="n">res3</span> <span class="o">=</span> <span class="n">task_helpers</span><span class="o">.</span><span class="n">format_api_url_with_limit_offset</span><span class="p">(</span><span class="n">url_api_dict</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">res1</span> <span class="o">==</span> <span class="n">base_url</span>
+    <span class="k">assert</span> <span class="n">res2</span> <span class="o">==</span> <span class="n">url_without_api_key</span>
+    <span class="k">assert</span> <span class="n">res3</span> <span class="o">==</span> <span class="n">url_with_api_key</span></div>
+
+
+<div class="viewcode-block" id="test_get_mets_url"><a class="viewcode-back" href="../../../../AIPscan.Aggregator.tests.html#AIPscan.Aggregator.tests.test_task_helpers.test_get_mets_url">[docs]</a><span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">parametrize</span><span class="p">(</span>
+    <span class="s2">&quot;api_url, package_uuid, path_to_mets, result&quot;</span><span class="p">,</span>
+    <span class="p">[</span>
+        <span class="p">(</span>
+            <span class="p">{</span><span class="s2">&quot;baseUrl&quot;</span><span class="p">:</span> <span class="s2">&quot;http://example.com&quot;</span><span class="p">,</span> <span class="s2">&quot;userName&quot;</span><span class="p">:</span> <span class="s2">&quot;1234&quot;</span><span class="p">,</span> <span class="s2">&quot;apiKey&quot;</span><span class="p">:</span> <span class="s2">&quot;1234&quot;</span><span class="p">},</span>
+            <span class="s2">&quot;1234&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;1234&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;http://example.com/api/v2/file/1234/extract_file/?relative_path_to_file=1234&amp;username=1234&amp;api_key=1234&quot;</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="p">(</span>
+            <span class="p">{</span><span class="s2">&quot;baseUrl&quot;</span><span class="p">:</span> <span class="s2">&quot;http://example.com/&quot;</span><span class="p">,</span> <span class="s2">&quot;userName&quot;</span><span class="p">:</span> <span class="s2">&quot;1234&quot;</span><span class="p">,</span> <span class="s2">&quot;apiKey&quot;</span><span class="p">:</span> <span class="s2">&quot;1234&quot;</span><span class="p">},</span>
+            <span class="s2">&quot;1234&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;1234&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;http://example.com/api/v2/file/1234/extract_file/?relative_path_to_file=1234&amp;username=1234&amp;api_key=1234&quot;</span><span class="p">,</span>
+        <span class="p">),</span>
+    <span class="p">],</span>
+<span class="p">)</span>
+<span class="k">def</span> <span class="nf">test_get_mets_url</span><span class="p">(</span><span class="n">api_url</span><span class="p">,</span> <span class="n">package_uuid</span><span class="p">,</span> <span class="n">path_to_mets</span><span class="p">,</span> <span class="n">result</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Ensure that the URL for retrieving METS is constructed properly.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">mets_url</span> <span class="o">=</span> <span class="n">task_helpers</span><span class="o">.</span><span class="n">get_mets_url</span><span class="p">(</span><span class="n">api_url</span><span class="p">,</span> <span class="n">package_uuid</span><span class="p">,</span> <span class="n">path_to_mets</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">mets_url</span> <span class="o">==</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="test_create_numbered_subdirs"><a class="viewcode-back" href="../../../../AIPscan.Aggregator.tests.html#AIPscan.Aggregator.tests.test_task_helpers.test_create_numbered_subdirs">[docs]</a><span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">parametrize</span><span class="p">(</span>
+    <span class="s2">&quot;timestamp, package_list_number, result&quot;</span><span class="p">,</span>
+    <span class="p">[(</span><span class="s2">&quot;1234&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;AIPscan/Aggregator/downloads/1234/mets/1&quot;</span><span class="p">)],</span>
+<span class="p">)</span>
+<span class="k">def</span> <span class="nf">test_create_numbered_subdirs</span><span class="p">(</span><span class="n">timestamp</span><span class="p">,</span> <span class="n">package_list_number</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">mocker</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Ensure that the logic that we use to create sub-directories for</span>
+<span class="sd">    storing METS is sound.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Test that an unknown directory is created first time around and</span>
+    <span class="c1"># that the correct result is returned.</span>
+    <span class="n">mocked_makedirs</span> <span class="o">=</span> <span class="n">mocker</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="s2">&quot;os.makedirs&quot;</span><span class="p">)</span>
+    <span class="n">subdir_string</span> <span class="o">=</span> <span class="n">task_helpers</span><span class="o">.</span><span class="n">create_numbered_subdirs</span><span class="p">(</span><span class="n">timestamp</span><span class="p">,</span> <span class="n">package_list_number</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">mocked_makedirs</span><span class="o">.</span><span class="n">call_count</span> <span class="o">==</span> <span class="mi">1</span>
+    <span class="k">assert</span> <span class="n">subdir_string</span> <span class="o">==</span> <span class="n">result</span>
+
+    <span class="c1"># Test that if the path exists, we don&#39;t create the directory, and</span>
+    <span class="c1"># that the correct result is returned.</span>
+    <span class="n">mocker</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="s2">&quot;os.path.exists&quot;</span><span class="p">,</span> <span class="n">result</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">mocked_makedirs</span> <span class="o">=</span> <span class="n">mocker</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="s2">&quot;os.makedirs&quot;</span><span class="p">)</span>
+    <span class="n">subdir_string</span> <span class="o">=</span> <span class="n">task_helpers</span><span class="o">.</span><span class="n">create_numbered_subdirs</span><span class="p">(</span><span class="n">timestamp</span><span class="p">,</span> <span class="n">package_list_number</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">mocked_makedirs</span><span class="o">.</span><span class="n">call_count</span> <span class="o">==</span> <span class="mi">0</span>
+    <span class="k">assert</span> <span class="n">subdir_string</span> <span class="o">==</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="packages"><a class="viewcode-back" href="../../../../AIPscan.Aggregator.tests.html#AIPscan.Aggregator.tests.test_task_helpers.packages">[docs]</a><span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span><span class="p">()</span>
+<span class="k">def</span> <span class="nf">packages</span><span class="p">():</span>
+    <span class="n">fixtures_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;package_json&quot;</span><span class="p">,</span> <span class="s2">&quot;packages.json&quot;</span><span class="p">)</span>
+    <span class="n">script_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="vm">__file__</span><span class="p">))</span>
+    <span class="n">packages_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">script_dir</span><span class="p">,</span> <span class="n">FIXTURES_DIR</span><span class="p">,</span> <span class="n">fixtures_path</span><span class="p">)</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">packages_file</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">package_json</span><span class="p">:</span>
+        <span class="n">packages</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">package_json</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">packages</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;objects&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="test_process_package_object"><a class="viewcode-back" href="../../../../AIPscan.Aggregator.tests.html#AIPscan.Aggregator.tests.test_task_helpers.test_process_package_object">[docs]</a><span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">parametrize</span><span class="p">(</span>
+    <span class="s2">&quot;idx, storage_service_package&quot;</span><span class="p">,</span>
+    <span class="p">[</span>
+        <span class="p">(</span>
+            <span class="mi">0</span><span class="p">,</span>
+            <span class="n">StorageServicePackage</span><span class="p">(</span>
+                <span class="n">aip</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">current_path</span><span class="o">=</span><span class="s2">&quot;9194/0daf/5c33/4670/bfc8/9108/f32b/ca7b/repl-91940daf-5c33-4670-bfc8-9108f32bca7b.7z&quot;</span><span class="p">,</span>
+                <span class="n">uuid</span><span class="o">=</span><span class="s2">&quot;91940daf-5c33-4670-bfc8-9108f32bca7b&quot;</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">),</span>
+        <span class="p">(</span>
+            <span class="mi">1</span><span class="p">,</span>
+            <span class="n">StorageServicePackage</span><span class="p">(</span>
+                <span class="n">replica</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">aip</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">current_path</span><span class="o">=</span><span class="s2">&quot;9021/92d9/6232/4d5f/b6c4/dfa7/b873/3960/repl-902192d9-6232-4d5f-b6c4-dfa7b8733960.7z&quot;</span><span class="p">,</span>
+                <span class="n">uuid</span><span class="o">=</span><span class="s2">&quot;902192d9-6232-4d5f-b6c4-dfa7b8733960&quot;</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">),</span>
+        <span class="p">(</span>
+            <span class="mi">2</span><span class="p">,</span>
+            <span class="n">StorageServicePackage</span><span class="p">(</span>
+                <span class="n">deleted</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">aip</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">current_path</span><span class="o">=</span><span class="s2">&quot;594a/03f3/d8eb/4c83/affd/aefa/f75d/53cc/delete_me-594a03f3-d8eb-4c83-affd-aefaf75d53cc.7z&quot;</span><span class="p">,</span>
+                <span class="n">uuid</span><span class="o">=</span><span class="s2">&quot;594a03f3-d8eb-4c83-affd-aefaf75d53cc&quot;</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">),</span>
+        <span class="p">(</span>
+            <span class="mi">3</span><span class="p">,</span>
+            <span class="n">StorageServicePackage</span><span class="p">(</span>
+                <span class="n">aip</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">current_path</span><span class="o">=</span><span class="s2">&quot;e422/c724/834c/4164/a7be/4c88/1043/a531/normalize-e422c724-834c-4164-a7be-4c881043a531.7z&quot;</span><span class="p">,</span>
+                <span class="n">uuid</span><span class="o">=</span><span class="s2">&quot;e422c724-834c-4164-a7be-4c881043a531&quot;</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">),</span>
+        <span class="p">(</span>
+            <span class="mi">4</span><span class="p">,</span>
+            <span class="n">StorageServicePackage</span><span class="p">(</span>
+                <span class="n">aip</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">current_path</span><span class="o">=</span><span class="s2">&quot;583c/009c/4255/44b9/8868/f57e/4bad/e93c/normal_aip-583c009c-4255-44b9-8868-f57e4bade93c.7z&quot;</span><span class="p">,</span>
+                <span class="n">uuid</span><span class="o">=</span><span class="s2">&quot;583c009c-4255-44b9-8868-f57e4bade93c&quot;</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">),</span>
+        <span class="p">(</span>
+            <span class="mi">5</span><span class="p">,</span>
+            <span class="n">StorageServicePackage</span><span class="p">(</span>
+                <span class="n">aip</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">current_path</span><span class="o">=</span><span class="s2">&quot;846f/ca2b/0919/4673/804c/0f62/6a30/cabd/uncomp-846fca2b-0919-4673-804c-0f626a30cabd&quot;</span><span class="p">,</span>
+                <span class="n">uuid</span><span class="o">=</span><span class="s2">&quot;846fca2b-0919-4673-804c-0f626a30cabd&quot;</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">),</span>
+        <span class="p">(</span>
+            <span class="mi">6</span><span class="p">,</span>
+            <span class="n">StorageServicePackage</span><span class="p">(</span>
+                <span class="n">dip</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">current_path</span><span class="o">=</span><span class="s2">&quot;1555/04f5/98dd/48d1/9e97/83bc/f0a5/efa2/normcore-59f70134-eeca-4886-888e-b2013a08571e&quot;</span><span class="p">,</span>
+                <span class="n">uuid</span><span class="o">=</span><span class="s2">&quot;155504f5-98dd-48d1-9e97-83bcf0a5efa2&quot;</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">),</span>
+        <span class="p">(</span>
+            <span class="mi">7</span><span class="p">,</span>
+            <span class="n">StorageServicePackage</span><span class="p">(</span>
+                <span class="n">aip</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">current_path</span><span class="o">=</span><span class="s2">&quot;59f7/0134/eeca/4886/888e/b201/3a08/571e/normcore-59f70134-eeca-4886-888e-b2013a08571e&quot;</span><span class="p">,</span>
+                <span class="n">uuid</span><span class="o">=</span><span class="s2">&quot;59f70134-eeca-4886-888e-b2013a08571e&quot;</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">),</span>
+        <span class="p">(</span>
+            <span class="mi">8</span><span class="p">,</span>
+            <span class="n">StorageServicePackage</span><span class="p">(</span>
+                <span class="n">sip</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">current_path</span><span class="o">=</span><span class="s2">&quot;originals/backlog-fbdcd607-270e-4dff-9a01-d11b7c2a0200&quot;</span><span class="p">,</span>
+                <span class="n">uuid</span><span class="o">=</span><span class="s2">&quot;fbdcd607-270e-4dff-9a01-d11b7c2a0200&quot;</span><span class="p">,</span>
+            <span class="p">),</span>
+        <span class="p">),</span>
+    <span class="p">],</span>
+<span class="p">)</span>
+<span class="k">def</span> <span class="nf">test_process_package_object</span><span class="p">(</span><span class="n">packages</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">storage_service_package</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Test our ability to collect information from a package list</span>
+<span class="sd">    object and parse it into a storage service package type for</span>
+<span class="sd">    further use.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">package_obj</span> <span class="o">=</span> <span class="n">task_helpers</span><span class="o">.</span><span class="n">process_package_object</span><span class="p">(</span><span class="n">packages</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
+    <span class="k">assert</span> <span class="n">package_obj</span> <span class="o">==</span> <span class="n">storage_service_package</span><span class="p">,</span> <span class="n">idx</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2020, Artefactual Systems Inc..
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+    <a href="https://github.com/artefactual-labs/AIPscan" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

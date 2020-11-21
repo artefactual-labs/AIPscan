@@ -1,0 +1,216 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AIPscan.Aggregator.mets_parse_helpers &#8212; AIPscan 0.x documentation</title>
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">AIPscan</a></h1>
+
+
+
+<p class="blurb">Reporting for Archivematica</p>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">AIPscan</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  <li><a href="../../AIPscan.html">AIPscan</a><ul>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for AIPscan.Aggregator.mets_parse_helpers</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="sd">&quot;&quot;&quot;Collects a number of functions that aid in the retrieval of</span>
+<span class="sd">information from an AIP METS file.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">lxml</span>
+<span class="kn">import</span> <span class="nn">requests</span>
+
+<span class="kn">import</span> <span class="nn">metsrw</span>
+
+<span class="kn">from</span> <span class="nn">AIPscan.Aggregator.task_helpers</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">create_numbered_subdirs</span><span class="p">,</span>
+    <span class="n">download_mets</span><span class="p">,</span>
+    <span class="n">get_mets_url</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="METSError"><a class="viewcode-back" href="../../../AIPscan.Aggregator.html#AIPscan.Aggregator.mets_parse_helpers.METSError">[docs]</a><span class="k">class</span> <span class="nc">METSError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Exception to signal that we have encountered an error parsing</span>
+<span class="sd">    the METS document.</span>
+<span class="sd">    &quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="parse_mets_with_metsrw"><a class="viewcode-back" href="../../../AIPscan.Aggregator.html#AIPscan.Aggregator.mets_parse_helpers.parse_mets_with_metsrw">[docs]</a><span class="k">def</span> <span class="nf">parse_mets_with_metsrw</span><span class="p">(</span><span class="n">mets_file</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Load and Parse the METS.</span>
+
+<span class="sd">    Errors which we encounter at this point will be critical to the</span>
+<span class="sd">    caller and so an exception is returned when we can&#39;t do any better.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">mets</span> <span class="o">=</span> <span class="n">metsrw</span><span class="o">.</span><span class="n">METSDocument</span><span class="o">.</span><span class="n">fromfile</span><span class="p">(</span><span class="n">mets_file</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">AttributeError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+        <span class="c1"># See archivematica/issues#1129 where METSRW expects a certain</span>
+        <span class="c1"># METS structure but Archivematica has written it incorrectly.</span>
+        <span class="n">err</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">err</span><span class="p">,</span> <span class="n">mets_file</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">METSError</span><span class="p">(</span><span class="s2">&quot;Error parsing METS: Cannot return a METSDocument&quot;</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">lxml</span><span class="o">.</span><span class="n">etree</span><span class="o">.</span><span class="n">Error</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+        <span class="c1"># We have another undetermined storage service error, e.g. the</span>
+        <span class="c1"># package no longer exists on the server, or another download</span>
+        <span class="c1"># error.</span>
+        <span class="n">err</span> <span class="o">=</span> <span class="s2">&quot;Error parsing METS: </span><span class="si">{}</span><span class="s2">: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">err</span><span class="p">,</span> <span class="n">mets_file</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">METSError</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">mets</span></div>
+
+
+<div class="viewcode-block" id="get_aip_original_name"><a class="viewcode-back" href="../../../AIPscan.Aggregator.html#AIPscan.Aggregator.mets_parse_helpers.get_aip_original_name">[docs]</a><span class="k">def</span> <span class="nf">get_aip_original_name</span><span class="p">(</span><span class="n">mets</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Retrieve PREMIS original name from a METSDocument object.</span>
+
+<span class="sd">    If the original name cannot be reliably retrieved from the METS file</span>
+<span class="sd">    a METSError exception is returned to be handled by the caller as</span>
+<span class="sd">    desired.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Negated as we&#39;re going to want to remove this length of values.</span>
+    <span class="n">NAMESUFFIX</span> <span class="o">=</span> <span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="s2">&quot;-00000000-0000-0000-0000-000000000000&quot;</span><span class="p">)</span>
+
+    <span class="c1"># The transfer directory prefix is a directory prefix that can also</span>
+    <span class="c1"># exist in a dmdSec intellectual entity and we want to identify and</span>
+    <span class="c1"># ignore those.</span>
+    <span class="n">TRANSFER_DIR_PREFIX</span> <span class="o">=</span> <span class="s2">&quot;%transferDirectory%&quot;</span>
+
+    <span class="n">NAMESPACES</span> <span class="o">=</span> <span class="p">{</span><span class="sa">u</span><span class="s2">&quot;premis&quot;</span><span class="p">:</span> <span class="sa">u</span><span class="s2">&quot;http://www.loc.gov/premis/v3&quot;</span><span class="p">}</span>
+    <span class="n">ELEM_ORIGINAL_NAME_PATTERN</span> <span class="o">=</span> <span class="s2">&quot;.//premis:originalName&quot;</span>
+
+    <span class="n">original_name</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">fsentry</span> <span class="ow">in</span> <span class="n">mets</span><span class="o">.</span><span class="n">all_files</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">dmdsec</span> <span class="ow">in</span> <span class="n">fsentry</span><span class="o">.</span><span class="n">dmdsecs</span><span class="p">:</span>
+            <span class="n">dmd_element</span> <span class="o">=</span> <span class="n">dmdsec</span><span class="o">.</span><span class="n">serialize</span><span class="p">()</span>
+            <span class="n">full_name</span> <span class="o">=</span> <span class="n">dmd_element</span><span class="o">.</span><span class="n">find</span><span class="p">(</span>
+                <span class="n">ELEM_ORIGINAL_NAME_PATTERN</span><span class="p">,</span> <span class="n">namespaces</span><span class="o">=</span><span class="n">NAMESPACES</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">full_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">full_name</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">TRANSFER_DIR_PREFIX</span><span class="p">):</span>
+                <span class="c1"># We don&#39;t want this value, it will usually represent an</span>
+                <span class="c1"># directory entity.</span>
+                <span class="k">continue</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">original_name</span> <span class="o">=</span> <span class="n">full_name</span><span class="o">.</span><span class="n">text</span><span class="p">[:</span><span class="n">NAMESUFFIX</span><span class="p">]</span>
+            <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+    <span class="c1"># There should be a transfer name in every METS.</span>
+    <span class="k">if</span> <span class="n">original_name</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">METSError</span><span class="p">(</span><span class="s2">&quot;Cannot locate transfer name in METS&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">original_name</span></div>
+
+
+<span class="k">def</span> <span class="nf">_download_mets</span><span class="p">(</span>
+    <span class="n">api_url</span><span class="p">,</span> <span class="n">package_uuid</span><span class="p">,</span> <span class="n">relative_path_to_mets</span><span class="p">,</span> <span class="n">timestamp</span><span class="p">,</span> <span class="n">package_list_no</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Download METS from the storage service.&quot;&quot;&quot;</span>
+
+    <span class="c1"># Request the METS file.</span>
+    <span class="n">mets_response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+        <span class="n">get_mets_url</span><span class="p">(</span><span class="n">api_url</span><span class="p">,</span> <span class="n">package_uuid</span><span class="p">,</span> <span class="n">relative_path_to_mets</span><span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Create a directory to download the METS to.</span>
+    <span class="n">numbered_subdir</span> <span class="o">=</span> <span class="n">create_numbered_subdirs</span><span class="p">(</span><span class="n">timestamp</span><span class="p">,</span> <span class="n">package_list_no</span><span class="p">)</span>
+
+    <span class="c1"># Output METS to a convenient location to later be parsed.</span>
+    <span class="n">download_file</span> <span class="o">=</span> <span class="n">download_mets</span><span class="p">(</span><span class="n">mets_response</span><span class="p">,</span> <span class="n">package_uuid</span><span class="p">,</span> <span class="n">numbered_subdir</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">download_file</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2020, Artefactual Systems Inc..
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+    <a href="https://github.com/artefactual-labs/AIPscan" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

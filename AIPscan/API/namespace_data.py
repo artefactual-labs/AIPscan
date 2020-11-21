@@ -14,13 +14,6 @@ from AIPscan.Data import data
 
 api = Namespace("data", description="Retrieve data from AIPscan to shape as you desire")
 
-"""
-data = api.model('Data', {
-    'id': fields.String(required=True, description='Do we need this? An identifier for the data...'),
-    'name': fields.String(required=True, description='Do we need this? A name for the datas...'),
-})
-"""
-
 
 def parse_bool(val, default=True):
     try:

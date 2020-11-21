@@ -1,0 +1,168 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AIPscan.Aggregator.tests.test_mets &#8212; AIPscan 0.x documentation</title>
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/alabaster.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+    <script src="../../../../_static/jquery.js"></script>
+    <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../index.html">AIPscan</a></h1>
+
+
+
+<p class="blurb">Reporting for Archivematica</p>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../modules.html">AIPscan</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  <li><a href="../../../AIPscan.html">AIPscan</a><ul>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for AIPscan.Aggregator.tests.test_mets</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="sd">&quot;&quot;&quot;Tests for METS helper functions.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="kn">import</span> <span class="nn">metsrw</span>
+<span class="kn">import</span> <span class="nn">pytest</span>
+
+<span class="kn">from</span> <span class="nn">AIPscan.Aggregator</span> <span class="kn">import</span> <span class="n">mets_parse_helpers</span>
+
+<span class="n">FIXTURES_DIR</span> <span class="o">=</span> <span class="s2">&quot;fixtures&quot;</span>
+
+
+<div class="viewcode-block" id="test_get_aip_original_name"><a class="viewcode-back" href="../../../../AIPscan.Aggregator.tests.html#AIPscan.Aggregator.tests.test_mets.test_get_aip_original_name">[docs]</a><span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">parametrize</span><span class="p">(</span>
+    <span class="s2">&quot;fixture_path, transfer_name, mets_error&quot;</span><span class="p">,</span>
+    <span class="p">[</span>
+        <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;features_mets&quot;</span><span class="p">,</span> <span class="s2">&quot;features-mets.xml&quot;</span><span class="p">),</span> <span class="s2">&quot;myTransfer&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">),</span>
+        <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;iso_mets&quot;</span><span class="p">,</span> <span class="s2">&quot;iso_mets.xml&quot;</span><span class="p">),</span> <span class="s2">&quot;iso&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">),</span>
+        <span class="p">(</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;original_name_mets&quot;</span><span class="p">,</span> <span class="s2">&quot;document-empty-dirs.xml&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;empty-dirs&quot;</span><span class="p">,</span>
+            <span class="kc">False</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="c1"># Exception: Cannot disambiguate dmdSec_1 in the METS using</span>
+        <span class="c1"># mets-reader-writer and so we cannot retrieve the originalName.</span>
+        <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;original_name_mets&quot;</span><span class="p">,</span> <span class="s2">&quot;dataverse_example.xml&quot;</span><span class="p">),</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span>
+    <span class="p">],</span>
+<span class="p">)</span>
+<span class="k">def</span> <span class="nf">test_get_aip_original_name</span><span class="p">(</span><span class="n">fixture_path</span><span class="p">,</span> <span class="n">transfer_name</span><span class="p">,</span> <span class="n">mets_error</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Make sure that we can reliably get original name from the METS</span>
+<span class="sd">    file given we haven&#39;t any mets-reader-writer helpers.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">script_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="vm">__file__</span><span class="p">))</span>
+    <span class="n">mets_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">script_dir</span><span class="p">,</span> <span class="n">FIXTURES_DIR</span><span class="p">,</span> <span class="n">fixture_path</span><span class="p">)</span>
+    <span class="n">mets</span> <span class="o">=</span> <span class="n">metsrw</span><span class="o">.</span><span class="n">METSDocument</span><span class="o">.</span><span class="n">fromfile</span><span class="p">(</span><span class="n">mets_file</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">mets_error</span><span class="p">:</span>
+        <span class="c1"># Function should raise an error to work with.</span>
+        <span class="k">with</span> <span class="n">pytest</span><span class="o">.</span><span class="n">raises</span><span class="p">(</span><span class="n">mets_parse_helpers</span><span class="o">.</span><span class="n">METSError</span><span class="p">):</span>
+            <span class="n">_</span> <span class="o">=</span> <span class="n">mets_parse_helpers</span><span class="o">.</span><span class="n">get_aip_original_name</span><span class="p">(</span><span class="n">mets</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="k">assert</span> <span class="n">mets_parse_helpers</span><span class="o">.</span><span class="n">get_aip_original_name</span><span class="p">(</span><span class="n">mets</span><span class="p">)</span> <span class="o">==</span> <span class="n">transfer_name</span>
+    <span class="c1"># Test the same works with a string.</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">mets_file</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">mets_stream</span><span class="p">:</span>
+        <span class="n">mets</span> <span class="o">=</span> <span class="n">metsrw</span><span class="o">.</span><span class="n">METSDocument</span><span class="o">.</span><span class="n">fromstring</span><span class="p">(</span><span class="n">mets_stream</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+        <span class="k">assert</span> <span class="n">mets_parse_helpers</span><span class="o">.</span><span class="n">get_aip_original_name</span><span class="p">(</span><span class="n">mets</span><span class="p">)</span> <span class="o">==</span> <span class="n">transfer_name</span>
+    <span class="c1"># Use that string to manipulate the text so that the element cannot</span>
+    <span class="c1"># be found.</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">mets_file</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">mets_stream</span><span class="p">:</span>
+        <span class="c1"># Remove originalName and test for an appropriate side-effect.</span>
+        <span class="n">new_mets</span> <span class="o">=</span> <span class="n">mets_stream</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="n">new_mets</span> <span class="o">=</span> <span class="n">new_mets</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;originalName&quot;</span><span class="p">,</span> <span class="sa">b</span><span class="s2">&quot;originalNameIsNotHere&quot;</span><span class="p">)</span>
+        <span class="n">mets</span> <span class="o">=</span> <span class="n">metsrw</span><span class="o">.</span><span class="n">METSDocument</span><span class="o">.</span><span class="n">fromstring</span><span class="p">(</span><span class="n">new_mets</span><span class="p">)</span>
+        <span class="c1"># Function should raise an error to work with.</span>
+        <span class="k">with</span> <span class="n">pytest</span><span class="o">.</span><span class="n">raises</span><span class="p">(</span><span class="n">mets_parse_helpers</span><span class="o">.</span><span class="n">METSError</span><span class="p">):</span>
+            <span class="n">_</span> <span class="o">=</span> <span class="n">mets_parse_helpers</span><span class="o">.</span><span class="n">get_aip_original_name</span><span class="p">(</span><span class="n">mets</span><span class="p">)</span> <span class="o">==</span> <span class="n">transfer_name</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2020, Artefactual Systems Inc..
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+    <a href="https://github.com/artefactual-labs/AIPscan" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

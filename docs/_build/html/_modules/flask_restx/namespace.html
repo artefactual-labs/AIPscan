@@ -1,0 +1,486 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>flask_restx.namespace &#8212; AIPscan 0.x documentation</title>
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">AIPscan</a></h1>
+
+
+
+<p class="blurb">Reporting for Archivematica</p>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">AIPscan</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for flask_restx.namespace</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">unicode_literals</span>
+
+<span class="kn">import</span> <span class="nn">inspect</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">namedtuple</span>
+
+<span class="kn">import</span> <span class="nn">six</span>
+<span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">request</span>
+<span class="kn">from</span> <span class="nn">flask.views</span> <span class="kn">import</span> <span class="n">http_method_funcs</span>
+
+<span class="kn">from</span> <span class="nn">._http</span> <span class="kn">import</span> <span class="n">HTTPStatus</span>
+<span class="kn">from</span> <span class="nn">.errors</span> <span class="kn">import</span> <span class="n">abort</span>
+<span class="kn">from</span> <span class="nn">.marshalling</span> <span class="kn">import</span> <span class="n">marshal</span><span class="p">,</span> <span class="n">marshal_with</span>
+<span class="kn">from</span> <span class="nn">.model</span> <span class="kn">import</span> <span class="n">Model</span><span class="p">,</span> <span class="n">OrderedModel</span><span class="p">,</span> <span class="n">SchemaModel</span>
+<span class="kn">from</span> <span class="nn">.reqparse</span> <span class="kn">import</span> <span class="n">RequestParser</span>
+<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">merge</span>
+
+<span class="c1"># Container for each route applied to a Resource using @ns.route decorator</span>
+<span class="n">ResourceRoute</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s2">&quot;ResourceRoute&quot;</span><span class="p">,</span> <span class="s2">&quot;resource urls route_doc kwargs&quot;</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">Namespace</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Group resources together.</span>
+
+<span class="sd">    Namespace is to API what :class:`flask:flask.Blueprint` is for :class:`flask:flask.Flask`.</span>
+
+<span class="sd">    :param str name: The namespace name</span>
+<span class="sd">    :param str description: An optional short description</span>
+<span class="sd">    :param str path: An optional prefix path. If not provided, prefix is ``/+name``</span>
+<span class="sd">    :param list decorators: A list of decorators to apply to each resources</span>
+<span class="sd">    :param bool validate: Whether or not to perform validation on this namespace</span>
+<span class="sd">    :param bool ordered: Whether or not to preserve order on models and marshalling</span>
+<span class="sd">    :param Api api: an optional API to attache to the namespace</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">decorators</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">validate</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">authorizations</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">ordered</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="n">description</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_path</span> <span class="o">=</span> <span class="n">path</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_schema</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_validate</span> <span class="o">=</span> <span class="n">validate</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">models</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">urls</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">decorators</span> <span class="o">=</span> <span class="n">decorators</span> <span class="k">if</span> <span class="n">decorators</span> <span class="k">else</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resources</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># List[ResourceRoute]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">error_handlers</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">default_error_handler</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">authorizations</span> <span class="o">=</span> <span class="n">authorizations</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ordered</span> <span class="o">=</span> <span class="n">ordered</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">apis</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="s2">&quot;api&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">apis</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;api&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">path</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_path</span> <span class="ow">or</span> <span class="p">(</span><span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">))</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">add_resource</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resource</span><span class="p">,</span> <span class="o">*</span><span class="n">urls</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Register a Resource for a given API Namespace</span>
+
+<span class="sd">        :param Resource resource: the resource ro register</span>
+<span class="sd">        :param str urls: one or more url routes to match for the resource,</span>
+<span class="sd">                         standard flask routing rules apply.</span>
+<span class="sd">                         Any url variables will be passed to the resource method as args.</span>
+<span class="sd">        :param str endpoint: endpoint name (defaults to :meth:`Resource.__name__.lower`</span>
+<span class="sd">            Can be used to reference this route in :class:`fields.Url` fields</span>
+<span class="sd">        :param list|tuple resource_class_args: args to be forwarded to the constructor of the resource.</span>
+<span class="sd">        :param dict resource_class_kwargs: kwargs to be forwarded to the constructor of the resource.</span>
+
+<span class="sd">        Additional keyword arguments not specified above will be passed as-is</span>
+<span class="sd">        to :meth:`flask.Flask.add_url_rule`.</span>
+
+<span class="sd">        Examples::</span>
+
+<span class="sd">            namespace.add_resource(HelloWorld, &#39;/&#39;, &#39;/hello&#39;)</span>
+<span class="sd">            namespace.add_resource(Foo, &#39;/foo&#39;, endpoint=&quot;foo&quot;)</span>
+<span class="sd">            namespace.add_resource(FooSpecial, &#39;/special/foo&#39;, endpoint=&quot;foo&quot;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">route_doc</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;route_doc&quot;</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resources</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ResourceRoute</span><span class="p">(</span><span class="n">resource</span><span class="p">,</span> <span class="n">urls</span><span class="p">,</span> <span class="n">route_doc</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">api</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">apis</span><span class="p">:</span>
+            <span class="n">ns_urls</span> <span class="o">=</span> <span class="n">api</span><span class="o">.</span><span class="n">ns_urls</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">urls</span><span class="p">)</span>
+            <span class="n">api</span><span class="o">.</span><span class="n">register_resource</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resource</span><span class="p">,</span> <span class="o">*</span><span class="n">ns_urls</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">route</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">urls</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A decorator to route resources.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+            <span class="n">doc</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;doc&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">doc</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="c1"># build api doc intended only for this route</span>
+                <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;route_doc&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_doc</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">doc</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_resource</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">urls</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">cls</span>
+
+        <span class="k">return</span> <span class="n">wrapper</span>
+
+    <span class="k">def</span> <span class="nf">_build_doc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">cls</span><span class="p">,</span> <span class="n">doc</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">doc</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="n">unshortcut_params_description</span><span class="p">(</span><span class="n">doc</span><span class="p">)</span>
+        <span class="n">handle_deprecations</span><span class="p">(</span><span class="n">doc</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">http_method</span> <span class="ow">in</span> <span class="n">http_method_funcs</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">http_method</span> <span class="ow">in</span> <span class="n">doc</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">doc</span><span class="p">[</span><span class="n">http_method</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="n">unshortcut_params_description</span><span class="p">(</span><span class="n">doc</span><span class="p">[</span><span class="n">http_method</span><span class="p">])</span>
+                <span class="n">handle_deprecations</span><span class="p">(</span><span class="n">doc</span><span class="p">[</span><span class="n">http_method</span><span class="p">])</span>
+                <span class="k">if</span> <span class="s2">&quot;expect&quot;</span> <span class="ow">in</span> <span class="n">doc</span><span class="p">[</span><span class="n">http_method</span><span class="p">]</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span>
+                    <span class="n">doc</span><span class="p">[</span><span class="n">http_method</span><span class="p">][</span><span class="s2">&quot;expect&quot;</span><span class="p">],</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span>
+                <span class="p">):</span>
+                    <span class="n">doc</span><span class="p">[</span><span class="n">http_method</span><span class="p">][</span><span class="s2">&quot;expect&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">doc</span><span class="p">[</span><span class="n">http_method</span><span class="p">][</span><span class="s2">&quot;expect&quot;</span><span class="p">]]</span>
+        <span class="k">return</span> <span class="n">merge</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="s2">&quot;__apidoc__&quot;</span><span class="p">,</span> <span class="p">{}),</span> <span class="n">doc</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">doc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shortcut</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;A decorator to add some api documentation to the decorated object&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">shortcut</span><span class="p">,</span> <span class="n">six</span><span class="o">.</span><span class="n">text_type</span><span class="p">):</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">shortcut</span>
+        <span class="n">show</span> <span class="o">=</span> <span class="n">shortcut</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">shortcut</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span> <span class="k">else</span> <span class="kc">True</span>
+
+        <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="n">documented</span><span class="p">):</span>
+            <span class="n">documented</span><span class="o">.</span><span class="n">__apidoc__</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_doc</span><span class="p">(</span>
+                <span class="n">documented</span><span class="p">,</span> <span class="n">kwargs</span> <span class="k">if</span> <span class="n">show</span> <span class="k">else</span> <span class="kc">False</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="n">documented</span>
+
+        <span class="k">return</span> <span class="n">wrapper</span>
+
+    <span class="k">def</span> <span class="nf">hide</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;A decorator to hide a resource or a method from specifications&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">doc</span><span class="p">(</span><span class="kc">False</span><span class="p">)(</span><span class="n">func</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">abort</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Properly abort the current request</span>
+
+<span class="sd">        See: :func:`~flask_restx.errors.abort`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">abort</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">add_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">definition</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">models</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">definition</span>
+        <span class="k">for</span> <span class="n">api</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">apis</span><span class="p">:</span>
+            <span class="n">api</span><span class="o">.</span><span class="n">models</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">definition</span>
+        <span class="k">return</span> <span class="n">definition</span>
+
+    <span class="k">def</span> <span class="nf">model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Register a model</span>
+
+<span class="sd">        .. seealso:: :class:`Model`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">cls</span> <span class="o">=</span> <span class="n">OrderedModel</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ordered</span> <span class="k">else</span> <span class="n">Model</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">)</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">__apidoc__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_model</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">schema_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">schema</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Register a model</span>
+
+<span class="sd">        .. seealso:: :class:`Model`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">SchemaModel</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">schema</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_model</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">extend</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">parent</span><span class="p">,</span> <span class="n">fields</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Extend a model (Duplicate all fields)</span>
+
+<span class="sd">        :deprecated: since 0.9. Use :meth:`clone` instead</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="n">parents</span> <span class="o">=</span> <span class="n">parent</span> <span class="o">+</span> <span class="p">[</span><span class="n">fields</span><span class="p">]</span>
+            <span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">*</span><span class="n">parents</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">parent</span><span class="p">,</span> <span class="n">fields</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_model</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">clone</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="o">*</span><span class="n">specs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Clone a model (Duplicate all fields)</span>
+
+<span class="sd">        :param str name: the resulting model name</span>
+<span class="sd">        :param specs: a list of models from which to clone the fields</span>
+
+<span class="sd">        .. seealso:: :meth:`Model.clone`</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">clone</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">*</span><span class="n">specs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_model</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">inherit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="o">*</span><span class="n">specs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Inherit a model (use the Swagger composition pattern aka. allOf)</span>
+
+<span class="sd">        .. seealso:: :meth:`Model.inherit`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="o">.</span><span class="n">inherit</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">*</span><span class="n">specs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_model</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">expect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">inputs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A decorator to Specify the expected input model</span>
+
+<span class="sd">        :param ModelBase|Parse inputs: An expect model or request parser</span>
+<span class="sd">        :param bool validate: whether to perform validation or not</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">expect</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;validate&quot;</span><span class="p">:</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;validate&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_validate</span><span class="p">),</span> <span class="s2">&quot;expect&quot;</span><span class="p">:</span> <span class="n">expect</span><span class="p">}</span>
+        <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">inputs</span><span class="p">:</span>
+            <span class="n">expect</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">param</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">doc</span><span class="p">(</span><span class="o">**</span><span class="n">params</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">parser</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Instanciate a :class:`~RequestParser`&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">RequestParser</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">as_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Allow to specify nested lists for documentation&quot;&quot;&quot;</span>
+        <span class="n">field</span><span class="o">.</span><span class="n">__apidoc__</span> <span class="o">=</span> <span class="n">merge</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="s2">&quot;__apidoc__&quot;</span><span class="p">,</span> <span class="p">{}),</span> <span class="p">{</span><span class="s2">&quot;as_list&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">})</span>
+        <span class="k">return</span> <span class="n">field</span>
+
+    <span class="k">def</span> <span class="nf">marshal_with</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">fields</span><span class="p">,</span> <span class="n">as_list</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="n">HTTPStatus</span><span class="o">.</span><span class="n">OK</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A decorator specifying the fields to use for serialization.</span>
+
+<span class="sd">        :param bool as_list: Indicate that the return type is a list (for the documentation)</span>
+<span class="sd">        :param int code: Optionally give the expected HTTP response code if its different from 200</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+            <span class="n">doc</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;responses&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="nb">str</span><span class="p">(</span><span class="n">code</span><span class="p">):</span> <span class="p">(</span><span class="n">description</span><span class="p">,</span> <span class="p">[</span><span class="n">fields</span><span class="p">],</span> <span class="n">kwargs</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">as_list</span>
+                    <span class="k">else</span> <span class="p">(</span><span class="n">description</span><span class="p">,</span> <span class="n">fields</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;__mask__&quot;</span><span class="p">:</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                    <span class="s2">&quot;mask&quot;</span><span class="p">,</span> <span class="kc">True</span>
+                <span class="p">),</span>  <span class="c1"># Mask values can&#39;t be determined outside app context</span>
+            <span class="p">}</span>
+            <span class="n">func</span><span class="o">.</span><span class="n">__apidoc__</span> <span class="o">=</span> <span class="n">merge</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="s2">&quot;__apidoc__&quot;</span><span class="p">,</span> <span class="p">{}),</span> <span class="n">doc</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">marshal_with</span><span class="p">(</span><span class="n">fields</span><span class="p">,</span> <span class="n">ordered</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ordered</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)(</span><span class="n">func</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">wrapper</span>
+
+    <span class="k">def</span> <span class="nf">marshal_list_with</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fields</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;A shortcut decorator for :meth:`~Api.marshal_with` with ``as_list=True``&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">marshal_with</span><span class="p">(</span><span class="n">fields</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">marshal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;A shortcut to the :func:`marshal` helper&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">marshal</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">errorhandler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exception</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;A decorator to register an error handler for a given exception&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">inspect</span><span class="o">.</span><span class="n">isclass</span><span class="p">(</span><span class="n">exception</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">exception</span><span class="p">,</span> <span class="ne">Exception</span><span class="p">):</span>
+            <span class="c1"># Register an error handler for a given exception</span>
+            <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">error_handlers</span><span class="p">[</span><span class="n">exception</span><span class="p">]</span> <span class="o">=</span> <span class="n">func</span>
+                <span class="k">return</span> <span class="n">func</span>
+
+            <span class="k">return</span> <span class="n">wrapper</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Register the default error handler</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">default_error_handler</span> <span class="o">=</span> <span class="n">exception</span>
+            <span class="k">return</span> <span class="n">exception</span>
+
+    <span class="k">def</span> <span class="nf">param</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">_in</span><span class="o">=</span><span class="s2">&quot;query&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A decorator to specify one of the expected parameters</span>
+
+<span class="sd">        :param str name: the parameter name</span>
+<span class="sd">        :param str description: a small description</span>
+<span class="sd">        :param str _in: the parameter location `(query|header|formData|body|cookie)`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">param</span> <span class="o">=</span> <span class="n">kwargs</span>
+        <span class="n">param</span><span class="p">[</span><span class="s2">&quot;in&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_in</span>
+        <span class="n">param</span><span class="p">[</span><span class="s2">&quot;description&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">description</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">doc</span><span class="p">(</span><span class="n">params</span><span class="o">=</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">param</span><span class="p">})</span>
+
+    <span class="k">def</span> <span class="nf">response</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">description</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A decorator to specify one of the expected responses</span>
+
+<span class="sd">        :param int code: the HTTP status code</span>
+<span class="sd">        :param str description: a small description about the response</span>
+<span class="sd">        :param ModelBase model: an optional response model</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">doc</span><span class="p">(</span><span class="n">responses</span><span class="o">=</span><span class="p">{</span><span class="nb">str</span><span class="p">(</span><span class="n">code</span><span class="p">):</span> <span class="p">(</span><span class="n">description</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)})</span>
+
+    <span class="k">def</span> <span class="nf">header</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A decorator to specify one of the expected headers</span>
+
+<span class="sd">        :param str name: the HTTP header name</span>
+<span class="sd">        :param str description: a description about the header</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">header</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="n">description</span><span class="p">}</span>
+        <span class="n">header</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">doc</span><span class="p">(</span><span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">header</span><span class="p">})</span>
+
+    <span class="k">def</span> <span class="nf">produces</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mimetypes</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;A decorator to specify the MIME types the API can produce&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">doc</span><span class="p">(</span><span class="n">produces</span><span class="o">=</span><span class="n">mimetypes</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">deprecated</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;A decorator to mark a resource or a method as deprecated&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">doc</span><span class="p">(</span><span class="n">deprecated</span><span class="o">=</span><span class="kc">True</span><span class="p">)(</span><span class="n">func</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">vendor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A decorator to expose vendor extensions.</span>
+
+<span class="sd">        Extensions can be submitted as dict or kwargs.</span>
+<span class="sd">        The ``x-`` prefix is optionnal and will be added if missing.</span>
+
+<span class="sd">        See: http://swagger.io/specification/#specification-extensions-128</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
+            <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">doc</span><span class="p">(</span><span class="n">vendor</span><span class="o">=</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">payload</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Store the input payload in the current request context&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">request</span><span class="o">.</span><span class="n">get_json</span><span class="p">()</span>
+
+
+<span class="k">def</span> <span class="nf">unshortcut_params_description</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="k">if</span> <span class="s2">&quot;params&quot;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">description</span> <span class="ow">in</span> <span class="n">six</span><span class="o">.</span><span class="n">iteritems</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;params&quot;</span><span class="p">]):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">description</span><span class="p">,</span> <span class="n">six</span><span class="o">.</span><span class="n">string_types</span><span class="p">):</span>
+                <span class="n">data</span><span class="p">[</span><span class="s2">&quot;params&quot;</span><span class="p">][</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="n">description</span><span class="p">}</span>
+
+
+<span class="k">def</span> <span class="nf">handle_deprecations</span><span class="p">(</span><span class="n">doc</span><span class="p">):</span>
+    <span class="k">if</span> <span class="s2">&quot;parser&quot;</span> <span class="ow">in</span> <span class="n">doc</span><span class="p">:</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+            <span class="s2">&quot;The parser attribute is deprecated, use expect instead&quot;</span><span class="p">,</span>
+            <span class="ne">DeprecationWarning</span><span class="p">,</span>
+            <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">doc</span><span class="p">[</span><span class="s2">&quot;expect&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">doc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;expect&quot;</span><span class="p">,</span> <span class="p">[])</span> <span class="o">+</span> <span class="p">[</span><span class="n">doc</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;parser&quot;</span><span class="p">)]</span>
+    <span class="k">if</span> <span class="s2">&quot;body&quot;</span> <span class="ow">in</span> <span class="n">doc</span><span class="p">:</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+            <span class="s2">&quot;The body attribute is deprecated, use expect instead&quot;</span><span class="p">,</span>
+            <span class="ne">DeprecationWarning</span><span class="p">,</span>
+            <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">doc</span><span class="p">[</span><span class="s2">&quot;expect&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">doc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;expect&quot;</span><span class="p">,</span> <span class="p">[])</span> <span class="o">+</span> <span class="p">[</span><span class="n">doc</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;body&quot;</span><span class="p">)]</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2020, Artefactual Systems Inc..
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+    <a href="https://github.com/artefactual-labs/AIPscan" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

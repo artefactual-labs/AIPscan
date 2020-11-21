@@ -1,0 +1,250 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AIPscan.Data.tests.test_largest_files &#8212; AIPscan 0.x documentation</title>
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/alabaster.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+    <script src="../../../../_static/jquery.js"></script>
+    <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../index.html">AIPscan</a></h1>
+
+
+
+<p class="blurb">Reporting for Archivematica</p>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../modules.html">AIPscan</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  <li><a href="../../../AIPscan.html">AIPscan</a><ul>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for AIPscan.Data.tests.test_largest_files</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">import</span> <span class="nn">pytest</span>
+<span class="kn">import</span> <span class="nn">uuid</span>
+
+<span class="kn">from</span> <span class="nn">AIPscan.Data</span> <span class="kn">import</span> <span class="n">data</span>
+<span class="kn">from</span> <span class="nn">AIPscan.models</span> <span class="kn">import</span> <span class="n">AIP</span><span class="p">,</span> <span class="n">File</span><span class="p">,</span> <span class="n">FileType</span><span class="p">,</span> <span class="n">StorageService</span>
+
+<span class="n">TEST_FILES</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">File</span><span class="p">(</span>
+        <span class="n">uuid</span><span class="o">=</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">(),</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;test.csv&quot;</span><span class="p">,</span>
+        <span class="n">size</span><span class="o">=</span><span class="mi">1234567</span><span class="p">,</span>
+        <span class="n">aip_id</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">file_type</span><span class="o">=</span><span class="n">FileType</span><span class="o">.</span><span class="n">original</span><span class="p">,</span>
+        <span class="n">file_format</span><span class="o">=</span><span class="s2">&quot;Comma Separated Values&quot;</span><span class="p">,</span>
+        <span class="n">filepath</span><span class="o">=</span><span class="s2">&quot;/path/to/file.csv&quot;</span><span class="p">,</span>
+        <span class="n">date_created</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span>
+        <span class="n">checksum_type</span><span class="o">=</span><span class="s2">&quot;md5&quot;</span><span class="p">,</span>
+        <span class="n">checksum_value</span><span class="o">=</span><span class="s2">&quot;fakemd5&quot;</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="n">File</span><span class="p">(</span>
+        <span class="n">uuid</span><span class="o">=</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">(),</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;test.txt&quot;</span><span class="p">,</span>
+        <span class="n">size</span><span class="o">=</span><span class="mi">12345</span><span class="p">,</span>
+        <span class="n">aip_id</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="n">file_type</span><span class="o">=</span><span class="n">FileType</span><span class="o">.</span><span class="n">original</span><span class="p">,</span>
+        <span class="n">file_format</span><span class="o">=</span><span class="s2">&quot;Plain Text File&quot;</span><span class="p">,</span>
+        <span class="n">puid</span><span class="o">=</span><span class="s2">&quot;x-fmt/111&quot;</span><span class="p">,</span>
+        <span class="n">filepath</span><span class="o">=</span><span class="s2">&quot;/path/to/file.txt&quot;</span><span class="p">,</span>
+        <span class="n">date_created</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span>
+        <span class="n">checksum_type</span><span class="o">=</span><span class="s2">&quot;md5&quot;</span><span class="p">,</span>
+        <span class="n">checksum_value</span><span class="o">=</span><span class="s2">&quot;anotherfakemd5&quot;</span><span class="p">,</span>
+    <span class="p">),</span>
+    <span class="n">File</span><span class="p">(</span>
+        <span class="n">uuid</span><span class="o">=</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">(),</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;test.pdf&quot;</span><span class="p">,</span>
+        <span class="n">size</span><span class="o">=</span><span class="mi">12345678</span><span class="p">,</span>
+        <span class="n">aip_id</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">file_type</span><span class="o">=</span><span class="n">FileType</span><span class="o">.</span><span class="n">preservation</span><span class="p">,</span>
+        <span class="n">file_format</span><span class="o">=</span><span class="s2">&quot;Acrobat PDF/A - Portable Document Format&quot;</span><span class="p">,</span>
+        <span class="n">format_version</span><span class="o">=</span><span class="s2">&quot;1b&quot;</span><span class="p">,</span>
+        <span class="n">filepath</span><span class="o">=</span><span class="s2">&quot;/path/to/test.pdf&quot;</span><span class="p">,</span>
+        <span class="n">date_created</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span>
+        <span class="n">checksum_type</span><span class="o">=</span><span class="s2">&quot;md5&quot;</span><span class="p">,</span>
+        <span class="n">checksum_value</span><span class="o">=</span><span class="s2">&quot;yetanotherfakemd5&quot;</span><span class="p">,</span>
+        <span class="n">original_file_id</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="p">),</span>
+<span class="p">]</span>
+
+<span class="n">MOCK_STORAGE_SERVICE_ID</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">MOCK_STORAGE_SERVICE_NAME</span> <span class="o">=</span> <span class="s2">&quot;some name&quot;</span>
+<span class="n">TEST_STORAGE_SERVICE</span> <span class="o">=</span> <span class="n">StorageService</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="n">MOCK_STORAGE_SERVICE_NAME</span><span class="p">,</span>
+    <span class="n">url</span><span class="o">=</span><span class="s2">&quot;http://example.com&quot;</span><span class="p">,</span>
+    <span class="n">user_name</span><span class="o">=</span><span class="s2">&quot;test&quot;</span><span class="p">,</span>
+    <span class="n">api_key</span><span class="o">=</span><span class="s2">&quot;test&quot;</span><span class="p">,</span>
+    <span class="n">download_limit</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+    <span class="n">download_offset</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">MOCK_AIP_NAME</span> <span class="o">=</span> <span class="s2">&quot;Test transfer&quot;</span>
+<span class="n">MOCK_AIP_UUID</span> <span class="o">=</span> <span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span>
+<span class="n">TEST_AIP</span> <span class="o">=</span> <span class="n">AIP</span><span class="p">(</span>
+    <span class="n">uuid</span><span class="o">=</span><span class="n">MOCK_AIP_UUID</span><span class="p">,</span>
+    <span class="n">transfer_name</span><span class="o">=</span><span class="n">MOCK_AIP_NAME</span><span class="p">,</span>
+    <span class="n">create_date</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(),</span>
+    <span class="n">storage_service_id</span><span class="o">=</span><span class="n">MOCK_STORAGE_SERVICE_ID</span><span class="p">,</span>
+    <span class="n">fetch_job_id</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="test_largest_files"><a class="viewcode-back" href="../../../../AIPscan.Data.tests.html#AIPscan.Data.tests.test_largest_files.test_largest_files">[docs]</a><span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">parametrize</span><span class="p">(</span>
+    <span class="s2">&quot;file_data, file_count&quot;</span><span class="p">,</span> <span class="p">[([],</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="n">TEST_FILES</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="p">(</span><span class="n">TEST_FILES</span><span class="p">[:</span><span class="mi">2</span><span class="p">],</span> <span class="mi">2</span><span class="p">)]</span>
+<span class="p">)</span>
+<span class="k">def</span> <span class="nf">test_largest_files</span><span class="p">(</span><span class="n">app_instance</span><span class="p">,</span> <span class="n">mocker</span><span class="p">,</span> <span class="n">file_data</span><span class="p">,</span> <span class="n">file_count</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Test that return value conforms to expected structure.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">mock_query</span> <span class="o">=</span> <span class="n">mocker</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="s2">&quot;AIPscan.Data.data._largest_files_query&quot;</span><span class="p">)</span>
+    <span class="n">mock_query</span><span class="o">.</span><span class="n">return_value</span> <span class="o">=</span> <span class="n">file_data</span>
+
+    <span class="n">mock_get_ss</span> <span class="o">=</span> <span class="n">mocker</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="s2">&quot;AIPscan.Data.data._get_storage_service&quot;</span><span class="p">)</span>
+    <span class="n">mock_get_ss</span><span class="o">.</span><span class="n">return_value</span> <span class="o">=</span> <span class="n">TEST_STORAGE_SERVICE</span>
+
+    <span class="n">mock_get_aip</span> <span class="o">=</span> <span class="n">mocker</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="s2">&quot;sqlalchemy.orm.query.Query.get&quot;</span><span class="p">)</span>
+    <span class="n">mock_get_aip</span><span class="o">.</span><span class="n">return_value</span> <span class="o">=</span> <span class="n">TEST_AIP</span>
+
+    <span class="n">report</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">largest_files</span><span class="p">(</span><span class="n">MOCK_STORAGE_SERVICE_ID</span><span class="p">)</span>
+    <span class="n">report_files</span> <span class="o">=</span> <span class="n">report</span><span class="p">[</span><span class="n">data</span><span class="o">.</span><span class="n">FIELD_FILES</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="n">report</span><span class="p">[</span><span class="n">data</span><span class="o">.</span><span class="n">FIELD_STORAGE_NAME</span><span class="p">]</span> <span class="o">==</span> <span class="n">MOCK_STORAGE_SERVICE_NAME</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">report_files</span><span class="p">)</span> <span class="o">==</span> <span class="n">file_count</span></div>
+
+
+<div class="viewcode-block" id="test_largest_files_elements"><a class="viewcode-back" href="../../../../AIPscan.Data.tests.html#AIPscan.Data.tests.test_largest_files.test_largest_files_elements">[docs]</a><span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">parametrize</span><span class="p">(</span>
+    <span class="s2">&quot;test_file, has_format_version, has_puid&quot;</span><span class="p">,</span>
+    <span class="p">[</span>
+        <span class="p">(</span><span class="n">TEST_FILES</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">),</span>
+        <span class="p">(</span><span class="n">TEST_FILES</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span>
+        <span class="p">(</span><span class="n">TEST_FILES</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">),</span>
+    <span class="p">],</span>
+<span class="p">)</span>
+<span class="k">def</span> <span class="nf">test_largest_files_elements</span><span class="p">(</span>
+    <span class="n">app_instance</span><span class="p">,</span> <span class="n">mocker</span><span class="p">,</span> <span class="n">test_file</span><span class="p">,</span> <span class="n">has_format_version</span><span class="p">,</span> <span class="n">has_puid</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Test that returned file data matches expected values.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">mock_query</span> <span class="o">=</span> <span class="n">mocker</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="s2">&quot;AIPscan.Data.data._largest_files_query&quot;</span><span class="p">)</span>
+    <span class="n">mock_query</span><span class="o">.</span><span class="n">return_value</span> <span class="o">=</span> <span class="p">[</span><span class="n">test_file</span><span class="p">]</span>
+
+    <span class="n">mock_get_ss</span> <span class="o">=</span> <span class="n">mocker</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="s2">&quot;AIPscan.Data.data._get_storage_service&quot;</span><span class="p">)</span>
+    <span class="n">mock_get_ss</span><span class="o">.</span><span class="n">return_value</span> <span class="o">=</span> <span class="n">TEST_STORAGE_SERVICE</span>
+
+    <span class="n">mock_get_aip</span> <span class="o">=</span> <span class="n">mocker</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="s2">&quot;sqlalchemy.orm.query.Query.get&quot;</span><span class="p">)</span>
+    <span class="n">mock_get_aip</span><span class="o">.</span><span class="n">return_value</span> <span class="o">=</span> <span class="n">TEST_AIP</span>
+
+    <span class="n">report</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">largest_files</span><span class="p">(</span><span class="n">MOCK_STORAGE_SERVICE_ID</span><span class="p">)</span>
+    <span class="n">report_file</span> <span class="o">=</span> <span class="n">report</span><span class="p">[</span><span class="n">data</span><span class="o">.</span><span class="n">FIELD_FILES</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># Required elements</span>
+    <span class="k">assert</span> <span class="n">test_file</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">report_file</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">FIELD_NAME</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">test_file</span><span class="o">.</span><span class="n">file_format</span> <span class="o">==</span> <span class="n">report_file</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">FIELD_FORMAT</span><span class="p">)</span>
+
+    <span class="c1"># Optional elements</span>
+    <span class="k">if</span> <span class="n">has_format_version</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="n">test_file</span><span class="o">.</span><span class="n">format_version</span> <span class="o">==</span> <span class="n">report_file</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">FIELD_VERSION</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="n">report_file</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">FIELD_VERSION</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span>
+
+    <span class="k">if</span> <span class="n">has_puid</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="n">test_file</span><span class="o">.</span><span class="n">puid</span> <span class="o">==</span> <span class="n">report_file</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">FIELD_PUID</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="n">report_file</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">FIELD_PUID</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span>
+
+    <span class="c1"># AIP information</span>
+    <span class="k">assert</span> <span class="n">report_file</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">FIELD_AIP_NAME</span><span class="p">)</span> <span class="o">==</span> <span class="n">MOCK_AIP_NAME</span>
+    <span class="k">assert</span> <span class="n">report_file</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">FIELD_AIP_UUID</span><span class="p">)</span> <span class="o">==</span> <span class="n">MOCK_AIP_UUID</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2020, Artefactual Systems Inc..
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+    <a href="https://github.com/artefactual-labs/AIPscan" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

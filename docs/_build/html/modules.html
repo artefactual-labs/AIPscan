@@ -1,0 +1,254 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AIPscan &#8212; AIPscan 0.x documentation</title>
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="AIPscan package" href="AIPscan.html" />
+    <link rel="prev" title="Overview" href="overview.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">AIPscan</a></h1>
+
+
+
+<p class="blurb">Reporting for Archivematica</p>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="overview.html">Overview</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">AIPscan</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.html">AIPscan package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.API.html">AIPscan.API package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.Data.html">AIPscan.Data package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.Aggregator.html">AIPscan.Aggregator package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.Reporter.html">AIPscan.Reporter package</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="overview.html" title="previous chapter">Overview</a></li>
+      <li>Next: <a href="AIPscan.html" title="next chapter">AIPscan package</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="aipscan">
+<h1>AIPscan<a class="headerlink" href="#aipscan" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="AIPscan.html">AIPscan package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="AIPscan.API.html">AIPscan.API package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="AIPscan.API.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AIPscan.API.html#module-AIPscan.API.namespace_data">AIPscan.API.namespace_data module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AIPscan.API.html#module-AIPscan.API.namespace_infos">AIPscan.API.namespace_infos module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AIPscan.API.html#module-AIPscan.API.views">AIPscan.API.views module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AIPscan.API.html#module-AIPscan.API">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="AIPscan.Aggregator.html">AIPscan.Aggregator package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="AIPscan.Aggregator.html#subpackages">Subpackages</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AIPscan.Aggregator.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AIPscan.Aggregator.html#module-AIPscan.Aggregator.celery_helpers">AIPscan.Aggregator.celery_helpers module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AIPscan.Aggregator.html#module-AIPscan.Aggregator.database_helpers">AIPscan.Aggregator.database_helpers module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AIPscan.Aggregator.html#module-AIPscan.Aggregator.forms">AIPscan.Aggregator.forms module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AIPscan.Aggregator.html#module-AIPscan.Aggregator.mets_parse_helpers">AIPscan.Aggregator.mets_parse_helpers module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AIPscan.Aggregator.html#module-AIPscan.Aggregator.task_helpers">AIPscan.Aggregator.task_helpers module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AIPscan.Aggregator.html#module-AIPscan.Aggregator.tasks">AIPscan.Aggregator.tasks module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AIPscan.Aggregator.html#module-AIPscan.Aggregator.types">AIPscan.Aggregator.types module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AIPscan.Aggregator.html#module-AIPscan.Aggregator.views">AIPscan.Aggregator.views module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AIPscan.Aggregator.html#module-AIPscan.Aggregator">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="AIPscan.Data.html">AIPscan.Data package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="AIPscan.Data.html#subpackages">Subpackages</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AIPscan.Data.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AIPscan.Data.html#module-AIPscan.Data.data">AIPscan.Data.data module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AIPscan.Data.html#module-AIPscan.Data">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="AIPscan.Home.html">AIPscan.Home package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="AIPscan.Home.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AIPscan.Home.html#module-AIPscan.Home.views">AIPscan.Home.views module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AIPscan.Home.html#module-AIPscan.Home">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="AIPscan.Reporter.html">AIPscan.Reporter package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="AIPscan.Reporter.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AIPscan.Reporter.html#module-AIPscan.Reporter.helpers">AIPscan.Reporter.helpers module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AIPscan.Reporter.html#module-AIPscan.Reporter.report_aip_contents">AIPscan.Reporter.report_aip_contents module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AIPscan.Reporter.html#module-AIPscan.Reporter.report_formats_count">AIPscan.Reporter.report_formats_count module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AIPscan.Reporter.html#module-AIPscan.Reporter.report_largest_files">AIPscan.Reporter.report_largest_files module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AIPscan.Reporter.html#module-AIPscan.Reporter.report_originals_with_derivatives">AIPscan.Reporter.report_originals_with_derivatives module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AIPscan.Reporter.html#module-AIPscan.Reporter.views">AIPscan.Reporter.views module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AIPscan.Reporter.html#module-AIPscan.Reporter">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="AIPscan.User.html">AIPscan.User package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="AIPscan.User.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AIPscan.User.html#module-AIPscan.User.forms">AIPscan.User.forms module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AIPscan.User.html#module-AIPscan.User.views">AIPscan.User.views module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AIPscan.User.html#module-AIPscan.User">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.html#module-AIPscan.celery">AIPscan.celery module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.html#module-AIPscan.conftest">AIPscan.conftest module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.html#module-AIPscan.extensions">AIPscan.extensions module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.html#module-AIPscan.helpers">AIPscan.helpers module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.html#module-AIPscan.models">AIPscan.models module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.html#module-AIPscan.worker">AIPscan.worker module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.html#module-AIPscan">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="AIPscan.API.html">AIPscan.API package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.API.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.API.html#module-AIPscan.API.namespace_data">AIPscan.API.namespace_data module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.API.html#module-AIPscan.API.namespace_infos">AIPscan.API.namespace_infos module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.API.html#module-AIPscan.API.views">AIPscan.API.views module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.API.html#module-AIPscan.API">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="AIPscan.Data.html">AIPscan.Data package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.Data.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="AIPscan.Data.tests.html">AIPscan.Data.tests package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="AIPscan.Data.tests.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AIPscan.Data.tests.html#module-AIPscan.Data.tests.test_largest_files">AIPscan.Data.tests.test_largest_files module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AIPscan.Data.tests.html#module-AIPscan.Data.tests">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.Data.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.Data.html#module-AIPscan.Data.data">AIPscan.Data.data module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.Data.html#module-AIPscan.Data">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="AIPscan.Aggregator.html">AIPscan.Aggregator package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.Aggregator.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="AIPscan.Aggregator.tests.html">AIPscan.Aggregator.tests package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="AIPscan.Aggregator.tests.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AIPscan.Aggregator.tests.html#module-AIPscan.Aggregator.tests.test_database_helpers">AIPscan.Aggregator.tests.test_database_helpers module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AIPscan.Aggregator.tests.html#module-AIPscan.Aggregator.tests.test_mets">AIPscan.Aggregator.tests.test_mets module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AIPscan.Aggregator.tests.html#module-AIPscan.Aggregator.tests.test_task_helpers">AIPscan.Aggregator.tests.test_task_helpers module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AIPscan.Aggregator.tests.html#module-AIPscan.Aggregator.tests.test_types">AIPscan.Aggregator.tests.test_types module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="AIPscan.Aggregator.tests.html#module-AIPscan.Aggregator.tests">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.Aggregator.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.Aggregator.html#module-AIPscan.Aggregator.celery_helpers">AIPscan.Aggregator.celery_helpers module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.Aggregator.html#module-AIPscan.Aggregator.database_helpers">AIPscan.Aggregator.database_helpers module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.Aggregator.html#module-AIPscan.Aggregator.forms">AIPscan.Aggregator.forms module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.Aggregator.html#module-AIPscan.Aggregator.mets_parse_helpers">AIPscan.Aggregator.mets_parse_helpers module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.Aggregator.html#module-AIPscan.Aggregator.task_helpers">AIPscan.Aggregator.task_helpers module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.Aggregator.html#module-AIPscan.Aggregator.tasks">AIPscan.Aggregator.tasks module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.Aggregator.html#module-AIPscan.Aggregator.types">AIPscan.Aggregator.types module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.Aggregator.html#module-AIPscan.Aggregator.views">AIPscan.Aggregator.views module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.Aggregator.html#module-AIPscan.Aggregator">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="AIPscan.Reporter.html">AIPscan.Reporter package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.Reporter.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.Reporter.html#module-AIPscan.Reporter.helpers">AIPscan.Reporter.helpers module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.Reporter.html#module-AIPscan.Reporter.report_aip_contents">AIPscan.Reporter.report_aip_contents module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.Reporter.html#module-AIPscan.Reporter.report_formats_count">AIPscan.Reporter.report_formats_count module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.Reporter.html#module-AIPscan.Reporter.report_largest_files">AIPscan.Reporter.report_largest_files module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.Reporter.html#module-AIPscan.Reporter.report_originals_with_derivatives">AIPscan.Reporter.report_originals_with_derivatives module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.Reporter.html#module-AIPscan.Reporter.views">AIPscan.Reporter.views module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="AIPscan.Reporter.html#module-AIPscan.Reporter">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2020, Artefactual Systems Inc..
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/modules.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/artefactual-labs/AIPscan" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

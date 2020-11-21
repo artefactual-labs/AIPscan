@@ -1,0 +1,350 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AIPscan.models &#8212; AIPscan 0.x documentation</title>
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  <div class="document">
+    
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">AIPscan</a></h1>
+
+
+
+<p class="blurb">Reporting for Archivematica</p>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">AIPscan</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  <li><a href="../AIPscan.html">AIPscan</a><ul>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for AIPscan.models</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="kn">import</span> <span class="nn">enum</span>
+
+<span class="kn">from</span> <span class="nn">AIPscan</span> <span class="kn">import</span> <span class="n">db</span>
+
+
+<div class="viewcode-block" id="package_tasks"><a class="viewcode-back" href="../../AIPscan.html#AIPscan.models.package_tasks">[docs]</a><span class="k">class</span> <span class="nc">package_tasks</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">__bind_key__</span> <span class="o">=</span> <span class="s2">&quot;celery&quot;</span>
+    <span class="n">package_task_id</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">String</span><span class="p">(</span><span class="mi">36</span><span class="p">),</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">workflow_coordinator_id</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">String</span><span class="p">(</span><span class="mi">36</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="get_mets_tasks"><a class="viewcode-back" href="../../AIPscan.html#AIPscan.models.get_mets_tasks">[docs]</a><span class="k">class</span> <span class="nc">get_mets_tasks</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">__bind_key__</span> <span class="o">=</span> <span class="s2">&quot;celery&quot;</span>
+    <span class="n">get_mets_task_id</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">String</span><span class="p">(</span><span class="mi">36</span><span class="p">),</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">workflow_coordinator_id</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">String</span><span class="p">(</span><span class="mi">36</span><span class="p">))</span>
+    <span class="n">package_uuid</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">String</span><span class="p">(</span><span class="mi">36</span><span class="p">))</span>
+    <span class="n">status</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">String</span><span class="p">())</span></div>
+
+
+<div class="viewcode-block" id="StorageService"><a class="viewcode-back" href="../../AIPscan.html#AIPscan.models.StorageService">[docs]</a><span class="k">class</span> <span class="nc">StorageService</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s2">&quot;storage_service&quot;</span>
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Integer</span><span class="p">(),</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">String</span><span class="p">(</span><span class="mi">255</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">unique</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">String</span><span class="p">(</span><span class="mi">255</span><span class="p">))</span>
+    <span class="n">user_name</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">String</span><span class="p">(</span><span class="mi">255</span><span class="p">))</span>
+    <span class="n">api_key</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">String</span><span class="p">(</span><span class="mi">255</span><span class="p">))</span>
+    <span class="n">download_limit</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Integer</span><span class="p">())</span>
+    <span class="n">download_offset</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Integer</span><span class="p">())</span>
+    <span class="n">default</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Boolean</span><span class="p">)</span>
+    <span class="n">fetch_jobs</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">relationship</span><span class="p">(</span>
+        <span class="s2">&quot;FetchJob&quot;</span><span class="p">,</span> <span class="n">cascade</span><span class="o">=</span><span class="s2">&quot;all,delete&quot;</span><span class="p">,</span> <span class="n">backref</span><span class="o">=</span><span class="s2">&quot;storage_service&quot;</span><span class="p">,</span> <span class="n">lazy</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">user_name</span><span class="p">,</span> <span class="n">api_key</span><span class="p">,</span> <span class="n">download_limit</span><span class="p">,</span> <span class="n">download_offset</span><span class="p">,</span> <span class="n">default</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">url</span> <span class="o">=</span> <span class="n">url</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">user_name</span> <span class="o">=</span> <span class="n">user_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">api_key</span> <span class="o">=</span> <span class="n">api_key</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">download_limit</span> <span class="o">=</span> <span class="n">download_limit</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">download_offset</span> <span class="o">=</span> <span class="n">download_offset</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">default</span> <span class="o">=</span> <span class="n">default</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;&lt;Storage Service &#39;</span><span class="si">{}</span><span class="s2">&#39;&gt;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="FetchJob"><a class="viewcode-back" href="../../AIPscan.html#AIPscan.models.FetchJob">[docs]</a><span class="k">class</span> <span class="nc">FetchJob</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s2">&quot;fetch_job&quot;</span>
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Integer</span><span class="p">(),</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">total_packages</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Integer</span><span class="p">())</span>
+    <span class="n">total_aips</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Integer</span><span class="p">())</span>
+    <span class="n">total_dips</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Integer</span><span class="p">())</span>
+    <span class="n">total_sips</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Integer</span><span class="p">())</span>
+    <span class="n">total_replicas</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Integer</span><span class="p">())</span>
+    <span class="n">total_deleted_aips</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Integer</span><span class="p">())</span>
+    <span class="n">download_start</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">DateTime</span><span class="p">())</span>
+    <span class="n">download_end</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">DateTime</span><span class="p">())</span>
+    <span class="n">download_directory</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">String</span><span class="p">(</span><span class="mi">255</span><span class="p">))</span>
+    <span class="n">storage_service_id</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="n">db</span><span class="o">.</span><span class="n">Integer</span><span class="p">(),</span> <span class="n">db</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="s2">&quot;storage_service.id&quot;</span><span class="p">),</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span>
+    <span class="p">)</span>
+    <span class="n">aips</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">relationship</span><span class="p">(</span><span class="s2">&quot;AIP&quot;</span><span class="p">,</span> <span class="n">cascade</span><span class="o">=</span><span class="s2">&quot;all,delete&quot;</span><span class="p">,</span> <span class="n">backref</span><span class="o">=</span><span class="s2">&quot;fetch_job&quot;</span><span class="p">,</span> <span class="n">lazy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">total_packages</span><span class="p">,</span>
+        <span class="n">total_aips</span><span class="p">,</span>
+        <span class="n">total_deleted_aips</span><span class="p">,</span>
+        <span class="n">download_start</span><span class="p">,</span>
+        <span class="n">download_end</span><span class="p">,</span>
+        <span class="n">download_directory</span><span class="p">,</span>
+        <span class="n">storage_service_id</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">total_packages</span> <span class="o">=</span> <span class="n">total_packages</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">total_aips</span> <span class="o">=</span> <span class="n">total_aips</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">total_deleted_aips</span> <span class="o">=</span> <span class="n">total_deleted_aips</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">download_start</span> <span class="o">=</span> <span class="n">download_start</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">download_end</span> <span class="o">=</span> <span class="n">download_end</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">download_directory</span> <span class="o">=</span> <span class="n">download_directory</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">storage_service_id</span> <span class="o">=</span> <span class="n">storage_service_id</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;&lt;Fetch Job &#39;</span><span class="si">{}</span><span class="s2">&#39;&gt;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">download_start</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="AIP"><a class="viewcode-back" href="../../AIPscan.html#AIPscan.models.AIP">[docs]</a><span class="k">class</span> <span class="nc">AIP</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s2">&quot;aip&quot;</span>
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Integer</span><span class="p">(),</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">uuid</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">String</span><span class="p">(</span><span class="mi">255</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">transfer_name</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">String</span><span class="p">(</span><span class="mi">255</span><span class="p">))</span>
+    <span class="n">create_date</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">DateTime</span><span class="p">())</span>
+    <span class="n">storage_service_id</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="n">db</span><span class="o">.</span><span class="n">Integer</span><span class="p">(),</span> <span class="n">db</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="s2">&quot;storage_service.id&quot;</span><span class="p">),</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span>
+    <span class="p">)</span>
+    <span class="n">fetch_job_id</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span>
+        <span class="n">db</span><span class="o">.</span><span class="n">Integer</span><span class="p">(),</span> <span class="n">db</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="s2">&quot;fetch_job.id&quot;</span><span class="p">),</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span>
+    <span class="p">)</span>
+    <span class="n">files</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">relationship</span><span class="p">(</span><span class="s2">&quot;File&quot;</span><span class="p">,</span> <span class="n">cascade</span><span class="o">=</span><span class="s2">&quot;all,delete&quot;</span><span class="p">,</span> <span class="n">backref</span><span class="o">=</span><span class="s2">&quot;aip&quot;</span><span class="p">,</span> <span class="n">lazy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">uuid</span><span class="p">,</span> <span class="n">transfer_name</span><span class="p">,</span> <span class="n">create_date</span><span class="p">,</span> <span class="n">storage_service_id</span><span class="p">,</span> <span class="n">fetch_job_id</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">uuid</span> <span class="o">=</span> <span class="n">uuid</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transfer_name</span> <span class="o">=</span> <span class="n">transfer_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">create_date</span> <span class="o">=</span> <span class="n">create_date</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">storage_service_id</span> <span class="o">=</span> <span class="n">storage_service_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fetch_job_id</span> <span class="o">=</span> <span class="n">fetch_job_id</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;&lt;AIP &#39;</span><span class="si">{}</span><span class="s2">&#39;&gt;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">transfer_name</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">original_file_count</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">File</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">aip_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">file_type</span><span class="o">=</span><span class="n">FileType</span><span class="o">.</span><span class="n">original</span><span class="p">)</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">preservation_file_count</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">File</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span>
+            <span class="n">aip_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">file_type</span><span class="o">=</span><span class="n">FileType</span><span class="o">.</span><span class="n">preservation</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">count</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="FileType"><a class="viewcode-back" href="../../AIPscan.html#AIPscan.models.FileType">[docs]</a><span class="k">class</span> <span class="nc">FileType</span><span class="p">(</span><span class="n">enum</span><span class="o">.</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="n">original</span> <span class="o">=</span> <span class="s2">&quot;original&quot;</span>
+    <span class="n">preservation</span> <span class="o">=</span> <span class="s2">&quot;preservation&quot;</span></div>
+
+
+<div class="viewcode-block" id="File"><a class="viewcode-back" href="../../AIPscan.html#AIPscan.models.File">[docs]</a><span class="k">class</span> <span class="nc">File</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s2">&quot;file&quot;</span>
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Integer</span><span class="p">(),</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">String</span><span class="p">(</span><span class="mi">255</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">filepath</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Text</span><span class="p">(),</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># Accommodate long filepaths.</span>
+    <span class="n">uuid</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">String</span><span class="p">(</span><span class="mi">255</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">file_type</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Enum</span><span class="p">(</span><span class="n">FileType</span><span class="p">))</span>
+    <span class="n">size</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Integer</span><span class="p">())</span>
+    <span class="c1"># Date created maps to PREMIS dateCreatedByApplication for original</span>
+    <span class="c1"># files, which in practice is almost always date last modified, and</span>
+    <span class="c1"># to normalization date for preservation files.</span>
+    <span class="n">date_created</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">DateTime</span><span class="p">())</span>
+    <span class="n">puid</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">String</span><span class="p">(</span><span class="mi">255</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">file_format</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">String</span><span class="p">(</span><span class="mi">255</span><span class="p">))</span>
+    <span class="n">format_version</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">String</span><span class="p">(</span><span class="mi">255</span><span class="p">))</span>
+    <span class="n">checksum_type</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">String</span><span class="p">(</span><span class="mi">255</span><span class="p">))</span>
+    <span class="n">checksum_value</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">String</span><span class="p">(</span><span class="mi">255</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">original_file_id</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Integer</span><span class="p">(),</span> <span class="n">db</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="s2">&quot;file.id&quot;</span><span class="p">))</span>
+    <span class="n">original_file</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">relationship</span><span class="p">(</span>
+        <span class="s2">&quot;File&quot;</span><span class="p">,</span> <span class="n">remote_side</span><span class="o">=</span><span class="p">[</span><span class="nb">id</span><span class="p">],</span> <span class="n">backref</span><span class="o">=</span><span class="n">db</span><span class="o">.</span><span class="n">backref</span><span class="p">(</span><span class="s2">&quot;derivatives&quot;</span><span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="n">aip_id</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Integer</span><span class="p">(),</span> <span class="n">db</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="s2">&quot;aip.id&quot;</span><span class="p">),</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">events</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">relationship</span><span class="p">(</span><span class="s2">&quot;Event&quot;</span><span class="p">,</span> <span class="n">cascade</span><span class="o">=</span><span class="s2">&quot;all,delete&quot;</span><span class="p">,</span> <span class="n">backref</span><span class="o">=</span><span class="s2">&quot;file&quot;</span><span class="p">,</span> <span class="n">lazy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">,</span>
+        <span class="n">filepath</span><span class="p">,</span>
+        <span class="n">uuid</span><span class="p">,</span>
+        <span class="n">size</span><span class="p">,</span>
+        <span class="n">date_created</span><span class="p">,</span>
+        <span class="n">file_format</span><span class="p">,</span>
+        <span class="n">checksum_type</span><span class="p">,</span>
+        <span class="n">checksum_value</span><span class="p">,</span>
+        <span class="n">aip_id</span><span class="p">,</span>
+        <span class="n">file_type</span><span class="o">=</span><span class="n">FileType</span><span class="o">.</span><span class="n">original</span><span class="p">,</span>
+        <span class="n">format_version</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">puid</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">original_file_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filepath</span> <span class="o">=</span> <span class="n">filepath</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">uuid</span> <span class="o">=</span> <span class="n">uuid</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">file_type</span> <span class="o">=</span> <span class="n">file_type</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">=</span> <span class="n">size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">date_created</span> <span class="o">=</span> <span class="n">date_created</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">puid</span> <span class="o">=</span> <span class="n">puid</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">file_format</span> <span class="o">=</span> <span class="n">file_format</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">format_version</span> <span class="o">=</span> <span class="n">format_version</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">checksum_type</span> <span class="o">=</span> <span class="n">checksum_type</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">checksum_value</span> <span class="o">=</span> <span class="n">checksum_value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">original_file_id</span> <span class="o">=</span> <span class="n">original_file_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">aip_id</span> <span class="o">=</span> <span class="n">aip_id</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;&lt;File &#39;</span><span class="si">{}</span><span class="s2">&#39; - &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span></div>
+
+
+<span class="n">EventAgent</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Table</span><span class="p">(</span>
+    <span class="s2">&quot;event_agents&quot;</span><span class="p">,</span>
+    <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s2">&quot;event_id&quot;</span><span class="p">,</span> <span class="n">db</span><span class="o">.</span><span class="n">Integer</span><span class="p">,</span> <span class="n">db</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="s2">&quot;event.id&quot;</span><span class="p">)),</span>
+    <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="s2">&quot;agent_id&quot;</span><span class="p">,</span> <span class="n">db</span><span class="o">.</span><span class="n">Integer</span><span class="p">,</span> <span class="n">db</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="s2">&quot;agent.id&quot;</span><span class="p">)),</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="Event"><a class="viewcode-back" href="../../AIPscan.html#AIPscan.models.Event">[docs]</a><span class="k">class</span> <span class="nc">Event</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s2">&quot;event&quot;</span>
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Integer</span><span class="p">(),</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="nb">type</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">String</span><span class="p">(</span><span class="mi">255</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">uuid</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">String</span><span class="p">(</span><span class="mi">255</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">date</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">DateTime</span><span class="p">())</span>
+    <span class="n">detail</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">String</span><span class="p">(</span><span class="mi">255</span><span class="p">))</span>
+    <span class="n">outcome</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">String</span><span class="p">(</span><span class="mi">255</span><span class="p">))</span>
+    <span class="n">outcome_detail</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">String</span><span class="p">(</span><span class="mi">255</span><span class="p">))</span>
+    <span class="n">file_id</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Integer</span><span class="p">(),</span> <span class="n">db</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="s2">&quot;file.id&quot;</span><span class="p">),</span> <span class="n">nullable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">event_agents</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">relationship</span><span class="p">(</span>
+        <span class="s2">&quot;Agent&quot;</span><span class="p">,</span> <span class="n">secondary</span><span class="o">=</span><span class="n">EventAgent</span><span class="p">,</span> <span class="n">backref</span><span class="o">=</span><span class="n">db</span><span class="o">.</span><span class="n">backref</span><span class="p">(</span><span class="s2">&quot;Event&quot;</span><span class="p">,</span> <span class="n">lazy</span><span class="o">=</span><span class="s2">&quot;dynamic&quot;</span><span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">uuid</span><span class="p">,</span> <span class="n">date</span><span class="p">,</span> <span class="n">detail</span><span class="p">,</span> <span class="n">outcome</span><span class="p">,</span> <span class="n">outcome_detail</span><span class="p">,</span> <span class="n">file_id</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="nb">type</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">uuid</span> <span class="o">=</span> <span class="n">uuid</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">date</span> <span class="o">=</span> <span class="n">date</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">detail</span> <span class="o">=</span> <span class="n">detail</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">outcome</span> <span class="o">=</span> <span class="n">outcome</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">outcome_detail</span> <span class="o">=</span> <span class="n">outcome_detail</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">file_id</span> <span class="o">=</span> <span class="n">file_id</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;&lt;Event &#39;</span><span class="si">{}</span><span class="s2">&#39;&gt;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Agent"><a class="viewcode-back" href="../../AIPscan.html#AIPscan.models.Agent">[docs]</a><span class="k">class</span> <span class="nc">Agent</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">__tablename__</span> <span class="o">=</span> <span class="s2">&quot;agent&quot;</span>
+    <span class="nb">id</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">Integer</span><span class="p">(),</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">linking_type_value</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">String</span><span class="p">(</span><span class="mi">255</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">agent_type</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">String</span><span class="p">(</span><span class="mi">255</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">agent_value</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">String</span><span class="p">(</span><span class="mi">255</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">linking_type_value</span><span class="p">,</span> <span class="n">agent_type</span><span class="p">,</span> <span class="n">agent_value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">linking_type_value</span> <span class="o">=</span> <span class="n">linking_type_value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">agent_type</span> <span class="o">=</span> <span class="n">agent_type</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">agent_value</span> <span class="o">=</span> <span class="n">agent_value</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;&lt;Agent &#39;</span><span class="si">{}</span><span class="s2">: </span><span class="si">{}</span><span class="s2">&#39;&gt;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">agent_type</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">agent_value</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+    <div class="clearer"></div>
+  </div>
+    <div class="footer">
+      &copy;2020, Artefactual Systems Inc..
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+    <a href="https://github.com/artefactual-labs/AIPscan" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>
