@@ -80,6 +80,7 @@ def get_aip_original_name(mets):
 
     # There should be a transfer name in every METS.
     if original_name == "":
+        # MOBBING STUB: We might want to log this, and log this to the database.
         raise METSError("Cannot locate transfer name in METS")
 
     return original_name

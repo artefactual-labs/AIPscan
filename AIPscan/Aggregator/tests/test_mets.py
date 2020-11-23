@@ -54,3 +54,27 @@ def test_get_aip_original_name(fixture_path, transfer_name, mets_error):
         # Function should raise an error to work with.
         with pytest.raises(mets_parse_helpers.METSError):
             _ = mets_parse_helpers.get_aip_original_name(mets) == transfer_name
+
+
+# MOBBING STUB: We're gonna flesh out these tests!
+@pytest.mark.parametrize(
+    "fixture_path, transfer_name, mets_error",
+    [
+        (os.path.join("original_name_mets", "dataverse_example.xml"), "", True),
+    ],
+)
+def test_corrupt_mets_file(fixture_path, transfer_name, mets_error):
+    """We need a docstring to describe this test."""
+    # Where are we?
+    script_dir = os.path.dirname(os.path.realpath(__file__))
+
+    # Create an absolute path from our relative location.
+    mets_file = os.path.join(script_dir, FIXTURES_DIR, fixture_path)
+
+    # Read the mets in from the file.
+    mets = metsrw.METSDocument.fromfile(mets_file)
+
+    try:
+        myvar = mets_parse_helpers.get_aip_original_name(mets)
+    except mets_parse_helpers.METSError:
+        return True

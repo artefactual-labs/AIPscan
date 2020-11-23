@@ -258,6 +258,11 @@ def package_lists_request(self, apiUrl, timestamp, packages_directory):
     }
 
 
+# MOBBING STUB: We're gonna flesh out this!
+def log_to_the_database():
+    """Do something."""
+
+
 @celery.task()
 def get_mets(
     package_uuid,
@@ -294,7 +299,18 @@ def get_mets(
     except METSError:
         # Some other error with the METS file that we might want to
         # log and act upon.
+
+        # MOBBING STUB: We're gonna flesh out this!
+        # 1. Log this here:
+        #   Define own logger.
+        #   Output to AIP scan log file.
+        #   Centralize?
+        #
+        # 2. If we want to send something to the database do that here too.
+        #
         original_name = package_uuid
+        # MAYBE:
+        log_to_the_database()
 
     aip = database_helpers.create_aip_object(
         package_uuid=package_uuid,
