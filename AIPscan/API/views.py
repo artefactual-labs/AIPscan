@@ -16,7 +16,8 @@ from flask import Blueprint
 from flask_restx import Api
 
 from .namespace_data import api as ns1
-from .namespace_infos import api as ns2
+from .namespace_report_data import api as ns2
+from .namespace_infos import api as ns3
 
 api_doc = """
 Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
@@ -40,3 +41,4 @@ report_api = Api(
 
 report_api.add_namespace(ns1)
 report_api.add_namespace(ns2)
+report_api.add_namespace(ns3)

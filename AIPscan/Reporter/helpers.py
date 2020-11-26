@@ -4,7 +4,7 @@
 """
 from natsort import natsorted
 
-from AIPscan.Data import data
+from AIPscan.Data import fields
 
 
 def sort_puids(puids):
@@ -27,28 +27,28 @@ def translate_headers(headers):
     more user friendly and translatable.
     """
     field_lookup = {
-        data.FIELD_AIP_NAME: "AIP Name",
-        data.FIELD_AIPS: "AIPs",
-        data.FIELD_AIP_SIZE: "AIP Size",
-        data.FIELD_ALL_AIPS: "All AIPs",
-        data.FIELD_COUNT: "Count",
-        data.FIELD_CREATED_DATE: "Created Date",
-        data.FIELD_DERIVATIVE_COUNT: "Derivative Count",
-        data.FIELD_DERIVATIVE_FORMAT: "Derivative Format",
-        data.FIELD_DERIVATIVE_UUID: "Derivative UUID",
-        data.FIELD_FILE_COUNT: "File Count",
-        data.FIELD_FILE_TYPE: "Type",
-        data.FIELD_FILENAME: "Filename",
-        data.FIELD_FORMAT: "Format",
-        data.FIELD_FORMATS: "Formats",
-        data.FIELD_NAME: "Name",
-        data.FIELD_ORIGINAL_UUID: "Original UUID",
-        data.FIELD_ORIGINAL_FORMAT: "Original Format",
-        data.FIELD_PUID: "PUID",
-        data.FIELD_RELATED_PAIRING: "Related Pairing",
-        data.FIELD_SIZE: "Size",
-        data.FIELD_STORAGE_NAME: "Storage Service Name",
-        data.FIELD_TRANSFER_NAME: "Transfer Name",
-        data.FIELD_VERSION: "Version",
+        fields.FIELD_AIP_NAME: "AIP Name",
+        fields.FIELD_AIPS: "AIPs",
+        fields.FIELD_AIP_SIZE: "AIP Size",
+        fields.FIELD_ALL_AIPS: "All AIPs",
+        fields.FIELD_COUNT: "Count",
+        fields.FIELD_CREATED_DATE: "Created Date",
+        fields.FIELD_DERIVATIVE_COUNT: "Derivative Count",
+        fields.FIELD_DERIVATIVE_FORMAT: "Derivative Format",
+        fields.FIELD_DERIVATIVE_UUID: "Derivative UUID",
+        fields.FIELD_FILE_COUNT: "File Count",
+        fields.FIELD_FILE_TYPE: "Type",
+        fields.FIELD_FILENAME: "Filename",
+        fields.FIELD_FORMAT: "Format",
+        fields.FIELD_FORMATS: "Formats",
+        fields.FIELD_NAME: "Name",
+        fields.FIELD_ORIGINAL_UUID: "Original UUID",
+        fields.FIELD_ORIGINAL_FORMAT: "Original Format",
+        fields.FIELD_PUID: "PUID",
+        fields.FIELD_RELATED_PAIRING: "Related Pairing",
+        fields.FIELD_SIZE: "Size",
+        fields.FIELD_STORAGE_NAME: "Storage Service Name",
+        fields.FIELD_TRANSFER_NAME: "Transfer Name",
+        fields.FIELD_VERSION: "Version",
     }
     return [field_lookup.get(header, header) for header in headers]

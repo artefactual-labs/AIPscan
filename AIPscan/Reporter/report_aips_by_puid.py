@@ -4,7 +4,7 @@ from flask import render_template, request
 
 from AIPscan.helpers import parse_bool
 from AIPscan.models import File
-from AIPscan.Data import data
+from AIPscan.Data import fields, report_data
 from AIPscan.Reporter import reporter, translate_headers, request_params
 
 
@@ -39,17 +39,22 @@ def aips_by_puid():
     original_files = parse_bool(
         request.args.get(request_params["original_files"], True)
     )
-    aip_data = data.aips_by_puid(
+    aip_data = report_data.aips_by_puid(
         storage_service_id=storage_service_id, puid=puid, original_files=original_files
     )
-    headers = [data.FIELD_AIP_NAME, data.FIELD_UUID, data.FIELD_COUNT, data.FIELD_SIZE]
+    headers = [
+        fields.FIELD_AIP_NAME,
+        fields.FIELD_UUID,
+        fields.FIELD_COUNT,
+        fields.FIELD_SIZE,
+    ]
     return render_template(
         "report_aips_by_puid.html",
         storage_service_id=storage_service_id,
-        storage_service_name=aip_data.get(data.FIELD_STORAGE_NAME),
+        storage_service_name=aip_data.get(fields.FIELD_STORAGE_NAME),
         puid=puid,
         file_format=get_format_string_from_puid(puid),
         original_files=original_files,
         columns=translate_headers(headers),
-        aips=aip_data.get(data.FIELD_AIPS),
+        aips=aip_data.get(fields.FIELD_AIPS),
     )

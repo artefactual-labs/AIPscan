@@ -2,7 +2,7 @@
 
 import pytest
 
-from AIPscan.Data import data
+from AIPscan.Data import fields, report_data
 from AIPscan.Data.tests import (
     MOCK_AIPS_BY_FORMAT_OR_PUID_QUERY_RESULTS as MOCK_QUERY_RESULTS,
     MOCK_STORAGE_SERVICE,
@@ -30,15 +30,17 @@ from AIPscan.Data.tests.conftest import (
 )
 def test_aips_by_puid(app_instance, mocker, query_results, results_count):
     """Test that results match high-level expectations."""
-    mock_query = mocker.patch("AIPscan.Data.data._query_aips_by_file_format_or_puid")
+    mock_query = mocker.patch(
+        "AIPscan.Data.report_data._query_aips_by_file_format_or_puid"
+    )
     mock_query.return_value = query_results
 
-    mock_get_ss = mocker.patch("AIPscan.Data.data._get_storage_service")
+    mock_get_ss = mocker.patch("AIPscan.Data.report_data._get_storage_service")
     mock_get_ss.return_value = MOCK_STORAGE_SERVICE
 
-    report = data.aips_by_puid(MOCK_STORAGE_SERVICE_ID, "fmt/###")
-    assert report[data.FIELD_STORAGE_NAME] == MOCK_STORAGE_SERVICE_NAME
-    assert len(report[data.FIELD_AIPS]) == results_count
+    report = report_data.aips_by_puid(MOCK_STORAGE_SERVICE_ID, "fmt/###")
+    assert report[fields.FIELD_STORAGE_NAME] == MOCK_STORAGE_SERVICE_NAME
+    assert len(report[fields.FIELD_AIPS]) == results_count
 
 
 @pytest.mark.parametrize(
@@ -46,20 +48,22 @@ def test_aips_by_puid(app_instance, mocker, query_results, results_count):
 )
 def test_aips_by_puid_aip_elements(app_instance, mocker, test_aip):
     """Test that structure of AIP data matches expectations."""
-    mock_query = mocker.patch("AIPscan.Data.data._query_aips_by_file_format_or_puid")
+    mock_query = mocker.patch(
+        "AIPscan.Data.report_data._query_aips_by_file_format_or_puid"
+    )
     mock_query.return_value = [test_aip]
 
-    mock_get_ss = mocker.patch("AIPscan.Data.data._get_storage_service")
+    mock_get_ss = mocker.patch("AIPscan.Data.report_data._get_storage_service")
     mock_get_ss.return_value = MOCK_STORAGE_SERVICE
 
-    report = data.aips_by_puid(MOCK_STORAGE_SERVICE_ID, "fmt/###")
-    report_aip = report[data.FIELD_AIPS][0]
+    report = report_data.aips_by_puid(MOCK_STORAGE_SERVICE_ID, "fmt/###")
+    report_aip = report[fields.FIELD_AIPS][0]
 
     assert test_aip.id == report_aip.get("id")
-    assert test_aip.name == report_aip.get(data.FIELD_AIP_NAME)
-    assert test_aip.uuid == report_aip.get(data.FIELD_UUID)
-    assert test_aip.file_count == report_aip.get(data.FIELD_COUNT)
-    assert test_aip.total_size == report_aip.get(data.FIELD_SIZE)
+    assert test_aip.name == report_aip.get(fields.FIELD_AIP_NAME)
+    assert test_aip.uuid == report_aip.get(fields.FIELD_UUID)
+    assert test_aip.file_count == report_aip.get(fields.FIELD_COUNT)
+    assert test_aip.total_size == report_aip.get(fields.FIELD_SIZE)
 
 
 @pytest.mark.parametrize(
@@ -97,10 +101,10 @@ def test_aips_by_file_format_contents(
     This integration test uses a pre-populated fixture to verify that
     the database access layer of our endpoint returns what we expect.
     """
-    results = data.aips_by_puid(
+    results = report_data.aips_by_puid(
         storage_service_id=1, puid=puid, original_files=original_files
     )
-    aips = results[data.FIELD_AIPS]
+    aips = results[fields.FIELD_AIPS]
     assert len(aips) == aip_count
-    assert sum(aip[data.FIELD_COUNT] for aip in aips) == total_file_count
-    assert sum(aip[data.FIELD_SIZE] for aip in aips) == total_file_size
+    assert sum(aip[fields.FIELD_COUNT] for aip in aips) == total_file_count
+    assert sum(aip[fields.FIELD_SIZE] for aip in aips) == total_file_size

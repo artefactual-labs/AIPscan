@@ -8,7 +8,7 @@ import pandas as pd
 import plotly.express as px
 
 
-from AIPscan.Data import data
+from AIPscan.Data import report_data
 from AIPscan.helpers import _simplify_datetime
 from AIPscan.Reporter import reporter, request_params
 
@@ -54,7 +54,7 @@ def ingest_log_tabular():
     """Return the information needed to present an ingest gantt chart."""
     TABULAR_TEMPLATE = "report_ingest_log_tabular.html"
     storage_service_id = request.args.get(request_params[STORAGE_SERVICE_ID])
-    ingests = data.agents_transfers(storage_service_id)
+    ingests = report_data.agents_transfers(storage_service_id)
     ingests = get_table_data(ingests)
     return render_template(
         TABULAR_TEMPLATE,
@@ -96,7 +96,7 @@ def ingest_log():
     """Return the information needed to present an ingest gantt chart."""
     GANTT_TEMPLATE = "report_ingest_log_gantt.html"
     storage_service_id = request.args.get(request_params[STORAGE_SERVICE_ID])
-    ingests = data.agents_transfers(storage_service_id)
+    ingests = report_data.agents_transfers(storage_service_id)
     ingests = get_figure_html(ingests)
     return render_template(
         GANTT_TEMPLATE,

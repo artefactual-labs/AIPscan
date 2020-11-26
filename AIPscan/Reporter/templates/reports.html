@@ -2,8 +2,6 @@
 
 {% block content %}
 
-<div class="container-alert"></div>
-
 <div class="alert alert-header"><strong>Reports</strong></div>
 
 {% if storage_services %}
@@ -37,8 +35,7 @@
         <tr>
             <td>File format count</td>
             <td></td>
-            <td><input id="startdate1" type="text" value="{{ start_date }}">
-            </td>
+            <td><input type="text" id="startdate1" value="{{ start_date }}"></td>
             <td><input type="text" id="enddate1" value="{{ end_date }}"></td>
             <td><a href=""><button type="button" id="report1a" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a><a href=""><button type="button" id="report1b" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Pie Chart</button></a><a href=""><button type="button" id="report1c" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Scatter Plot</button></a></td>
         </tr>
@@ -54,8 +51,8 @@
         <tr>
             <td>Format version count</td>
             <td></td>
-            <td></td>
-            <td></td>
+            <td><input type="text" id="fmt_version_count_start_date" value="{{ start_date }}"></td>
+            <td><input type="text" id="fmt_version_count_end_date" value="{{ end_date }}"></td>
             <td><a href="#"><button type="button" id="report3a" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a></td>
         </tr>
 
@@ -183,26 +180,6 @@
 
 <!-- TODO: Let's get this into a separate JS and import it... -->
 <script>
-
-    const WARNINGS = {
-      ALERT_SECONDARY: "secondary",
-      ALERT_INFO: "info",
-    };
-
-    // TODO: This should be a generic function across the app, so let's get
-    // this into it's own import too.
-    //
-    // TODO: Are there more idiomatic approaches? 🤷
-    bootstrap_alert = function(message, alertType) {
-      $("body > div > div.container-alert").html(
-        '<div class="alert alert-' +
-        alertType +
-        '"><a class="close" data-dismiss="alert">×</a><span>' +
-        message +
-        "</span></div>"
-      )
-    }
-
     $(document).ready(function() {
         // Refresh page with storage_service_id parameter when user selects a
         // Storage Service from the dropdown list. This enables us to provide
@@ -216,13 +193,17 @@
             storageServiceId;
           window.location.href = url;
         });
+
+        const DATE_ALERT_START = 'The start date must be before the end date';
+        const DATE_ALERT_END = 'The end date must be after the start date';
+
         $("#startdate1").datepicker({
             dateFormat: 'yy-mm-dd',
             onSelect: function(date) {
                 var enddate = $('#enddate1').val();
                 if (enddate != "") {
                     if (enddate < date) {
-                        alert("The start date must be before the end date");
+                        alert(DATE_ALERT_START);
                     }
                 }
             }
@@ -233,7 +214,29 @@
                 var startdate = $('#startdate1').val();
                 if (startdate != "") {
                     if (startdate > date) {
-                        alert("The start date must be before the end date");
+                        alert(DATE_ALERT_END);
+                    }
+                }
+            }
+        });
+        $("#fmt_version_count_start_date").datepicker({
+            dateFormat: 'yy-mm-dd',
+            onSelect: function(date) {
+                var enddate = $('#fmt_version_count_end_date').val();
+                if (enddate != "") {
+                    if (enddate < date) {
+                        alert(DATE_ALERT_START);
+                    }
+                }
+            }
+        });
+        $("#fmt_version_count_end_date").datepicker({
+            dateFormat: 'yy-mm-dd',
+            onSelect: function(date) {
+                var startdate = $('#fmt_version_count_start_date').val();
+                if (startdate != "") {
+                    if (startdate > date) {
+                        alert(DATE_ALERT_END);
                     }
                 }
             }
@@ -242,7 +245,7 @@
             var startdate = $('#startdate1').val();
             var enddate = $('#enddate1').val();
             if (enddate < startdate) {
-                alert("The start date must be before the end date");
+                alert(DATE_ALERT_START);
             } else {
                 var storageServiceId = $('#ss').val();
                 var url = window.location.origin +
@@ -259,7 +262,7 @@
             var startdate = $('#startdate1').val();
             var enddate = $('#enddate1').val();
             if (enddate < startdate) {
-                alert("The start date must be before the end date");
+                alert(DATE_ALERT_START);
             } else {
                 var storageServiceId = $('#ss').val();
                 var url = window.location.origin +
@@ -276,7 +279,7 @@
             var startdate = $('#startdate1').val();
             var enddate = $('#enddate1').val();
             if (enddate < startdate) {
-                alert("The start date must be before the end date");
+                alert(DATE_ALERT_START);
             } else {
                 var storageServiceId = $('#ss').val();
                 var url = window.location.origin +
@@ -290,7 +293,6 @@
             }
         });
         $("#report2a").on("click", function() {
-            bootstrap_alert('This is a demo of report two!', WARNINGS.ALERT_SECONDARY);
             const URL_AIP_CONTENTS = "/reporter/aip_contents/"
             var storageServiceID = $('#ss').val();
             var url = (
@@ -302,10 +304,27 @@
             window.open(url);
         });
         $("#report3a").on("click", function() {
-            bootstrap_alert('Coming soon...', WARNINGS.ALERT_INFO);
+            var startdate = $('#fmt_version_count_start_date').val();
+            var enddate = $('#fmt_version_count_end_date').val();
+            if (enddate < startdate) {
+                alert(DATE_ALERT_START);
+            } else {
+                const URL_FORMAT_VERSION_COUNT = "/reporter/report_format_versions_count/";
+                var storageServiceID = $('#ss').val();
+                var url = (
+                  window.location.origin +
+                  URL_FORMAT_VERSION_COUNT +
+                  '?amss_id=' +
+                  storageServiceID +
+                  '&start_date=' +
+                  startdate +
+                  '&end_date=' +
+                  enddate
+                );
+                window.open(url);
+            }
         });
         $("#report4a").on("click", function() {
-            bootstrap_alert('This is a demo of report three!', WARNINGS.ALERT_SECONDARY);
             const URL_AIP_CONTENTS = "/reporter/original_derivatives/";
             var storageServiceID = $('#ss').val();
             var url = (

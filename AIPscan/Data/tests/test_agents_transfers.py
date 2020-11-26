@@ -6,7 +6,7 @@ the ingest log report and agents-transfers API endpoint.
 
 import pytest
 
-from AIPscan.Data import data
+from AIPscan.Data import report_data
 from AIPscan.Data.tests.conftest import INGEST_EVENT_CREATION_TIME, AIP_CREATION_TIME
 
 
@@ -41,7 +41,7 @@ def test_agents_transfers(
 ):
     """Test that structure of agents-transfers matches expectations."""
 
-    report = data.agents_transfers(storage_service_id=storage_id)
+    report = report_data.agents_transfers(storage_service_id=storage_id)
 
     assert report["StorageName"] == storage_name
     assert len(report["Ingests"]) == number_of_ingests
