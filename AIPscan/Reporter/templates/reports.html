@@ -151,6 +151,17 @@
             </tr>
         {% endif %}
 
+        <tr>
+            <td>Transfers log </td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>
+                <a href="#"><button type="button" id="transferLogTabular" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular Chart</button></a>
+                <a href="#"><button type="button" id="transferLogGantt" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Gantt Chart</button></a>
+            </td>
+        </tr>
+
     </table>
 
     {% else %}
@@ -373,6 +384,28 @@
               '&puid=' +
               puid +
               '&original_files=False'
+            );
+            window.open(url);
+        });
+       $("#transferLogTabular").on("click", function() {
+            const URL_AIP_CONTENTS = "/reporter/ingest_log_tabular/";
+            var storageServiceID = $('#ss').val();
+            var url = (
+              window.location.origin +
+              URL_AIP_CONTENTS +
+              '?amss_id=' +
+              storageServiceID
+            );
+            window.open(url);
+        });
+        $("#transferLogGantt").on("click", function() {
+            const URL_AIP_CONTENTS = "/reporter/ingest_log_gantt/";
+            var storageServiceID = $('#ss').val();
+            var url = (
+              window.location.origin +
+              URL_AIP_CONTENTS +
+              '?amss_id=' +
+              storageServiceID
             );
             window.open(url);
         });

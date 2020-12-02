@@ -1,0 +1,23 @@
+<!-- Ingest log Gantt report. -->
+
+{% extends "report_base.html" %}
+
+{% block content %}
+
+<div class="alert alert-secondary">
+  <a class="noprint" onClick="window.print();return false">
+    <button type="button" class="btn btn-info" style="float:right;">Print</button>
+  </a>
+  <strong>User ingest log</strong>
+  </br>
+  <strong>Storage service:</strong> {{ storage_service_name }}
+  </br>
+  <strong>Number of transfers:</strong> {{ number_of_transfers }}
+</div>
+
+  <!-- plotly.express here -->
+  {{ plot|safe }}
+
+</div>
+
+{% endblock %}

@@ -21,6 +21,7 @@ from AIPscan.Reporter import (  # noqa: F401
     report_formats_count,
     report_originals_with_derivatives,
     report_largest_files,
+    report_ingest_log,
 )
 
 
@@ -130,8 +131,7 @@ def view_aip(aip_id):
 
 @reporter.route("/file/<file_id>", methods=["GET"])
 def view_file(file_id):
-    """File page displays Object and Event metadata for file
-    """
+    """File page displays Object and Event metadata for file"""
     file_ = File.query.get(file_id)
     aip = AIP.query.get(file_.aip_id)
     events = Event.query.filter_by(file_id=file_id).all()

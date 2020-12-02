@@ -1,13 +1,11 @@
 # -*- coding: utf-8 -*-
 
-from datetime import datetime
-
 from AIPscan import db
-from AIPscan.models import AIP, File, FileType, StorageService
+from AIPscan.helpers import _simplify_datetime
+from AIPscan.models import AIP, Event, File, FileType, StorageService
 
 VALID_FILE_TYPES = set(item.value for item in FileType)
 
-FIELD_AIP = "AIP"
 FIELD_AIP_ID = "AIPID"
 FIELD_AIP_NAME = "AIPName"
 FIELD_AIP_SIZE = "AIPSize"
@@ -22,12 +20,18 @@ FIELD_DERIVATIVE_COUNT = "DerivativeCount"
 FIELD_DERIVATIVE_FORMAT = "DerivativeFormat"
 FIELD_DERIVATIVE_UUID = "DerivativeUUID"
 
+FIELD_EVENT = "Event"
+
 FIELD_FILES = "Files"
 FIELD_FILE_COUNT = "FileCount"
 FIELD_FILE_TYPE = "FileType"
 FIELD_FILENAME = "Filename"
 FIELD_FORMAT = "Format"
 FIELD_FORMATS = "Formats"
+
+FIELD_INGESTS = "Ingests"
+FIELD_INGEST_START_DATE = "IngestStartDate"
+FIELD_INGEST_FINISH_DATE = "IngestFinishDate"
 
 FIELD_NAME = "Name"
 
@@ -43,6 +47,7 @@ FIELD_STORAGE_NAME = "StorageName"
 
 FIELD_TRANSFER_NAME = "TransferName"
 
+FIELD_USER = "User"
 FIELD_UUID = "UUID"
 
 FIELD_VERSION = "Version"
@@ -62,22 +67,18 @@ def _get_storage_service(storage_service_id):
     return StorageService.query.get(storage_service_id)
 
 
-def _split_ms(date_string):
-    """Remove microseconds from the given date string."""
-    return str(date_string).split(".")[0]
+def _get_username(agent_string):
+    """Retrieve username from the standard agent string stored in the
+    database, normally formatted as:
 
-
-def _format_date(date_string):
-    """Format date to something nicer that can played back in reports"""
-    DATE_FORMAT_FULL = "%Y-%m-%d %H:%M:%S"
-    DATE_FORMAT_PARTIAL = "%Y-%m-%d"
-    formatted_date = datetime.strptime(_split_ms(date_string), DATE_FORMAT_FULL)
-    return formatted_date.strftime(DATE_FORMAT_PARTIAL)
+        * username="test", first_name="", last_name=""
+    """
+    USERNAME = "username="
+    return agent_string.split(",", 1)[0].replace(USERNAME, "").replace('"', "")
 
 
 def aip_overview(storage_service_id, original_files=True):
-    """Return a summary overview of all AIPs in a given storage service
-    """
+    """Return a summary overview of all AIPs in a given storage service"""
     report = {}
     storage_service = _get_storage_service(storage_service_id)
     aips = AIP.query.filter_by(storage_service_id=storage_service.id).all()
@@ -113,7 +114,9 @@ def aip_overview(storage_service_id, original_files=True):
 
 
 def aip_overview_two(storage_service_id, original_files=True):
-    """Return a summary overview of all AIPs in a given storage service
+    """Return a summary overview of all AIPs in a given storage service.
+    With a special focus on file formats and their counts organized by
+    AIP UUID and then PUID.
     """
     report = {}
     formats = {}
@@ -122,7 +125,9 @@ def aip_overview_two(storage_service_id, original_files=True):
     for aip in aips:
         report[aip.uuid] = {}
         report[aip.uuid][FIELD_AIP_NAME] = aip.transfer_name
-        report[aip.uuid][FIELD_CREATED_DATE] = _format_date(aip.create_date)
+        report[aip.uuid][FIELD_CREATED_DATE] = _simplify_datetime(
+            aip.create_date, False
+        )
         report[aip.uuid][FIELD_AIP_SIZE] = 0
         report[aip.uuid][FIELD_FORMATS] = {}
         files = None
@@ -422,3 +427,47 @@ def aips_by_puid(storage_service_id, puid, original_files=True):
         original_files=original_files,
         file_format=False,
     )
+
+
+def agents_transfers(storage_service_id):
+    """Return information about agents involved in creating a transfer
+    and provide some simple statistics, e.g. ingest start time and
+    ingest finish time.
+    """
+    report = {}
+    ingests = []
+
+    storage_service = _get_storage_service(storage_service_id)
+
+    try:
+        report[FIELD_STORAGE_NAME] = storage_service.name
+    except AttributeError:
+        # No storage service has been returned and so we have nothing
+        # to return.
+        report[FIELD_STORAGE_NAME] = None
+        report[FIELD_INGESTS] = ingests
+        return report
+
+    aips = AIP.query.filter_by(storage_service_id=storage_service.id).all()
+
+    EVENT_TYPE = "ingestion"
+    AGENT_TYPE = "Archivematica user"
+
+    for aip in aips:
+        event = (
+            db.session.query(Event)
+            .join(File)
+            .filter(File.aip_id == aip.id, Event.type == EVENT_TYPE)
+            .first()
+        )
+        log_line = {}
+        log_line[FIELD_AIP_UUID] = aip.uuid
+        log_line[FIELD_AIP_NAME] = aip.transfer_name
+        log_line[FIELD_INGEST_START_DATE] = str(event.date)
+        log_line[FIELD_INGEST_FINISH_DATE] = str(aip.create_date)
+        for agent in event.event_agents:
+            if agent.agent_type == AGENT_TYPE:
+                log_line[FIELD_USER] = _get_username(agent.agent_value)
+        ingests.append(log_line)
+    report[FIELD_INGESTS] = ingests
+    return report

@@ -26,7 +26,7 @@ def largest_files():
         data.FIELD_FORMAT,
         data.FIELD_PUID,
         data.FIELD_FILE_TYPE,
-        data.FIELD_AIP,
+        data.FIELD_AIP_NAME,
     ]
     return render_template(
         "report_largest_files.html",

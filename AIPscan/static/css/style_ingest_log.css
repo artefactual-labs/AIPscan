@@ -1,0 +1,18 @@
+/* Custom styles for the ingest log reports. */
+
+i.header {
+	font-size: 1.5em;
+	margin-right: 5px;
+}
+
+thead {
+	font-weight: bold;
+}
+
+td.user {
+	font-weight: bold;
+}
+
+div.ingest-plot {
+	margin: 20px 0;
+}

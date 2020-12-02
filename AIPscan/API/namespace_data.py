@@ -42,7 +42,7 @@ class FMTList(Resource):
         },
     )
     def get(self, storage_service_id):
-        """AIP overview One"""
+        """List PUIDs and AIPs containing examples of them"""
         original_files = parse_bool(request.args.get(ORIGINAL_FILES_FIELD, True))
         aip_data = data.aip_overview(
             storage_service_id=storage_service_id, original_files=original_files
@@ -63,7 +63,7 @@ class AIPList(Resource):
         },
     )
     def get(self, storage_service_id):
-        """AIP overview two"""
+        """List AIPs and a summary of the file formats they contain"""
         original_files = parse_bool(request.args.get(ORIGINAL_FILES_FIELD, True))
         aip_data = data.aip_overview_two(
             storage_service_id=storage_service_id, original_files=original_files
@@ -75,7 +75,7 @@ class AIPList(Resource):
 class DerivativeList(Resource):
     @api.doc("list_aips")
     def get(self, storage_service_id):
-        """AIP overview two"""
+        """List original and derivative identifiers per AIP"""
         aip_data = data.derivative_overview(storage_service_id=storage_service_id)
         return aip_data
 
@@ -166,3 +166,11 @@ class AIPsByPUIDList(Resource):
             original_files=original_files,
         )
         return aip_data
+
+
+@api.route("/agents-transfers/<storage_service_id>")
+class AgentData(Resource):
+    @api.doc("agent info")
+    def get(self, storage_service_id):
+        """List user agents and their transfers"""
+        return data.agents_transfers(storage_service_id=storage_service_id)

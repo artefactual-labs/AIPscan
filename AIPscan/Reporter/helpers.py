@@ -28,7 +28,6 @@ def translate_headers(headers):
     """
     field_lookup = {
         data.FIELD_AIP_NAME: "AIP Name",
-        data.FIELD_AIP: "AIP",
         data.FIELD_AIPS: "AIPs",
         data.FIELD_AIP_SIZE: "AIP Size",
         data.FIELD_ALL_AIPS: "All AIPs",
