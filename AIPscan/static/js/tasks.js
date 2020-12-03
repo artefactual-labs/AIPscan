@@ -17,29 +17,20 @@ function new_fetch_job(storageServiceId){
 }
 
 function package_list_task_status(taskId, showcount, fetchJobId){
-  const inspect_logs = ": Please inspect the celery logs"
   const status_pending = 'PENDING'
   const status_progress = 'IN PROGRESS'
-  const status_failure = "FAILURE"
   $.ajax({
     type: 'GET',
     url: '/aggregator/package_list_task_status/' + taskId,
     datatype: "json",
     success: function(data) {
-      state = data['state']
-      if (state != status_pending && state != status_progress && state != status_failure) {
+      let state = data['state'];
+      if (state != status_pending && state != status_progress) {
         $('#console').append('<div class="log">' + state +'</div>')
         $('#console').append('<div class="log">Downloading AIP METS files</div>')
         get_mets_task_status(data["coordinatorId"], 0, fetchJobId);
       }
-      if (state == status_failure) {
-        err = "".concat('<div class="log">', state, inspect_logs ,'</div>')
-        $('#console').append(err)
-        return
-      }
       else {
-        output = "".concat('<div class="log">', state, ': Downloading AIP METS files</div>')
-        $('#console').append(output)
         if (showcount == false) {
           if ('message' in data){
             $('#console').append('<div class="log">' + data["message"] +'</div>')
