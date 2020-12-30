@@ -6,11 +6,10 @@ files with singular responsibility for a report.
 """
 
 from datetime import datetime
+
 from flask import render_template, request
 
-from AIPscan.models import AIP, File, FileType, Event, FetchJob, StorageService
-from AIPscan.Reporter import reporter, sort_puids, request_params
-
+from AIPscan.models import AIP, Event, FetchJob, File, FileType, StorageService
 
 # Flask's idiom requires code using routing decorators to be imported
 # up-front. But that means it might not be called directly by a module.
@@ -18,11 +17,14 @@ from AIPscan.Reporter import (  # noqa: F401
     report_aip_contents,
     report_aips_by_format,
     report_aips_by_puid,
-    report_formats_count,
     report_format_versions_count,
-    report_originals_with_derivatives,
-    report_largest_files,
+    report_formats_count,
     report_ingest_log,
+    report_largest_files,
+    report_originals_with_derivatives,
+    reporter,
+    request_params,
+    sort_puids,
 )
 
 

@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 
-from datetime import datetime
 import json
 import os
+from datetime import datetime
 
 import pytest
 
-from AIPscan.Aggregator.types import StorageServicePackage
 from AIPscan.Aggregator import task_helpers
+from AIPscan.Aggregator.types import StorageServicePackage
 
 FIXTURES_DIR = "fixtures"
 

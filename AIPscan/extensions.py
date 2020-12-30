@@ -9,8 +9,7 @@ function.
 
 from celery import Celery
 
-from celery_config import CELERY_RESULT_BACKEND, CELERY_BROKER_URL
-
+from celery_config import CELERY_BROKER_URL, CELERY_RESULT_BACKEND
 
 celery = Celery(
     "tasks",

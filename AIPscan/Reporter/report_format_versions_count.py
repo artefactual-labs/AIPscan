@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 
 from datetime import timedelta
+
 from flask import render_template, request
 
-from AIPscan.helpers import parse_datetime_bound
 from AIPscan.Data import fields, report_data
-from AIPscan.Reporter import reporter, translate_headers, request_params
+from AIPscan.helpers import parse_datetime_bound
+from AIPscan.Reporter import reporter, request_params, translate_headers
 
 
 @reporter.route("/report_format_versions_count/", methods=["GET"])

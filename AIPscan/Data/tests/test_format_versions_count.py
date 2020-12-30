@@ -1,21 +1,19 @@
 # -*- coding: utf-8 -*-
 
 from datetime import datetime
+
 import pytest
 
-from AIPscan.helpers import parse_datetime_bound
 from AIPscan.Data import fields, report_data
 from AIPscan.Data.tests import (
     MOCK_STORAGE_SERVICE,
     MOCK_STORAGE_SERVICE_ID,
     MOCK_STORAGE_SERVICE_NAME,
 )
-from AIPscan.Data.tests.conftest import (
-    AIP_1_CREATION_DATE,
-    AIP_2_CREATION_DATE,
-    ORIGINAL_FILE_SIZE as JPEG_1_01_FILE_SIZE,
-    PRESERVATION_FILE_SIZE as JPEG_1_02_FILE_SIZE,
-)
+from AIPscan.Data.tests.conftest import AIP_1_CREATION_DATE, AIP_2_CREATION_DATE
+from AIPscan.Data.tests.conftest import ORIGINAL_FILE_SIZE as JPEG_1_01_FILE_SIZE
+from AIPscan.Data.tests.conftest import PRESERVATION_FILE_SIZE as JPEG_1_02_FILE_SIZE
+from AIPscan.helpers import parse_datetime_bound
 
 TOTAL_FILE_SIZE = JPEG_1_01_FILE_SIZE + JPEG_1_02_FILE_SIZE
 

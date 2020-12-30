@@ -9,9 +9,9 @@ blueprint for consumption by external systems.
 from flask import request
 from flask_restx import Namespace, Resource
 
-from AIPscan.helpers import parse_bool, parse_datetime_bound
 from AIPscan.API import fields
 from AIPscan.Data import report_data
+from AIPscan.helpers import parse_bool, parse_datetime_bound
 
 api = Namespace(
     "report-data", description="Retrieve data optimized for AIPscan reports"

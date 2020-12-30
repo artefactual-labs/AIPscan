@@ -5,14 +5,16 @@ import pytest
 from AIPscan.Data import fields, report_data
 from AIPscan.Data.tests import (
     MOCK_AIPS_BY_FORMAT_OR_PUID_QUERY_RESULTS as MOCK_QUERY_RESULTS,
+)
+from AIPscan.Data.tests import (
     MOCK_STORAGE_SERVICE,
     MOCK_STORAGE_SERVICE_ID,
     MOCK_STORAGE_SERVICE_NAME,
 )
 from AIPscan.Data.tests.conftest import (
-    TIFF_PUID,
     ORIGINAL_FILE_SIZE,
     PRESERVATION_FILE_SIZE,
+    TIFF_PUID,
 )
 
 

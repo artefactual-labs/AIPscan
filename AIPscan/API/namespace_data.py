@@ -10,9 +10,9 @@ raw. No data is without bias.
 from flask import request
 from flask_restx import Namespace, Resource
 
-from AIPscan.helpers import parse_bool
 from AIPscan.API import fields
 from AIPscan.Data import data
+from AIPscan.helpers import parse_bool
 
 api = Namespace("data", description="Retrieve data from AIPscan to shape as you desire")
 

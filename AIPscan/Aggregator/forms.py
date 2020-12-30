@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from flask_wtf import FlaskForm
-from wtforms import StringField, BooleanField
+from wtforms import BooleanField, StringField
 from wtforms.validators import DataRequired
 
 

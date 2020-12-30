@@ -2,9 +2,9 @@
 
 from flask import render_template, request
 
-from AIPscan.helpers import parse_bool
 from AIPscan.Data import fields, report_data
-from AIPscan.Reporter import reporter, translate_headers, request_params
+from AIPscan.helpers import parse_bool
+from AIPscan.Reporter import reporter, request_params, translate_headers
 
 
 @reporter.route("/aips_by_file_format/", methods=["GET"])

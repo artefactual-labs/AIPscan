@@ -4,9 +4,8 @@
 information from an AIP METS file.
 """
 import lxml
-import requests
-
 import metsrw
+import requests
 
 from AIPscan.Aggregator.task_helpers import (
     create_numbered_subdirs,

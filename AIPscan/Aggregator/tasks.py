@@ -2,32 +2,25 @@
 
 import json
 import os
-import requests
 
+import requests
 from celery.utils.log import get_task_logger
 
 from AIPscan import db
-from AIPscan.extensions import celery
-from AIPscan.models import (
-    FetchJob,
-    # Custom celery Models.
-    get_mets_tasks,
-)
-
-from AIPscan.Aggregator.celery_helpers import write_celery_update
 from AIPscan.Aggregator import database_helpers
-
+from AIPscan.Aggregator.celery_helpers import write_celery_update
 from AIPscan.Aggregator.mets_parse_helpers import (
-    _download_mets,
     METSError,
+    _download_mets,
     get_aip_original_name,
     parse_mets_with_metsrw,
 )
-
 from AIPscan.Aggregator.task_helpers import (
-    process_package_object,
     format_api_url_with_limit_offset,
+    process_package_object,
 )
+from AIPscan.extensions import celery
+from AIPscan.models import FetchJob, get_mets_tasks  # Custom celery Models.
 
 logger = get_task_logger(__name__)
 

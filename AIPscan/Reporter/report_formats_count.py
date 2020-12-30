@@ -10,8 +10,8 @@ from datetime import datetime, timedelta
 
 from flask import render_template, request
 
-from AIPscan.models import AIP, File, FileType, StorageService
 from AIPscan.helpers import get_human_readable_file_size
+from AIPscan.models import AIP, File, FileType, StorageService
 from AIPscan.Reporter import reporter, request_params
 
 

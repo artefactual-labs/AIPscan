@@ -4,7 +4,7 @@
 
 import pytest
 
-from AIPscan.Reporter.report_ingest_log import get_table_data, get_figure_html
+from AIPscan.Reporter.report_ingest_log import get_figure_html, get_table_data
 
 ZERO_TRANSFERS = {"StorageName": None, "Ingests": []}
 

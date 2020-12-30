@@ -7,10 +7,9 @@ database.
 from celery.utils.log import get_task_logger
 
 from AIPscan import db
-from AIPscan.models import AIP, File, FileType, Event, Agent, EventAgent
-
-from AIPscan.Aggregator.task_helpers import _tz_neutral_date
 from AIPscan.Aggregator import tasks
+from AIPscan.Aggregator.task_helpers import _tz_neutral_date
+from AIPscan.models import AIP, Agent, Event, EventAgent, File, FileType
 
 logger = get_task_logger(__name__)
 

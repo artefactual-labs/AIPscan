@@ -6,7 +6,7 @@ import metsrw
 import pytest
 
 from AIPscan.Aggregator import database_helpers
-from AIPscan.models import Agent, AIP
+from AIPscan.models import AIP, Agent
 
 FIXTURES_DIR = "fixtures"
 

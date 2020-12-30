@@ -7,7 +7,7 @@ the different file formats associated with both.
 from flask import render_template, request
 
 from AIPscan.Data import data, fields
-from AIPscan.Reporter import reporter, translate_headers, request_params
+from AIPscan.Reporter import reporter, request_params, translate_headers
 
 
 @reporter.route("/original_derivatives/", methods=["GET"])

@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import datetime
-import pytest
 import uuid
+
+import pytest
 
 from AIPscan.Data import fields, report_data
 from AIPscan.Data.tests import (
@@ -13,7 +14,6 @@ from AIPscan.Data.tests import (
     MOCK_STORAGE_SERVICE_NAME,
 )
 from AIPscan.models import File, FileType
-
 
 TEST_FILES = [
     File(

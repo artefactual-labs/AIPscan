@@ -3,10 +3,10 @@
 """Collects a number of reusable components of tasks.py. Also ensures
 the module remains clean and easy to refactor over time.
 """
-from datetime import datetime
 import os
+from datetime import datetime
 
-from dateutil.parser import parse, ParserError
+from dateutil.parser import ParserError, parse
 
 from AIPscan.Aggregator.types import StorageServicePackage
 

@@ -2,10 +2,10 @@
 
 from flask import render_template, request
 
+from AIPscan.Data import fields, report_data
 from AIPscan.helpers import parse_bool
 from AIPscan.models import File
-from AIPscan.Data import fields, report_data
-from AIPscan.Reporter import reporter, translate_headers, request_params
+from AIPscan.Reporter import reporter, request_params, translate_headers
 
 
 def get_format_string_from_puid(puid):

@@ -4,7 +4,7 @@ from flask import render_template, request
 
 from AIPscan.Data import data, fields
 from AIPscan.helpers import get_human_readable_file_size
-from AIPscan.Reporter import reporter, translate_headers, request_params
+from AIPscan.Reporter import reporter, request_params, translate_headers
 
 
 @reporter.route("/aip_contents/", methods=["GET"])

@@ -3,15 +3,13 @@
 """Report on who ingested AIPs and when. An indication is also provided
 about how long they took to process.
 """
-from flask import render_template, request
 import pandas as pd
 import plotly.express as px
-
+from flask import render_template, request
 
 from AIPscan.Data import report_data
 from AIPscan.helpers import _simplify_datetime
 from AIPscan.Reporter import reporter, request_params
-
 
 # Request parameters.
 STORAGE_SERVICE_ID = "storage_service_id"

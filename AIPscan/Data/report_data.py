@@ -6,7 +6,6 @@ from AIPscan import db
 from AIPscan.Data import _get_storage_service, fields
 from AIPscan.models import AIP, Event, File, FileType, StorageService
 
-
 VALID_FILE_TYPES = set(item.value for item in FileType)
 
 

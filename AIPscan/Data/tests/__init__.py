@@ -1,7 +1,7 @@
 import datetime
 import uuid
 
-from AIPscan.models import StorageService, AIP
+from AIPscan.models import AIP, StorageService
 
 
 class MockAIPsByFormatOrPUIDResult:

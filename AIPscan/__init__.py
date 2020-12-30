@@ -18,10 +18,10 @@ def create_app(config_name="default"):
     with app.app_context():
 
         from AIPscan.Aggregator.views import aggregator
-        from AIPscan.Reporter.views import reporter
-        from AIPscan.User.views import user
         from AIPscan.API.views import api
         from AIPscan.Home.views import home
+        from AIPscan.Reporter.views import reporter
+        from AIPscan.User.views import user
 
         app.register_blueprint(aggregator, url_prefix="/aggregator")
         app.register_blueprint(reporter, url_prefix="/reporter")

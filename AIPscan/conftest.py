@@ -4,7 +4,7 @@
 
 import pytest
 
-from AIPscan import db, create_app
+from AIPscan import create_app, db
 
 
 @pytest.fixture

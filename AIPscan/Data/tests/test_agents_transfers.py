@@ -7,7 +7,7 @@ the ingest log report and agents-transfers API endpoint.
 import pytest
 
 from AIPscan.Data import report_data
-from AIPscan.Data.tests.conftest import INGEST_EVENT_CREATION_TIME, AIP_CREATION_TIME
+from AIPscan.Data.tests.conftest import AIP_CREATION_TIME, INGEST_EVENT_CREATION_TIME
 
 
 @pytest.mark.parametrize(

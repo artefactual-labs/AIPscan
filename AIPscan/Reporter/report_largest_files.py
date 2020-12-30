@@ -3,7 +3,7 @@
 from flask import render_template, request
 
 from AIPscan.Data import fields, report_data
-from AIPscan.Reporter import reporter, translate_headers, request_params
+from AIPscan.Reporter import reporter, request_params, translate_headers
 
 
 @reporter.route("/largest_files/", methods=["GET"])

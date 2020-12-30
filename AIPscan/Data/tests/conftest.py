@@ -2,23 +2,22 @@
 
 """This module defines shared Data blueprint pytest fixtures."""
 
-from datetime import datetime
 import uuid
+from datetime import datetime
 
 import pytest
 
-from AIPscan import db, create_app
+from AIPscan import create_app, db
 from AIPscan.models import (
-    Agent,
     AIP,
+    Agent,
     Event,
     EventAgent,
+    FetchJob,
     File,
     FileType,
-    FetchJob,
     StorageService,
 )
-
 
 TIFF_FILE_FORMAT = "Tagged Image File Format"
 TIFF_PUID = "fmt/353"

@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 
 import datetime
-import pytest
 import uuid
 
-from AIPscan.Reporter.report_aips_by_puid import get_format_string_from_puid
+import pytest
+
 from AIPscan.models import File, FileType
+from AIPscan.Reporter.report_aips_by_puid import get_format_string_from_puid
 
 FILE_WITH_FORMAT_ONLY = File(
     uuid=uuid.uuid4(),

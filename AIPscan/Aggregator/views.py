@@ -1,24 +1,20 @@
 # -*- coding: utf-8 -*-
 
-from datetime import datetime
 import os
 import shutil
+from datetime import datetime
 
 from celery.result import AsyncResult
-from flask import Blueprint, render_template, redirect, request, flash, url_for, jsonify
+from flask import Blueprint, flash, jsonify, redirect, render_template, request, url_for
 
 from AIPscan import db
-from AIPscan.Aggregator.task_helpers import get_packages_directory
-from AIPscan.Aggregator.forms import StorageServiceForm
 from AIPscan.Aggregator import tasks
+from AIPscan.Aggregator.forms import StorageServiceForm
+from AIPscan.Aggregator.task_helpers import get_packages_directory
 from AIPscan.extensions import celery
-from AIPscan.models import (
-    FetchJob,
-    StorageService,
-    # Custom celery Models.
-    package_tasks,
-    get_mets_tasks,
-)
+
+# Custom celery Models.
+from AIPscan.models import FetchJob, StorageService, get_mets_tasks, package_tasks
 
 aggregator = Blueprint("aggregator", __name__, template_folder="templates")
 
