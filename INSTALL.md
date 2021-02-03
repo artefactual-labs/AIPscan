@@ -25,6 +25,41 @@ systems and servers have not been tested.
   sudo apt-get update -y
   sudo apt-get install -y rabbitmq-server
   ```
+ * Start the RabbitMQ service:
+
+   ```bash
+   sudo service rabbitmq-server start
+   ```
+
+* Check that it is running correctly:
+
+   ```bash
+   sudo service rabbitmq-server status
+   ```
+   
+* You should see output that looks like this:
+
+   ```bash
+   Loaded: loaded (/lib/systemd/system/rabbitmq-server.service; enabled; vendor preset: enabled)
+   Active: active (running) since Tue 2021-02-02 23:02:36 UTC; 6min ago
+   Process: 3356 ExecStop=/bin/sh -c while ps -p $MAINPID >/dev/null 2>&1; do sleep 1; done (code=exited, status=0/SUCCESS)
+   Process: 3208 ExecStop=/usr/lib/rabbitmq/bin/rabbitmqctl stop (code=exited, status=0/SUCCESS)
+   Main PID: 3403 (beam.smp)
+   Status: "Initialized"
+   Tasks: 86 (limit: 4915)
+   CGroup: /system.slice/rabbitmq-server.service
+           ├─3403 /usr/lib/erlang/erts-9.2/bin/beam.smp -W w -A 64 -P 1048576 -t 5000000 -stbt db -zdbbl 128000 -K true -- -root /usr/lib/erlang -progname erl -- -home /var/lib/rabbitmq -- -pa /usr/lib/rabbitmq/lib/rabbitmq_server-3.6.16/ebin -noshell -noinput -s rabbit boot -sname rabbit@
+           ├─3500 /usr/lib/erlang/erts-9.2/bin/epmd -daemon
+           ├─3645 erl_child_setup 1024
+           ├─3670 inet_gethost 4
+           └─3671 inet_gethost 4
+
+   
+* If you need to stop it for any reason:
+
+   ```bash
+   sudo service rabbitmq-server stop
+   ```
 
 ### Gunicorn service
 
