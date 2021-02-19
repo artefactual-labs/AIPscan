@@ -140,3 +140,14 @@ class AgentData(Resource):
     def get(self, storage_service_id):
         """List user agents and their transfers"""
         return report_data.agents_transfers(storage_service_id=storage_service_id)
+
+
+@api.route("/bayesian-format-modeling/<storage_service_id>")
+class BayesianList(Resource):
+    @api.doc("formats and creation dates")
+    def get(self, storage_service_id):
+        """List file formats and file creation dates"""
+        aip_data = report_data.bayesian_format_modeling(
+            storage_service_id=storage_service_id
+        )
+        return aip_data

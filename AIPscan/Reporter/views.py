@@ -17,6 +17,7 @@ from AIPscan.Reporter import (  # noqa: F401
     report_aip_contents,
     report_aips_by_format,
     report_aips_by_puid,
+    report_bayesian_modeling,
     report_format_versions_count,
     report_formats_count,
     report_ingest_log,

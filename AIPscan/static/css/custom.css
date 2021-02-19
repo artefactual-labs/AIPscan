@@ -10,6 +10,14 @@ body {
   font-family: 'Roboto', sans-serif
 }
 
+img.plot {
+    padding: 0;
+    display: block;
+    margin: 0 auto;
+    max-height: 100%;
+    max-width: 100%;
+}
+
 #console {
   padding: 10px;
   border-radius: .25rem;

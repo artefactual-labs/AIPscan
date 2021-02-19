@@ -341,3 +341,63 @@ def agents_transfers(storage_service_id):
         ingests.append(log_line)
     report[fields.FIELD_INGESTS] = ingests
     return report
+
+
+def _add_date_to_formats_list(formats, file_format):
+    """Add the created date associated with a format instance to a
+    formats list if it already exists. If the format is not already in
+    the list then add the entire format record.
+    """
+    if not formats:
+        formats.append(file_format)
+    for fmt in formats:
+        if fmt[fields.FIELD_PUID] == file_format[fields.FIELD_PUID]:
+            fmt[fields.FIELD_CREATED_DATES].append(
+                file_format[fields.FIELD_CREATED_DATES][0]
+            )
+            return formats
+    formats.append(file_format)
+    return formats
+
+
+def bayesian_format_modeling(storage_service_id):
+    """Return a breakdown of file formats and the date they were
+    recorded as being created in the system.
+    """
+    report = {}
+    formats = []
+
+    storage_service = _get_storage_service(storage_service_id)
+    try:
+        report[fields.FIELD_STORAGE_NAME] = storage_service.name
+    except AttributeError:
+        # No storage service has been returned and so we have nothing
+        # to return.
+        report[fields.FIELD_STORAGE_NAME] = None
+        return report
+
+    aips = AIP.query.filter_by(storage_service_id=storage_service.id).all()
+    for aip in aips:
+        original_files = File.query.filter_by(
+            aip_id=aip.id, file_type=FileType.original
+        )
+        for original in original_files:
+            if not original.date_created:
+                # Date isn't available for the file, e.g. extracted
+                # from zip.
+                continue
+            file_format = {}
+            file_format[fields.FIELD_CREATED_DATES] = [
+                original.date_created.strftime("%Y-%m-%d")
+            ]
+            file_format[fields.FIELD_PUID] = original.puid
+            if not original.puid:
+                file_format[fields.FIELD_PUID] = "Unknown"
+            file_format[fields.FIELD_FORMAT] = "{} {}".format(
+                original.file_format, original.format_version
+            )
+            if not original.format_version:
+                file_format[fields.FIELD_FORMAT] = original.file_format
+            formats = _add_date_to_formats_list(formats, file_format)
+    report[fields.FIELD_ALL_AIPS] = formats
+    return report

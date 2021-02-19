@@ -109,7 +109,9 @@ def _create_test_file(**kwargs):
         uuid=kwargs.get("uuid", str(uuid.uuid4())),
         file_type=kwargs.get("file_type", FileType.original),
         size=kwargs.get("size", 0),
-        date_created=kwargs.get("date_created", datetime.now()),
+        date_created=kwargs.get(
+            "date_created", datetime.strptime("1970-01-01", "%Y-%m-%d")
+        ),
         puid=kwargs.get("puid", "fmt/test-1"),
         file_format=kwargs.get("file_format", "ACME File Format"),
         format_version=kwargs.get("format_version", "0.0.0"),
@@ -185,6 +187,7 @@ def app_with_populated_files(scope="package"):
             size=ORIGINAL_FILE_SIZE,
             puid=TIFF_PUID,
             file_format=TIFF_FILE_FORMAT,
+            date_created=datetime.strptime("1970-01-01", "%Y-%m-%d"),
         )
 
         _ = _create_test_file(
@@ -192,6 +195,7 @@ def app_with_populated_files(scope="package"):
             size=PRESERVATION_FILE_SIZE,
             puid=TIFF_PUID,
             file_format=TIFF_FILE_FORMAT,
+            date_created=datetime.strptime("1970-01-02", "%Y-%m-%d"),
         )
 
         user_agent = _create_test_agent()
@@ -241,6 +245,7 @@ def app_with_populated_format_versions(scope="package"):
             file_format=JPEG_FILE_FORMAT,
             format_version=JPEG_1_01_FORMAT_VERSION,
             aip_id=aip1.id,
+            date_created=datetime.strptime("1970-01-03", "%Y-%m-%d"),
         )
 
         _ = _create_test_file(
@@ -249,6 +254,7 @@ def app_with_populated_format_versions(scope="package"):
             file_format=JPEG_FILE_FORMAT,
             format_version=JPEG_1_02_FORMAT_VERSION,
             aip_id=aip2.id,
+            date_created=datetime.strptime("1970-01-04", "%Y-%m-%d"),
         )
 
         _ = _create_test_file(
@@ -257,6 +263,7 @@ def app_with_populated_format_versions(scope="package"):
             file_format="ISO Disk Image File",
             format_version=None,
             aip_id=aip2.id,
+            date_created=datetime.strptime("1970-01-05", "%Y-%m-%d"),
         )
 
         yield app

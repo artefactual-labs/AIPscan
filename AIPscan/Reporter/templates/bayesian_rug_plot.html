@@ -1,0 +1,26 @@
+{% extends "report_base.html" %}
+
+{% block content %}
+
+<div class="alert alert-secondary">
+<a class="noprint" onClick="window.print();return false"><button type="button" class="btn btn-info" style="float:right;">Print</button></a>
+  <strong>Report:</strong>
+  <span title="Represents a distribution of file-format instance creation dates. Thicker lines demonstrate a greater number of format instances recorded for a single date in time and less-dense portions of the distribution either side of rug-plot show fewer instances of file-formats being recorded. Those to the right given a long-enough gap between today and the last lines may begin to show us a file-format in the process of becoming obsolete.">
+    Bayesian format modeling
+  </span>
+  <br>
+  <strong>Storage Service:</strong> {{ storage_service_name }}
+  <br>
+</div>
+
+  {% for figure in figures %}
+    {% for value in figure %}
+      <b>&nbsp; {{ value }}:</b>
+      <img class="plot" src="data:image/png;base64, {{ figure[value] }}" />
+      <br>
+    {% endfor %}
+  {% endfor %}
+
+</div>
+
+{% endblock %}
