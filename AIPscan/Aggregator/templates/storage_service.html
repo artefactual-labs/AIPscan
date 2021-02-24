@@ -77,7 +77,7 @@ $(document).ready(function(){
     new_fetch_job({{ storage_service.id }});
     });
   $('.stats').hide();
-  $('.fa-info-circle').hover(function() {
+  $('.fa-info-circle').click(function() {
     if($('#stats-'+this.id).is(':visible'))
         $('#stats-'+this.id).hide();
     else
