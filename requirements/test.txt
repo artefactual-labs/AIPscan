@@ -2,4 +2,5 @@
 
 flake8==3.8.3
 pytest==5.4.3
+pytest_cov==2.11.1
 pytest_mock==3.3.1
