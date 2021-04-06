@@ -330,6 +330,10 @@ def agents_transfers(storage_service_id):
             .filter(File.aip_id == aip.id, Event.type == EVENT_TYPE)
             .first()
         )
+        # This defensive check is necessary for now because of packages that
+        # are deleted after extraction. See issue #104 for details.
+        if event is None:
+            continue
         log_line = {}
         log_line[fields.FIELD_AIP_UUID] = aip.uuid
         log_line[fields.FIELD_AIP_NAME] = aip.transfer_name

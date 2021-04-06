@@ -208,6 +208,46 @@ def app_with_populated_files(scope="package"):
 
 
 @pytest.fixture
+def app_with_populated_files_no_ingestion_event(scope="package"):
+    """Fixture with pre-populated data.
+
+    This fixture is used to create expected state which is then used to
+    test the Data.aips_by_file_format and Data.aips_by_puid endpoints.
+    """
+    app = create_app("test")
+    with app.app_context():
+        db.create_all()
+
+        storage_service = _create_test_storage_service()
+        fetch_job = _create_test_fetch_job(storage_service_id=storage_service.id)
+
+        _ = _create_test_aip(
+            uuid="111111111111-1111-1111-11111111",
+            create_date=AIP_CREATION_TIME,
+            storage_service_id=storage_service.id,
+            fetch_job_id=fetch_job.id,
+        )
+
+        _create_test_file(
+            file_type=FileType.original,
+            size=ORIGINAL_FILE_SIZE,
+            puid=TIFF_PUID,
+            file_format=TIFF_FILE_FORMAT,
+        )
+
+        _ = _create_test_file(
+            file_type=FileType.preservation,
+            size=PRESERVATION_FILE_SIZE,
+            puid=TIFF_PUID,
+            file_format=TIFF_FILE_FORMAT,
+        )
+
+        yield app
+
+        db.drop_all()
+
+
+@pytest.fixture
 def app_with_populated_format_versions(scope="package"):
     """Fixture with pre-populated data.
 
