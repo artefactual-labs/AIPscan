@@ -36,7 +36,6 @@ def report_formats_count():
     originals_count = 0
 
     for aip in aips:
-        originals_count += aip.original_file_count
         original_files = File.query.filter_by(
             aip_id=aip.id, file_type=FileType.original
         )
@@ -46,6 +45,7 @@ def report_formats_count():
             elif aip.create_date > day_after:
                 continue
             else:
+                originals_count += 1
                 file_format = original.file_format
                 size = original.size
 
@@ -105,7 +105,6 @@ def chart_formats_count():
     originals_count = 0
 
     for aip in aips:
-        originals_count += aip.original_file_count
         original_files = File.query.filter_by(
             aip_id=aip.id, file_type=FileType.original
         )
@@ -115,6 +114,7 @@ def chart_formats_count():
             elif aip.create_date > day_after:
                 continue
             else:
+                originals_count += 1
                 format_labels.append(original.file_format)
 
     format_counts = Counter(format_labels)
@@ -156,7 +156,6 @@ def plot_formats_count():
     originals_count = 0
 
     for aip in aips:
-        originals_count += aip.original_file_count
         original_files = File.query.filter_by(
             aip_id=aip.id, file_type=FileType.original
         )
@@ -166,6 +165,7 @@ def plot_formats_count():
             elif aip.create_date > day_after:
                 continue
             else:
+                originals_count += 1
                 file_format = original.file_format
                 size = original.size
 
