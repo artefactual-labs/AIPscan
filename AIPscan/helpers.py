@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+import hashlib
 from datetime import datetime, timedelta
 from distutils.util import strtobool
 
@@ -68,3 +68,10 @@ def _simplify_datetime(date_string, return_object=True):
     if return_object:
         return formatted_date
     return formatted_date.strftime(DATE_FORMAT_FULL)
+
+
+def file_sha256_hash(filepath):
+    """Return SHA256 hash for contents of file."""
+    with open(filepath, "rb") as f:
+        expected_bytes = f.read()
+        return hashlib.sha256(expected_bytes).hexdigest()
