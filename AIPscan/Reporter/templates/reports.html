@@ -149,6 +149,16 @@
         {% endif %}
 
         <tr>
+            <td>Bayesian format modeling</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>
+                <a href="#"><button type="button" id="bayesianRugPlot" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Rug plot</button></a>
+            </td>
+        </tr>
+
+        <tr>
             <td>Transfers log </td>
             <td></td>
             <td></td>
@@ -403,6 +413,17 @@
               '&puid=' +
               puid +
               '&original_files=False'
+            );
+            window.open(url);
+        });
+       $("#bayesianRugPlot").on("click", function() {
+            const URL_AIP_CONTENTS = "/reporter/bayesian_rug_plot/";
+            var storageServiceID = $('#ss').val();
+            var url = (
+              window.location.origin +
+              URL_AIP_CONTENTS +
+              '?amss_id=' +
+              storageServiceID
             );
             window.open(url);
         });

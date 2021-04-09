@@ -11,6 +11,7 @@ FIELD_ALL_AIPS = "AllAIPs"
 
 FIELD_COUNT = "Count"
 FIELD_CREATED_DATE = "CreatedDate"
+FIELD_CREATED_DATES = "CreatedDates"
 
 FIELD_DERIVATIVE_COUNT = "DerivativeCount"
 FIELD_DERIVATIVE_FORMAT = "DerivativeFormat"
