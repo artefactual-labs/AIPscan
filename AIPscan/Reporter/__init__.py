@@ -6,7 +6,11 @@ module, notably too the Blueprint itself.
 
 from flask import Blueprint
 
-from AIPscan.Reporter.helpers import sort_puids, translate_headers  # noqa: F401
+from AIPscan.Reporter.helpers import (  # noqa: F401
+    download_csv,
+    sort_puids,
+    translate_headers,
+)
 
 reporter = Blueprint("reporter", __name__, template_folder="templates")
 
@@ -19,4 +23,5 @@ request_params = {
     "limit": "limit",
     "start_date": "start_date",
     "end_date": "end_date",
+    "csv": "csv",
 }

@@ -26,6 +26,7 @@ FIELD_FORMAT = "Format"
 FIELD_FORMATS = "Formats"
 FIELD_FORMAT_VERSIONS = "FormatVersions"
 
+FIELD_ID = "ID"
 FIELD_INGESTS = "Ingests"
 FIELD_INGEST_START_DATE = "IngestStartDate"
 FIELD_INGEST_FINISH_DATE = "IngestFinishDate"

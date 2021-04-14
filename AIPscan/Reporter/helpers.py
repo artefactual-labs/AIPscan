@@ -2,6 +2,10 @@
 
 """Code shared across reporting modules but not outside of reporting.
 """
+import csv
+from io import StringIO
+
+from flask import make_response
 from natsort import natsorted
 
 from AIPscan.Data import fields
@@ -41,6 +45,7 @@ def translate_headers(headers):
         fields.FIELD_FILENAME: "Filename",
         fields.FIELD_FORMAT: "Format",
         fields.FIELD_FORMATS: "Formats",
+        fields.FIELD_ID: "ID",
         fields.FIELD_NAME: "Name",
         fields.FIELD_ORIGINAL_UUID: "Original UUID",
         fields.FIELD_ORIGINAL_FORMAT: "Original Format",
@@ -52,3 +57,27 @@ def translate_headers(headers):
         fields.FIELD_VERSION: "Version",
     }
     return [field_lookup.get(header, header) for header in headers]
+
+
+def _remove_primary_keys(dictionary):
+    """Remove AIPscan primary keys from dictionary."""
+    dictionary.pop(fields.FIELD_ID, None)
+
+
+def download_csv(headers, rows, filename="report.csv"):
+    """Write CSV and send it as an attachment.
+
+    :param headers: Row headers (list of str)
+    :param rows: Data to write to CSV, returned from Data endpoint (list of dicts)
+    :param filename: CSV filename (str)
+    """
+    string_io = StringIO()
+    writer = csv.writer(string_io)
+    writer.writerow(headers)
+    for row in rows:
+        _remove_primary_keys(row)
+        writer.writerow(row.values())
+    response = make_response(string_io.getvalue())
+    response.headers["Content-Disposition"] = "attachment; filename={}".format(filename)
+    response.mimetype = "text/csv"
+    return response

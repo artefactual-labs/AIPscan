@@ -146,7 +146,7 @@ def largest_files(storage_service_id, file_type=None, limit=20):
     for file_ in files:
         file_info = {}
 
-        file_info["id"] = file_.id
+        file_info[fields.FIELD_ID] = file_.id
         file_info[fields.FIELD_UUID] = file_.uuid
         file_info[fields.FIELD_NAME] = file_.name
         file_info[fields.FIELD_SIZE] = int(file_.size)
@@ -253,7 +253,7 @@ def _aips_by_file_format_or_puid(
     for result in results:
         aip_info = {}
 
-        aip_info["id"] = result.id
+        aip_info[fields.FIELD_ID] = result.id
         aip_info[fields.FIELD_AIP_NAME] = result.name
         aip_info[fields.FIELD_UUID] = result.uuid
         aip_info[fields.FIELD_COUNT] = result.file_count

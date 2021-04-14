@@ -65,7 +65,7 @@ def test_aips_by_file_format_aip_elements(app_instance, mocker, test_aip):
     )
     report_aip = report[fields.FIELD_AIPS][0]
 
-    assert test_aip.id == report_aip.get("id")
+    assert test_aip.id == report_aip.get(fields.FIELD_ID)
     assert test_aip.name == report_aip.get(fields.FIELD_AIP_NAME)
     assert test_aip.uuid == report_aip.get(fields.FIELD_UUID)
     assert test_aip.file_count == report_aip.get(fields.FIELD_COUNT)
