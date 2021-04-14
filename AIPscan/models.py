@@ -47,6 +47,15 @@ class StorageService(db.Model):
         return "<Storage Service '{}'>".format(self.name)
 
     @property
+    def earliest_aip_created(self):
+        results = (
+            db.session.query(AIP.create_date)
+            .order_by(AIP.create_date.desc())
+            .first()
+        )
+        return results[0]
+
+    @property
     def unique_file_formats(self):
         return (
             db.session.query(File.file_format.distinct().label("name"))

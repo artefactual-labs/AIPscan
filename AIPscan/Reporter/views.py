@@ -192,8 +192,10 @@ def reports():
     except AttributeError:
         pass
 
+    earliest_aip_created = storage_service.earliest_aip_created
+    start_date = str(earliest_aip_created.strftime("%Y-%m-%d"))
+
     now = datetime.now()
-    start_date = str(datetime(now.year, 1, 1))[:-9]
     end_date = str(datetime(now.year, now.month, now.day))[:-9]
 
     return render_template(
