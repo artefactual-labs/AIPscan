@@ -38,6 +38,9 @@ def translate_headers(headers):
         fields.FIELD_ALL_AIPS: "All AIPs",
         fields.FIELD_COUNT: "Count",
         fields.FIELD_CREATED_DATE: "Created Date",
+        fields.FIELD_DATE_START: "Start Date",
+        fields.FIELD_DATE_END: "End Date",
+        fields.FIELD_DURATION: "Duration",
         fields.FIELD_DERIVATIVE_COUNT: "Derivative Count",
         fields.FIELD_DERIVATIVE_FORMAT: "Derivative Format",
         fields.FIELD_DERIVATIVE_UUID: "Derivative UUID",
@@ -55,7 +58,7 @@ def translate_headers(headers):
         fields.FIELD_SIZE: "Size",
         fields.FIELD_STORAGE_NAME: "Storage Service Name",
         fields.FIELD_TRANSFER_NAME: "Transfer Name",
-        fields.FIELD_FILE_TYPE: "Type",
+        fields.FIELD_USER: "User",
         fields.FIELD_VERSION: "Version",
     }
     return [field_lookup.get(header, header) for header in headers]

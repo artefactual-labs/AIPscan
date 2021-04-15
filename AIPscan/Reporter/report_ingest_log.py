@@ -7,20 +7,14 @@ import pandas as pd
 import plotly.express as px
 from flask import render_template, request
 
-from AIPscan.Data import report_data
-from AIPscan.helpers import _simplify_datetime
-from AIPscan.Reporter import reporter, request_params
+from AIPscan.Data import fields, report_data
+from AIPscan.helpers import _simplify_datetime, parse_bool
+from AIPscan.Reporter import download_csv, reporter, request_params, translate_headers
 
 # Request parameters.
 STORAGE_SERVICE_ID = "storage_service_id"
 
 # Response fields.
-INGESTS = "Ingests"
-STORAGE_SERVICE = "StorageName"
-INGEST_START_DATE = "IngestStartDate"
-INGEST_FINISH_DATE = "IngestFinishDate"
-USER = "User"
-DURATION = "duration"
 TRANSFER_COUNT = "transfer_count"
 FIGURE_HTML = "figure"
 
@@ -30,19 +24,28 @@ FIGURE_HTML = "figure"
 # storage service.
 ERR_HTM = "<div>There is no data for this chart, please check you are looking at a valid storage service.</div>"
 
+CSV_HEADERS = [
+    fields.FIELD_AIP_UUID,
+    fields.FIELD_AIP_NAME,
+    fields.FIELD_DATE_START,
+    fields.FIELD_DATE_END,
+    fields.FIELD_USER,
+    fields.FIELD_DURATION,
+]
+
 
 def get_table_data(ingests):
     """Format the data needed for an ingest log table and augment it
     where needed.
     """
     transfer_count = 0
-    for ingest in ingests[INGESTS]:
+    for ingest in ingests[fields.FIELD_INGESTS]:
         transfer_count = transfer_count + 1
-        start_date = ingest[INGEST_START_DATE]
-        end_date = ingest[INGEST_FINISH_DATE]
+        start_date = ingest[fields.FIELD_DATE_START]
+        end_date = ingest[fields.FIELD_DATE_END]
         start_date_obj = _simplify_datetime(start_date)
         end_date_obj = _simplify_datetime(end_date)
-        ingest[DURATION] = end_date_obj - start_date_obj
+        ingest[fields.FIELD_DURATION] = end_date_obj - start_date_obj
     ingests[TRANSFER_COUNT] = transfer_count
     return ingests
 
@@ -52,13 +55,21 @@ def ingest_log_tabular():
     """Return the information needed to present an ingest gantt chart."""
     TABULAR_TEMPLATE = "report_ingest_log_tabular.html"
     storage_service_id = request.args.get(request_params[STORAGE_SERVICE_ID])
+    csv = parse_bool(request.args.get(request_params["csv"]), default=False)
+
     ingests = report_data.agents_transfers(storage_service_id)
     ingests = get_table_data(ingests)
+
+    if csv:
+        filename = "user_ingest_log.csv"
+        headers = translate_headers(CSV_HEADERS)
+        return download_csv(headers, ingests[fields.FIELD_INGESTS], filename)
+
     return render_template(
         TABULAR_TEMPLATE,
-        storage_service_name=ingests[STORAGE_SERVICE],
+        storage_service_name=ingests[fields.FIELD_STORAGE_NAME],
         number_of_transfers=ingests[TRANSFER_COUNT],
-        data=ingests[INGESTS],
+        data=ingests[fields.FIELD_INGESTS],
     )
 
 
@@ -68,13 +79,13 @@ def get_figure_html(ingests):
     """
     pd_list = []
     transfer_count = 0
-    for ingest in ingests[INGESTS]:
+    for ingest in ingests[fields.FIELD_INGESTS]:
         transfer_count = transfer_count + 1
         pd_list.append(
             dict(
-                User=ingest[USER],
-                Start=ingest[INGEST_START_DATE],
-                Finish=ingest[INGEST_FINISH_DATE],
+                User=ingest[fields.FIELD_USER],
+                Start=ingest[fields.FIELD_DATE_START],
+                Finish=ingest[fields.FIELD_DATE_END],
             )
         )
     if not pd_list:
@@ -98,7 +109,7 @@ def ingest_log():
     ingests = get_figure_html(ingests)
     return render_template(
         GANTT_TEMPLATE,
-        storage_service_name=ingests[STORAGE_SERVICE],
+        storage_service_name=ingests[fields.FIELD_STORAGE_NAME],
         number_of_transfers=ingests[TRANSFER_COUNT],
         plot=ingests[FIGURE_HTML],
     )

@@ -12,9 +12,12 @@ FIELD_ALL_AIPS = "AllAIPs"
 FIELD_COUNT = "Count"
 FIELD_CREATED_DATE = "CreatedDate"
 
+FIELD_DATE_START = "IngestStartDate"
+FIELD_DATE_END = "IngestFinishDate"
 FIELD_DERIVATIVE_COUNT = "DerivativeCount"
 FIELD_DERIVATIVE_FORMAT = "DerivativeFormat"
 FIELD_DERIVATIVE_UUID = "DerivativeUUID"
+FIELD_DURATION = "Duration"
 
 FIELD_EVENT = "Event"
 

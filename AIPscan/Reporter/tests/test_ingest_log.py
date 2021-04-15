@@ -4,6 +4,7 @@
 
 import pytest
 
+from AIPscan.Data import fields
 from AIPscan.Reporter.report_ingest_log import get_figure_html, get_table_data
 
 ZERO_TRANSFERS = {"StorageName": None, "Ingests": []}
@@ -77,9 +78,9 @@ def test_get_table_data(agents_transfers, transfer_count, storage_name, duration
     assert response["StorageName"] == storage_name
     if not duration:
         with pytest.raises(IndexError):
-            _ = response["Ingests"][0]["duration"]
+            _ = response["Ingests"][0][fields.FIELD_DURATION]
         return
-    assert str(response["Ingests"][0]["duration"]) == duration
+    assert str(response["Ingests"][0][fields.FIELD_DURATION]) == duration
 
 
 @pytest.mark.parametrize(
