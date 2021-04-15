@@ -25,4 +25,5 @@ request_params = {
     "start_date": "start_date",
     "end_date": "end_date",
     "csv": "csv",
+    "aip_uuid": "aip_uuid",
 }

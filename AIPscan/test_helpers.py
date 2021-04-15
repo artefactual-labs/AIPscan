@@ -80,6 +80,7 @@ def create_test_file(**kwargs):
         format_version=kwargs.get("format_version", "0.0.0"),
         checksum_type=kwargs.get("checksum_type", "test"),
         checksum_value=kwargs.get("checksum_value", "test"),
+        original_file_id=kwargs.get("original_file_id", None),
         aip_id=kwargs.get("aip_id", 1),
     )
     _add_test_object_to_db(file_)

@@ -412,3 +412,74 @@ def agents_transfers(storage_service_id):
         ingests.append(log_line)
     report[fields.FIELD_INGESTS] = ingests
     return report
+
+
+def _preservation_derivatives_query(storage_service_id, aip_uuid):
+    """Fetch information on preservation derivatives from db.
+
+    :param storage_service_id: Storage Service ID (int)
+    :param aip_uuid: AIP UUID (str)
+
+    :returns: SQLAlchemy query results
+    """
+    files = (
+        File.query.join(AIP)
+        .join(StorageService)
+        .filter(StorageService.id == storage_service_id)
+        .filter(File.file_type == FileType.preservation)
+        .order_by(AIP.uuid, File.file_format)
+    )
+    if aip_uuid:
+        files.filter(AIP.uuid == aip_uuid)
+    return files
+
+
+def preservation_derivatives(storage_service_id, aip_uuid=None):
+    """Return details of preservation derivatives in Storage Service.
+
+    This includes information about each preservation derivative, as well as
+    its corresponding original file and AIP.
+
+    :param storage_service_id: Storage Service ID (int)
+    :param aip_uuid: AIP UUID (str)
+
+    :returns: "report" dict containing following fields:
+        report["StorageName"]: Name of Storage Service queried
+        report["Files"]: List of result files ordered desc by size
+    """
+    report = {}
+    report[fields.FIELD_FILES] = []
+    storage_service = _get_storage_service(storage_service_id)
+    report[fields.FIELD_STORAGE_NAME] = storage_service.name
+
+    files = _preservation_derivatives_query(storage_service_id, aip_uuid)
+
+    for file_ in files:
+        file_info = {}
+
+        file_info[fields.FIELD_AIP_UUID] = file_.aip.uuid
+        file_info[fields.FIELD_AIP_NAME] = file_.aip.transfer_name
+
+        file_info[fields.FIELD_ID] = file_.id
+        file_info[fields.FIELD_UUID] = file_.uuid
+        file_info[fields.FIELD_NAME] = file_.name
+        file_info[fields.FIELD_FORMAT] = file_.file_format
+
+        original_file = file_.original_file
+        file_info[fields.FIELD_ORIGINAL_UUID] = original_file.uuid
+        file_info[fields.FIELD_ORIGINAL_NAME] = original_file.name
+        file_info[fields.FIELD_ORIGINAL_FORMAT] = original_file.file_format
+        file_info[fields.FIELD_ORIGINAL_VERSION] = ""
+        try:
+            file_info[fields.FIELD_ORIGINAL_VERSION] = original_file.format_version
+        except AttributeError:
+            pass
+        file_info[fields.FIELD_ORIGINAL_PUID] = ""
+        try:
+            file_info[fields.FIELD_ORIGINAL_PUID] = original_file.puid
+        except AttributeError:
+            pass
+
+        report[fields.FIELD_FILES].append(file_info)
+
+    return report

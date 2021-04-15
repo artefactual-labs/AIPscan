@@ -21,4 +21,17 @@ $(document).ready(function() {
     window.location.href = url;
   });
 
+  // Reload preservation derivatives report on change to AIP dropdown
+  $("#aipSelector").on("change", function() {
+    var aipUUID = $('#aipSelector').val();
+    var storageServiceId = $('#storageServiceID').text();
+    var url = window.location.origin +
+      '/reporter/preservation_derivatives?' +
+      'amss_id=' +
+      storageServiceId +
+      '&aip_uuid=' +
+      aipUUID;
+    window.location.href = url;
+  });
+
 });
