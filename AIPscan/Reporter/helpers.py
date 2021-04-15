@@ -3,6 +3,7 @@
 """Code shared across reporting modules but not outside of reporting.
 """
 import csv
+from datetime import timedelta
 from io import StringIO
 
 from flask import make_response
@@ -91,3 +92,17 @@ def download_csv(headers, rows, filename="report.csv"):
     response.headers["Content-Disposition"] = "attachment; filename={}".format(filename)
     response.mimetype = "text/csv"
     return response
+
+
+def get_display_end_date(end_date):
+    """Format end date to display.
+
+    A day is added to end_date by parse_datetime_bound to facilitate date
+    comparison in SQL queries. Here we remove that extra day before displaying
+    the date in a report.
+
+    :param end_date: End date (datetime.datetime object)
+
+    :return: End date minus one day (datetime.datetime object)
+    """
+    return end_date - timedelta(days=1)

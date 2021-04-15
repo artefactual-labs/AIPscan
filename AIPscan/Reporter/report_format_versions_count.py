@@ -1,12 +1,16 @@
 # -*- coding: utf-8 -*-
 
-from datetime import timedelta
-
 from flask import render_template, request
 
 from AIPscan.Data import fields, report_data
 from AIPscan.helpers import parse_bool, parse_datetime_bound
-from AIPscan.Reporter import download_csv, reporter, request_params, translate_headers
+from AIPscan.Reporter import (
+    download_csv,
+    get_display_end_date,
+    reporter,
+    request_params,
+    translate_headers,
+)
 
 HEADERS = [
     fields.FIELD_PUID,
@@ -38,10 +42,6 @@ def report_format_versions_count():
         filename = "format_versions.csv"
         return download_csv(headers, versions, filename)
 
-    # Remove day added to end date for purposes of comparison by
-    # parse_datetime_bound before passing to template.
-    display_end_date = end_date - timedelta(days=1)
-
     return render_template(
         "report_format_versions_count.html",
         storage_service_id=storage_service_id,
@@ -54,5 +54,5 @@ def report_format_versions_count():
         total_size=sum(version.get(fields.FIELD_SIZE, 0) for version in versions),
         puid_count=len(versions),
         start_date=start_date,
-        end_date=display_end_date,
+        end_date=get_display_end_date(end_date),
     )
