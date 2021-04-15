@@ -34,6 +34,7 @@ def translate_headers(headers):
         fields.FIELD_AIP_NAME: "AIP Name",
         fields.FIELD_AIPS: "AIPs",
         fields.FIELD_AIP_SIZE: "AIP Size",
+        fields.FIELD_AIP_UUID: "AIP UUID",
         fields.FIELD_ALL_AIPS: "All AIPs",
         fields.FIELD_COUNT: "Count",
         fields.FIELD_CREATED_DATE: "Created Date",
@@ -54,6 +55,7 @@ def translate_headers(headers):
         fields.FIELD_SIZE: "Size",
         fields.FIELD_STORAGE_NAME: "Storage Service Name",
         fields.FIELD_TRANSFER_NAME: "Transfer Name",
+        fields.FIELD_FILE_TYPE: "Type",
         fields.FIELD_VERSION: "Version",
     }
     return [field_lookup.get(header, header) for header in headers]
@@ -61,7 +63,12 @@ def translate_headers(headers):
 
 def _remove_primary_keys(dictionary):
     """Remove AIPscan primary keys from dictionary."""
-    dictionary.pop(fields.FIELD_ID, None)
+    PK_FIELDS = (fields.FIELD_ID, fields.FIELD_AIP_ID)
+    for field in PK_FIELDS:
+        try:
+            dictionary.pop(field, None)
+        except AttributeError:
+            pass
 
 
 def download_csv(headers, rows, filename="report.csv"):
