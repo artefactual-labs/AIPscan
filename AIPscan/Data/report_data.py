@@ -83,13 +83,11 @@ def format_versions_count(storage_service_id, start_date, end_date):
 
         version_info[fields.FIELD_PUID] = version.puid
         version_info[fields.FIELD_FORMAT] = version.file_format
-        version_info[fields.FIELD_COUNT] = version.file_count
-
         try:
             version_info[fields.FIELD_VERSION] = version.format_version
         except AttributeError:
             pass
-
+        version_info[fields.FIELD_COUNT] = version.file_count
         version_info[fields.FIELD_SIZE] = 0
         if version.total_size is not None:
             version_info[fields.FIELD_SIZE] = version.total_size
