@@ -5,7 +5,14 @@ from flask import render_template, request
 from AIPscan.Data import fields, report_data
 from AIPscan.helpers import parse_bool
 from AIPscan.models import File
-from AIPscan.Reporter import reporter, request_params, translate_headers
+from AIPscan.Reporter import download_csv, reporter, request_params, translate_headers
+
+HEADERS = [
+    fields.FIELD_AIP_NAME,
+    fields.FIELD_UUID,
+    fields.FIELD_COUNT,
+    fields.FIELD_SIZE,
+]
 
 
 def get_format_string_from_puid(puid):
@@ -39,15 +46,18 @@ def aips_by_puid():
     original_files = parse_bool(
         request.args.get(request_params["original_files"], True)
     )
+    csv = parse_bool(request.args.get(request_params["csv"]), default=False)
+
+    headers = translate_headers(HEADERS)
+
     aip_data = report_data.aips_by_puid(
         storage_service_id=storage_service_id, puid=puid, original_files=original_files
     )
-    headers = [
-        fields.FIELD_AIP_NAME,
-        fields.FIELD_UUID,
-        fields.FIELD_COUNT,
-        fields.FIELD_SIZE,
-    ]
+
+    if csv:
+        filename = "aips_by_puid_{}.csv".format(puid)
+        return download_csv(headers, aip_data[fields.FIELD_AIPS], filename)
+
     return render_template(
         "report_aips_by_puid.html",
         storage_service_id=storage_service_id,
