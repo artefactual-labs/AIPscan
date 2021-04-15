@@ -5,7 +5,7 @@ from flask import render_template, request
 
 from AIPscan import db
 from AIPscan.Data import data, fields
-from AIPscan.helpers import get_human_readable_file_size, parse_bool
+from AIPscan.helpers import filesizeformat, parse_bool
 from AIPscan.models import AIP, File, FileType, StorageService
 from AIPscan.Reporter import download_csv, reporter, request_params, translate_headers
 
@@ -96,7 +96,7 @@ def aip_contents():
             if header == fields.FIELD_UUID:
                 row.append(k)
             elif header == fields.FIELD_AIP_SIZE:
-                row.append(get_human_readable_file_size(v.get(header)))
+                row.append(filesizeformat(v.get(header)))
             elif header != fields.FIELD_FORMATS:
                 row.append(v.get(header))
         formats = v.get(fields.FIELD_FORMATS)

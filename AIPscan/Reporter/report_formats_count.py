@@ -11,11 +11,7 @@ from datetime import datetime, timedelta
 from flask import render_template, request
 
 from AIPscan.Data import fields, report_data
-from AIPscan.helpers import (
-    get_human_readable_file_size,
-    parse_bool,
-    parse_datetime_bound,
-)
+from AIPscan.helpers import filesizeformat, parse_bool, parse_datetime_bound
 from AIPscan.models import AIP, File, FileType, StorageService
 from AIPscan.Reporter import (
     download_csv,
@@ -169,11 +165,11 @@ def plot_formats_count():
             size = 0
         x_axis.append(size)
         total_size += size
-        human_size.append(get_human_readable_file_size(size))
+        human_size.append(filesizeformat(size))
 
     file_format = list(format_count.keys())
     different_formats = len(format_count.keys())
-    total_human_size = get_human_readable_file_size(total_size)
+    total_human_size = filesizeformat(total_size)
 
     return render_template(
         "plot_formats_count.html",
