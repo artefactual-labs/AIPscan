@@ -16,12 +16,10 @@ HEADERS = [
 @reporter.route("/aips_by_file_format/", methods=["GET"])
 def aips_by_format():
     """Return AIPs containing file format, sorted by count and total size."""
-    storage_service_id = request.args.get(request_params["storage_service_id"])
-    file_format = request.args.get(request_params["file_format"])
-    original_files = parse_bool(
-        request.args.get(request_params["original_files"], True)
-    )
-    csv = parse_bool(request.args.get(request_params["csv"]), default=False)
+    storage_service_id = request.args.get(request_params.STORAGE_SERVICE_ID)
+    file_format = request.args.get(request_params.FILE_FORMAT)
+    original_files = parse_bool(request.args.get(request_params.ORIGINAL_FILES, True))
+    csv = parse_bool(request.args.get(request_params.CSV), default=False)
 
     headers = translate_headers(HEADERS)
 

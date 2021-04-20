@@ -31,14 +31,14 @@ CSV_HEADERS = [
 @reporter.route("/largest_files/", methods=["GET"])
 def largest_files():
     """Return largest files."""
-    storage_service_id = request.args.get(request_params["storage_service_id"])
-    file_type = request.args.get(request_params["file_type"])
+    storage_service_id = request.args.get(request_params.STORAGE_SERVICE_ID)
+    file_type = request.args.get(request_params.FILE_TYPE)
     limit = 20
     try:
-        limit = int(request.args.get(request_params["limit"], 20))
+        limit = int(request.args.get(request_params.LIMIT, 20))
     except ValueError:
         pass
-    csv = parse_bool(request.args.get(request_params["csv"]), default=False)
+    csv = parse_bool(request.args.get(request_params.CSV), default=False)
 
     headers = translate_headers(HEADERS)
 

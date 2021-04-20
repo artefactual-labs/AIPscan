@@ -11,9 +11,6 @@ from AIPscan.Data import fields, report_data
 from AIPscan.helpers import _simplify_datetime, parse_bool
 from AIPscan.Reporter import download_csv, reporter, request_params, translate_headers
 
-# Request parameters.
-STORAGE_SERVICE_ID = "storage_service_id"
-
 # Response fields.
 TRANSFER_COUNT = "transfer_count"
 FIGURE_HTML = "figure"
@@ -54,8 +51,8 @@ def get_table_data(ingests):
 def ingest_log_tabular():
     """Return the information needed to present an ingest gantt chart."""
     TABULAR_TEMPLATE = "report_ingest_log_tabular.html"
-    storage_service_id = request.args.get(request_params[STORAGE_SERVICE_ID])
-    csv = parse_bool(request.args.get(request_params["csv"]), default=False)
+    storage_service_id = request.args.get(request_params.STORAGE_SERVICE_ID)
+    csv = parse_bool(request.args.get(request_params.CSV), default=False)
 
     ingests = report_data.agents_transfers(storage_service_id)
     ingests = get_table_data(ingests)
@@ -104,7 +101,7 @@ def get_figure_html(ingests):
 def ingest_log():
     """Return the information needed to present an ingest gantt chart."""
     GANTT_TEMPLATE = "report_ingest_log_gantt.html"
-    storage_service_id = request.args.get(request_params[STORAGE_SERVICE_ID])
+    storage_service_id = request.args.get(request_params.STORAGE_SERVICE_ID)
     ingests = report_data.agents_transfers(storage_service_id)
     ingests = get_figure_html(ingests)
     return render_template(

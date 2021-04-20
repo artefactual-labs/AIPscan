@@ -74,9 +74,9 @@ def _get_unique_aips(derivative_files):
 def preservation_derivatives():
     """Return a report of derivative files mapped to AIPs and originals.
     """
-    storage_service_id = request.args.get(request_params["storage_service_id"])
-    csv = parse_bool(request.args.get(request_params["csv"]), default=False)
-    aip_uuid = request.args.get(request_params["aip_uuid"])
+    storage_service_id = request.args.get(request_params.STORAGE_SERVICE_ID)
+    csv = parse_bool(request.args.get(request_params.CSV), default=False)
+    aip_uuid = request.args.get(request_params.AIP_UUID)
 
     headers = translate_headers(HEADERS)
 

@@ -29,12 +29,12 @@ def report_formats_count():
     """Report (tabular) on all file formats and their counts and size on
     disk across all AIPs in the storage service.
     """
-    storage_service_id = request.args.get(request_params["storage_service_id"])
-    start_date = parse_datetime_bound(request.args.get(request_params["start_date"]))
+    storage_service_id = request.args.get(request_params.STORAGE_SERVICE_ID)
+    start_date = parse_datetime_bound(request.args.get(request_params.START_DATE))
     end_date = parse_datetime_bound(
-        request.args.get(request_params["end_date"]), upper=True
+        request.args.get(request_params.END_DATE), upper=True
     )
-    csv = parse_bool(request.args.get(request_params["csv"]), default=False)
+    csv = parse_bool(request.args.get(request_params.CSV), default=False)
 
     formats_data = report_data.formats_count(
         storage_service_id=storage_service_id, start_date=start_date, end_date=end_date
@@ -65,15 +65,15 @@ def report_formats_count():
 def chart_formats_count():
     """Report (pie chart) on all file formats and their counts and size
     on disk across all AIPs in the storage service."""
-    start_date = request.args.get(request_params["start_date"])
-    end_date = request.args.get(request_params["end_date"])
+    start_date = request.args.get(request_params.START_DATE)
+    end_date = request.args.get(request_params.END_DATE)
     # make date range inclusive
     start = datetime.strptime(start_date, "%Y-%m-%d")
     end = datetime.strptime(end_date, "%Y-%m-%d")
     day_before = start - timedelta(days=1)
     day_after = end + timedelta(days=1)
 
-    storage_service_id = request.args.get(request_params["storage_service_id"])
+    storage_service_id = request.args.get(request_params.STORAGE_SERVICE_ID)
     storage_service = StorageService.query.get(storage_service_id)
     aips = AIP.query.filter_by(storage_service_id=storage_service_id).all()
 
@@ -117,15 +117,15 @@ def plot_formats_count():
     """Report (scatter) on all file formats and their counts and size on
     disk across all AIPs in the storage service.
     """
-    start_date = request.args.get(request_params["start_date"])
-    end_date = request.args.get(request_params["end_date"])
+    start_date = request.args.get(request_params.START_DATE)
+    end_date = request.args.get(request_params.END_DATE)
     # make date range inclusive
     start = datetime.strptime(start_date, "%Y-%m-%d")
     end = datetime.strptime(end_date, "%Y-%m-%d")
     day_before = start - timedelta(days=1)
     day_after = end + timedelta(days=1)
 
-    storage_service_id = request.args.get(request_params["storage_service_id"])
+    storage_service_id = request.args.get(request_params.STORAGE_SERVICE_ID)
     storage_service = StorageService.query.get(storage_service_id)
     aips = AIP.query.filter_by(storage_service_id=storage_service_id).all()
 

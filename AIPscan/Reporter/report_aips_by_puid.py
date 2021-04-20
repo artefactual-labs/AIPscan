@@ -41,12 +41,10 @@ def get_format_string_from_puid(puid):
 @reporter.route("/aips_by_puid/", methods=["GET"])
 def aips_by_puid():
     """Return AIPs containing PUID, sorted by count and total size."""
-    storage_service_id = request.args.get(request_params["storage_service_id"])
-    puid = request.args.get(request_params["puid"])
-    original_files = parse_bool(
-        request.args.get(request_params["original_files"], True)
-    )
-    csv = parse_bool(request.args.get(request_params["csv"]), default=False)
+    storage_service_id = request.args.get(request_params.STORAGE_SERVICE_ID)
+    puid = request.args.get(request_params.PUID)
+    original_files = parse_bool(request.args.get(request_params.ORIGINAL_FILES, True))
+    csv = parse_bool(request.args.get(request_params.CSV), default=False)
 
     headers = translate_headers(HEADERS)
 

@@ -77,8 +77,8 @@ def _get_aip_puid_count(storage_service_id, aip_uuid, puid):
 @reporter.route("/aip_contents/", methods=["GET"])
 def aip_contents():
     """Return AIP contents organized by format."""
-    storage_service_id = request.args.get(request_params["storage_service_id"])
-    csv = parse_bool(request.args.get(request_params["csv"]), default=False)
+    storage_service_id = request.args.get(request_params.STORAGE_SERVICE_ID)
+    csv = parse_bool(request.args.get(request_params.CSV), default=False)
 
     aip_data = data.aip_overview_two(storage_service_id=storage_service_id)
 
