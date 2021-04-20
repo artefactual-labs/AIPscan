@@ -6,6 +6,7 @@ from AIPscan.Data import fields, report_data
 from AIPscan.helpers import parse_bool, parse_datetime_bound
 from AIPscan.Reporter import (
     download_csv,
+    format_size_for_csv,
     get_display_end_date,
     reporter,
     request_params,
@@ -40,7 +41,8 @@ def report_format_versions_count():
 
     if csv:
         filename = "format_versions.csv"
-        return download_csv(headers, versions, filename)
+        csv_data = format_size_for_csv(versions)
+        return download_csv(headers, csv_data, filename)
 
     return render_template(
         "report_format_versions_count.html",

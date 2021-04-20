@@ -10,6 +10,7 @@ from flask import make_response
 from natsort import natsorted
 
 from AIPscan.Data import fields
+from AIPscan.helpers import filesizeformat
 
 
 def sort_puids(puids):
@@ -78,6 +79,21 @@ def _remove_primary_keys(dictionary):
             dictionary.pop(field, None)
         except AttributeError:
             pass
+
+
+def format_size_for_csv(rows):
+    """Return data prepared for CSV file.
+
+    :param rows: Data assembled for tabular report (list of dicts)
+
+    :returns: rows with formatted size field (list of dicts)
+    """
+    for row in rows:
+        try:
+            row[fields.FIELD_SIZE] = filesizeformat(row[fields.FIELD_SIZE])
+        except KeyError:
+            pass
+    return rows
 
 
 def download_csv(headers, rows, filename="report.csv"):

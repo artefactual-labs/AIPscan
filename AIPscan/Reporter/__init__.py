@@ -8,6 +8,7 @@ from flask import Blueprint
 
 from AIPscan.Reporter.helpers import (  # noqa: F401
     download_csv,
+    format_size_for_csv,
     get_display_end_date,
     sort_puids,
     translate_headers,

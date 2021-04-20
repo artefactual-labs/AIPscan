@@ -4,7 +4,13 @@ from flask import render_template, request
 
 from AIPscan.Data import fields, report_data
 from AIPscan.helpers import parse_bool
-from AIPscan.Reporter import download_csv, reporter, request_params, translate_headers
+from AIPscan.Reporter import (
+    download_csv,
+    format_size_for_csv,
+    reporter,
+    request_params,
+    translate_headers,
+)
 
 HEADERS = [
     fields.FIELD_FILENAME,
@@ -49,7 +55,8 @@ def largest_files():
     if csv:
         filename = "largest_files.csv"
         headers = translate_headers(CSV_HEADERS)
-        return download_csv(headers, file_data[fields.FIELD_FILES], filename)
+        csv_data = format_size_for_csv(file_data[fields.FIELD_FILES])
+        return download_csv(headers, csv_data, filename)
 
     return render_template(
         "report_largest_files.html",

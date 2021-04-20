@@ -15,6 +15,7 @@ from AIPscan.helpers import filesizeformat, parse_bool, parse_datetime_bound
 from AIPscan.models import AIP, File, FileType, StorageService
 from AIPscan.Reporter import (
     download_csv,
+    format_size_for_csv,
     get_display_end_date,
     reporter,
     request_params,
@@ -45,7 +46,8 @@ def report_formats_count():
 
     if csv:
         filename = "file_formats.csv"
-        return download_csv(headers, formats, filename)
+        csv_data = format_size_for_csv(formats)
+        return download_csv(headers, csv_data, filename)
 
     return render_template(
         "report_formats_count.html",

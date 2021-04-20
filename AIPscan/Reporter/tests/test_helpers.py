@@ -1,5 +1,7 @@
 import csv
 
+import pytest
+
 from AIPscan.Data import fields
 from AIPscan.Data.report_data import aips_by_file_format
 from AIPscan.Data.tests import (
@@ -9,6 +11,37 @@ from AIPscan.Data.tests import MOCK_STORAGE_SERVICE as STORAGE_SERVICE
 from AIPscan.Data.tests import MOCK_STORAGE_SERVICE_ID as STORAGE_SERVICE_ID
 from AIPscan.Reporter import helpers
 from AIPscan.Reporter.report_aips_by_format import HEADERS
+
+ROWS_WITH_SIZE = [
+    {
+        fields.FIELD_AIP_UUID: "test uuid",
+        fields.FIELD_AIP_NAME: "test name",
+        fields.FIELD_SIZE: 1560321,
+    },
+    {
+        fields.FIELD_AIP_UUID: "test uuid2",
+        fields.FIELD_AIP_NAME: "test name2",
+        fields.FIELD_SIZE: 123423,
+    },
+]
+
+ROWS_WITH_SIZE_FORMATTED = [
+    {
+        fields.FIELD_AIP_UUID: "test uuid",
+        fields.FIELD_AIP_NAME: "test name",
+        fields.FIELD_SIZE: "1.6 MB",
+    },
+    {
+        fields.FIELD_AIP_UUID: "test uuid2",
+        fields.FIELD_AIP_NAME: "test name2",
+        fields.FIELD_SIZE: "123.4 kB",
+    },
+]
+
+ROWS_WITHOUT_SIZE = [
+    {fields.FIELD_NAME: "test name", fields.FIELD_UUID: "test uuid"},
+    {fields.FIELD_NAME: "test name2", fields.FIELD_UUID: "test uuid2"},
+]
 
 
 def test_download_csv(app_instance, mocker):
@@ -55,3 +88,18 @@ def test_download_csv(app_instance, mocker):
             assert row[3] == "123456"
         line_count += 1
     assert line_count == len(query_results) + 1
+
+
+@pytest.mark.parametrize(
+    "data,expected_output",
+    [
+        # Dicts with size key should have the corresponding value
+        # formatted by filesizeformat.
+        (ROWS_WITH_SIZE, ROWS_WITH_SIZE_FORMATTED),
+        # Dicts without size key should be unaffected.
+        (ROWS_WITHOUT_SIZE, ROWS_WITHOUT_SIZE),
+    ],
+)
+def test_format_size_for_csv(data, expected_output):
+    """Test formatting size in report endpoint data."""
+    assert helpers.format_size_for_csv(data) == expected_output
