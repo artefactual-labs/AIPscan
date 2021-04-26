@@ -216,7 +216,10 @@ def largest_files(storage_service_id, file_type=None, limit=20):
         file_info[fields.FIELD_ID] = file_.id
         file_info[fields.FIELD_UUID] = file_.uuid
         file_info[fields.FIELD_NAME] = file_.name
-        file_info[fields.FIELD_SIZE] = int(file_.size)
+        try:
+            file_info[fields.FIELD_SIZE] = int(file_.size)
+        except TypeError:
+            file_info[fields.FIELD_SIZE] = 0
         file_info[fields.FIELD_AIP_ID] = file_.aip_id
         file_info[fields.FIELD_FILE_TYPE] = file_.file_type.value
 

@@ -1,5 +1,4 @@
-from AIPscan.Data import fields, report_data
-from AIPscan.Data.tests.conftest import (
+from AIPscan.conftest import (
     AIP_1_NAME,
     AIP_1_UUID,
     AIP_2_NAME,
@@ -20,12 +19,13 @@ from AIPscan.Data.tests.conftest import (
     STORAGE_SERVICE_NAME,
     TIFF_FILE_FORMAT,
 )
+from AIPscan.Data import fields, report_data
 
 # Two preservation files are created in fixture.
 EXPECTED_RESULTS_COUNT = 2
 
 
-def test_preservation_derivatives(app_with_populated_preservation_derivatives):
+def test_preservation_derivatives(preservation_derivatives):
     """Test preservation derivatives report_data endpoint."""
     report = report_data.preservation_derivatives(storage_service_id=1)
     file_data = report[fields.FIELD_FILES]

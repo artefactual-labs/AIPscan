@@ -60,18 +60,24 @@ def _get_aip_puid_count(storage_service_id, aip_uuid, puid):
 
     :returns: Count of files with PUID in given AIP for CSV report (str)
     """
+    count = 0
     if puid == "null":
         puid = None
-    query_results = (
-        db.session.query(db.func.count(File.file_format))
+    aip_puid_count = (
+        db.session.query(db.func.count(File.file_format).label("count"))
         .join(AIP)
         .join(StorageService)
         .filter(StorageService.id == storage_service_id)
         .filter(File.file_type == FileType.original.value)
         .filter(AIP.uuid == aip_uuid)
         .filter(File.puid == puid)
+        .first()
     )
-    return str(query_results[0][0])
+    try:
+        count = str(aip_puid_count.count)
+    except AttributeError:
+        pass
+    return str(count)
 
 
 @reporter.route("/aip_contents/", methods=["GET"])
