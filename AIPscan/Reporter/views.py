@@ -7,7 +7,7 @@ files with singular responsibility for a report.
 
 from datetime import datetime
 
-from flask import render_template, request, jsonify, make_response, session
+from flask import jsonify, make_response, render_template, request, session
 
 from AIPscan.models import AIP, Event, FetchJob, File, FileType, StorageService
 
