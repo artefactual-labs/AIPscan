@@ -39,7 +39,7 @@ class AIPList(Resource):
     def get(self, storage_service_id):
         """Return data on AIPs and the file formats they contain."""
         original_files = parse_bool(request.args.get(fields.FIELD_ORIGINAL_FILES, True))
-        aip_data = data.aip_overview_two(
+        aip_data = data.aip_file_format_overview(
             storage_service_id=storage_service_id, original_files=original_files
         )
         return aip_data
@@ -60,7 +60,7 @@ class FMTList(Resource):
     def get(self, storage_service_id):
         """Return data on PUIDs and the AIPs they are contained within."""
         original_files = parse_bool(request.args.get(fields.FIELD_ORIGINAL_FILES, True))
-        aip_data = data.aip_overview(
+        aip_data = data.file_format_aip_overview(
             storage_service_id=storage_service_id, original_files=original_files
         )
         return aip_data

@@ -80,7 +80,7 @@ def aip_contents():
     storage_service_id = request.args.get(request_params.STORAGE_SERVICE_ID)
     csv = parse_bool(request.args.get(request_params.CSV), default=False)
 
-    aip_data = data.aip_overview_two(storage_service_id=storage_service_id)
+    aip_data = data.aip_file_format_overview(storage_service_id=storage_service_id)
 
     format_lookup = aip_data[fields.FIELD_FORMATS]
     format_headers = list(aip_data[fields.FIELD_FORMATS].keys())
