@@ -212,6 +212,7 @@ def reports():
         end_date=session["end_date"],
     )
 
+
 @reporter.route("/update_dates/", methods=["POST"])
 def update_dates():
     if request.json and request.json.get("start_date"):
