@@ -7,7 +7,7 @@ files with singular responsibility for a report.
 
 from datetime import datetime
 
-from flask import render_template, request
+from flask import render_template, request, jsonify, make_response, session
 
 from AIPscan.models import AIP, Event, FetchJob, File, FileType, StorageService
 
@@ -192,11 +192,13 @@ def reports():
     except AttributeError:
         pass
 
-    earliest_aip_created = storage_service.earliest_aip_created
-    start_date = str(earliest_aip_created.strftime("%Y-%m-%d"))
+    if "start_date" not in session:
+        earliest_aip_created = storage_service.earliest_aip_created
+        session["start_date"] = str(earliest_aip_created.strftime("%Y-%m-%d"))
 
-    now = datetime.now()
-    end_date = str(datetime(now.year, now.month, now.day))[:-9]
+    if "end_date" not in session:
+        now = datetime.now()
+        session["end_date"] = str(datetime(now.year, now.month, now.day))[:-9]
 
     return render_template(
         "reports.html",
@@ -206,6 +208,18 @@ def reports():
         preservation_file_formats=preservation_file_formats,
         original_puids=original_puids,
         preservation_puids=preservation_puids,
-        start_date=start_date,
-        end_date=end_date,
+        start_date=session["start_date"],
+        end_date=session["end_date"],
     )
+
+@reporter.route("/update_dates/", methods=["POST"])
+def update_dates():
+    if request.json and request.json.get("start_date"):
+        req = request.get_json()
+        session["start_date"] = request.json.get("start_date")
+        return make_response(jsonify(req), 200)
+
+    if request.json and request.json.get("end_date"):
+        req = request.get_json()
+        session["end_date"] = request.json.get("end_date")
+        return make_response(jsonify(req), 200)

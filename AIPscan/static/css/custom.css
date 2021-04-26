@@ -47,3 +47,13 @@ body {
        display:none;
    }
 }
+
+.report-opts {
+  padding-left: 1em;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.report-opts img.icon {
+  height: 1.5em; 
+}

@@ -6,17 +6,33 @@
 
 {% if storage_services %}
 
-    <div style="padding-left: 1em;">
-        <strong>Storage service:</strong>
-        <select id="ss" method="GET" action="/" class="form-control" style="width:auto;">
-            {% for ss in storage_services %}
-              {% if ss.id == storage_service.id %}
-                <option value="{{ ss.id }}" SELECTED>{{ ss.name }}</option>
-              {% else %}
-                <option value="{{ ss.id }}">{{ ss.name }}</option>
-              {% endif %}
-            {% endfor %}
-        </select>
+    <div class="report-opts" style="">
+        <div>
+            <strong>Storage service:</strong>
+            <select id="ss" method="GET" action="/" class="form-control" style="width:auto;">
+                {% for ss in storage_services %}
+                  {% if ss.id == storage_service.id %}
+                    <option value="{{ ss.id }}" SELECTED>{{ ss.name }}</option>
+                  {% else %}
+                    <option value="{{ ss.id }}">{{ ss.name }}</option>
+                  {% endif %}
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <span>
+                <img class="icon" src="{{ url_for('static', filename='assets/calendar-icon.png') }}" />
+                Start date
+            </span>
+            <input type="text" id="startdate" value="{{ start_date }}">
+            </div>
+        <div>
+            <span>
+                <img class="icon" src="{{ url_for('static', filename='assets/calendar-icon.png') }}" />
+                End date
+            </span>
+            <input type="text" id="enddate" value="{{ end_date }}">
+        </div>
     </div>
 
     <!-- Original file formats indicates data has been fetched for this Storage Service -->
@@ -26,48 +42,36 @@
 
         <tr>
             <th>Report</th>
-            <th>File format/PUID</th>
-            <th><img src="{{ url_for('static', filename='assets/calendar-icon.png') }}" style="height: 1.5em; margin-right: 5px;" />Start date</th>
-            <th><img src="{{ url_for('static', filename='assets/calendar-icon.png') }}" style="height: 1.5em; margin-right: 5px;" />End date</th>
+            <th>Additional parameters</th>
             <th>Format</th>
         </tr>
 
         <tr>
             <td>File format count</td>
-            <td></td>
-            <td><input type="text" id="startdate1" value="{{ start_date }}"></td>
-            <td><input type="text" id="enddate1" value="{{ end_date }}"></td>
+            <td>Uses date fields</td>
             <td><a href=""><button type="button" id="report1a" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a><a href=""><button type="button" id="report1b" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Pie Chart</button></a><a href=""><button type="button" id="report1c" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Scatter Plot</button></a></td>
         </tr>
 
         <tr>
             <td>AIP contents</td>
             <td></td>
-            <td></td>
-            <td></td>
             <td><a href="#"><button type="button" id="report2a" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a></td>
         </tr>
 
         <tr>
             <td>Format version count</td>
-            <td></td>
-            <td><input type="text" id="fmt_version_count_start_date" value="{{ start_date }}"></td>
-            <td><input type="text" id="fmt_version_count_end_date" value="{{ end_date }}"></td>
+            <td>Uses date fields</td>
             <td><a href="#"><button type="button" id="report3a" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a></td>
         </tr>
 
         <tr>
             <td>Preservation copy count</td>
             <td></td>
-            <td></td>
-            <td></td>
             <td><a href="#"><button type="button" id="report4a" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a></td>
         </tr>
 
         <tr>
             <td>Largest files</td>
-            <td></td>
-            <td></td>
             <td></td>
             <td><a href="#"><button type="button" id="report9a" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a></td>
         </tr>
@@ -85,8 +89,6 @@
                 {% endfor %}
               </select>
             </td>
-            <td></td>
-            <td></td>
             <td><a href="#"><button type="button" id="aipsByOriginalFormat" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a></td>
         </tr>
 
@@ -103,8 +105,6 @@
                 {% endfor %}
               </select>
             </td>
-            <td></td>
-            <td></td>
             <td><a href="#"><button type="button" id="aipsByOriginalPUID" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a></td>
         </tr>
 
@@ -122,8 +122,6 @@
                     {% endfor %}
                   </select>
                 </td>
-                <td></td>
-                <td></td>
                 <td><a href="#"><button type="button" id="aipsByPreservationFormat" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a></td>
             </tr>
         {% endif %}
@@ -142,16 +140,12 @@
                     {% endfor %}
                   </select>
                 </td>
-                <td></td>
-                <td></td>
                 <td><a href="#"><button type="button" id="aipsByPreservationPUID" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a></td>
             </tr>
         {% endif %}
 
         <tr>
             <td>Transfers log </td>
-            <td></td>
-            <td></td>
             <td></td>
             <td>
                 <a href="#"><button type="button" id="transferLogTabular" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular Chart</button></a>
@@ -197,53 +191,39 @@
         const DATE_ALERT_START = 'The start date must be before the end date';
         const DATE_ALERT_END = 'The end date must be after the start date';
 
-        $("#startdate1").datepicker({
+        $("#startdate").datepicker({
             dateFormat: 'yy-mm-dd',
             onSelect: function(date) {
-                var enddate = $('#enddate1').val();
-                if (enddate != "") {
-                    if (enddate < date) {
-                        alert(DATE_ALERT_START);
-                    }
-                }
-            }
+              let enddate = $('#enddate').val();
+              if (enddate != "" && enddate < date) {
+                alert(DATE_ALERT_START);
+              }
+            fetch(`${window.origin}/reporter/update_dates/`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ "start_date": date })
+              })
+          }
         });
-        $("#enddate1").datepicker({
+
+        $("#enddate").datepicker({
             dateFormat: 'yy-mm-dd',
             onSelect: function(date) {
-                var startdate = $('#startdate1').val();
-                if (startdate != "") {
-                    if (startdate > date) {
-                        alert(DATE_ALERT_END);
-                    }
-                }
-            }
+              let startdate = $('#startdate').val();
+              if (startdate != "" && startdate > date) {
+                alert(DATE_ALERT_START);
+              }
+            fetch(`${window.origin}/reporter/update_dates/`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ "end_date": date })
+              })
+          }
         });
-        $("#fmt_version_count_start_date").datepicker({
-            dateFormat: 'yy-mm-dd',
-            onSelect: function(date) {
-                var enddate = $('#fmt_version_count_end_date').val();
-                if (enddate != "") {
-                    if (enddate < date) {
-                        alert(DATE_ALERT_START);
-                    }
-                }
-            }
-        });
-        $("#fmt_version_count_end_date").datepicker({
-            dateFormat: 'yy-mm-dd',
-            onSelect: function(date) {
-                var startdate = $('#fmt_version_count_start_date').val();
-                if (startdate != "") {
-                    if (startdate > date) {
-                        alert(DATE_ALERT_END);
-                    }
-                }
-            }
-        });
+
         $("#report1a").on("click", function() {
-            var startdate = $('#startdate1').val();
-            var enddate = $('#enddate1').val();
+            var startdate = $('#startdate').val();
+            var enddate = $('#enddate').val();
             if (enddate < startdate) {
                 alert(DATE_ALERT_START);
             } else {
@@ -259,8 +239,8 @@
             }
         });
         $("#report1b").on("click", function() {
-            var startdate = $('#startdate1').val();
-            var enddate = $('#enddate1').val();
+            var startdate = $('#startdate').val();
+            var enddate = $('#enddate').val();
             if (enddate < startdate) {
                 alert(DATE_ALERT_START);
             } else {
@@ -276,8 +256,8 @@
             }
         });
         $("#report1c").on("click", function() {
-            var startdate = $('#startdate1').val();
-            var enddate = $('#enddate1').val();
+            var startdate = $('#startdate').val();
+            var enddate = $('#enddate').val();
             if (enddate < startdate) {
                 alert(DATE_ALERT_START);
             } else {
@@ -304,8 +284,8 @@
             window.open(url);
         });
         $("#report3a").on("click", function() {
-            var startdate = $('#fmt_version_count_start_date').val();
-            var enddate = $('#fmt_version_count_end_date').val();
+            var startdate = $('#startdate').val();
+            var enddate = $('#enddate').val();
             if (enddate < startdate) {
                 alert(DATE_ALERT_START);
             } else {
