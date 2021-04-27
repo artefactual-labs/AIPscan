@@ -179,7 +179,7 @@ def workflow_coordinator(
     db.session.commit()
 
 
-def _make_request(request_url, request_url_without_api_key):
+def make_request(request_url, request_url_without_api_key):
     """Make our request to the storage service and return a valid
     response to our caller or raise a TaskError for celery.
     """
@@ -215,7 +215,7 @@ def package_lists_request(self, apiUrl, timestamp, packages_directory):
         request_url,
     ) = format_api_url_with_limit_offset(apiUrl)
     # First packages request.
-    packages = _make_request(request_url, request_url_without_api_key)
+    packages = make_request(request_url, request_url_without_api_key)
     packages_count = 1
     # Calculate how many package list files will be downloaded based on
     # total number of packages and the download limit
@@ -232,7 +232,7 @@ def package_lists_request(self, apiUrl, timestamp, packages_directory):
     write_packages_json(packages_count, packages, packages_directory)
     while next_url is not None:
         next_request = "{}{}".format(base_url, next_url)
-        next_packages = _make_request(next_request, request_url_without_api_key)
+        next_packages = make_request(next_request, request_url_without_api_key)
         packages_count += 1
         write_packages_json(packages_count, next_packages, packages_directory)
         next_url = next_packages.get(META, {}).get(NEXT, None)

@@ -10,7 +10,11 @@ from flask import Blueprint, flash, jsonify, redirect, render_template, request,
 from AIPscan import db
 from AIPscan.Aggregator import tasks
 from AIPscan.Aggregator.forms import StorageServiceForm
-from AIPscan.Aggregator.task_helpers import get_packages_directory
+from AIPscan.Aggregator.task_helpers import (
+    format_api_url_with_limit_offset,
+    get_packages_directory,
+)
+from AIPscan.Aggregator.tasks import TaskError
 from AIPscan.extensions import celery
 
 # Custom celery Models.
@@ -33,6 +37,25 @@ def _format_date(date_string):
     DATE_FORMAT_PARTIAL = "%Y-%m-%d"
     formatted_date = datetime.strptime(_split_ms(date_string), DATE_FORMAT_FULL)
     return formatted_date.strftime(DATE_FORMAT_PARTIAL)
+
+
+def _test_storage_service_connection(api_url):
+    """Test Storage Service credentials.
+
+    :param api_url: Storage Service credentials (dict)
+
+    :raises ConnectionError: if credentials are invalid
+    """
+    # Make a new dict instead of altering our actual credentials.
+    test_credentials = dict(api_url)
+    test_credentials["limit"] = 10
+    _, request_url_without_api_key, request_url = format_api_url_with_limit_offset(
+        test_credentials
+    )
+    try:
+        _ = tasks.make_request(request_url, request_url_without_api_key)
+    except TaskError as err:
+        raise ConnectionError(str(err))
 
 
 @aggregator.route("/", methods=["GET"])
@@ -141,9 +164,7 @@ def delete_storage_service(id):
 
 @aggregator.route("/new_fetch_job/<id>", methods=["POST"])
 def new_fetch_job(id):
-
-    # this function is triggered by the Javascript attached to the "New Fetch Job" button
-
+    """Fetch and process AIP METS files from Storage Service."""
     storage_service = StorageService.query.get(id)
     api_url = {
         "baseUrl": storage_service.url,
@@ -152,6 +173,13 @@ def new_fetch_job(id):
         "offset": str(storage_service.download_offset),
         "limit": str(storage_service.download_limit),
     }
+
+    # Check Storage Service credentials and return 400 if invalid prior to
+    # creating the Fetch Job and kicking off the Celery task.
+    try:
+        _test_storage_service_connection(api_url)
+    except ConnectionError:
+        return jsonify({}), 400
 
     # create "downloads/" directory if it doesn't exist
     if not os.path.exists("AIPscan/Aggregator/downloads/"):

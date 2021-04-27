@@ -4,7 +4,15 @@ from datetime import datetime
 import pytest
 
 from AIPscan import test_helpers
-from AIPscan.Aggregator.tasks import get_mets
+from AIPscan.Aggregator.tasks import TaskError, get_mets, make_request
+from AIPscan.Aggregator.tests import (
+    INVALID_JSON,
+    REQUEST_URL,
+    REQUEST_URL_WITHOUT_API_KEY,
+    RESPONSE_DICT,
+    VALID_JSON,
+    MockResponse,
+)
 from AIPscan.models import AIP
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -115,3 +123,27 @@ def test_get_mets_task(app_instance, tmpdir, mocker, fixture_path, package_uuid)
     assert len(fetch_job1.aips) == 0
     assert len(fetch_job2.aips) == 0
     assert len(fetch_job3.aips) == 1
+
+
+@pytest.mark.parametrize(
+    "response, raises_task_error",
+    [
+        # Test 200 response with valid JSON.
+        (MockResponse(200, VALID_JSON), False),
+        # Test 500 response raises TaskError.
+        (MockResponse(500, VALID_JSON), True),
+        # Test 200 response with invalid JSON raises TaskError.
+        (MockResponse(200, INVALID_JSON), True),
+    ],
+)
+def test_make_request(mocker, response, raises_task_error):
+    """Test handling of Storage Service response."""
+    request = mocker.patch("AIPscan.Aggregator.tasks.requests.get")
+    request.return_value = response
+
+    if raises_task_error:
+        with pytest.raises(TaskError):
+            _ = make_request(REQUEST_URL, REQUEST_URL_WITHOUT_API_KEY)
+    else:
+        return_dict = make_request(REQUEST_URL, REQUEST_URL_WITHOUT_API_KEY)
+        assert return_dict["key"] == RESPONSE_DICT["key"]
