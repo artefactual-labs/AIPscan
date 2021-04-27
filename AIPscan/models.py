@@ -53,7 +53,7 @@ class StorageService(db.Model):
         )
         try:
             return results[0]
-        except Type Error:
+        except TypeError:
             return ""
 
     @property
