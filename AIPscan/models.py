@@ -51,7 +51,10 @@ class StorageService(db.Model):
         results = (
             db.session.query(AIP.create_date).order_by(AIP.create_date.desc()).first()
         )
-        return results[0]
+        try:
+            return results[0]
+        except:
+            return ""
 
     @property
     def unique_file_formats(self):
