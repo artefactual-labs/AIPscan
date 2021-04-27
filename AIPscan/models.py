@@ -49,9 +49,7 @@ class StorageService(db.Model):
     @property
     def earliest_aip_created(self):
         results = (
-            db.session.query(AIP.create_date)
-            .order_by(AIP.create_date.desc())
-            .first()
+            db.session.query(AIP.create_date).order_by(AIP.create_date.desc()).first()
         )
         return results[0]
 
