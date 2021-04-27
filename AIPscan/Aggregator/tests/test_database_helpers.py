@@ -10,6 +10,8 @@ from AIPscan.models import AIP, Agent
 
 FIXTURES_DIR = "fixtures"
 
+TEST_SHA_256 = "79c16fa9573ec46c5f60fd54b34f314159e0623ca53d8d2f00c5875dbb4e0dfd"
+
 
 def test_create_aip(app_instance):
     """Test AIP creation."""
@@ -22,6 +24,7 @@ def test_create_aip(app_instance):
         package_uuid=PACKAGE_UUID,
         transfer_name=TRANSFER_NAME,
         create_date="2020-11-02",
+        mets_sha256=TEST_SHA_256,
         storage_service_id=STORAGE_SERVICE_ID,
         fetch_job_id=FETCH_JOB_ID,
     )
@@ -31,6 +34,27 @@ def test_create_aip(app_instance):
     assert aip.transfer_name == TRANSFER_NAME
     assert aip.storage_service_id == STORAGE_SERVICE_ID
     assert aip.fetch_job_id == FETCH_JOB_ID
+
+
+def test_delete_aip(app_instance):
+    """Test AIP deletion."""
+    PACKAGE_UUID = str(uuid.uuid4())
+
+    database_helpers.create_aip_object(
+        package_uuid=PACKAGE_UUID,
+        transfer_name="some name",
+        create_date="2020-11-02",
+        mets_sha256=TEST_SHA_256,
+        storage_service_id=1,
+        fetch_job_id=1,
+    )
+
+    aip = AIP.query.filter_by(uuid=PACKAGE_UUID).first()
+    assert aip is not None
+
+    database_helpers.delete_aip_object(aip)
+    aip = AIP.query.filter_by(uuid=PACKAGE_UUID).first()
+    assert aip is None
 
 
 @pytest.mark.parametrize(

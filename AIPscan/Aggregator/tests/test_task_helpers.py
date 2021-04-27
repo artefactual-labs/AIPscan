@@ -2,6 +2,7 @@
 
 import json
 import os
+import uuid
 from datetime import datetime
 
 import pytest
@@ -119,6 +120,20 @@ def test_create_numbered_subdirs(timestamp, package_list_number, result, mocker)
     subdir_string = task_helpers.create_numbered_subdirs(timestamp, package_list_number)
     assert mocked_makedirs.call_count == 0
     assert subdir_string == result
+
+
+def test_write_mets(mocker, tmpdir):
+    """Ensure that METS is written to expected location."""
+    CONTENT = "test content".encode("utf-8")
+    http_response = mocker.MagicMock()
+    http_response.content = CONTENT
+    package_uuid = str(uuid.uuid4())
+    expected_path = os.path.join(tmpdir, "METS.{}.xml".format(package_uuid))
+
+    actual_path = task_helpers.write_mets(http_response, package_uuid, tmpdir)
+    assert expected_path == actual_path
+    with open(actual_path, "rb") as mets_file:
+        assert mets_file.read() == CONTENT
 
 
 @pytest.fixture()

@@ -10,9 +10,19 @@ from datetime import datetime, timedelta
 
 from flask import render_template, request
 
-from AIPscan.helpers import get_human_readable_file_size
+from AIPscan.Data import fields, report_data
+from AIPscan.helpers import filesizeformat, parse_bool, parse_datetime_bound
 from AIPscan.models import AIP, File, FileType, StorageService
-from AIPscan.Reporter import reporter, request_params
+from AIPscan.Reporter import (
+    download_csv,
+    format_size_for_csv,
+    get_display_end_date,
+    reporter,
+    request_params,
+    translate_headers,
+)
+
+HEADERS = [fields.FIELD_FORMAT, fields.FIELD_COUNT, fields.FIELD_SIZE]
 
 
 @reporter.route("/report_formats_count/", methods=["GET"])
@@ -20,67 +30,36 @@ def report_formats_count():
     """Report (tabular) on all file formats and their counts and size on
     disk across all AIPs in the storage service.
     """
-    start_date = request.args.get(request_params["start_date"])
-    end_date = request.args.get(request_params["end_date"])
-    # make date range inclusive
-    start = datetime.strptime(start_date, "%Y-%m-%d")
-    end = datetime.strptime(end_date, "%Y-%m-%d")
-    day_before = start - timedelta(days=1)
-    day_after = end + timedelta(days=1)
+    storage_service_id = request.args.get(request_params.STORAGE_SERVICE_ID)
+    start_date = parse_datetime_bound(request.args.get(request_params.START_DATE))
+    end_date = parse_datetime_bound(
+        request.args.get(request_params.END_DATE), upper=True
+    )
+    csv = parse_bool(request.args.get(request_params.CSV), default=False)
 
-    storage_service_id = request.args.get(request_params["storage_service_id"])
-    storage_service = StorageService.query.get(storage_service_id)
-    aips = AIP.query.filter_by(storage_service_id=storage_service_id).all()
+    formats_data = report_data.formats_count(
+        storage_service_id=storage_service_id, start_date=start_date, end_date=end_date
+    )
+    formats = formats_data.get(fields.FIELD_FORMATS)
 
-    format_count = {}
-    originals_count = 0
+    headers = translate_headers(HEADERS)
 
-    for aip in aips:
-        original_files = File.query.filter_by(
-            aip_id=aip.id, file_type=FileType.original
-        )
-        for original in original_files:
-            if aip.create_date < day_before:
-                continue
-            elif aip.create_date > day_after:
-                continue
-            else:
-                originals_count += 1
-                file_format = original.file_format
-                size = original.size
-
-                if file_format in format_count:
-                    format_count[file_format]["count"] += 1
-                    if format_count[file_format]["size"] is not None:
-                        format_count[file_format]["size"] += size
-                else:
-                    format_count.update({file_format: {"count": 1, "size": size}})
-
-    total_size = 0
-
-    for key, value in format_count.items():
-        size = value["size"]
-        if size is not None:
-            total_size += size
-            human_size = get_human_readable_file_size(size)
-            format_count[key] = {
-                "count": value["count"],
-                "size": size,
-                "humansize": human_size,
-            }
-
-    different_formats = len(format_count.keys())
-    total_human_size = get_human_readable_file_size(total_size)
+    if csv:
+        filename = "file_formats.csv"
+        csv_data = format_size_for_csv(formats)
+        return download_csv(headers, csv_data, filename)
 
     return render_template(
         "report_formats_count.html",
-        startdate=start_date,
-        enddate=end_date,
-        storageService=storage_service,
-        originalsCount=originals_count,
-        formatCount=format_count,
-        differentFormats=different_formats,
-        totalHumanSize=total_human_size,
+        storage_service_id=storage_service_id,
+        storage_service_name=formats_data.get(fields.FIELD_STORAGE_NAME),
+        columns=headers,
+        formats=formats,
+        total_file_count=sum(format_.get(fields.FIELD_COUNT, 0) for format_ in formats),
+        total_size=sum(format_.get(fields.FIELD_SIZE, 0) for format_ in formats),
+        formats_count=len(formats),
+        start_date=start_date,
+        end_date=get_display_end_date(end_date),
     )
 
 
@@ -88,15 +67,15 @@ def report_formats_count():
 def chart_formats_count():
     """Report (pie chart) on all file formats and their counts and size
     on disk across all AIPs in the storage service."""
-    start_date = request.args.get(request_params["start_date"])
-    end_date = request.args.get(request_params["end_date"])
+    start_date = request.args.get(request_params.START_DATE)
+    end_date = request.args.get(request_params.END_DATE)
     # make date range inclusive
     start = datetime.strptime(start_date, "%Y-%m-%d")
     end = datetime.strptime(end_date, "%Y-%m-%d")
     day_before = start - timedelta(days=1)
     day_after = end + timedelta(days=1)
 
-    storage_service_id = request.args.get(request_params["storage_service_id"])
+    storage_service_id = request.args.get(request_params.STORAGE_SERVICE_ID)
     storage_service = StorageService.query.get(storage_service_id)
     aips = AIP.query.filter_by(storage_service_id=storage_service_id).all()
 
@@ -140,15 +119,15 @@ def plot_formats_count():
     """Report (scatter) on all file formats and their counts and size on
     disk across all AIPs in the storage service.
     """
-    start_date = request.args.get(request_params["start_date"])
-    end_date = request.args.get(request_params["end_date"])
+    start_date = request.args.get(request_params.START_DATE)
+    end_date = request.args.get(request_params.END_DATE)
     # make date range inclusive
     start = datetime.strptime(start_date, "%Y-%m-%d")
     end = datetime.strptime(end_date, "%Y-%m-%d")
     day_before = start - timedelta(days=1)
     day_after = end + timedelta(days=1)
 
-    storage_service_id = request.args.get(request_params["storage_service_id"])
+    storage_service_id = request.args.get(request_params.STORAGE_SERVICE_ID)
     storage_service = StorageService.query.get(storage_service_id)
     aips = AIP.query.filter_by(storage_service_id=storage_service_id).all()
 
@@ -188,11 +167,11 @@ def plot_formats_count():
             size = 0
         x_axis.append(size)
         total_size += size
-        human_size.append(get_human_readable_file_size(size))
+        human_size.append(filesizeformat(size))
 
     file_format = list(format_count.keys())
     different_formats = len(format_count.keys())
-    total_human_size = get_human_readable_file_size(total_size)
+    total_human_size = filesizeformat(total_size)
 
     return render_template(
         "plot_formats_count.html",

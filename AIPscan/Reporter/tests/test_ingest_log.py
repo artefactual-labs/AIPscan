@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 
 """Tests for the agents transfer log."""
-
 import pytest
+from flask import current_app
 
+from AIPscan.Data import fields
 from AIPscan.Reporter.report_ingest_log import get_figure_html, get_table_data
+
+EXPECTED_CSV_CONTENTS = b"AIP UUID,AIP Name,Start Date,End Date,User,Duration\r\n111111111111-1111-1111-11111111,Test AIP,2020-12-02 10:00:00,2020-12-02 10:30:32,user one,0:30:32\r\n"
 
 ZERO_TRANSFERS = {"StorageName": None, "Ingests": []}
 
@@ -77,9 +80,9 @@ def test_get_table_data(agents_transfers, transfer_count, storage_name, duration
     assert response["StorageName"] == storage_name
     if not duration:
         with pytest.raises(IndexError):
-            _ = response["Ingests"][0]["duration"]
+            _ = response["Ingests"][0][fields.FIELD_DURATION]
         return
-    assert str(response["Ingests"][0]["duration"]) == duration
+    assert str(response["Ingests"][0][fields.FIELD_DURATION]) == duration
 
 
 @pytest.mark.parametrize(
@@ -104,3 +107,23 @@ def test_get_figure_html(agents_transfers, transfer_count, storage_name):
     assert response["StorageName"] == storage_name
     assert response["figure"].startswith("<div>")
     assert response["figure"].endswith("</div>")
+
+
+def test_user_ingest_log(app_with_populated_files):
+    """Test that report template renders."""
+    with current_app.test_client() as test_client:
+        response = test_client.get("/reporter/ingest_log_tabular/?amss_id=1")
+        assert response.status_code == 200
+
+
+def test_user_ingest_log_csv(app_with_populated_files):
+    """Test CSV export."""
+    with current_app.test_client() as test_client:
+        response = test_client.get("/reporter/ingest_log_tabular/?amss_id=1&csv=True")
+        assert response.status_code == 200
+        assert (
+            response.headers["Content-Disposition"]
+            == "attachment; filename=user_ingest_log.csv"
+        )
+        assert response.mimetype == "text/csv"
+        assert response.data == EXPECTED_CSV_CONTENTS

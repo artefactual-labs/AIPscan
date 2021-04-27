@@ -19,6 +19,75 @@ def _get_username(agent_string):
     return agent_string.split(",", 1)[0].replace(USERNAME, "").replace('"', "")
 
 
+def _formats_count_query(storage_service_id, start_date, end_date):
+    """Fetch information from database on file formats.
+
+    :param storage_service_id: Storage Service ID (int)
+    :start_date: Inclusive AIP creation start date
+        (datetime.datetime object)
+    :end_date: Inclusive AIP creation end date
+        (datetime.datetime object)
+
+    :returns: SQLAlchemy query results
+    """
+    FILE_FORMAT = "file_format"
+    FILE_COUNT = "file_count"
+    FILE_SIZE = "total_size"
+
+    return (
+        db.session.query(
+            File.file_format.label(FILE_FORMAT),
+            db.func.count(File.id).label(FILE_COUNT),
+            db.func.sum(File.size).label(FILE_SIZE),
+        )
+        .join(AIP)
+        .join(StorageService)
+        .filter(StorageService.id == storage_service_id)
+        .filter(File.file_type == FileType.original.value)
+        .filter(AIP.create_date >= start_date)
+        .filter(AIP.create_date < end_date)
+        .group_by(File.file_format)
+        .order_by(db.func.count(File.id).desc(), db.func.sum(File.size).desc())
+    )
+
+
+def formats_count(storage_service_id, start_date, end_date):
+    """Return a summary of file formats in Storage Service.
+
+    :param storage_service_id: Storage Service ID (int)
+    :start_date: Inclusive AIP creation start date
+        (datetime.datetime object)
+    :end_date: Inclusive AIP creation end date
+        (datetime.datetime object)
+
+    :returns: "report" dict containing following fields:
+        report["StorageName"]: Name of Storage Service queried
+        report["Formats"]: List of results ordered desc by count and size
+    """
+    report = {}
+    report[fields.FIELD_FORMATS] = []
+    report[fields.FIELD_STORAGE_NAME] = None
+
+    storage_service = _get_storage_service(storage_service_id)
+    if storage_service is not None:
+        report[fields.FIELD_STORAGE_NAME] = storage_service.name
+
+    formats = _formats_count_query(storage_service_id, start_date, end_date)
+
+    for format_ in formats:
+        format_info = {}
+
+        format_info[fields.FIELD_FORMAT] = format_.file_format
+        format_info[fields.FIELD_COUNT] = format_.file_count
+        format_info[fields.FIELD_SIZE] = 0
+        if format_.total_size is not None:
+            format_info[fields.FIELD_SIZE] = format_.total_size
+
+        report[fields.FIELD_FORMATS].append(format_info)
+
+    return report
+
+
 def _format_versions_count_query(storage_service_id, start_date, end_date):
     """Fetch information from database on format versions.
 
@@ -83,13 +152,11 @@ def format_versions_count(storage_service_id, start_date, end_date):
 
         version_info[fields.FIELD_PUID] = version.puid
         version_info[fields.FIELD_FORMAT] = version.file_format
-        version_info[fields.FIELD_COUNT] = version.file_count
-
         try:
             version_info[fields.FIELD_VERSION] = version.format_version
         except AttributeError:
             pass
-
+        version_info[fields.FIELD_COUNT] = version.file_count
         version_info[fields.FIELD_SIZE] = 0
         if version.total_size is not None:
             version_info[fields.FIELD_SIZE] = version.total_size
@@ -146,10 +213,13 @@ def largest_files(storage_service_id, file_type=None, limit=20):
     for file_ in files:
         file_info = {}
 
-        file_info["id"] = file_.id
+        file_info[fields.FIELD_ID] = file_.id
         file_info[fields.FIELD_UUID] = file_.uuid
         file_info[fields.FIELD_NAME] = file_.name
-        file_info[fields.FIELD_SIZE] = int(file_.size)
+        try:
+            file_info[fields.FIELD_SIZE] = int(file_.size)
+        except TypeError:
+            file_info[fields.FIELD_SIZE] = 0
         file_info[fields.FIELD_AIP_ID] = file_.aip_id
         file_info[fields.FIELD_FILE_TYPE] = file_.file_type.value
 
@@ -253,7 +323,7 @@ def _aips_by_file_format_or_puid(
     for result in results:
         aip_info = {}
 
-        aip_info["id"] = result.id
+        aip_info[fields.FIELD_ID] = result.id
         aip_info[fields.FIELD_AIP_NAME] = result.name
         aip_info[fields.FIELD_UUID] = result.uuid
         aip_info[fields.FIELD_COUNT] = result.file_count
@@ -344,4 +414,75 @@ def agents_transfers(storage_service_id):
                 log_line[fields.FIELD_USER] = _get_username(agent.agent_value)
         ingests.append(log_line)
     report[fields.FIELD_INGESTS] = ingests
+    return report
+
+
+def _preservation_derivatives_query(storage_service_id, aip_uuid):
+    """Fetch information on preservation derivatives from db.
+
+    :param storage_service_id: Storage Service ID (int)
+    :param aip_uuid: AIP UUID (str)
+
+    :returns: SQLAlchemy query results
+    """
+    files = (
+        File.query.join(AIP)
+        .join(StorageService)
+        .filter(StorageService.id == storage_service_id)
+        .filter(File.file_type == FileType.preservation)
+        .order_by(AIP.uuid, File.file_format)
+    )
+    if aip_uuid:
+        files.filter(AIP.uuid == aip_uuid)
+    return files
+
+
+def preservation_derivatives(storage_service_id, aip_uuid=None):
+    """Return details of preservation derivatives in Storage Service.
+
+    This includes information about each preservation derivative, as well as
+    its corresponding original file and AIP.
+
+    :param storage_service_id: Storage Service ID (int)
+    :param aip_uuid: AIP UUID (str)
+
+    :returns: "report" dict containing following fields:
+        report["StorageName"]: Name of Storage Service queried
+        report["Files"]: List of result files ordered desc by size
+    """
+    report = {}
+    report[fields.FIELD_FILES] = []
+    storage_service = _get_storage_service(storage_service_id)
+    report[fields.FIELD_STORAGE_NAME] = storage_service.name
+
+    files = _preservation_derivatives_query(storage_service_id, aip_uuid)
+
+    for file_ in files:
+        file_info = {}
+
+        file_info[fields.FIELD_AIP_UUID] = file_.aip.uuid
+        file_info[fields.FIELD_AIP_NAME] = file_.aip.transfer_name
+
+        file_info[fields.FIELD_ID] = file_.id
+        file_info[fields.FIELD_UUID] = file_.uuid
+        file_info[fields.FIELD_NAME] = file_.name
+        file_info[fields.FIELD_FORMAT] = file_.file_format
+
+        original_file = file_.original_file
+        file_info[fields.FIELD_ORIGINAL_UUID] = original_file.uuid
+        file_info[fields.FIELD_ORIGINAL_NAME] = original_file.name
+        file_info[fields.FIELD_ORIGINAL_FORMAT] = original_file.file_format
+        file_info[fields.FIELD_ORIGINAL_VERSION] = ""
+        try:
+            file_info[fields.FIELD_ORIGINAL_VERSION] = original_file.format_version
+        except AttributeError:
+            pass
+        file_info[fields.FIELD_ORIGINAL_PUID] = ""
+        try:
+            file_info[fields.FIELD_ORIGINAL_PUID] = original_file.puid
+        except AttributeError:
+            pass
+
+        report[fields.FIELD_FILES].append(file_info)
+
     return report

@@ -21,7 +21,7 @@ from AIPscan.Reporter import (  # noqa: F401
     report_formats_count,
     report_ingest_log,
     report_largest_files,
-    report_originals_with_derivatives,
+    report_preservation_derivatives,
     reporter,
     request_params,
     sort_puids,
@@ -164,7 +164,7 @@ def reports():
     Storage Service ID can be specified as an optional parameter. If
     one is not specified, use the default Storage Service.
     """
-    storage_service_id = request.args.get(request_params["storage_service_id"])
+    storage_service_id = request.args.get(request_params.STORAGE_SERVICE_ID)
     storage_service = _get_storage_service(storage_service_id)
 
     original_file_formats = []

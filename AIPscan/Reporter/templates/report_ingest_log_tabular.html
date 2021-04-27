@@ -9,9 +9,9 @@
 {% block content %}
 
   <div class="alert alert-secondary">
-    <a class="noprint" onClick="window.print();return false">
-      <button type="button" class="btn btn-info" style="float:right;">Print</button>
-    </a>
+    
+    {% include "report_buttons.html" %}
+    
     <strong>User ingest log</strong>
     <br>
     <strong>Storage service:</strong> {{ storage_service_name }}
@@ -63,7 +63,7 @@
                 {{ row["IngestFinishDate"] }}
               </td>
               <td>
-                {{ row["duration"] }}
+                {{ row["Duration"] }}
               </td>
             </tr>
           {% endfor %}

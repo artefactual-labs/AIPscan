@@ -12,9 +12,13 @@ FIELD_ALL_AIPS = "AllAIPs"
 FIELD_COUNT = "Count"
 FIELD_CREATED_DATE = "CreatedDate"
 
+FIELD_DATE_START = "IngestStartDate"
+FIELD_DATE_END = "IngestFinishDate"
 FIELD_DERIVATIVE_COUNT = "DerivativeCount"
+FIELD_DERIVATIVE_FILE = "DerivativeFile"
 FIELD_DERIVATIVE_FORMAT = "DerivativeFormat"
 FIELD_DERIVATIVE_UUID = "DerivativeUUID"
+FIELD_DURATION = "Duration"
 
 FIELD_EVENT = "Event"
 
@@ -26,14 +30,19 @@ FIELD_FORMAT = "Format"
 FIELD_FORMATS = "Formats"
 FIELD_FORMAT_VERSIONS = "FormatVersions"
 
+FIELD_ID = "ID"
 FIELD_INGESTS = "Ingests"
 FIELD_INGEST_START_DATE = "IngestStartDate"
 FIELD_INGEST_FINISH_DATE = "IngestFinishDate"
 
 FIELD_NAME = "Name"
 
-FIELD_ORIGINAL_UUID = "OriginalUUID"
+FIELD_ORIGINAL_FILE = "OriginalFile"
 FIELD_ORIGINAL_FORMAT = "OriginalFormat"
+FIELD_ORIGINAL_NAME = "OriginalName"
+FIELD_ORIGINAL_PUID = "OriginalPUID"
+FIELD_ORIGINAL_UUID = "OriginalUUID"
+FIELD_ORIGINAL_VERSION = "OriginalVersion"
 
 FIELD_PUID = "PUID"
 

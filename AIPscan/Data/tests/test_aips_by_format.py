@@ -2,6 +2,11 @@
 
 import pytest
 
+from AIPscan.conftest import (
+    ORIGINAL_FILE_SIZE,
+    PRESERVATION_FILE_SIZE,
+    TIFF_FILE_FORMAT,
+)
 from AIPscan.Data import fields, report_data
 from AIPscan.Data.tests import (
     MOCK_AIPS_BY_FORMAT_OR_PUID_QUERY_RESULTS as MOCK_QUERY_RESULTS,
@@ -10,11 +15,6 @@ from AIPscan.Data.tests import (
     MOCK_STORAGE_SERVICE,
     MOCK_STORAGE_SERVICE_ID,
     MOCK_STORAGE_SERVICE_NAME,
-)
-from AIPscan.Data.tests.conftest import (
-    ORIGINAL_FILE_SIZE,
-    PRESERVATION_FILE_SIZE,
-    TIFF_FILE_FORMAT,
 )
 
 
@@ -65,7 +65,7 @@ def test_aips_by_file_format_aip_elements(app_instance, mocker, test_aip):
     )
     report_aip = report[fields.FIELD_AIPS][0]
 
-    assert test_aip.id == report_aip.get("id")
+    assert test_aip.id == report_aip.get(fields.FIELD_ID)
     assert test_aip.name == report_aip.get(fields.FIELD_AIP_NAME)
     assert test_aip.uuid == report_aip.get(fields.FIELD_UUID)
     assert test_aip.file_count == report_aip.get(fields.FIELD_COUNT)

@@ -59,15 +59,21 @@
         </tr>
 
         <tr>
+            <td>File format count</td>
+            <td></td>
+            <td><a href=""><button type="button" id="report1a" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a><a href=""><button type="button" id="report1b" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Pie Chart</button></a><a href=""><button type="button" id="report1c" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Scatter Plot</button></a></td>
+        </tr>
+
+        <tr>
             <td>Format version count</td>
             <td>Uses date fields</td>
             <td><a href="#"><button type="button" id="report3a" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a></td>
         </tr>
 
         <tr>
-            <td>Preservation copy count</td>
+            <td>Preservation derivatives</td>
             <td></td>
-            <td><a href="#"><button type="button" id="report4a" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a></td>
+            <td><a href="#"><button type="button" id="preservationDerivatives" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a></td>
         </tr>
 
         <tr>
@@ -145,7 +151,7 @@
         {% endif %}
 
         <tr>
-            <td>Transfers log </td>
+            <td>User ingest log </td>
             <td></td>
             <td>
                 <a href="#"><button type="button" id="transferLogTabular" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular Chart</button></a>
@@ -304,8 +310,8 @@
                 window.open(url);
             }
         });
-        $("#report4a").on("click", function() {
-            const URL_AIP_CONTENTS = "/reporter/original_derivatives/";
+        $("#preservationDerivatives").on("click", function() {
+            const URL_AIP_CONTENTS = "/reporter/preservation_derivatives/";
             var storageServiceID = $('#ss').val();
             var url = (
               window.location.origin +

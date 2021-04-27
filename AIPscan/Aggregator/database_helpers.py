@@ -138,19 +138,34 @@ def _get_unique_agents(all_agents, agents_list):
 
 
 def create_aip_object(
-    package_uuid, transfer_name, create_date, storage_service_id, fetch_job_id
+    package_uuid,
+    transfer_name,
+    create_date,
+    mets_sha256,
+    storage_service_id,
+    fetch_job_id,
 ):
     """Create an AIP object and save it to the database."""
     aip = AIP(
         uuid=package_uuid,
         transfer_name=transfer_name,
         create_date=_tz_neutral_date(create_date),
+        mets_sha256=mets_sha256,
         storage_service_id=storage_service_id,
         fetch_job_id=fetch_job_id,
     )
     db.session.add(aip)
     db.session.commit()
     return aip
+
+
+def delete_aip_object(aip):
+    """Delete AIP object from database.
+
+    :param aip: AIP model instance
+    """
+    db.session.delete(aip)
+    db.session.commit()
 
 
 def _get_file_properties(fs_entry):

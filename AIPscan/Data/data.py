@@ -7,8 +7,8 @@ from AIPscan.helpers import _simplify_datetime
 from AIPscan.models import AIP, File, FileType
 
 
-def aip_overview(storage_service_id, original_files=True):
-    """Return a summary overview of all AIPs in a given storage service"""
+def file_format_aip_overview(storage_service_id, original_files=True):
+    """Return summary overview of file formats and the AIPs they're in."""
     report = {}
     storage_service = _get_storage_service(storage_service_id)
     aips = AIP.query.filter_by(storage_service_id=storage_service.id).all()
@@ -45,11 +45,8 @@ def aip_overview(storage_service_id, original_files=True):
     return report
 
 
-def aip_overview_two(storage_service_id, original_files=True):
-    """Return a summary overview of all AIPs in a given storage service.
-    With a special focus on file formats and their counts organized by
-    AIP UUID and then PUID.
-    """
+def aip_file_format_overview(storage_service_id, original_files=True):
+    """Return summary overview of AIPs and their file formats."""
     report = {}
     formats = {}
     storage_service = _get_storage_service(storage_service_id)

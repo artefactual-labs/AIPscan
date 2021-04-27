@@ -23,38 +23,20 @@ DATE_BEFORE_AIP_2 = "2020-05-30"
 DATE_AFTER_AIP_2 = "2020-06-02"
 
 
-class MockFormatVersionsCountQueryResult:
+class MockFormatsCountQueryResult:
     """Fixture for mocking SQLAlchemy query results."""
 
-    def __init__(self, puid, file_format, format_version, file_count, total_size):
-        self.puid = puid
+    def __init__(self, file_format, file_count, total_size):
         self.file_format = file_format
-        self.format_version = format_version
         self.file_count = file_count
         self.total_size = total_size
 
 
 MOCK_QUERY_RESULTS = [
-    MockFormatVersionsCountQueryResult(
-        puid="fmt/43",
-        file_format="JPEG",
-        format_version="1.01",
-        file_count=5,
-        total_size=12345678,
-    ),
-    MockFormatVersionsCountQueryResult(
-        puid="fmt/44",
-        file_format="JPEG",
-        format_version="1.02",
-        file_count=3,
-        total_size=1234567,
-    ),
-    MockFormatVersionsCountQueryResult(
-        puid="fmt/199",
-        file_format="MPEG-4 Media File",
-        format_version=None,
-        file_count=1,
-        total_size=12345,
+    MockFormatsCountQueryResult(file_format="JPEG", file_count=5, total_size=12345678),
+    MockFormatsCountQueryResult(file_format="CSV", file_count=3, total_size=123456),
+    MockFormatsCountQueryResult(
+        file_format="MPEG-4 Media File", file_count=1, total_size=12345
     ),
 ]
 
@@ -71,63 +53,53 @@ MOCK_QUERY_RESULTS = [
         (MOCK_QUERY_RESULTS[:2], 2),
     ],
 )
-def test_format_versions_count(app_instance, mocker, query_results, results_count):
+def test_formats_count(app_instance, mocker, query_results, results_count):
     """Test that results match high-level expectations."""
-    mock_query = mocker.patch("AIPscan.Data.report_data._format_versions_count_query")
+    mock_query = mocker.patch("AIPscan.Data.report_data._formats_count_query")
     mock_query.return_value = query_results
 
     mock_get_ss = mocker.patch("AIPscan.Data.report_data._get_storage_service")
     mock_get_ss.return_value = MOCK_STORAGE_SERVICE
 
-    report = report_data.format_versions_count(
+    report = report_data.formats_count(
         MOCK_STORAGE_SERVICE_ID, datetime.min, datetime.max
     )
     assert report[fields.FIELD_STORAGE_NAME] == MOCK_STORAGE_SERVICE_NAME
-    assert len(report[fields.FIELD_FORMAT_VERSIONS]) == results_count
+    assert len(report[fields.FIELD_FORMATS]) == results_count
 
 
 @pytest.mark.parametrize(
-    "test_format_version", [mock_result for mock_result in MOCK_QUERY_RESULTS]
+    "test_format", [mock_result for mock_result in MOCK_QUERY_RESULTS]
 )
-def test_format_versions_count_elements(app_instance, mocker, test_format_version):
+def test_formats_count_elements(app_instance, mocker, test_format):
     """Test that structure of versions data matches expectations."""
-    mock_query = mocker.patch("AIPscan.Data.report_data._format_versions_count_query")
-    mock_query.return_value = [test_format_version]
+    mock_query = mocker.patch("AIPscan.Data.report_data._formats_count_query")
+    mock_query.return_value = [test_format]
 
     mock_get_ss = mocker.patch("AIPscan.Data.report_data._get_storage_service")
     mock_get_ss.return_value = MOCK_STORAGE_SERVICE
 
-    report = report_data.format_versions_count(
+    report = report_data.formats_count(
         MOCK_STORAGE_SERVICE_ID, datetime.min, datetime.max
     )
-    report_format_version = report[fields.FIELD_FORMAT_VERSIONS][0]
+    report_format = report[fields.FIELD_FORMATS][0]
 
-    assert test_format_version.puid == report_format_version.get(fields.FIELD_PUID)
-    assert test_format_version.file_format == report_format_version.get(
-        fields.FIELD_FORMAT
-    )
-    assert test_format_version.format_version == report_format_version.get(
-        fields.FIELD_VERSION
-    )
-    assert test_format_version.file_count == report_format_version.get(
-        fields.FIELD_COUNT
-    )
-    assert test_format_version.total_size == report_format_version.get(
-        fields.FIELD_SIZE
-    )
+    assert test_format.file_format == report_format.get(fields.FIELD_FORMAT)
+    assert test_format.file_count == report_format.get(fields.FIELD_COUNT)
+    assert test_format.total_size == report_format.get(fields.FIELD_SIZE)
 
 
 @pytest.mark.parametrize(
-    "start_date, end_date, version_count, total_file_count, total_file_size",
+    "start_date, end_date, format_count, total_file_count, total_file_size",
     [
         # Not specifying dates should return all files and versions.
-        (None, None, 3, 3, TOTAL_FILE_SIZE),
+        (None, None, 2, 3, TOTAL_FILE_SIZE),
         # Start date before first AIP was ingested hould return all
         # files and versions.
-        (DATE_BEFORE_AIP_1, None, 3, 3, TOTAL_FILE_SIZE),
+        (DATE_BEFORE_AIP_1, None, 2, 3, TOTAL_FILE_SIZE),
         # Start date that's the same day our first AIP was ingested
         # should return all files and versions.
-        (AIP_1_CREATION_DATE, None, 3, 3, TOTAL_FILE_SIZE),
+        (AIP_1_CREATION_DATE, None, 2, 3, TOTAL_FILE_SIZE),
         # Start date after our first AIP was ingested should return
         # only the second JPEG version and ISO disk image.
         (DATE_AFTER_AIP_1, None, 2, 2, JPEG_1_02_FILE_SIZE),
@@ -136,23 +108,23 @@ def test_format_versions_count_elements(app_instance, mocker, test_format_versio
         (None, DATE_BEFORE_AIP_2, 1, 1, JPEG_1_01_FILE_SIZE),
         # End date that's the same day our second AIP was ingested
         # should return all files and versions.
-        (None, AIP_2_CREATION_DATE, 3, 3, TOTAL_FILE_SIZE),
+        (None, AIP_2_CREATION_DATE, 2, 3, TOTAL_FILE_SIZE),
         # End date that's after our second AIP was ingested should
         # return all files and versions.
-        (None, DATE_AFTER_AIP_2, 3, 3, TOTAL_FILE_SIZE),
+        (None, DATE_AFTER_AIP_2, 2, 3, TOTAL_FILE_SIZE),
         # Start and end dates that define a range in which we haven't
         # ingested any AIPs should return no files or versions.
         ("2019-01-01", "2019-01-02", 0, 0, 0),
         # Invalid values for start and end dates should be treated as
         # None values and return both JPEG versions.
-        (True, "NOT A DATE", 3, 3, TOTAL_FILE_SIZE),
+        (True, "NOT A DATE", 2, 3, TOTAL_FILE_SIZE),
     ],
 )
-def test_format_versions_count_contents(
+def test_formats_count_contents(
     app_with_populated_format_versions,
     start_date,
     end_date,
-    version_count,
+    format_count,
     total_file_count,
     total_file_size,
 ):
@@ -161,18 +133,17 @@ def test_format_versions_count_contents(
     This integration test uses a pre-populated fixture to verify that
     the database access layer of our endpoint returns what we expect.
     """
-    results = report_data.format_versions_count(
+    results = report_data.formats_count(
         storage_service_id=1,
         start_date=parse_datetime_bound(start_date),
         end_date=parse_datetime_bound(end_date, upper=True),
     )
-    versions = results[fields.FIELD_FORMAT_VERSIONS]
-    assert len(versions) == version_count
+    formats = results[fields.FIELD_FORMATS]
+    assert len(formats) == format_count
     assert (
-        sum(version.get(fields.FIELD_COUNT, 0) for version in versions)
+        sum(format_.get(fields.FIELD_COUNT, 0) for format_ in formats)
         == total_file_count
     )
     assert (
-        sum(version.get(fields.FIELD_SIZE, 0) for version in versions)
-        == total_file_size
+        sum(format_.get(fields.FIELD_SIZE, 0) for format_ in formats) == total_file_size
     )

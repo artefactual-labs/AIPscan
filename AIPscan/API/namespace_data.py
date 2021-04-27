@@ -25,42 +25,42 @@ data = api.model('Data', {
 
 
 @api.route("/aip-overview/<storage_service_id>")
-class FMTList(Resource):
+class AIPList(Resource):
     @api.doc(
         "list_formats",
         params={
             fields.FIELD_ORIGINAL_FILES: {
-                "description": "Return data for original files or copies",
+                "description": "Return data on original files or preservation derivatives",
                 "in": "query",
                 "type": "bool",
             }
         },
     )
     def get(self, storage_service_id):
-        """List PUIDs and AIPs containing examples of them"""
+        """Return data on AIPs and the file formats they contain."""
         original_files = parse_bool(request.args.get(fields.FIELD_ORIGINAL_FILES, True))
-        aip_data = data.aip_overview(
+        aip_data = data.aip_file_format_overview(
             storage_service_id=storage_service_id, original_files=original_files
         )
         return aip_data
 
 
 @api.route("/fmt-overview/<storage_service_id>")
-class AIPList(Resource):
+class FMTList(Resource):
     @api.doc(
         "list_formats",
         params={
             fields.FIELD_ORIGINAL_FILES: {
-                "description": "Return data for original files or preservation derivatives",
+                "description": "Return data on original files or preservation derivatives",
                 "in": "query",
                 "type": "bool",
             }
         },
     )
     def get(self, storage_service_id):
-        """List AIPs and a summary of the file formats they contain"""
+        """Return data on PUIDs and the AIPs they are contained within."""
         original_files = parse_bool(request.args.get(fields.FIELD_ORIGINAL_FILES, True))
-        aip_data = data.aip_overview_two(
+        aip_data = data.file_format_aip_overview(
             storage_service_id=storage_service_id, original_files=original_files
         )
         return aip_data
