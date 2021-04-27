@@ -22,3 +22,9 @@ def test_storage_service_earliest_aip_created(app_with_populated_files):
     """Test that"""
     storage_service = test_helpers.create_test_storage_service(name="storage2")
     assert storage_service.earliest_aip_created == AIP_CREATION_TIME
+
+
+def test_storage_service_earliest_aip_created_with_no_aips(app_instance):
+    """Test that"""
+    storage_service = test_helpers.create_test_storage_service(name="storage3")
+    assert storage_service.earliest_aip_created == ""
