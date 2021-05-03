@@ -2,9 +2,10 @@
 
 """This module tests models."""
 
+from datetime import date
+
 from AIPscan import test_helpers
 from AIPscan.conftest import AIP_CREATION_TIME
-from datetime import date
 
 
 def test_new_storage_service(app_with_populated_files):

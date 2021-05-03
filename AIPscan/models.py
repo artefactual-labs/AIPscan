@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import enum
+from datetime import date
 
 from AIPscan import db
-from datetime import date
 
 
 class package_tasks(db.Model):
