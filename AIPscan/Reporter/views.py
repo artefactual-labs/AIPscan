@@ -194,7 +194,7 @@ def reports():
 
     if "start_date" not in session:
         earliest_aip_created = storage_service.earliest_aip_created
-        session["start_date"] = str(earliest_aip_created.strftime("%Y-%m-%d"))
+        session["start_date"] = earliest_aip_created.strftime("%Y-%m-%d")
 
     if "end_date" not in session:
         now = datetime.now()

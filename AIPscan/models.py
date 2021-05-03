@@ -2,6 +2,7 @@
 import enum
 
 from AIPscan import db
+from datetime import date
 
 
 class package_tasks(db.Model):
@@ -54,7 +55,7 @@ class StorageService(db.Model):
         try:
             return results[0]
         except TypeError:
-            return ""
+            return date.today()
 
     @property
     def unique_file_formats(self):

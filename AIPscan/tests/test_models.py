@@ -4,6 +4,7 @@
 
 from AIPscan import test_helpers
 from AIPscan.conftest import AIP_CREATION_TIME
+from datetime import date
 
 
 def test_new_storage_service(app_with_populated_files):
@@ -27,4 +28,4 @@ def test_storage_service_earliest_aip_created(app_with_populated_files):
 def test_storage_service_earliest_aip_created_with_no_aips(app_instance):
     """Test that"""
     storage_service = test_helpers.create_test_storage_service(name="storage3")
-    assert storage_service.earliest_aip_created == ""
+    assert storage_service.earliest_aip_created == date.today()

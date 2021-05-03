@@ -200,31 +200,31 @@
         $("#startdate").datepicker({
             dateFormat: 'yy-mm-dd',
             onSelect: function(date) {
-              let enddate = $('#enddate').val();
-              if (enddate != "" && enddate < date) {
-                alert(DATE_ALERT_START);
-              }
-            fetch(`${window.origin}/reporter/update_dates/`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ "start_date": date })
-              })
-          }
+                let enddate = $('#enddate').val();
+                if (enddate != "" && enddate < date) {
+                  alert(DATE_ALERT_START);
+                }
+                fetch(`${window.origin}/reporter/update_dates/`, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ "start_date": date })
+                })
+            }
         });
 
         $("#enddate").datepicker({
             dateFormat: 'yy-mm-dd',
             onSelect: function(date) {
-              let startdate = $('#startdate').val();
-              if (startdate != "" && startdate > date) {
-                alert(DATE_ALERT_START);
-              }
-            fetch(`${window.origin}/reporter/update_dates/`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ "end_date": date })
-              })
-          }
+                let startdate = $('#startdate').val();
+                if (startdate != "" && startdate > date) {
+                  alert(DATE_ALERT_START);
+                }
+                fetch(`${window.origin}/reporter/update_dates/`, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ "end_date": date })
+                })
+            }
         });
 
         $("#report1a").on("click", function() {

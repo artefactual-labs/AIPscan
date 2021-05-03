@@ -75,8 +75,7 @@ FILE_WITH_NO_FORMAT = File(
 def test_get_format_name_and_version_from_puid(
     app_instance, mocker, puid, mock_file, expected_return_value
 ):
-    """Test that helper function returns expected string or None.
-    """
+    """Test that helper function returns expected string or None."""
     mock_get_file = mocker.patch("sqlalchemy.orm.query.Query.first")
     mock_get_file.return_value = mock_file
     assert expected_return_value == get_format_string_from_puid(puid)
