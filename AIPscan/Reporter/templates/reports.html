@@ -8,8 +8,9 @@
 
     <div class="report-opts" style="">
         <div>
-            <strong>Storage service:</strong>
-            <select id="ss" method="GET" action="/" class="form-control" style="width:auto;">
+            <i class="fa fa-database" aria-hidden="true"></i>
+            Storage service
+            <select id="ss" method="GET" action="/">
                 {% for ss in storage_services %}
                   {% if ss.id == storage_service.id %}
                     <option value="{{ ss.id }}" SELECTED>{{ ss.name }}</option>
@@ -20,17 +21,13 @@
             </select>
         </div>
         <div>
-            <span>
-                <img class="icon" src="{{ url_for('static', filename='assets/calendar-icon.png') }}" />
+            <i class="fa fa-calendar-alt" aria-hidden="true"></i>
                 Start date
-            </span>
             <input type="text" id="startdate" value="{{ start_date }}">
             </div>
         <div>
-            <span>
-                <img class="icon" src="{{ url_for('static', filename='assets/calendar-icon.png') }}" />
+            <i class="fa fa-calendar-alt" aria-hidden="true"></i>
                 End date
-            </span>
             <input type="text" id="enddate" value="{{ end_date }}">
         </div>
     </div>
