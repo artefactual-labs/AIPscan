@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import enum
+from datetime import date
 
 from AIPscan import db
 
@@ -45,6 +46,16 @@ class StorageService(db.Model):
 
     def __repr__(self):
         return "<Storage Service '{}'>".format(self.name)
+
+    @property
+    def earliest_aip_created(self):
+        results = (
+            db.session.query(AIP.create_date).order_by(AIP.create_date.desc()).first()
+        )
+        try:
+            return results[0]
+        except TypeError:
+            return date.today()
 
     @property
     def unique_file_formats(self):
