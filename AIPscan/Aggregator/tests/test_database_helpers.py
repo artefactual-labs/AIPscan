@@ -1,16 +1,37 @@
 # -*- coding: utf-8 -*-
 import os
 import uuid
+from datetime import datetime
 
 import metsrw
 import pytest
 
 from AIPscan.Aggregator import database_helpers
-from AIPscan.models import AIP, Agent
+from AIPscan.models import AIP, Agent, File, FileType
 
 FIXTURES_DIR = "fixtures"
 
 TEST_SHA_256 = "79c16fa9573ec46c5f60fd54b34f314159e0623ca53d8d2f00c5875dbb4e0dfd"
+
+BASE_FILE_DICT = {
+    "name": "newfile.ext",
+    "filepath": "/path/to/newfile.ext",
+    "uuid": str(uuid.uuid4()),
+    "date_created": datetime.now(),
+    "puid": "fmt/1",
+    "file_format": "Test Format",
+    "size": "12345",
+    "format_version": "1",
+    "checksum_type": "sha-256",
+    "checksum_value": "123456",
+}
+
+ORIGINAL_FILE_DICT = BASE_FILE_DICT.copy()
+ORIGINAL_FILE_DICT["file_type"] = FileType.original
+
+PRESERVATION_FILE_DICT = BASE_FILE_DICT.copy()
+PRESERVATION_FILE_DICT["file_type"] = FileType.preservation
+PRESERVATION_FILE_DICT["related_uuid"] = str(uuid.uuid4())
 
 
 def test_create_aip(app_instance):
@@ -114,3 +135,81 @@ def test_collect_agents(app_instance, fixture_path, number_of_unique_agents):
     mets = metsrw.METSDocument.fromfile(mets_file)
     agents = database_helpers.collect_mets_agents(mets)
     assert len(agents) == number_of_unique_agents
+
+
+@pytest.mark.parametrize(
+    "file_type, file_dict, is_original, connected_to_original",
+    [
+        # Test original file.
+        (FileType.original, ORIGINAL_FILE_DICT, True, False),
+        # Test preservation file tied to original.
+        (FileType.preservation, PRESERVATION_FILE_DICT, False, True),
+        # Test preservation file not tied to original.
+        (FileType.preservation, PRESERVATION_FILE_DICT, False, False),
+    ],
+)
+def test_create_file_object(
+    app_with_populated_files,
+    mocker,
+    file_type,
+    file_dict,
+    is_original,
+    connected_to_original,
+):
+    """Test adding files to database."""
+    aip = AIP.query.first()
+    first_original_file = File.query.filter_by(
+        aip_id=aip.id, file_type=FileType.original.value
+    ).first()
+
+    get_file_props = mocker.patch(
+        "AIPscan.Aggregator.database_helpers._get_file_properties"
+    )
+    get_file_props.return_value = file_dict
+
+    get_original_file = mocker.patch(
+        "AIPscan.Aggregator.database_helpers._get_original_file"
+    )
+    if not is_original:
+        get_original_file.return_value = first_original_file
+
+    mocker.patch("AIPscan.Aggregator.database_helpers.create_event_objects")
+    add_normalization_date = mocker.patch(
+        "AIPscan.Aggregator.database_helpers._add_normalization_date"
+    )
+
+    files_in_db = File.query.filter_by(aip_id=aip.id).all()
+    assert len(files_in_db) == 2
+    original_files = File.query.filter_by(
+        aip_id=aip.id, file_type=FileType.original
+    ).all()
+    assert len(original_files) == 1
+    preservation_files = File.query.filter_by(
+        aip_id=aip.id, file_type=FileType.preservation
+    ).all()
+    assert len(preservation_files) == 1
+
+    database_helpers.create_file_object(file_type, None, aip.id)
+
+    files_in_db = File.query.filter_by(aip_id=aip.id).all()
+    assert len(files_in_db) == 3
+    if is_original:
+        original_files = File.query.filter_by(
+            aip_id=aip.id, file_type=FileType.original
+        ).all()
+        assert len(original_files) == 2
+        preservation_files = File.query.filter_by(
+            aip_id=aip.id, file_type=FileType.preservation
+        ).all()
+        assert len(preservation_files) == 1
+        add_normalization_date.assert_not_called()
+    else:
+        original_files = File.query.filter_by(
+            aip_id=aip.id, file_type=FileType.original
+        ).all()
+        assert len(original_files) == 1
+        preservation_files = File.query.filter_by(
+            aip_id=aip.id, file_type=FileType.preservation
+        ).all()
+        assert len(preservation_files) == 2
+        add_normalization_date.assert_called_once()
