@@ -11,7 +11,15 @@
   <tr><td width=20%><strong>Name</strong></td><td>{{ storage_service.name }}</td></tr>
   <tr><td width=20%><strong>URL</strong></td><td>{{ storage_service.url}}</td></tr>
   <tr><td width=20%><strong>User name</strong></td><td>{{ storage_service.user_name}}</td></tr>
-  <tr><td width=20%><strong>API key</strong></td><td>{{ storage_service.api_key}}</td></tr>
+  <tr>
+    <td width=20%>
+      <strong>API key</strong>
+    </td>
+    <td>
+      <span id="apikey">&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull; </span>
+      <i id="apikeyBtn" class="fa fa-eye" aria-hidden="true"></i>
+    </td>
+  </tr>
   <tr><td width=20%><strong>Download limit</strong></td><td>{{ storage_service.download_limit}}</td></tr>
   <tr><td width=20%><strong>Download offset</strong></td><td>{{ storage_service.download_offset}}</td></tr>
   <tr><td width=20%><strong>Default service</strong></td><td>{{ storage_service.default}}</td></tr>
@@ -63,12 +71,23 @@
 <button type="button" class="btn btn-success" style="margin-top: 20px;" id="newfetchjob">New fetch job</button>
 
 
-
 <script>
 $(document).ready(function(){
   $('#newfetchjob').on('click', function () {
     new_fetch_job({{ storage_service.id }});
-    });
+  });
+
+  // Handle API key visibility
+  let apiKeyVisible = false;
+  let apiKeyHiddenText = '&bull;'.repeat(16)
+  $('#apikeyBtn').on('click', function () {
+    apiKeyVisible = !apiKeyVisible;
+    if (apiKeyVisible === true ) {
+      $('#apikey').text('{{ storage_service.api_key}}');
+    } else {
+      $('#apikey').html(apiKeyHiddenText);
+    }
+  });
 })
 </script>
 
