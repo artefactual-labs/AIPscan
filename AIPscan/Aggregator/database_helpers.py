@@ -8,8 +8,16 @@ from celery.utils.log import get_task_logger
 
 from AIPscan import db
 from AIPscan.Aggregator import tasks
-from AIPscan.Aggregator.task_helpers import _tz_neutral_date
-from AIPscan.models import AIP, Agent, Event, EventAgent, File, FileType
+from AIPscan.Aggregator.task_helpers import _tz_neutral_date, get_location_url
+from AIPscan.models import (
+    AIP,
+    Agent,
+    Event,
+    EventAgent,
+    File,
+    FileType,
+    StorageLocation,
+)
 
 logger = get_task_logger(__name__)
 
@@ -143,6 +151,7 @@ def create_aip_object(
     create_date,
     mets_sha256,
     storage_service_id,
+    storage_location_id,
     fetch_job_id,
 ):
     """Create an AIP object and save it to the database."""
@@ -152,6 +161,7 @@ def create_aip_object(
         create_date=_tz_neutral_date(create_date),
         mets_sha256=mets_sha256,
         storage_service_id=storage_service_id,
+        storage_location_id=storage_location_id,
         fetch_job_id=fetch_job_id,
     )
     db.session.add(aip)
@@ -166,6 +176,40 @@ def delete_aip_object(aip):
     """
     db.session.delete(aip)
     db.session.commit()
+
+
+def create_storage_location_object(current_location, description, storage_service_id):
+    """Create a StorageLocation and save it to the database."""
+    storage_location = StorageLocation(
+        current_location=current_location,
+        description=description,
+        storage_service_id=storage_service_id,
+    )
+    db.session.add(storage_location)
+    db.session.commit()
+    return storage_location
+
+
+def create_or_update_storage_location(current_location, api_url, storage_service_id):
+    """Create or update Storage Location and return it."""
+    storage_location = StorageLocation.query.filter_by(
+        current_location=current_location
+    ).first()
+    request_url, request_url_without_api_key = get_location_url(
+        api_url, current_location
+    )
+    response = tasks.make_request(request_url, request_url_without_api_key)
+    description = response.get("description")
+    if not storage_location:
+        return create_storage_location_object(
+            current_location, description, storage_service_id
+        )
+
+    if storage_location.description != description:
+        storage_location.description = description
+        db.session.commit()
+
+    return storage_location
 
 
 def _get_file_properties(fs_entry):

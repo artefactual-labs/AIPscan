@@ -12,6 +12,7 @@ from AIPscan.Data.tests import (
     MOCK_STORAGE_SERVICE_ID,
     MOCK_STORAGE_SERVICE_NAME,
 )
+from AIPscan.test_helpers import create_test_storage_location
 
 
 @pytest.mark.parametrize(
@@ -28,16 +29,23 @@ from AIPscan.Data.tests import (
 )
 def test_aips_by_puid(app_instance, mocker, query_results, results_count):
     """Test that results match high-level expectations."""
-    mock_query = mocker.patch(
-        "AIPscan.Data.report_data._query_aips_by_file_format_or_puid"
+    query = mocker.patch("AIPscan.Data.report_data._query_aips_by_file_format_or_puid")
+    query.return_value = query_results
+
+    get_ss = mocker.patch("AIPscan.Data._get_storage_service")
+    get_ss.return_value = MOCK_STORAGE_SERVICE
+
+    test_location = create_test_storage_location()
+    get_location = mocker.patch("AIPscan.Data._get_storage_location")
+    get_location.return_value = test_location
+
+    report = report_data.aips_by_puid(
+        storage_service_id=MOCK_STORAGE_SERVICE_ID,
+        storage_location_id=test_location.id,
+        puid="fmt/###",
     )
-    mock_query.return_value = query_results
-
-    mock_get_ss = mocker.patch("AIPscan.Data.report_data._get_storage_service")
-    mock_get_ss.return_value = MOCK_STORAGE_SERVICE
-
-    report = report_data.aips_by_puid(MOCK_STORAGE_SERVICE_ID, "fmt/###")
     assert report[fields.FIELD_STORAGE_NAME] == MOCK_STORAGE_SERVICE_NAME
+    assert report[fields.FIELD_STORAGE_LOCATION] == test_location.description
     assert len(report[fields.FIELD_AIPS]) == results_count
 
 
@@ -51,8 +59,8 @@ def test_aips_by_puid_aip_elements(app_instance, mocker, test_aip):
     )
     mock_query.return_value = [test_aip]
 
-    mock_get_ss = mocker.patch("AIPscan.Data.report_data._get_storage_service")
-    mock_get_ss.return_value = MOCK_STORAGE_SERVICE
+    mock_get_ss_name = mocker.patch("AIPscan.Data._get_storage_service")
+    mock_get_ss_name.return_value = MOCK_STORAGE_SERVICE
 
     report = report_data.aips_by_puid(MOCK_STORAGE_SERVICE_ID, "fmt/###")
     report_aip = report[fields.FIELD_AIPS][0]

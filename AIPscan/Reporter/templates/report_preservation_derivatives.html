@@ -7,7 +7,12 @@
   {% include "report_buttons.html" %}
 
   <strong>Report: Preservation derivatives</strong><br>
-  <strong>Storage Service:</strong> {{ storage_service_name }}<br>
+  <strong>Storage Service:</strong> {{ storage_service_name }}
+  <br>
+  {% if storage_location_description %}
+    <strong>Location:</strong> {{ storage_location_description }}
+    <br>
+  {% endif %}
   {{ total_files }} preservation derivatives found across {{ aips|length }} AIPs
 </div>
 
@@ -15,6 +20,7 @@
 
 <!-- Hidden elements we want available from JS for URL generation -->
 <span id="storageServiceID" style="display:none;">{{ storage_service_id }}</span>
+<span id="storageLocationID" style="display:none;">{{ storage_location_id }}</span>
 
 <!-- AIP selector -->
 <div class="noprint" style="margin-bottom: 10px;">
@@ -45,17 +51,25 @@
             <span class="text-muted"><small>UUID: {{ file_["AIPUUID"] }}</small></span>
           </td>
           <td>
-            {{ file_["OriginalName"] }}
-            <br>
-            <span class="text-muted"><small>UUID: {{ file_["OriginalUUID"] }}</small></span>
+            {% if file_["OriginalName"] %}
+              {{ file_["OriginalName"] }}
+              <br>
+              <span class="text-muted"><small>UUID: {{ file_["OriginalUUID"] }}</small></span>
+            {% else %}
+              n/a
+            {% endif %}
           </td>
           <td>
-            {{ file_["OriginalFormat"] }}
-            {% if file_["OriginalVersion"] %}
-              <span> ({{ file_["OriginalVersion"] }})</span>
+            {% if file_["OriginalFormat"] %}
+              {{ file_["OriginalFormat"] }}
+              {% if file_["OriginalVersion"] %}
+                <span> ({{ file_["OriginalVersion"] }})</span>
+              {% endif %}
+              <br>
+              <span class="text-muted"><small>PUID: {{ file_["OriginalPUID"] }}</small></span>
+            {% else %}
+              n/a
             {% endif %}
-            <br>
-            <span class="text-muted"><small>PUID: {{ file_["OriginalPUID"] }}</small></span>
           </td>
           <td>
             {{ file_["Name"] }}

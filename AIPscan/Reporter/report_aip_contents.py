@@ -84,17 +84,22 @@ def _get_aip_puid_count(storage_service_id, aip_uuid, puid):
 def aip_contents():
     """Return AIP contents organized by format."""
     storage_service_id = request.args.get(request_params.STORAGE_SERVICE_ID)
+    storage_location_id = request.args.get(request_params.STORAGE_LOCATION_ID)
     csv = parse_bool(request.args.get(request_params.CSV), default=False)
 
-    aip_data = data.aip_file_format_overview(storage_service_id=storage_service_id)
+    aip_data = data.aip_file_format_overview(
+        storage_service_id=storage_service_id, storage_location_id=storage_location_id
+    )
 
     format_lookup = aip_data[fields.FIELD_FORMATS]
     format_headers = list(aip_data[fields.FIELD_FORMATS].keys())
 
     storage_name = aip_data[fields.FIELD_STORAGE_NAME]
+    storage_location_description = aip_data[fields.FIELD_STORAGE_LOCATION]
 
     aip_data.pop(fields.FIELD_FORMATS, None)
     aip_data.pop(fields.FIELD_STORAGE_NAME, None)
+    aip_data.pop(fields.FIELD_STORAGE_LOCATION, None)
     rows = []
     for k, v in aip_data.items():
         row = []
@@ -126,6 +131,7 @@ def aip_contents():
         "report_aip_contents.html",
         storage_service=storage_service_id,
         storage_service_name=storage_name,
+        storage_location_description=storage_location_description,
         aip_data=aip_data,
         columns=headers,
         rows=rows,

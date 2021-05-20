@@ -1,0 +1,42 @@
+{% extends "report_base.html" %}
+
+{% block content %}
+
+<div class="alert alert-secondary">
+
+  {% include "report_buttons.html" %}
+
+  <strong>Report: AIP Storage Locations</strong>
+  <br>
+  <strong>Storage Service:</strong> {{ storage_service_name }}
+  <br>
+  <strong>Start date:</strong> {{ start_date.strftime('%Y-%m-%d') }}
+  <br>
+  <strong>End date:</strong> {{ end_date.strftime('%Y-%m-%d') }}
+</div>
+
+{% if locations %}
+  <table class="table table-striped table-bordered">
+  	<thead>
+      <tr>
+      {% for column in columns %}
+        <th>{{ column }}</th>
+      {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for location in locations %}
+        <tr>
+          <td>{{ location["UUID"] }}</td>
+          <td>{{ location["StorageLocation"] }}</td>
+          <td>{{ location["AIPs"] }}</td>
+          <td>{{ location["Size"] | filesizeformat }} </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <p class="h4" style="margin-top:20px;">No Storage Locations to display.</p>
+{% endif %}
+
+{% endblock %}

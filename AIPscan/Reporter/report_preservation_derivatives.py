@@ -32,20 +32,6 @@ CSV_HEADERS = [
 ]
 
 
-def _filter_by_aip_uuid(derivative_files, aip_uuid):
-    """Return count of AIPs represented in data.
-
-    :param derivative files: Derivative files from report endpoint data (list
-        of dicts)
-    :param aip_uuid: AIP UUID to filter on (str)
-
-    :returns: Filtered derivative_files (list of dicts)
-    """
-    return [
-        file_ for file_ in derivative_files if file_[fields.FIELD_AIP_UUID] == aip_uuid
-    ]
-
-
 def _get_unique_aips(derivative_files):
     """Return list of AIPs represented in data.
 
@@ -74,20 +60,20 @@ def _get_unique_aips(derivative_files):
 def preservation_derivatives():
     """Return a report of derivative files mapped to AIPs and originals."""
     storage_service_id = request.args.get(request_params.STORAGE_SERVICE_ID)
+    storage_location_id = request.args.get(request_params.STORAGE_LOCATION_ID)
     csv = parse_bool(request.args.get(request_params.CSV), default=False)
     aip_uuid = request.args.get(request_params.AIP_UUID)
 
     headers = translate_headers(HEADERS)
 
-    derivative_data = report_data.preservation_derivatives(storage_service_id)
+    derivative_data = report_data.preservation_derivatives(
+        storage_service_id, storage_location_id, aip_uuid
+    )
     derivative_files = derivative_data[fields.FIELD_FILES]
 
     total_files = len(derivative_files)
 
     unique_aips = _get_unique_aips(derivative_files)
-
-    if aip_uuid:
-        derivative_files = _filter_by_aip_uuid(derivative_files, aip_uuid)
 
     if csv:
         filename = "preservation_derivatives.csv"
@@ -98,6 +84,8 @@ def preservation_derivatives():
         "report_preservation_derivatives.html",
         storage_service_id=storage_service_id,
         storage_service_name=derivative_data.get(fields.FIELD_STORAGE_NAME),
+        storage_location_id=storage_location_id,
+        storage_location_description=derivative_data.get(fields.FIELD_STORAGE_LOCATION),
         columns=headers,
         files=derivative_files,
         total_files=total_files,

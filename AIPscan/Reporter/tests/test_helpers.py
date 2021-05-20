@@ -56,8 +56,8 @@ def test_download_csv(app_instance, mocker):
         "AIPscan.Data.report_data._query_aips_by_file_format_or_puid"
     )
     mock_query.return_value = query_results
-    mock_get_ss = mocker.patch("AIPscan.Data.report_data._get_storage_service")
-    mock_get_ss.return_value = STORAGE_SERVICE
+    mock_get_ss_name = mocker.patch("AIPscan.Data._get_storage_service")
+    mock_get_ss_name.return_value = STORAGE_SERVICE
 
     headers = helpers.translate_headers(HEADERS)
 

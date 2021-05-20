@@ -25,6 +25,7 @@ class StorageServicePackage(object):
         SIP = "sip"
 
         UUID = "uuid"
+        CURRENT_LOCATION = "current_location"
         CURRENT_PATH = "current_path"
 
         self.deleted = False
@@ -33,6 +34,7 @@ class StorageServicePackage(object):
         self.dip = False
         self.sip = False
         self.uuid = None
+        self.current_location = None
         self.current_path = None
 
         if kwargs:
@@ -42,6 +44,7 @@ class StorageServicePackage(object):
             self.dip = kwargs.get(DIP, self.dip)
             self.sip = kwargs.get(SIP, self.sip)
             self.uuid = kwargs.get(UUID, self.uuid)
+            self.current_location = kwargs.get(CURRENT_LOCATION, self.current_location)
             self.current_path = kwargs.get(CURRENT_PATH, self.uuid)
 
     def __repr__(self):
@@ -64,6 +67,8 @@ class StorageServicePackage(object):
         if self.replica != other.replica:
             ret = False
         if self.uuid != other.uuid:
+            ret = False
+        if self.current_location != other.current_location:
             ret = False
         if self.current_path != other.current_path:
             ret = False

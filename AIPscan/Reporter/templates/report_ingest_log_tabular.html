@@ -8,67 +8,71 @@
 
 {% block content %}
 
-  <div class="alert alert-secondary">
-    
-    {% include "report_buttons.html" %}
-    
-    <strong>User ingest log</strong>
+<div class="alert alert-secondary">
+  
+  {% include "report_buttons.html" %}
+  
+  <strong>User ingest log</strong>
+  <br>
+  <strong>Storage Service:</strong> {{ storage_service_name }}
+  <br>
+  {% if storage_location_description %}
+    <strong>Location:</strong> {{ storage_location_description }}
     <br>
-    <strong>Storage service:</strong> {{ storage_service_name }}
-    <br>
-    <strong>Number of transfers:</strong> {{ number_of_transfers }}
-  </div>
-    <div>
-      <table id="selectedColumn"
-          class="table table-striped table-bordered table-sm table-hover"
-          width="100%">
-        <thead>
-          <tr>
-            <td>
-              <i class="header fas fa-users" title="User Name"></i>User
-            </td>
-            <td>
-              <i class="header fas fa-archive" title="Transfer Name"></i>Transfer
-            </td>
-            <td>
-              <i class="header fas fa-fingerprint" title="UUID for the AIP"></i>AIP UUID
-            </td>
-            <td>
-              <i class="header fas fa-calendar-alt" title="Start Date"></i>Start Date
-            </td>
-            <td>
-              <i class="header fas fa-calendar-alt" title="End Date"></i>End Date
-            </td>
-            <td>
-              <i class="header fas fa-stopwatch" title="Transfer Duration" /></i>Duration
-            </td>
-          </tr>
-        </thead>
-        <tbody>
-          {% for row in data %}
-            <tr>
-              <td id="user">
-                <b>{{ row["User"] }}</b>
-              </td>
-              <td>
-                {{ row["AIPName"] }}
-              </td>
-              <td>
-                <code><span class="text-muted">{{ row["AIPUUID"] }}</span></code>
-              </td>
-              <td>
-                {{ row["IngestStartDate"] }}
-              </td>
-              <td>
-                {{ row["IngestFinishDate"] }}
-              </td>
-              <td>
-                {{ row["Duration"] }}
-              </td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
+  {% endif %}
+  <strong>Number of transfers:</strong> {{ number_of_transfers }}
+</div>
+<div>
+  <table id="selectedColumn"
+      class="table table-striped table-bordered table-sm table-hover"
+      width="100%">
+    <thead>
+      <tr>
+        <td>
+          <i class="header fas fa-users" title="User Name"></i>User
+        </td>
+        <td>
+          <i class="header fas fa-archive" title="Transfer Name"></i>Transfer
+        </td>
+        <td>
+          <i class="header fas fa-fingerprint" title="UUID for the AIP"></i>AIP UUID
+        </td>
+        <td>
+          <i class="header fas fa-calendar-alt" title="Start Date"></i>Start Date
+        </td>
+        <td>
+          <i class="header fas fa-calendar-alt" title="End Date"></i>End Date
+        </td>
+        <td>
+          <i class="header fas fa-stopwatch" title="Transfer Duration" /></i>Duration
+        </td>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in data %}
+        <tr>
+          <td id="user">
+            <b>{{ row["User"] }}</b>
+          </td>
+          <td>
+            {{ row["AIPName"] }}
+          </td>
+          <td>
+            <code><span class="text-muted">{{ row["AIPUUID"] }}</span></code>
+          </td>
+          <td>
+            {{ row["IngestStartDate"] }}
+          </td>
+          <td>
+            {{ row["IngestFinishDate"] }}
+          </td>
+          <td>
+            {{ row["Duration"] }}
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
 
 {% endblock %}

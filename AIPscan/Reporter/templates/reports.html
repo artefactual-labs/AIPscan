@@ -6,406 +6,483 @@
 
 {% if storage_services %}
 
-    <div class="report-opts" style="">
-        <div>
-            <i class="fa fa-database" aria-hidden="true"></i>
-            Storage service
-            <select id="ss" method="GET" action="/">
-                {% for ss in storage_services %}
-                  {% if ss.id == storage_service.id %}
-                    <option value="{{ ss.id }}" SELECTED>{{ ss.name }}</option>
-                  {% else %}
-                    <option value="{{ ss.id }}">{{ ss.name }}</option>
-                  {% endif %}
-                {% endfor %}
+  <!-- First row: Storage Service and Start date -->
+  <div class="report-opts">
+    <div>
+      <span class="fixed-width-menu-span-left">
+        <i class="fa fa-database" aria-hidden="true"></i>
+        Storage Service
+      </span>
+      <select id="ss" method="GET" action="/">
+          {% for ss in storage_services %}
+            {% if ss.id == storage_service.id %}
+              <option value="{{ ss.id }}" SELECTED>{{ ss.name }}</option>
+            {% else %}
+              <option value="{{ ss.id }}">{{ ss.name }}</option>
+            {% endif %}
+          {% endfor %}
+      </select>
+    </div>
+    <div>
+      <span class="fixed-width-menu-span-right">
+        <i class="fa fa-calendar-alt" aria-hidden="true"></i>
+            Start date
+      </span>
+      <input type="text" id="startdate" value="{{ start_date }}">
+    </div>
+  </div>
+  <!-- Second row: Location and End date -->
+  <div class="report-opts">
+    <div>
+      <span class="fixed-width-menu-span-left">
+        <i class="fa fa-archive" aria-hidden="true"></i>
+        Location
+      </span>
+      <select id="sl" method="GET" action="/">
+          <option value="">All locations</option>
+          {% for sl in storage_locations %}
+            {% if sl.id == storage_location.id %}
+              <option value="{{ sl.id }}" SELECTED>{{ sl.description }}</option>
+            {% else %}
+              <option value="{{ sl.id }}">{{ sl.description }}</option>
+            {% endif %}
+          {% endfor %}
+      </select>
+    </div>
+    <div>
+      <span class="fixed-width-menu-span-right">
+        <i class="fa fa-calendar-alt" aria-hidden="true"></i>
+            End date
+      </span>
+      <input type="text" id="enddate" value="{{ end_date }}">
+    </div>
+  </div>
+
+  <!-- Original file formats indicates data has been fetched for this Storage Service -->
+  {% if original_file_formats %}
+
+  <table class="table table-striped table-bordered" style="margin-top: 1.25rem;">
+
+      <tr>
+          <th>Report</th>
+          <th>Additional parameters</th>
+          <th>Format</th>
+      </tr>
+
+      <tr>
+          <td>AIP contents</td>
+          <td></td>
+          <td><a href="#"><button type="button" id="report2a" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a></td>
+      </tr>
+
+      <tr>
+          <td>File format count</td>
+          <td>Uses date fields</td>
+          <td><a href=""><button type="button" id="report1a" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a><a href=""><button type="button" id="report1b" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Pie Chart</button></a><a href=""><button type="button" id="report1c" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Scatter Plot</button></a></td>
+      </tr>
+
+      <tr>
+          <td>Format version count</td>
+          <td>Uses date fields</td>
+          <td><a href="#"><button type="button" id="report3a" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a></td>
+      </tr>
+
+      <tr>
+          <td>Preservation derivatives</td>
+          <td></td>
+          <td><a href="#"><button type="button" id="preservationDerivatives" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a></td>
+      </tr>
+
+      <tr>
+          <td>Largest files</td>
+          <td></td>
+          <td><a href="#"><button type="button" id="report9a" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a></td>
+      </tr>
+
+      <tr>
+          <td>
+              File format
+              <br>
+              <span class="text-muted">AIPs containing original files in given file format.</span>
+          </td>
+          <td>
+            <select id="originalFormatSelect" method="GET" action="/" class="form-control" style="width:auto;">
+              {% for file_format in original_file_formats %}
+                <option value="{{ file_format }}">{{ file_format }}</option>
+              {% endfor %}
             </select>
-        </div>
-        <div>
-            <i class="fa fa-calendar-alt" aria-hidden="true"></i>
-                Start date
-            <input type="text" id="startdate" value="{{ start_date }}">
-            </div>
-        <div>
-            <i class="fa fa-calendar-alt" aria-hidden="true"></i>
-                End date
-            <input type="text" id="enddate" value="{{ end_date }}">
-        </div>
-    </div>
+          </td>
+          <td><a href="#"><button type="button" id="aipsByOriginalFormat" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a></td>
+      </tr>
 
-    <!-- Original file formats indicates data has been fetched for this Storage Service -->
-    {% if original_file_formats %}
+      <tr>
+          <td>
+              File format version
+              <br>
+              <span class="text-muted">AIPs containing original files in given file format version, specified by PUID.</span>
+          </td>
+          <td>
+            <select id="originalPUIDSelect" method="GET" action="/" class="form-control" style="width:auto;">
+              {% for puid in original_puids %}
+                <option value="{{ puid }}">{{ puid }}</option>
+              {% endfor %}
+            </select>
+          </td>
+          <td><a href="#"><button type="button" id="aipsByOriginalPUID" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a></td>
+      </tr>
 
-    <table class="table table-striped table-bordered" style="margin-top: 1.25rem;">
+      {% if preservation_file_formats %}
+          <tr>
+              <td>
+                  File format (preservation)
+                  <br>
+                  <span class="text-muted">AIPs containing normalized preservation derivatives in given file format.</span>
+              </td>
+              <td>
+                <select id="preservationFormatSelect" method="GET" action="/" class="form-control" style="width:auto;">
+                  {% for file_format in preservation_file_formats %}
+                    <option value="{{ file_format }}">{{ file_format }}</option>
+                  {% endfor %}
+                </select>
+              </td>
+              <td><a href="#"><button type="button" id="aipsByPreservationFormat" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a></td>
+          </tr>
+      {% endif %}
 
-        <tr>
-            <th>Report</th>
-            <th>Additional parameters</th>
-            <th>Format</th>
-        </tr>
+      {% if preservation_puids %}
+          <tr>
+              <td>
+                  File format version (preservation)
+                  <br>
+                  <span class="text-muted">AIPs containing normalized preservation derivatives in given file format version, specified by PUID.</span>
+              </td>
+              <td>
+                <select id="preservationPUIDSelect" method="GET" action="/" class="form-control" style="width:auto;">
+                  {% for puid in preservation_puids %}
+                    <option value="{{ puid }}">{{ puid }}</option>
+                  {% endfor %}
+                </select>
+              </td>
+              <td><a href="#"><button type="button" id="aipsByPreservationPUID" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a></td>
+          </tr>
+      {% endif %}
 
-        <tr>
-            <td>AIP contents</td>
-            <td></td>
-            <td><a href="#"><button type="button" id="report2a" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a></td>
-        </tr>
+      <tr>
+          <td>User ingest log </td>
+          <td></td>
+          <td>
+              <a href="#"><button type="button" id="transferLogTabular" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a>
+              <a href="#"><button type="button" id="transferLogGantt" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Gantt Chart</button></a>
+          </td>
+      </tr>
 
-        <tr>
-            <td>File format count</td>
-            <td></td>
-            <td><a href=""><button type="button" id="report1a" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a><a href=""><button type="button" id="report1b" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Pie Chart</button></a><a href=""><button type="button" id="report1c" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Scatter Plot</button></a></td>
-        </tr>
+      <tr>
+          <td>
+              AIP storage locations
+              <br>
+              <span class="text-muted">Overview of AIP storage locations in the selected Storage Service, ignoring Location filter.</span>
+          </td>
+          <td>Uses date fields</td>
+          <td>
+              <a href="#"><button type="button" id="storageLocations" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a>
+          </td>
+      </tr>
 
-        <tr>
-            <td>Format version count</td>
-            <td>Uses date fields</td>
-            <td><a href="#"><button type="button" id="report3a" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a></td>
-        </tr>
+  </table>
 
-        <tr>
-            <td>Preservation derivatives</td>
-            <td></td>
-            <td><a href="#"><button type="button" id="preservationDerivatives" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a></td>
-        </tr>
+  {% else %}
 
-        <tr>
-            <td>Largest files</td>
-            <td></td>
-            <td><a href="#"><button type="button" id="report9a" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a></td>
-        </tr>
+  <div style="padding:1em;">
+      No data available. Run a Fetch Job to populate AIPscan with data from this Storage Service or select a different Storage Service.
+  </div>
 
-        <tr>
-            <td>
-                File format
-                <br>
-                <span class="text-muted">AIPs containing original files in given file format.</span>
-            </td>
-            <td>
-              <select id="originalFormatSelect" method="GET" action="/" class="form-control" style="width:auto;">
-                {% for file_format in original_file_formats %}
-                  <option value="{{ file_format }}">{{ file_format }}</option>
-                {% endfor %}
-              </select>
-            </td>
-            <td><a href="#"><button type="button" id="aipsByOriginalFormat" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a></td>
-        </tr>
-
-        <tr>
-            <td>
-                File format version
-                <br>
-                <span class="text-muted">AIPs containing original files in given file format version, specified by PUID.</span>
-            </td>
-            <td>
-              <select id="originalPUIDSelect" method="GET" action="/" class="form-control" style="width:auto;">
-                {% for puid in original_puids %}
-                  <option value="{{ puid }}">{{ puid }}</option>
-                {% endfor %}
-              </select>
-            </td>
-            <td><a href="#"><button type="button" id="aipsByOriginalPUID" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a></td>
-        </tr>
-
-        {% if preservation_file_formats %}
-            <tr>
-                <td>
-                    File format (preservation)
-                    <br>
-                    <span class="text-muted">AIPs containing normalized preservation derivatives in given file format.</span>
-                </td>
-                <td>
-                  <select id="preservationFormatSelect" method="GET" action="/" class="form-control" style="width:auto;">
-                    {% for file_format in preservation_file_formats %}
-                      <option value="{{ file_format }}">{{ file_format }}</option>
-                    {% endfor %}
-                  </select>
-                </td>
-                <td><a href="#"><button type="button" id="aipsByPreservationFormat" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a></td>
-            </tr>
-        {% endif %}
-
-        {% if preservation_puids %}
-            <tr>
-                <td>
-                    File format version (preservation)
-                    <br>
-                    <span class="text-muted">AIPs containing normalized preservation derivatives in given file format version, specified by PUID.</span>
-                </td>
-                <td>
-                  <select id="preservationPUIDSelect" method="GET" action="/" class="form-control" style="width:auto;">
-                    {% for puid in preservation_puids %}
-                      <option value="{{ puid }}">{{ puid }}</option>
-                    {% endfor %}
-                  </select>
-                </td>
-                <td><a href="#"><button type="button" id="aipsByPreservationPUID" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a></td>
-            </tr>
-        {% endif %}
-
-        <tr>
-            <td>User ingest log </td>
-            <td></td>
-            <td>
-                <a href="#"><button type="button" id="transferLogTabular" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular Chart</button></a>
-                <a href="#"><button type="button" id="transferLogGantt" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Gantt Chart</button></a>
-            </td>
-        </tr>
-
-    </table>
-
-    {% else %}
-
-    <div style="padding:1em;">
-        No data available. Run a Fetch Job to populate AIPscan with data from this Storage Service or select a different Storage Service.
-    </div>
-
-    {% endif %}
+  {% endif %}
 
 {% else %}
 
-    <div style="padding:1em;">
-        Storage Service information is not yet available for reporting. <a href="{{ url_for('aggregator.storage_services') }}">Configure a Storage Service</a> and run a Fetch Job to get started.</a>
-    </div>
+  <div style="padding:1em;">
+      Storage Service information is not yet available for reporting. <a href="{{ url_for('aggregator.storage_services') }}">Configure a Storage Service</a> and run a Fetch Job to get started.</a>
+  </div>
 
 {% endif %}
 
-
-<!-- TODO: Let's get this into a separate JS and import it... -->
 <script>
-    $(document).ready(function() {
-        // Refresh page with storage_service_id parameter when user selects a
-        // Storage Service from the dropdown list. This enables us to provide
-        // lists of the file formats and PUIDs in a given Storage Service to
-        // the reports template for use in dropdown selectors.
-        $("#ss").on("change", function() {
-          var storageServiceId = $('#ss').val();
-          var url = window.location.origin +
-            '/reporter/reports?' +
-            'amss_id=' +
-            storageServiceId;
-          window.location.href = url;
-        });
+$(document).ready(function() {
+  var storageServiceId = $('#ss').val();
+  var storageLocationId = $('#sl').val();
 
-        const DATE_ALERT_START = 'The start date must be before the end date';
-        const DATE_ALERT_END = 'The end date must be after the start date';
+  const DATE_ALERT_START = 'The start date must be before the end date';
+  const DATE_ALERT_END = 'The end date must be after the start date';
 
-        $("#startdate").datepicker({
-            dateFormat: 'yy-mm-dd',
-            onSelect: function(date) {
-                let enddate = $('#enddate').val();
-                if (enddate != "" && enddate < date) {
-                  alert(DATE_ALERT_START);
-                }
-                fetch(`${window.origin}/reporter/update_dates/`, {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ "start_date": date })
-                })
-            }
-        });
+  function reloadPage (ignoreLocation) {
+    var storageServiceId = $('#ss').val();
+    var storageLocationId = $ ('#sl').val();
+    var url = (
+      window.location.origin +
+      '/reporter/reports?' +
+      'amss_id=' +
+      storageServiceId
+    );
+    if (ignoreLocation !== true) {
+      url += '&storage_location=' + storageLocationId;
+    }
+    window.location.href = url;
+  }
 
-        $("#enddate").datepicker({
-            dateFormat: 'yy-mm-dd',
-            onSelect: function(date) {
-                let startdate = $('#startdate').val();
-                if (startdate != "" && startdate > date) {
-                  alert(DATE_ALERT_START);
-                }
-                fetch(`${window.origin}/reporter/update_dates/`, {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ "end_date": date })
-                })
-            }
-        });
+  $("#ss").on("change", function() {
+    reloadPage(true);
+  });
 
-        $("#report1a").on("click", function() {
-            var startdate = $('#startdate').val();
-            var enddate = $('#enddate').val();
-            if (enddate < startdate) {
-                alert(DATE_ALERT_START);
-            } else {
-                var storageServiceId = $('#ss').val();
-                var url = window.location.origin +
-                    '/reporter/report_formats_count?start_date=' +
-                    startdate +
-                    '&end_date=' +
-                    enddate +
-                    '&amss_id=' +
-                    storageServiceId
-                window.open(url);
-            }
-        });
-        $("#report1b").on("click", function() {
-            var startdate = $('#startdate').val();
-            var enddate = $('#enddate').val();
-            if (enddate < startdate) {
-                alert(DATE_ALERT_START);
-            } else {
-                var storageServiceId = $('#ss').val();
-                var url = window.location.origin +
-                    '/reporter/chart_formats_count?start_date=' +
-                    startdate +
-                    '&end_date=' +
-                    enddate +
-                    '&amss_id=' +
-                    storageServiceId
-                window.open(url);
-            }
-        });
-        $("#report1c").on("click", function() {
-            var startdate = $('#startdate').val();
-            var enddate = $('#enddate').val();
-            if (enddate < startdate) {
-                alert(DATE_ALERT_START);
-            } else {
-                var storageServiceId = $('#ss').val();
-                var url = window.location.origin +
-                    '/reporter/plot_formats_count?start_date=' +
-                    startdate +
-                    '&end_date=' +
-                    enddate +
-                    '&amss_id=' +
-                    storageServiceId
-                window.open(url);
-            }
-        });
-        $("#report2a").on("click", function() {
-            const URL_AIP_CONTENTS = "/reporter/aip_contents/"
-            var storageServiceID = $('#ss').val();
-            var url = (
-              window.location.origin +
-              URL_AIP_CONTENTS +
-              '?amss_id=' +
-              storageServiceID
-            );
-            window.open(url);
-        });
-        $("#report3a").on("click", function() {
-            var startdate = $('#startdate').val();
-            var enddate = $('#enddate').val();
-            if (enddate < startdate) {
-                alert(DATE_ALERT_START);
-            } else {
-                const URL_FORMAT_VERSION_COUNT = "/reporter/report_format_versions_count/";
-                var storageServiceID = $('#ss').val();
-                var url = (
-                  window.location.origin +
-                  URL_FORMAT_VERSION_COUNT +
-                  '?amss_id=' +
-                  storageServiceID +
-                  '&start_date=' +
-                  startdate +
-                  '&end_date=' +
-                  enddate
-                );
-                window.open(url);
-            }
-        });
-        $("#preservationDerivatives").on("click", function() {
-            const URL_AIP_CONTENTS = "/reporter/preservation_derivatives/";
-            var storageServiceID = $('#ss').val();
-            var url = (
-              window.location.origin +
-              URL_AIP_CONTENTS +
-              '?amss_id=' +
-              storageServiceID
-            );
-            window.open(url);
-        });
-        $("#report9a").on("click", function() {
-            const URL_LARGEST_FILES = "/reporter/largest_files/";
-            var storageServiceID = $('#ss').val();
-            var url = (
-              window.location.origin +
-              URL_LARGEST_FILES +
-              '?amss_id=' +
-              storageServiceID
-            );
-            window.open(url);
-        });
-        $("#aipsByOriginalFormat").on("click", function() {
-            const URL_AIP_CONTENTS = "/reporter/aips_by_file_format/";
-            var storageServiceID = $('#ss').val();
-            var fileFormat = $('#originalFormatSelect').val();
-            var url = (
-              window.location.origin +
-              URL_AIP_CONTENTS +
-              '?amss_id=' +
-              storageServiceID +
-              '&file_format=' +
-              fileFormat +
-              '&original_files=True'
-            );
-            window.open(url);
-        });
-        $("#aipsByPreservationFormat").on("click", function() {
-            const URL_AIP_CONTENTS = "/reporter/aips_by_file_format/";
-            var storageServiceID = $('#ss').val();
-            var fileFormat = $('#preservationFormatSelect').val();
-            var url = (
-              window.location.origin +
-              URL_AIP_CONTENTS +
-              '?amss_id=' +
-              storageServiceID +
-              '&file_format=' +
-              fileFormat +
-              '&original_files=False'
-            );
-            window.open(url);
-        });
-        $("#aipsByOriginalPUID").on("click", function() {
-            const URL_AIP_CONTENTS = "/reporter/aips_by_puid/";
-            var storageServiceID = $('#ss').val();
-            var puid = $('#originalPUIDSelect').val();
-            var url = (
-              window.location.origin +
-              URL_AIP_CONTENTS +
-              '?amss_id=' +
-              storageServiceID +
-              '&puid=' +
-              puid +
-              '&original_files=True'
-            );
-            window.open(url);
-        });
-        $("#aipsByPreservationPUID").on("click", function() {
-            const URL_AIP_CONTENTS = "/reporter/aips_by_puid/";
-            var storageServiceID = $('#ss').val();
-            var puid = $('#preservationPUIDSelect').val();
-            var url = (
-              window.location.origin +
-              URL_AIP_CONTENTS +
-              '?amss_id=' +
-              storageServiceID +
-              '&puid=' +
-              puid +
-              '&original_files=False'
-            );
-            window.open(url);
-        });
-       $("#transferLogTabular").on("click", function() {
-            const URL_AIP_CONTENTS = "/reporter/ingest_log_tabular/";
-            var storageServiceID = $('#ss').val();
-            var url = (
-              window.location.origin +
-              URL_AIP_CONTENTS +
-              '?amss_id=' +
-              storageServiceID
-            );
-            window.open(url);
-        });
-        $("#transferLogGantt").on("click", function() {
-            const URL_AIP_CONTENTS = "/reporter/ingest_log_gantt/";
-            var storageServiceID = $('#ss').val();
-            var url = (
-              window.location.origin +
-              URL_AIP_CONTENTS +
-              '?amss_id=' +
-              storageServiceID
-            );
-            window.open(url);
-        });
-    });
+  $("#sl").on("change", function() {
+    reloadPage(false);
+  });  
+
+  $("#startdate").datepicker({
+      dateFormat: 'yy-mm-dd',
+      onSelect: function(date) {
+          let enddate = $('#enddate').val();
+          if (enddate != "" && enddate < date) {
+            alert(DATE_ALERT_START);
+          }
+          fetch(`${window.origin}/reporter/update_dates/`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ "start_date": date })
+          })
+      }
+  });
+
+  $("#enddate").datepicker({
+      dateFormat: 'yy-mm-dd',
+      onSelect: function(date) {
+          let startdate = $('#startdate').val();
+          if (startdate != "" && startdate > date) {
+            alert(DATE_ALERT_START);
+          }
+          fetch(`${window.origin}/reporter/update_dates/`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ "end_date": date })
+          })
+      }
+  });
+
+  $("#report1a").on("click", function() {
+    var startdate = $('#startdate').val();
+    var enddate = $('#enddate').val();
+    if (enddate < startdate) {
+        alert(DATE_ALERT_START);
+    } else {
+        var url = (
+          window.location.origin +
+          '/reporter/report_formats_count?start_date=' +
+          startdate +
+          '&end_date=' +
+          enddate +
+          '&amss_id=' +
+          storageServiceId +
+          '&storage_location=' +
+          storageLocationId
+        );
+        window.open(url);
+    }
+  });
+  $("#report1b").on("click", function() {
+    var startdate = $('#startdate').val();
+    var enddate = $('#enddate').val();
+    if (enddate < startdate) {
+        alert(DATE_ALERT_START);
+    } else {
+        var url = (
+          window.location.origin +
+          '/reporter/chart_formats_count?start_date=' +
+          startdate +
+          '&end_date=' +
+          enddate +
+          '&amss_id=' +
+          storageServiceId +
+          '&storage_location=' +
+          storageLocationId
+        );
+        window.open(url);
+    }
+  });
+  $("#report1c").on("click", function() {
+    var startdate = $('#startdate').val();
+    var enddate = $('#enddate').val();
+    if (enddate < startdate) {
+        alert(DATE_ALERT_START);
+    } else {
+        var url = (
+          window.location.origin +
+          '/reporter/plot_formats_count?start_date=' +
+          startdate +
+          '&end_date=' +
+          enddate +
+          '&amss_id=' +
+          storageServiceId +
+          '&storage_location=' +
+          storageLocationId
+        );
+        window.open(url);
+    }
+  });
+  $("#report2a").on("click", function() {
+    var url = (
+      window.location.origin +
+      '/reporter/aip_contents/' +
+      '?amss_id=' +
+      storageServiceId +
+      '&storage_location=' +
+      storageLocationId
+    );
+    window.open(url);
+  });
+  $("#report3a").on("click", function() {
+    var startdate = $('#startdate').val();
+    var enddate = $('#enddate').val();
+    if (enddate < startdate) {
+        alert(DATE_ALERT_START);
+    } else {
+        var url = (
+          window.location.origin +
+          '/reporter/report_format_versions_count/' +
+          '?amss_id=' +
+          storageServiceId +
+          '&storage_location=' +
+          storageLocationId +
+          '&start_date=' +
+          startdate +
+          '&end_date=' +
+          enddate
+        );
+        window.open(url);
+    }
+  });
+  $("#preservationDerivatives").on("click", function() {
+    var url = (
+      window.location.origin +
+      '/reporter/preservation_derivatives/' +
+      '?amss_id=' +
+      storageServiceId +
+      '&storage_location=' +
+      storageLocationId
+    );
+    window.open(url);
+  });
+  $("#report9a").on("click", function() {
+    var url = (
+      window.location.origin +
+      '/reporter/largest_files/' +
+      '?amss_id=' +
+      storageServiceId +
+      '&storage_location=' +
+      storageLocationId
+    );
+    window.open(url);
+  });
+  $("#aipsByOriginalFormat").on("click", function() {
+    var fileFormat = $('#originalFormatSelect').val();
+    var url = (
+      window.location.origin +
+      '/reporter/aips_by_file_format/' +
+      '?amss_id=' +
+      storageServiceId +
+      '&storage_location=' +
+      storageLocationId +
+      '&file_format=' +
+      fileFormat +
+      '&original_files=True'
+    );
+    window.open(url);
+  });
+  $("#aipsByPreservationFormat").on("click", function() {
+    var fileFormat = $('#preservationFormatSelect').val();
+    var url = (
+      window.location.origin +
+      '/reporter/aips_by_file_format/' +
+      '?amss_id=' +
+      storageServiceId +
+      '&storage_location=' +
+      storageLocationId +
+      '&file_format=' +
+      fileFormat +
+      '&original_files=False'
+    );
+    window.open(url);
+  });
+  $("#aipsByOriginalPUID").on("click", function() {
+    var puid = $('#originalPUIDSelect').val();
+    var url = (
+      window.location.origin +
+      '/reporter/aips_by_puid/' +
+      '?amss_id=' +
+      storageServiceId +
+      '&storage_location=' +
+      storageLocationId +
+      '&puid=' +
+      puid +
+      '&original_files=True'
+    );
+    window.open(url);
+  });
+  $("#aipsByPreservationPUID").on("click", function() {
+    var puid = $('#preservationPUIDSelect').val();
+    var url = (
+      window.location.origin +
+      '/reporter/aips_by_puid/' +
+      '?amss_id=' +
+      storageServiceId +
+      '&storage_location=' +
+      storageLocationId +
+      '&puid=' +
+      puid +
+      '&original_files=False'
+    );
+    window.open(url);
+  });
+ $("#transferLogTabular").on("click", function() {
+    var url = (
+      window.location.origin +
+      '/reporter/ingest_log_tabular/' +
+      '?amss_id=' +
+      storageServiceId +
+      '&storage_location=' +
+      storageLocationId
+    );
+    window.open(url);
+  });
+  $("#transferLogGantt").on("click", function() {
+    var url = (
+      window.location.origin +
+      '/reporter/ingest_log_gantt/' +
+      '?amss_id=' +
+      storageServiceId +
+      '&storage_location=' +
+      storageLocationId
+    );
+    window.open(url);
+  });
+  $("#storageLocations").on("click", function() {
+    var startdate = $('#startdate').val();
+    var enddate = $('#enddate').val();
+    if (enddate < startdate) {
+        alert(DATE_ALERT_START);
+    } else {
+      var url = (
+        window.location.origin +
+        '/reporter/storage_locations/' +
+        '?amss_id=' +
+        storageServiceId +
+        '&start_date=' +
+        startdate +
+        '&end_date=' +
+        enddate
+      );
+      window.open(url);
+    }
+  });
+});
 </script>
 
 {% endblock %}

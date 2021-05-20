@@ -23,6 +23,7 @@ HEADERS = [
 def aips_by_format():
     """Return AIPs containing file format, sorted by count and total size."""
     storage_service_id = request.args.get(request_params.STORAGE_SERVICE_ID)
+    storage_location_id = request.args.get(request_params.STORAGE_LOCATION_ID)
     file_format = request.args.get(request_params.FILE_FORMAT)
     original_files = parse_bool(request.args.get(request_params.ORIGINAL_FILES, True))
     csv = parse_bool(request.args.get(request_params.CSV), default=False)
@@ -33,6 +34,7 @@ def aips_by_format():
         storage_service_id=storage_service_id,
         file_format=file_format,
         original_files=original_files,
+        storage_location_id=storage_location_id,
     )
 
     if csv:
@@ -44,6 +46,7 @@ def aips_by_format():
         "report_aips_by_format.html",
         storage_service_id=storage_service_id,
         storage_service_name=aip_data.get(fields.FIELD_STORAGE_NAME),
+        storage_location_description=aip_data.get(fields.FIELD_STORAGE_LOCATION),
         file_format=file_format,
         original_files=original_files,
         columns=headers,

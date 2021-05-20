@@ -58,6 +58,8 @@ MOCK_STORAGE_SERVICE = StorageService(
     default=False,
 )
 
+MOCK_STORAGE_LOCATION_ID = 1
+
 MOCK_AIP_NAME = "Test transfer"
 MOCK_AIP_UUID = str(uuid.uuid4())
 MOCK_AIP = AIP(
@@ -66,5 +68,6 @@ MOCK_AIP = AIP(
     create_date=datetime.datetime.now(),
     mets_sha256="test",
     storage_service_id=MOCK_STORAGE_SERVICE_ID,
+    storage_location_id=MOCK_STORAGE_LOCATION_ID,
     fetch_job_id=1,
 )

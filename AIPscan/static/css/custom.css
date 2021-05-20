@@ -51,10 +51,20 @@ body {
 .report-opts {
   padding-left: 1em;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   align-items: baseline;
 }
 
 .report-opts i {
   font-size: 1.5em;
+}
+
+.fixed-width-menu-span-left {
+  float: left;
+  width: 10em;
+}
+
+.fixed-width-menu-span-right {
+  float: left;
+  width: 7em;
 }

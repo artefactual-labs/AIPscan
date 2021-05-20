@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from AIPscan.models import StorageService
+from AIPscan.models import StorageLocation, StorageService
 
 
 def _get_storage_service(storage_service_id):
@@ -15,3 +15,28 @@ def _get_storage_service(storage_service_id):
     :returns: StorageService object or None
     """
     return StorageService.query.get(storage_service_id)
+
+
+def get_storage_service_name(storage_service_id):
+    """Return name of Storage Service or None."""
+    name = None
+    if storage_service_id:
+        storage_service = _get_storage_service(storage_service_id)
+        if storage_service:
+            name = storage_service.name
+    return name
+
+
+def _get_storage_location(storage_location_id):
+    """Return Storage Location with ID or None."""
+    return StorageLocation.query.get(storage_location_id)
+
+
+def get_storage_location_description(storage_location_id):
+    """Return description of Storage Location or None."""
+    description = None
+    if storage_location_id:
+        storage_location = _get_storage_location(storage_location_id)
+        if storage_location:
+            description = storage_location.description
+    return description

@@ -33,6 +33,11 @@ class FormatVersionList(Resource):
                 "in": "query",
                 "type": "str",
             },
+            fields.FIELD_STORAGE_LOCATION: {
+                "description": "Storage Location ID",
+                "in": "query",
+                "type": "int",
+            },
         },
     )
     def get(self, storage_service_id):
@@ -41,11 +46,13 @@ class FormatVersionList(Resource):
         end_date = parse_datetime_bound(
             request.args.get(fields.FIELD_END_DATE), upper=True
         )
+        storage_location_id = request.args.get(fields.FIELD_STORAGE_LOCATION)
 
         return report_data.format_versions_count(
             storage_service_id=storage_service_id,
             start_date=start_date,
             end_date=end_date,
+            storage_location_id=storage_location_id,
         )
 
 
@@ -64,17 +71,26 @@ class LargestFileList(Resource):
                 "in": "query",
                 "type": "int",
             },
+            fields.FIELD_STORAGE_LOCATION: {
+                "description": "Storage Location ID",
+                "in": "query",
+                "type": "int",
+            },
         },
     )
     def get(self, storage_service_id, file_type=None, limit=20):
         """List largest files"""
         file_type = request.args.get(fields.FIELD_FILE_TYPE)
+        storage_location_id = request.args.get(fields.FIELD_STORAGE_LOCATION)
         try:
             limit = int(request.args.get(fields.FIELD_LIMIT, 20))
         except ValueError:
             pass
         return report_data.largest_files(
-            storage_service_id=storage_service_id, file_type=file_type, limit=limit
+            storage_service_id=storage_service_id,
+            storage_location_id=storage_location_id,
+            file_type=file_type,
+            limit=limit,
         )
 
 
@@ -93,16 +109,23 @@ class AIPsByFormatList(Resource):
                 "in": "query",
                 "type": "bool",
             },
+            fields.FIELD_STORAGE_LOCATION: {
+                "description": "Storage Location ID",
+                "in": "query",
+                "type": "int",
+            },
         },
     )
     def get(self, storage_service_id):
         """List AIPs containing given file format"""
         file_format = request.args.get(fields.FIELD_FILE_FORMAT, "")
         original_files = parse_bool(request.args.get(fields.FIELD_ORIGINAL_FILES, True))
+        storage_location_id = request.args.get(fields.FIELD_STORAGE_LOCATION)
         return report_data.aips_by_file_format(
             storage_service_id=storage_service_id,
             file_format=file_format,
             original_files=original_files,
+            storage_location_id=storage_location_id,
         )
 
 
@@ -121,22 +144,72 @@ class AIPsByPUIDList(Resource):
                 "in": "query",
                 "type": "bool",
             },
+            fields.FIELD_STORAGE_LOCATION: {
+                "description": "Storage Location ID",
+                "in": "query",
+                "type": "int",
+            },
         },
     )
     def get(self, storage_service_id):
         """List AIPs containing given format version, specified by PUID"""
         puid = request.args.get(fields.FIELD_PUID, "")
         original_files = parse_bool(request.args.get(fields.FIELD_ORIGINAL_FILES, True))
+        storage_location_id = request.args.get(fields.FIELD_STORAGE_LOCATION)
         return report_data.aips_by_puid(
             storage_service_id=storage_service_id,
             puid=puid,
             original_files=original_files,
+            storage_location_id=storage_location_id,
         )
 
 
 @api.route("/agents-transfers/<storage_service_id>")
 class AgentData(Resource):
-    @api.doc("agent_info")
+    @api.doc(
+        "agent_info",
+        params={
+            fields.FIELD_STORAGE_LOCATION: {
+                "description": "Storage Location ID",
+                "in": "query",
+                "type": "int",
+            }
+        },
+    )
     def get(self, storage_service_id):
         """List user agents and their transfers"""
-        return report_data.agents_transfers(storage_service_id=storage_service_id)
+        storage_location_id = request.args.get(fields.FIELD_STORAGE_LOCATION)
+        return report_data.agents_transfers(
+            storage_service_id=storage_service_id,
+            storage_location_id=storage_location_id,
+        )
+
+
+@api.route("/storage_locations/<storage_service_id>")
+class StorageLocations(Resource):
+    @api.doc(
+        "storage_locations",
+        params={
+            fields.FIELD_START_DATE: {
+                "description": "AIP creation start date (inclusive, YYYY-MM-DD)",
+                "in": "query",
+                "type": "str",
+            },
+            fields.FIELD_END_DATE: {
+                "description": "AIP creation end date (inclusive, YYYY-MM-DD)",
+                "in": "query",
+                "type": "str",
+            },
+        },
+    )
+    def get(self, storage_service_id):
+        """List AIP store locations and their usage."""
+        start_date = parse_datetime_bound(request.args.get(fields.FIELD_START_DATE))
+        end_date = parse_datetime_bound(
+            request.args.get(fields.FIELD_END_DATE), upper=True
+        )
+        return report_data.storage_locations(
+            storage_service_id=storage_service_id,
+            start_date=start_date,
+            end_date=end_date,
+        )

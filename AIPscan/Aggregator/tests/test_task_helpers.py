@@ -12,6 +12,8 @@ from AIPscan.Aggregator.types import StorageServicePackage
 
 FIXTURES_DIR = "fixtures"
 
+LOCATION_UUID = "1b60c346-85a0-4a3c-a88b-0c1b3255e2ec"
+
 
 @pytest.mark.parametrize(
     "input_date,output_date,now_year",
@@ -98,6 +100,26 @@ def test_get_mets_url(api_url, package_uuid, path_to_mets, result):
 
 
 @pytest.mark.parametrize(
+    "api_url, current_location, expected_url, expected_url_without_api_key",
+    [
+        (
+            {"baseUrl": "http://example.com", "userName": "1234", "apiKey": "12345"},
+            "/api/v2/location/{}".format(LOCATION_UUID),
+            "http://example.com/api/v2/location/1b60c346-85a0-4a3c-a88b-0c1b3255e2ec?username=1234&api_key=12345",
+            "http://example.com/api/v2/location/1b60c346-85a0-4a3c-a88b-0c1b3255e2ec",
+        )
+    ],
+)
+def test_get_location_url(
+    api_url, current_location, expected_url, expected_url_without_api_key
+):
+    """Ensure construction of URL to fetch location information."""
+    url, url_without_secrets = task_helpers.get_location_url(api_url, current_location)
+    assert url == expected_url
+    assert url_without_secrets == expected_url_without_api_key
+
+
+@pytest.mark.parametrize(
     "timestamp, package_list_number, result",
     [("1234", 1, "AIPscan/Aggregator/downloads/1234/mets/1")],
 )
@@ -155,6 +177,7 @@ def packages():
                 aip=True,
                 current_path="9194/0daf/5c33/4670/bfc8/9108/f32b/ca7b/repl-91940daf-5c33-4670-bfc8-9108f32bca7b.7z",
                 uuid="91940daf-5c33-4670-bfc8-9108f32bca7b",
+                current_location="/api/v2/location/a083fd8c-8b5a-4ece-acc4-c6388ade3d56/",
             ),
         ),
         (
@@ -164,6 +187,7 @@ def packages():
                 aip=True,
                 current_path="9021/92d9/6232/4d5f/b6c4/dfa7/b873/3960/repl-902192d9-6232-4d5f-b6c4-dfa7b8733960.7z",
                 uuid="902192d9-6232-4d5f-b6c4-dfa7b8733960",
+                current_location="/api/v2/location/a82c7f40-34f5-4442-a408-cbcf16f0c1cf/",
             ),
         ),
         (
@@ -173,6 +197,7 @@ def packages():
                 aip=True,
                 current_path="594a/03f3/d8eb/4c83/affd/aefa/f75d/53cc/delete_me-594a03f3-d8eb-4c83-affd-aefaf75d53cc.7z",
                 uuid="594a03f3-d8eb-4c83-affd-aefaf75d53cc",
+                current_location="/api/v2/location/a083fd8c-8b5a-4ece-acc4-c6388ade3d56/",
             ),
         ),
         (
@@ -181,6 +206,7 @@ def packages():
                 aip=True,
                 current_path="e422/c724/834c/4164/a7be/4c88/1043/a531/normalize-e422c724-834c-4164-a7be-4c881043a531.7z",
                 uuid="e422c724-834c-4164-a7be-4c881043a531",
+                current_location="/api/v2/location/a083fd8c-8b5a-4ece-acc4-c6388ade3d56/",
             ),
         ),
         (
@@ -189,6 +215,7 @@ def packages():
                 aip=True,
                 current_path="583c/009c/4255/44b9/8868/f57e/4bad/e93c/normal_aip-583c009c-4255-44b9-8868-f57e4bade93c.7z",
                 uuid="583c009c-4255-44b9-8868-f57e4bade93c",
+                current_location="/api/v2/location/a083fd8c-8b5a-4ece-acc4-c6388ade3d56/",
             ),
         ),
         (
@@ -197,6 +224,7 @@ def packages():
                 aip=True,
                 current_path="846f/ca2b/0919/4673/804c/0f62/6a30/cabd/uncomp-846fca2b-0919-4673-804c-0f626a30cabd",
                 uuid="846fca2b-0919-4673-804c-0f626a30cabd",
+                current_location="/api/v2/location/a083fd8c-8b5a-4ece-acc4-c6388ade3d56/",
             ),
         ),
         (
@@ -205,6 +233,7 @@ def packages():
                 dip=True,
                 current_path="1555/04f5/98dd/48d1/9e97/83bc/f0a5/efa2/normcore-59f70134-eeca-4886-888e-b2013a08571e",
                 uuid="155504f5-98dd-48d1-9e97-83bcf0a5efa2",
+                current_location="/api/v2/location/7e99c7b0-bd30-4d49-b173-3cb59a32f0c5/",
             ),
         ),
         (
@@ -213,6 +242,7 @@ def packages():
                 aip=True,
                 current_path="59f7/0134/eeca/4886/888e/b201/3a08/571e/normcore-59f70134-eeca-4886-888e-b2013a08571e",
                 uuid="59f70134-eeca-4886-888e-b2013a08571e",
+                current_location="/api/v2/location/a083fd8c-8b5a-4ece-acc4-c6388ade3d56/",
             ),
         ),
         (
@@ -221,6 +251,7 @@ def packages():
                 sip=True,
                 current_path="originals/backlog-fbdcd607-270e-4dff-9a01-d11b7c2a0200",
                 uuid="fbdcd607-270e-4dff-9a01-d11b7c2a0200",
+                current_location="/api/v2/location/7fe31789-90e0-4ad3-a669-18517737fc25/",
             ),
         ),
     ],

@@ -33,16 +33,23 @@ class AIPList(Resource):
                 "description": "Return data on original files or preservation derivatives",
                 "in": "query",
                 "type": "bool",
-            }
+            },
+            fields.FIELD_STORAGE_LOCATION: {
+                "description": "Storage Location ID",
+                "in": "query",
+                "type": "int",
+            },
         },
     )
     def get(self, storage_service_id):
         """Return data on AIPs and the file formats they contain."""
         original_files = parse_bool(request.args.get(fields.FIELD_ORIGINAL_FILES, True))
-        aip_data = data.aip_file_format_overview(
-            storage_service_id=storage_service_id, original_files=original_files
+        storage_location_id = request.args.get(fields.FIELD_STORAGE_LOCATION)
+        return data.aip_file_format_overview(
+            storage_service_id=storage_service_id,
+            original_files=original_files,
+            storage_location_id=storage_location_id,
         )
-        return aip_data
 
 
 @api.route("/fmt-overview/<storage_service_id>")
@@ -54,22 +61,41 @@ class FMTList(Resource):
                 "description": "Return data on original files or preservation derivatives",
                 "in": "query",
                 "type": "bool",
-            }
+            },
+            fields.FIELD_STORAGE_LOCATION: {
+                "description": "Storage Location ID",
+                "in": "query",
+                "type": "int",
+            },
         },
     )
     def get(self, storage_service_id):
         """Return data on PUIDs and the AIPs they are contained within."""
         original_files = parse_bool(request.args.get(fields.FIELD_ORIGINAL_FILES, True))
-        aip_data = data.file_format_aip_overview(
-            storage_service_id=storage_service_id, original_files=original_files
+        storage_location_id = request.args.get(fields.FIELD_STORAGE_LOCATION)
+        return data.file_format_aip_overview(
+            storage_service_id=storage_service_id,
+            original_files=original_files,
+            storage_location_id=storage_location_id,
         )
-        return aip_data
 
 
 @api.route("/derivative-overview/<storage_service_id>")
 class DerivativeList(Resource):
-    @api.doc("list_aips")
+    @api.doc(
+        "list_aips",
+        params={
+            fields.FIELD_STORAGE_LOCATION: {
+                "description": "Storage Location ID",
+                "in": "query",
+                "type": "int",
+            }
+        },
+    )
     def get(self, storage_service_id):
         """List original and derivative identifiers per AIP"""
-        aip_data = data.derivative_overview(storage_service_id=storage_service_id)
-        return aip_data
+        storage_location_id = request.args.get(fields.FIELD_STORAGE_LOCATION)
+        return data.derivative_overview(
+            storage_service_id=storage_service_id,
+            storage_location_id=storage_location_id,
+        )

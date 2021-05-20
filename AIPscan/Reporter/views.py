@@ -9,7 +9,15 @@ from datetime import datetime
 
 from flask import jsonify, make_response, render_template, request, session
 
-from AIPscan.models import AIP, Event, FetchJob, File, FileType, StorageService
+from AIPscan.models import (
+    AIP,
+    Event,
+    FetchJob,
+    File,
+    FileType,
+    StorageLocation,
+    StorageService,
+)
 
 # Flask's idiom requires code using routing decorators to be imported
 # up-front. But that means it might not be called directly by a module.
@@ -22,6 +30,7 @@ from AIPscan.Reporter import (  # noqa: F401
     report_ingest_log,
     report_largest_files,
     report_preservation_derivatives,
+    report_storage_locations,
     reporter,
     request_params,
     sort_puids,
@@ -49,54 +58,53 @@ def _get_storage_service(storage_service_id):
     return storage_service
 
 
-@reporter.route("/aips/", methods=["GET"])
-@reporter.route("/aips/<storage_service_id>", methods=["GET"])
-def view_aips(storage_service_id=0):
-    """View aips returns a standard page in AIPscan that provides an
-    overview of the AIPs in a given storage service.
-    """
-    DEFAULT_STORAGE_SERVICE_ID = 1
-    storage_services = {}
-    storage_id = int(storage_service_id)
-    if storage_id == 0 or storage_id is None:
-        storage_id = DEFAULT_STORAGE_SERVICE_ID
-    storage_service = StorageService.query.get(storage_id)
-    if storage_service:
-        aips = AIP.query.filter_by(storage_service_id=storage_service.id).all()
-        aips_list = []
-        for aip in aips:
-            aip_info = {}
-            aip_info["id"] = aip.id
-            aip_info["transfer_name"] = aip.transfer_name
-            aip_info["uuid"] = aip.uuid
-            aip_info["create_date"] = aip.create_date
-            aip_info["originals_count"] = aip.original_file_count
-            aip_info["copies_count"] = aip.preservation_file_count
-            aips_list.append(aip_info)
+def _get_storage_location(storage_location_id):
+    """Return Storage Location or None."""
+    return StorageLocation.query.get(storage_location_id)
 
-        aips_count = len(aips)
-        storage_services = StorageService.query.all()
-    else:
-        aips_list = []
-        aips_count = 0
+
+def storage_locations_with_aips(storage_locations):
+    """Return list of Storage Locations filtered to those with AIPs."""
+    return [loc for loc in storage_locations if loc.aips]
+
+
+@reporter.route("/aips/", methods=["GET"])
+def view_aips():
+    """Overview of AIPs in given Storage Service and Location."""
+    storage_service_id = request.args.get(request_params.STORAGE_SERVICE_ID)
+    storage_service = _get_storage_service(storage_service_id)
+
+    storage_location_id = request.args.get(request_params.STORAGE_LOCATION_ID)
+    try:
+        storage_location = _get_storage_location(storage_location_id)
+    except Exception as e:
+        print(e)
+
+    aips = AIP.query.filter_by(storage_service_id=storage_service.id)
+    if storage_location:
+        aips = aips.filter_by(storage_location_id=storage_location_id)
+    aips = aips.all()
+
     return render_template(
         "aips.html",
-        storage_services=storage_services,
-        storage_service_id=storage_id,
-        aips_count=aips_count,
-        aips=aips_list,
+        storage_services=StorageService.query.all(),
+        storage_service=storage_service,
+        storage_locations=storage_locations_with_aips(
+            storage_service.storage_locations
+        ),
+        storage_location=storage_location,
+        aips=aips,
     )
 
 
 # Picturae TODO: Does this work with AIP UUID as well?
 @reporter.route("/aip/<aip_id>", methods=["GET"])
 def view_aip(aip_id):
-    """View aip returns a standard page in AIPscan that provides a more
-    detailed view of a specific AIP given an AIPs ID.
-    """
+    """Detailed view of specific AIP."""
     aip = AIP.query.get(aip_id)
     fetch_job = FetchJob.query.get(aip.fetch_job_id)
     storage_service = StorageService.query.get(fetch_job.storage_service_id)
+    storage_location = StorageLocation.query.get(aip.storage_location_id)
     aips_count = AIP.query.filter_by(storage_service_id=storage_service.id).count()
     original_file_count = aip.original_file_count
     preservation_file_count = aip.preservation_file_count
@@ -125,6 +133,7 @@ def view_aip(aip_id):
         "aip.html",
         aip=aip,
         storage_service=storage_service,
+        storage_location=storage_location,
         aips_count=aips_count,
         originals=originals,
         original_file_count=original_file_count,
@@ -167,30 +176,59 @@ def reports():
     storage_service_id = request.args.get(request_params.STORAGE_SERVICE_ID)
     storage_service = _get_storage_service(storage_service_id)
 
+    storage_location_id = request.args.get(request_params.STORAGE_LOCATION_ID)
+    storage_location = _get_storage_location(storage_location_id)
+
     original_file_formats = []
     preservation_file_formats = []
     original_puids = []
     preservation_puids = []
 
-    # Original file formats and PUIDs should be present for any Storage
-    # Service with ingested files.
-    try:
-        original_file_formats = storage_service.unique_original_file_formats
-        original_puids = sort_puids(storage_service.unique_original_puids)
-    except AttributeError:
-        pass
+    # Filter dropdowns by Storage Location if one is selected. If a location is
+    # not selected, populate dropdowns from Storage Service instead.
+    if storage_location:
+        # Original file formats and PUIDs should be present for any Storage
+        # Loocation with ingested files.
+        try:
+            original_file_formats = storage_location.unique_original_file_formats
+            original_puids = sort_puids(storage_location.unique_original_puids)
+        except AttributeError:
+            pass
 
-    # Preservation file formats and PUIDs may be present depending on
-    # a number of factors such as processing configuration choices,
-    # normalization rules, and use of manual normalization.
-    try:
-        preservation_file_formats = storage_service.unique_preservation_file_formats
-    except AttributeError:
-        pass
-    try:
-        preservation_puids = sort_puids(storage_service.unique_preservation_puids)
-    except AttributeError:
-        pass
+        # Preservation file formats and PUIDs may be present depending on
+        # a number of factors such as processing configuration choices,
+        # normalization rules, and use of manual normalization.
+        try:
+            preservation_file_formats = (
+                storage_location.unique_preservation_file_formats
+            )
+        except AttributeError:
+            pass
+        try:
+            preservation_puids = sort_puids(storage_location.unique_preservation_puids)
+        except AttributeError:
+            pass
+
+    else:
+        # Original file formats and PUIDs should be present for any Storage
+        # Service with ingested files.
+        try:
+            original_file_formats = storage_service.unique_original_file_formats
+            original_puids = sort_puids(storage_service.unique_original_puids)
+        except AttributeError:
+            pass
+
+        # Preservation file formats and PUIDs may be present depending on
+        # a number of factors such as processing configuration choices,
+        # normalization rules, and use of manual normalization.
+        try:
+            preservation_file_formats = storage_service.unique_preservation_file_formats
+        except AttributeError:
+            pass
+        try:
+            preservation_puids = sort_puids(storage_service.unique_preservation_puids)
+        except AttributeError:
+            pass
 
     if "start_date" not in session:
         earliest_aip_created = storage_service.earliest_aip_created
@@ -204,6 +242,10 @@ def reports():
         "reports.html",
         storage_service=storage_service,
         storage_services=StorageService.query.all(),
+        storage_location=storage_location,
+        storage_locations=storage_locations_with_aips(
+            storage_service.storage_locations
+        ),
         original_file_formats=original_file_formats,
         preservation_file_formats=preservation_file_formats,
         original_puids=original_puids,

@@ -7,7 +7,8 @@ import metsrw
 import pytest
 
 from AIPscan.Aggregator import database_helpers
-from AIPscan.models import AIP, Agent, File, FileType
+from AIPscan.conftest import STORAGE_LOCATION_1_CURRENT_LOCATION
+from AIPscan.models import AIP, Agent, File, FileType, StorageLocation
 
 FIXTURES_DIR = "fixtures"
 
@@ -34,11 +35,34 @@ PRESERVATION_FILE_DICT["file_type"] = FileType.preservation
 PRESERVATION_FILE_DICT["related_uuid"] = str(uuid.uuid4())
 
 
+def test_create_storage_location_object(app_instance):
+    LOCATION_UUID = str(uuid.uuid4())
+    CURRENT_LOCATION = "/api/v2/location/{}".format(LOCATION_UUID)
+    DESCRIPTION = "My test AIP Store location"
+    STORAGE_SERVICE_ID = 1
+
+    database_helpers.create_storage_location_object(
+        current_location=CURRENT_LOCATION,
+        description=DESCRIPTION,
+        storage_service_id=STORAGE_SERVICE_ID,
+    )
+
+    storage_location = StorageLocation.query.filter_by(
+        current_location=CURRENT_LOCATION
+    ).first()
+    assert storage_location is not None
+    assert storage_location.current_location == CURRENT_LOCATION
+    assert storage_location.uuid == LOCATION_UUID
+    assert storage_location.description == DESCRIPTION
+    assert storage_location.storage_service_id == STORAGE_SERVICE_ID
+
+
 def test_create_aip(app_instance):
     """Test AIP creation."""
     PACKAGE_UUID = str(uuid.uuid4())
     TRANSFER_NAME = "some name"
     STORAGE_SERVICE_ID = 1
+    STORAGE_LOCATION_ID = 1
     FETCH_JOB_ID = 1
 
     database_helpers.create_aip_object(
@@ -47,6 +71,7 @@ def test_create_aip(app_instance):
         create_date="2020-11-02",
         mets_sha256=TEST_SHA_256,
         storage_service_id=STORAGE_SERVICE_ID,
+        storage_location_id=STORAGE_LOCATION_ID,
         fetch_job_id=FETCH_JOB_ID,
     )
 
@@ -67,6 +92,7 @@ def test_delete_aip(app_instance):
         create_date="2020-11-02",
         mets_sha256=TEST_SHA_256,
         storage_service_id=1,
+        storage_location_id=1,
         fetch_job_id=1,
     )
 
@@ -213,3 +239,39 @@ def test_create_file_object(
         ).all()
         assert len(preservation_files) == 2
         add_normalization_date.assert_called_once()
+
+
+@pytest.mark.parametrize(
+    "current_location, storage_service_id, new_description, location_created",
+    [
+        # Create Storage Location if matching one doesn't exist.
+        ("/api/v2/location/new-location/", 1, "", True),
+        # Update Storage Location description if already exists.
+        (STORAGE_LOCATION_1_CURRENT_LOCATION, 1, "updated description", False),
+    ],
+)
+def test_create_or_update_storage_location(
+    storage_locations,
+    mocker,
+    current_location,
+    storage_service_id,
+    new_description,
+    location_created,
+):
+    """Test that Storage Locations are created or updated as expected."""
+    make_request = mocker.patch("AIPscan.Aggregator.tasks.make_request")
+    make_request.return_value = {"description": new_description}
+    create_storage_location_object = mocker.patch(
+        "AIPscan.Aggregator.database_helpers.create_storage_location_object"
+    )
+
+    storage_location = database_helpers.create_or_update_storage_location(
+        current_location=current_location,
+        api_url={},
+        storage_service_id=storage_service_id,
+    )
+
+    if location_created:
+        create_storage_location_object.assert_called_once()
+    else:
+        assert storage_location.description == new_description

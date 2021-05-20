@@ -48,6 +48,7 @@ def get_format_string_from_puid(puid):
 def aips_by_puid():
     """Return AIPs containing PUID, sorted by count and total size."""
     storage_service_id = request.args.get(request_params.STORAGE_SERVICE_ID)
+    storage_location_id = request.args.get(request_params.STORAGE_LOCATION_ID)
     puid = request.args.get(request_params.PUID)
     original_files = parse_bool(request.args.get(request_params.ORIGINAL_FILES, True))
     csv = parse_bool(request.args.get(request_params.CSV), default=False)
@@ -55,7 +56,10 @@ def aips_by_puid():
     headers = translate_headers(HEADERS)
 
     aip_data = report_data.aips_by_puid(
-        storage_service_id=storage_service_id, puid=puid, original_files=original_files
+        storage_service_id=storage_service_id,
+        puid=puid,
+        original_files=original_files,
+        storage_location_id=storage_location_id,
     )
 
     if csv:
@@ -67,6 +71,7 @@ def aips_by_puid():
         "report_aips_by_puid.html",
         storage_service_id=storage_service_id,
         storage_service_name=aip_data.get(fields.FIELD_STORAGE_NAME),
+        storage_location_description=aip_data.get(fields.FIELD_STORAGE_LOCATION),
         puid=puid,
         file_format=get_format_string_from_puid(puid),
         original_files=original_files,

@@ -6,8 +6,15 @@
 
   {% include "report_buttons.html" %}
 
-  <strong>{{ storage_service_name }}: AIP Contents</strong><br />
-  <strong>AIPS: {{ rows|length }}</strong><br />
+  <strong>Report: AIP Contents</strong>
+  <br>
+  <strong>Storage Service:</strong> {{ storage_service_name }}
+  <br>
+  {% if storage_location_description %}
+    <strong>Location:</strong> {{ storage_location_description }}
+    <br>
+  {% endif %}
+  <strong>AIPS:</strong> {{ rows|length }}
 </div>
 
 <table id="aips-1" class="table table-striped table-bordered">

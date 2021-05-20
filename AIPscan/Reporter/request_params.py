@@ -7,6 +7,7 @@ FILE_TYPE = "file_type"
 LIMIT = "limit"
 ORIGINAL_FILES = "original_files"
 PUID = "puid"
+STORAGE_LOCATION_ID = "storage_location"
 STORAGE_SERVICE_ID = "amss_id"
 
 START_DATE = "start_date"

@@ -4,7 +4,7 @@
 
 <div class="alert alert-secondary">
   <strong>AIP: {{ aip.transfer_name }}-{{ aip.uuid }}</strong>
-  <br />
+  <br>
   Storage service:
   <a href="{{ url_for('aggregator.storage_service', id=storage_service.id) }}">
     {{ storage_service.name }}
@@ -12,11 +12,13 @@
   (<a href="{{ url_for('reporter.view_aips', storage_service_id=storage_service.id) }}">
     {{ aips_count }} AIPs
   </a>)
-<br />
+  <br>
+  Storage location: {{ storage_location.description }} ({{ storage_location.uuid }})
+  <br>
   Creation date: {{ aip.create_date }}
-<br />
+  <br>
   Originals: {{ original_file_count }}
-<br />
+  <br>
   Preservation copies: {{ preservation_file_count }}
 </div>
 

@@ -10,9 +10,14 @@ from datetime import datetime, timedelta
 
 from flask import render_template, request
 
-from AIPscan.Data import fields, report_data
+from AIPscan.Data import (
+    fields,
+    get_storage_location_description,
+    get_storage_service_name,
+    report_data,
+)
 from AIPscan.helpers import filesizeformat, parse_bool, parse_datetime_bound
-from AIPscan.models import AIP, File, FileType, StorageService
+from AIPscan.models import AIP, File, FileType
 from AIPscan.Reporter import (
     download_csv,
     format_size_for_csv,
@@ -31,6 +36,7 @@ def report_formats_count():
     disk across all AIPs in the storage service.
     """
     storage_service_id = request.args.get(request_params.STORAGE_SERVICE_ID)
+    storage_location_id = request.args.get(request_params.STORAGE_LOCATION_ID)
     start_date = parse_datetime_bound(request.args.get(request_params.START_DATE))
     end_date = parse_datetime_bound(
         request.args.get(request_params.END_DATE), upper=True
@@ -38,7 +44,10 @@ def report_formats_count():
     csv = parse_bool(request.args.get(request_params.CSV), default=False)
 
     formats_data = report_data.formats_count(
-        storage_service_id=storage_service_id, start_date=start_date, end_date=end_date
+        storage_service_id=storage_service_id,
+        start_date=start_date,
+        end_date=end_date,
+        storage_location_id=storage_location_id,
     )
     formats = formats_data.get(fields.FIELD_FORMATS)
 
@@ -53,6 +62,7 @@ def report_formats_count():
         "report_formats_count.html",
         storage_service_id=storage_service_id,
         storage_service_name=formats_data.get(fields.FIELD_STORAGE_NAME),
+        storage_location_description=formats_data.get(fields.FIELD_STORAGE_LOCATION),
         columns=headers,
         formats=formats,
         total_file_count=sum(format_.get(fields.FIELD_COUNT, 0) for format_ in formats),
@@ -76,8 +86,12 @@ def chart_formats_count():
     day_after = end + timedelta(days=1)
 
     storage_service_id = request.args.get(request_params.STORAGE_SERVICE_ID)
-    storage_service = StorageService.query.get(storage_service_id)
-    aips = AIP.query.filter_by(storage_service_id=storage_service_id).all()
+    storage_location_id = request.args.get(request_params.STORAGE_LOCATION_ID)
+
+    aips = AIP.query.filter_by(storage_service_id=storage_service_id)
+    if storage_location_id:
+        aips = aips.filter_by(storage_location_id=storage_location_id)
+    aips = aips.all()
 
     format_labels = []
     format_counts = []
@@ -106,7 +120,10 @@ def chart_formats_count():
         "chart_formats_count.html",
         startdate=start_date,
         enddate=end_date,
-        storageService=storage_service,
+        storage_service_name=get_storage_service_name(storage_service_id),
+        storage_location_description=get_storage_location_description(
+            storage_location_id
+        ),
         labels=labels,
         values=values,
         originalsCount=originals_count,
@@ -128,8 +145,12 @@ def plot_formats_count():
     day_after = end + timedelta(days=1)
 
     storage_service_id = request.args.get(request_params.STORAGE_SERVICE_ID)
-    storage_service = StorageService.query.get(storage_service_id)
-    aips = AIP.query.filter_by(storage_service_id=storage_service_id).all()
+    storage_location_id = request.args.get(request_params.STORAGE_LOCATION_ID)
+
+    aips = AIP.query.filter_by(storage_service_id=storage_service_id)
+    if storage_location_id:
+        aips = aips.filter_by(storage_location_id=storage_location_id)
+    aips = aips.all()
 
     format_count = {}
     originals_count = 0
@@ -177,7 +198,10 @@ def plot_formats_count():
         "plot_formats_count.html",
         startdate=start_date,
         enddate=end_date,
-        storageService=storage_service,
+        storage_service_name=get_storage_service_name(storage_service_id),
+        storage_location_description=get_storage_location_description(
+            storage_location_id
+        ),
         originalsCount=originals_count,
         formatCount=format_count,
         differentFormats=different_formats,

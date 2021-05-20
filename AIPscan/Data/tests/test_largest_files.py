@@ -14,6 +14,7 @@ from AIPscan.Data.tests import (
     MOCK_STORAGE_SERVICE_NAME,
 )
 from AIPscan.models import File, FileType
+from AIPscan.test_helpers import create_test_storage_location
 
 TEST_FILES = [
     File(
@@ -64,18 +65,25 @@ TEST_FILES = [
 def test_largest_files(app_instance, mocker, file_data, file_count):
     """Test that return value conforms to expected structure.
     """
-    mock_query = mocker.patch("AIPscan.Data.report_data._largest_files_query")
-    mock_query.return_value = file_data
+    query = mocker.patch("AIPscan.Data.report_data._largest_files_query")
+    query.return_value = file_data
 
-    mock_get_ss = mocker.patch("AIPscan.Data.report_data._get_storage_service")
-    mock_get_ss.return_value = MOCK_STORAGE_SERVICE
+    get_ss = mocker.patch("AIPscan.Data._get_storage_service")
+    get_ss.return_value = MOCK_STORAGE_SERVICE
 
-    mock_get_aip = mocker.patch("sqlalchemy.orm.query.Query.get")
-    mock_get_aip.return_value = MOCK_AIP
+    test_location = create_test_storage_location()
+    get_location = mocker.patch("AIPscan.Data._get_storage_location")
+    get_location.return_value = test_location
 
-    report = report_data.largest_files(MOCK_STORAGE_SERVICE_ID)
+    get_aip = mocker.patch("sqlalchemy.orm.query.Query.get")
+    get_aip.return_value = MOCK_AIP
+
+    report = report_data.largest_files(
+        storage_service_id=MOCK_STORAGE_SERVICE_ID, storage_location_id=test_location.id
+    )
     report_files = report[fields.FIELD_FILES]
     assert report[fields.FIELD_STORAGE_NAME] == MOCK_STORAGE_SERVICE_NAME
+    assert report[fields.FIELD_STORAGE_LOCATION] == test_location.description
     assert len(report_files) == file_count
 
 
@@ -95,8 +103,8 @@ def test_largest_files_elements(
     mock_query = mocker.patch("AIPscan.Data.report_data._largest_files_query")
     mock_query.return_value = [test_file]
 
-    mock_get_ss = mocker.patch("AIPscan.Data.report_data._get_storage_service")
-    mock_get_ss.return_value = MOCK_STORAGE_SERVICE
+    mock_get_ss_name = mocker.patch("AIPscan.Data._get_storage_service")
+    mock_get_ss_name.return_value = MOCK_STORAGE_SERVICE
 
     mock_get_aip = mocker.patch("sqlalchemy.orm.query.Query.get")
     mock_get_aip.return_value = MOCK_AIP

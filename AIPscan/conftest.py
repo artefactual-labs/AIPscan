@@ -26,6 +26,7 @@ PRESERVATION_FILE_SIZE = 2000
 
 AIP_1_CREATION_DATE = "2020-01-01"
 AIP_2_CREATION_DATE = "2020-06-01"
+AIP_3_CREATION_DATE = "2021-05-31"
 
 AIP_1_NAME = "TestAIP1"
 AIP_2_NAME = "TestAIP2"
@@ -45,9 +46,24 @@ PRESERVATION_FILE_2_NAME = "preservation-file-2.tif"
 PRESERVATION_FILE_1_UUID = "555555555555-5555-5555-55555555"
 PRESERVATION_FILE_2_UUID = "666666666666-6666-6666-66666666"
 
+PRESERVATION_FORMAT = "Very special preservation format"
+PRESERVATION_PUID = "fmt/000"
+
 PUID_1 = "fmt/43"
 PUID_2 = "fmt/61"
 PUID_3 = "x-fmt/111"
+
+STORAGE_LOCATION_1_UUID = "2bbcea40-eb4d-4076-a81d-1ab046e34f6a"
+STORAGE_LOCATION_1_CURRENT_LOCATION = "/api/v2/location/{}/".format(
+    STORAGE_LOCATION_1_UUID
+)
+STORAGE_LOCATION_1_DESCRIPTION = "AIP Store Location 1"
+
+STORAGE_LOCATION_2_UUID = "e69beb57-0e32-4c45-8db7-9b7723724a05"
+STORAGE_LOCATION_2_CURRENT_LOCATION = "/api/v2/location/{}/".format(
+    STORAGE_LOCATION_2_UUID
+)
+STORAGE_LOCATION_2_DESCRIPTION = "AIP Store Location 2"
 
 STORAGE_SERVICE_NAME = "Test Storage Service"
 
@@ -96,6 +112,9 @@ def app_with_populated_files(scope="package"):
         db.create_all()
 
         storage_service = test_helpers.create_test_storage_service()
+        storage_location = test_helpers.create_test_storage_location(
+            storage_service_id=storage_service.id
+        )
         fetch_job = test_helpers.create_test_fetch_job(
             storage_service_id=storage_service.id
         )
@@ -104,6 +123,7 @@ def app_with_populated_files(scope="package"):
             uuid=AIP_1_UUID,
             create_date=AIP_CREATION_TIME,
             storage_service_id=storage_service.id,
+            storage_location_id=storage_location.id,
             fetch_job_id=fetch_job.id,
         )
 
@@ -148,6 +168,9 @@ def app_with_populated_files_no_ingestion_event(scope="package"):
         db.create_all()
 
         storage_service = test_helpers.create_test_storage_service()
+        storage_location = test_helpers.create_test_storage_location(
+            storage_service_id=storage_service.id
+        )
         fetch_job = test_helpers.create_test_fetch_job(
             storage_service_id=storage_service.id
         )
@@ -156,6 +179,7 @@ def app_with_populated_files_no_ingestion_event(scope="package"):
             uuid=AIP_1_UUID,
             create_date=AIP_CREATION_TIME,
             storage_service_id=storage_service.id,
+            storage_location_id=storage_location.id,
             fetch_job_id=fetch_job.id,
         )
 
@@ -190,6 +214,9 @@ def app_with_populated_format_versions(scope="package"):
         db.create_all()
 
         storage_service = test_helpers.create_test_storage_service()
+        storage_location = test_helpers.create_test_storage_location(
+            storage_service_id=storage_service.id
+        )
         fetch_job = test_helpers.create_test_fetch_job(
             storage_service_id=storage_service.id
         )
@@ -198,6 +225,7 @@ def app_with_populated_format_versions(scope="package"):
             uuid=AIP_1_UUID,
             create_date=datetime.strptime(AIP_1_CREATION_DATE, AIP_DATE_FORMAT),
             storage_service_id=storage_service.id,
+            storage_location_id=storage_location.id,
             fetch_job_id=fetch_job.id,
         )
 
@@ -205,6 +233,7 @@ def app_with_populated_format_versions(scope="package"):
             uuid=AIP_2_UUID,
             create_date=datetime.strptime(AIP_2_CREATION_DATE, AIP_DATE_FORMAT),
             storage_service_id=storage_service.id,
+            storage_location_id=storage_location.id,
             fetch_job_id=fetch_job.id,
         )
 
@@ -257,6 +286,9 @@ def preservation_derivatives(scope="package"):
         storage_service = test_helpers.create_test_storage_service(
             name=STORAGE_SERVICE_NAME
         )
+        storage_location = test_helpers.create_test_storage_location(
+            storage_service_id=storage_service.id
+        )
         fetch_job = test_helpers.create_test_fetch_job(
             storage_service_id=storage_service.id
         )
@@ -265,12 +297,14 @@ def preservation_derivatives(scope="package"):
             uuid=AIP_1_UUID,
             transfer_name=AIP_1_NAME,
             storage_service_id=storage_service.id,
+            storage_location_id=storage_location.id,
             fetch_job_id=fetch_job.id,
         )
         aip2 = test_helpers.create_test_aip(
             uuid=AIP_2_UUID,
             transfer_name=AIP_2_NAME,
             storage_service_id=storage_service.id,
+            storage_location_id=storage_location.id,
             fetch_job_id=fetch_job.id,
         )
 
@@ -333,6 +367,9 @@ def aip_contents(scope="package"):
         db.create_all()
 
         storage_service = test_helpers.create_test_storage_service()
+        storage_location = test_helpers.create_test_storage_location(
+            storage_service_id=storage_service.id
+        )
         fetch_job = test_helpers.create_test_fetch_job(
             storage_service_id=storage_service.id
         )
@@ -341,6 +378,7 @@ def aip_contents(scope="package"):
             uuid=AIP_1_UUID,
             create_date=datetime.strptime(AIP_1_CREATION_DATE, AIP_DATE_FORMAT),
             storage_service_id=storage_service.id,
+            storage_location_id=storage_location.id,
             fetch_job_id=fetch_job.id,
         )
 
@@ -348,6 +386,7 @@ def aip_contents(scope="package"):
             uuid=AIP_2_UUID,
             create_date=datetime.strptime(AIP_2_CREATION_DATE, AIP_DATE_FORMAT),
             storage_service_id=storage_service.id,
+            storage_location_id=storage_location.id,
             fetch_job_id=fetch_job.id,
         )
 
@@ -365,6 +404,107 @@ def aip_contents(scope="package"):
         _ = test_helpers.create_test_file(puid=PUID_3, aip_id=aip2.id)
         _ = test_helpers.create_test_file(puid=PUID_3, aip_id=aip2.id)
         _ = test_helpers.create_test_file(puid=PUID_3, aip_id=aip2.id)
+
+        yield app
+
+        db.drop_all()
+
+
+@pytest.fixture
+def storage_locations(scope="package"):
+    """Fixture with pre-populated Storage locations."""
+    app = create_app("test")
+    with app.app_context():
+        db.create_all()
+
+        storage_service = test_helpers.create_test_storage_service()
+        storage_location1 = test_helpers.create_test_storage_location(
+            storage_service_id=storage_service.id,
+            current_location=STORAGE_LOCATION_1_CURRENT_LOCATION,
+            description=STORAGE_LOCATION_1_DESCRIPTION,
+        )
+        storage_location2 = test_helpers.create_test_storage_location(
+            storage_service_id=storage_service.id,
+            current_location=STORAGE_LOCATION_2_CURRENT_LOCATION,
+            description=STORAGE_LOCATION_2_DESCRIPTION,
+        )
+        fetch_job = test_helpers.create_test_fetch_job(
+            storage_service_id=storage_service.id
+        )
+
+        # Create two AIPs associated with Storage Location 1.
+        aip1 = test_helpers.create_test_aip(
+            uuid=AIP_1_UUID,
+            transfer_name=AIP_1_NAME,
+            create_date=datetime.strptime(AIP_1_CREATION_DATE, AIP_DATE_FORMAT),
+            storage_service_id=storage_service.id,
+            storage_location_id=storage_location1.id,
+            fetch_job_id=fetch_job.id,
+        )
+        aip2 = test_helpers.create_test_aip(
+            uuid=AIP_2_UUID,
+            transfer_name=AIP_2_NAME,
+            create_date=datetime.strptime(AIP_2_CREATION_DATE, AIP_DATE_FORMAT),
+            storage_service_id=storage_service.id,
+            storage_location_id=storage_location1.id,
+            fetch_job_id=fetch_job.id,
+        )
+
+        # Create one AIP associated with Storage Location 2.
+        aip3 = test_helpers.create_test_aip(
+            create_date=datetime.strptime(AIP_3_CREATION_DATE, AIP_DATE_FORMAT),
+            storage_service_id=storage_service.id,
+            storage_location_id=storage_location2.id,
+            fetch_job_id=fetch_job.id,
+        )
+
+        # Create files associated with AIP 1, each 300 bytes, plus empty file:
+        _ = test_helpers.create_test_file(
+            size=0, file_type=FileType.original, file_format="txt", aip_id=aip1.id
+        )
+        _ = test_helpers.create_test_file(
+            size=300,
+            file_type=FileType.preservation,
+            file_format=TIFF_FILE_FORMAT,
+            puid=TIFF_PUID,
+            aip_id=aip1.id,
+        )
+        _ = test_helpers.create_test_file(
+            size=300,
+            file_type=FileType.original,
+            file_format=JPEG_FILE_FORMAT,
+            format_version=JPEG_1_01_FORMAT_VERSION,
+            puid=JPEG_1_01_PUID,
+            aip_id=aip1.id,
+        )
+
+        # Create a file associated with AIP 2 of 1000 bytes:
+        _ = test_helpers.create_test_file(
+            size=1000,
+            file_type=FileType.original,
+            file_format=JPEG_FILE_FORMAT,
+            format_version=JPEG_1_02_FORMAT_VERSION,
+            puid=JPEG_1_02_PUID,
+            aip_id=aip2.id,
+        )
+
+        # Create files associated with AIP 3, each 2500 bytes, plus empty file:
+        _ = test_helpers.create_test_file(
+            size=2500,
+            file_type=FileType.preservation,
+            file_format=PRESERVATION_FORMAT,
+            puid=PRESERVATION_PUID,
+            aip_id=aip3.id,
+        )
+        _ = test_helpers.create_test_file(
+            size=2500, file_type=FileType.original, aip_id=aip3.id
+        )
+        _ = test_helpers.create_test_file(
+            size=0,
+            file_type=FileType.original,
+            file_format="yet another format",
+            aip_id=aip3.id,
+        )
 
         yield app
 

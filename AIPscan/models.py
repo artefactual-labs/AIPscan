@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import enum
-from datetime import date
+import re
+from datetime import date, datetime
 
 from AIPscan import db
 
@@ -31,6 +32,9 @@ class StorageService(db.Model):
     default = db.Column(db.Boolean)
     fetch_jobs = db.relationship(
         "FetchJob", cascade="all,delete", backref="storage_service", lazy=True
+    )
+    storage_locations = db.relationship(
+        "StorageLocation", cascade="all,delete", backref="storage_service", lazy=True
     )
 
     def __init__(
@@ -102,6 +106,122 @@ class StorageService(db.Model):
         return [puid.puid for puid in preservation_puids if puid.puid is not None]
 
 
+class StorageLocation(db.Model):
+    __tablename_ = "storage_location"
+    id = db.Column(db.Integer(), primary_key=True)
+    current_location = db.Column(db.String(255), unique=True, index=True)
+    description = db.Column(db.String(255))
+    storage_service_id = db.Column(
+        db.Integer(), db.ForeignKey("storage_service.id"), nullable=False
+    )
+    aips = db.relationship(
+        "AIP", cascade="all,delete", backref="storage_location", lazy=True
+    )
+
+    def __init__(self, current_location, description, storage_service_id):
+        self.current_location = current_location
+        self.description = description
+        self.storage_service_id = storage_service_id
+
+    def __repr__(self):
+        return "<StorageLocation '{}'>".format(self.current_location)
+
+    @property
+    def uuid(self):
+        UUID_REGEX = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+        match = re.search(UUID_REGEX, self.current_location)
+        if match:
+            return match.group(0)
+        return None
+
+    @property
+    def unique_file_formats(self):
+        return (
+            db.session.query(File.file_format.distinct().label("name"))
+            .join(AIP)
+            .join(StorageLocation)
+            .filter(StorageLocation.id == self.id)
+            .order_by(File.file_format)
+        )
+
+    @property
+    def unique_original_file_formats(self):
+        formats = self.unique_file_formats
+        original_formats = formats.filter(File.file_type == FileType.original)
+        return [format_.name for format_ in original_formats]
+
+    @property
+    def unique_preservation_file_formats(self):
+        formats = self.unique_file_formats
+        preservation_formats = formats.filter(File.file_type == FileType.preservation)
+        return [format_.name for format_ in preservation_formats]
+
+    @property
+    def unique_puids(self):
+        return (
+            db.session.query(File.puid.distinct().label("puid"))
+            .join(AIP)
+            .join(StorageLocation)
+            .filter(StorageLocation.id == self.id)
+            .order_by(File.puid)
+        )
+
+    @property
+    def unique_original_puids(self):
+        puids = self.unique_puids
+        original_puids = puids.filter(File.file_type == FileType.original)
+        return [puid.puid for puid in original_puids if puid.puid is not None]
+
+    @property
+    def unique_preservation_puids(self):
+        puids = self.unique_puids
+        preservation_puids = puids.filter(File.file_type == FileType.preservation)
+        return [puid.puid for puid in preservation_puids if puid.puid is not None]
+
+    def aip_count(self, start_date=None, end_date=None):
+        """Return count of AIPs in this location."""
+        DEFAULT = 0
+        if not start_date:
+            start_date = datetime.min
+        if not end_date:
+            end_date = datetime.max
+        results = (
+            db.session.query(db.func.count(AIP.id))
+            .join(StorageLocation)
+            .filter(AIP.storage_location_id == self.id)
+            .filter(AIP.create_date >= start_date)
+            .filter(AIP.create_date < end_date)
+            .first()
+        )
+        try:
+            return results[0]
+        except (IndexError, TypeError):
+            return DEFAULT
+
+    def aip_total_size(self, start_date=None, end_date=None):
+        """Return size in bytes of all AIPs in this location."""
+        DEFAULT = 0
+        if not start_date:
+            start_date = datetime.min
+        if not end_date:
+            end_date = datetime.max
+        results = (
+            db.session.query(db.func.sum(File.size))
+            .join(AIP)
+            .join(StorageLocation)
+            .filter(AIP.storage_location_id == self.id)
+            .filter(AIP.create_date >= start_date)
+            .filter(AIP.create_date < end_date)
+            .first()
+        )
+        if results[0]:
+            try:
+                return results[0]
+            except (IndexError, TypeError):
+                pass
+        return DEFAULT
+
+
 class FetchJob(db.Model):
     __tablename__ = "fetch_job"
     id = db.Column(db.Integer(), primary_key=True)
@@ -151,6 +271,9 @@ class AIP(db.Model):
     storage_service_id = db.Column(
         db.Integer(), db.ForeignKey("storage_service.id"), nullable=False
     )
+    storage_location_id = db.Column(
+        db.Integer(), db.ForeignKey("storage_location.id"), nullable=False
+    )
     fetch_job_id = db.Column(
         db.Integer(), db.ForeignKey("fetch_job.id"), nullable=False
     )
@@ -163,6 +286,7 @@ class AIP(db.Model):
         create_date,
         mets_sha256,
         storage_service_id,
+        storage_location_id,
         fetch_job_id,
     ):
         self.uuid = uuid
@@ -170,6 +294,7 @@ class AIP(db.Model):
         self.create_date = create_date
         self.mets_sha256 = mets_sha256
         self.storage_service_id = storage_service_id
+        self.storage_location_id = storage_location_id
         self.fetch_job_id = fetch_job_id
 
     def __repr__(self):

@@ -11,6 +11,7 @@ FIELD_ALL_AIPS = "AllAIPs"
 
 FIELD_COUNT = "Count"
 FIELD_CREATED_DATE = "CreatedDate"
+FIELD_CURRENT_LOCATION = "CurrentLocation"
 
 FIELD_DATE_START = "IngestStartDate"
 FIELD_DATE_END = "IngestFinishDate"
@@ -35,6 +36,8 @@ FIELD_INGESTS = "Ingests"
 FIELD_INGEST_START_DATE = "IngestStartDate"
 FIELD_INGEST_FINISH_DATE = "IngestFinishDate"
 
+FIELD_LOCATIONS = "Locations"
+
 FIELD_NAME = "Name"
 
 FIELD_ORIGINAL_FILE = "OriginalFile"
@@ -49,6 +52,7 @@ FIELD_PUID = "PUID"
 FIELD_RELATED_PAIRING = "RelatedPairing"
 
 FIELD_SIZE = "Size"
+FIELD_STORAGE_LOCATION = "StorageLocation"
 FIELD_STORAGE_NAME = "StorageName"
 
 FIELD_TRANSFER_NAME = "TransferName"

@@ -52,9 +52,10 @@ def ingest_log_tabular():
     """Return the information needed to present an ingest gantt chart."""
     TABULAR_TEMPLATE = "report_ingest_log_tabular.html"
     storage_service_id = request.args.get(request_params.STORAGE_SERVICE_ID)
+    storage_location_id = request.args.get(request_params.STORAGE_LOCATION_ID)
     csv = parse_bool(request.args.get(request_params.CSV), default=False)
 
-    ingests = report_data.agents_transfers(storage_service_id)
+    ingests = report_data.agents_transfers(storage_service_id, storage_location_id)
     ingests = get_table_data(ingests)
 
     if csv:
@@ -64,7 +65,8 @@ def ingest_log_tabular():
 
     return render_template(
         TABULAR_TEMPLATE,
-        storage_service_name=ingests[fields.FIELD_STORAGE_NAME],
+        storage_service_name=ingests.get(fields.FIELD_STORAGE_NAME),
+        storage_location_description=ingests.get(fields.FIELD_STORAGE_LOCATION),
         number_of_transfers=ingests[TRANSFER_COUNT],
         data=ingests[fields.FIELD_INGESTS],
     )
@@ -102,11 +104,13 @@ def ingest_log():
     """Return the information needed to present an ingest gantt chart."""
     GANTT_TEMPLATE = "report_ingest_log_gantt.html"
     storage_service_id = request.args.get(request_params.STORAGE_SERVICE_ID)
-    ingests = report_data.agents_transfers(storage_service_id)
+    storage_location_id = request.args.get(request_params.STORAGE_LOCATION_ID)
+    ingests = report_data.agents_transfers(storage_service_id, storage_location_id)
     ingests = get_figure_html(ingests)
     return render_template(
         GANTT_TEMPLATE,
-        storage_service_name=ingests[fields.FIELD_STORAGE_NAME],
+        storage_service_name=ingests.get(fields.FIELD_STORAGE_NAME),
+        storage_location_description=ingests.get(fields.FIELD_STORAGE_LOCATION),
         number_of_transfers=ingests[TRANSFER_COUNT],
         plot=ingests[FIGURE_HTML],
     )

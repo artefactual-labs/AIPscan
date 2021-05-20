@@ -2,7 +2,7 @@
 
 {% block content %}
 
-<div class="alert alert-secondary" style="height: 100px;">
+<div class="alert alert-secondary">
 
   {% include "report_buttons.html" %}
 
@@ -10,6 +10,10 @@
   <br>
   <strong>Storage Service:</strong> {{ storage_service_name }}
   <br>
+  {% if storage_location_description %}
+    <strong>Location:</strong> {{ storage_location_description }}
+    <br>
+  {% endif %}
   {% if file_type == "original" %}
     <strong>File type:</strong> Original files
   {% elif file_type == "preservation" %}
@@ -20,6 +24,7 @@
 
   <!-- Hidden elements we want available from JS for URL generation -->
   <span id="storageServiceID" style="display:none;">{{ storage_service_id }}</span>
+  <span id="storageLocationID" style="display:none;">{{ storage_location_id }}</span>
   <span id="limit" style="display:none;">{{ limit }}</span>
 </div>
 
