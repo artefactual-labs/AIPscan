@@ -71,6 +71,7 @@ def test_get_mets_task(app_instance, tmpdir, mocker, fixture_path, package_uuid)
         .strftime("%Y-%m-%d-%H-%M-%S"),
         package_list_no=1,
         storage_service_id=storage_service.id,
+        storage_location_id=storage_location.id,
         fetch_job_id=fetch_job1.id,
     )
     aips = _get_aips(storage_service.id)
@@ -92,6 +93,7 @@ def test_get_mets_task(app_instance, tmpdir, mocker, fixture_path, package_uuid)
         .strftime("%Y-%m-%d-%H-%M-%S"),
         package_list_no=1,
         storage_service_id=storage_service.id,
+        storage_location_id=storage_location.id,
         fetch_job_id=fetch_job2.id,
     )
     aips = _get_aips(storage_service.id)
@@ -115,6 +117,7 @@ def test_get_mets_task(app_instance, tmpdir, mocker, fixture_path, package_uuid)
         .strftime("%Y-%m-%d-%H-%M-%S"),
         package_list_no=1,
         storage_service_id=storage_service.id,
+        storage_location_id=storage_location.id,
         fetch_job_id=fetch_job3.id,
     )
     aips = _get_aips(storage_service.id)

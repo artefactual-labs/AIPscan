@@ -32,6 +32,9 @@ class StorageService(db.Model):
     fetch_jobs = db.relationship(
         "FetchJob", cascade="all,delete", backref="storage_service", lazy=True
     )
+    storage_locations = db.relationship(
+        "StorageLocation", cascade="all,delete", backref="storage_service", lazy=True
+    )
 
     def __init__(
         self, name, url, user_name, api_key, download_limit, download_offset, default
@@ -102,6 +105,27 @@ class StorageService(db.Model):
         return [puid.puid for puid in preservation_puids if puid.puid is not None]
 
 
+class StorageLocation(db.Model):
+    __tablename_ = "storage_location"
+    id = db.Column(db.Integer(), primary_key=True)
+    current_location = db.Column(db.String(255), unique=True, index=True)
+    description = db.Column(db.String(255))
+    storage_service_id = db.Column(
+        db.Integer(), db.ForeignKey("storage_service.id"), nullable=False
+    )
+    aips = db.relationship(
+        "AIP", cascade="all,delete", backref="storage_location", lazy=True
+    )
+
+    def __init__(self, current_location, description, storage_service_id):
+        self.current_location = current_location
+        self.description = description
+        self.storage_service_id = storage_service_id
+
+    def __repr__(self):
+        return "<StorageLocation '{}'>".format(self.current_location)
+
+
 class FetchJob(db.Model):
     __tablename__ = "fetch_job"
     id = db.Column(db.Integer(), primary_key=True)
@@ -151,6 +175,9 @@ class AIP(db.Model):
     storage_service_id = db.Column(
         db.Integer(), db.ForeignKey("storage_service.id"), nullable=False
     )
+    storage_location_id = db.Column(
+        db.Integer(), db.ForeignKey("storage_location.id"), nullable=False
+    )
     fetch_job_id = db.Column(
         db.Integer(), db.ForeignKey("fetch_job.id"), nullable=False
     )
@@ -163,6 +190,7 @@ class AIP(db.Model):
         create_date,
         mets_sha256,
         storage_service_id,
+        storage_location_id,
         fetch_job_id,
     ):
         self.uuid = uuid
@@ -170,6 +198,7 @@ class AIP(db.Model):
         self.create_date = create_date
         self.mets_sha256 = mets_sha256
         self.storage_service_id = storage_service_id
+        self.storage_location_id = storage_location_id
         self.fetch_job_id = fetch_job_id
 
     def __repr__(self):

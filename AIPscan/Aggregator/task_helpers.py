@@ -46,6 +46,7 @@ def process_package_object(package_obj):
     STATUS = "status"
     TYPE = "package_type"
     REPL = "replicated_package"
+    CURRENT_LOCATION = "current_location"
     CURRENT_PATH = "current_path"
     UUID = "uuid"
 
@@ -68,6 +69,7 @@ def process_package_object(package_obj):
         package.replica = True
 
     package.uuid = package_obj.get(UUID)
+    package.current_location = package_obj.get(CURRENT_LOCATION)
     package.current_path = package_obj.get(CURRENT_PATH)
 
     return package
@@ -106,6 +108,18 @@ def get_mets_url(api_url, package_uuid, path_to_mets):
         api_url[api_key],
     )
     return mets_url
+
+
+def get_location_url(api_url, current_location):
+    """Return URL to fetch location infofrom Storage Service."""
+    base_url = api_url.get("baseUrl", "").rstrip("/")
+    request_url_without_api_key = "{}{}".format(base_url, current_location).rstrip("/")
+    user_name = api_url.get("userName")
+    api_key = api_url.get("apiKey", "")
+    request_url = "{}?username={}&api_key={}".format(
+        request_url_without_api_key, user_name, api_key
+    )
+    return request_url, request_url_without_api_key
 
 
 def create_numbered_subdirs(timestamp, package_list_number):

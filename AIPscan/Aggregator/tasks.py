@@ -16,11 +16,17 @@ from AIPscan.Aggregator.mets_parse_helpers import (
 )
 from AIPscan.Aggregator.task_helpers import (
     format_api_url_with_limit_offset,
+    get_location_url,
     process_package_object,
 )
 from AIPscan.extensions import celery
 from AIPscan.helpers import file_sha256_hash
-from AIPscan.models import AIP, FetchJob, get_mets_tasks  # Custom celery Models.
+from AIPscan.models import (  # Custom celery Models.
+    AIP,
+    FetchJob,
+    StorageLocation,
+    get_mets_tasks,
+)
 
 logger = get_task_logger(__name__)
 
@@ -46,31 +52,48 @@ def write_packages_json(count, packages, packages_directory):
 
 
 def start_mets_task(
-    packageUUID,
-    relativePathToMETS,
-    apiUrl,
-    timestampStr,
-    packageListNo,
-    storageServiceId,
-    fetchJobId,
+    package_uuid,
+    relative_path_to_mets,
+    current_location,
+    api_url,
+    timestamp_str,
+    package_list_no,
+    storage_service_id,
+    fetch_job_id,
 ):
     """Initiate a get_mets task worker and record the event in the
     celery database.
     """
-    # call worker to download and parse METS File
+    # Add Storage Location if it doesn't already exist.
+    storage_location = StorageLocation.query.filter_by(
+        current_location=current_location
+    ).first()
+    if not storage_location:
+        request_url, request_url_without_api_key = get_location_url(
+            api_url, current_location
+        )
+        response = make_request(request_url, request_url_without_api_key)
+        description = response.get("description")
+        storage_location = database_helpers.create_storage_location_object(
+            current_location, description, storage_service_id
+        )
+
+    # Call worker to download and parse METS File.
     get_mets_task = get_mets.delay(
-        packageUUID,
-        relativePathToMETS,
-        apiUrl,
-        timestampStr,
-        packageListNo,
-        storageServiceId,
-        fetchJobId,
+        package_uuid,
+        relative_path_to_mets,
+        current_location,
+        api_url,
+        timestamp_str,
+        package_list_no,
+        storage_service_id,
+        storage_location.id,
+        fetch_job_id,
     )
     mets_task = get_mets_tasks(
         get_mets_task_id=get_mets_task.id,
         workflow_coordinator_id=workflow_coordinator.request.id,
-        package_uuid=packageUUID,
+        package_uuid=package_uuid,
         status=None,
     )
     db.session.add(mets_task)
@@ -101,6 +124,7 @@ def parse_packages_and_load_mets(
         start_mets_task(
             package.uuid,
             package.get_relative_path(),
+            package.current_location,
             api_url,
             timestamp,
             package_list_no,
@@ -255,10 +279,12 @@ def package_lists_request(self, apiUrl, timestamp, packages_directory):
 def get_mets(
     package_uuid,
     relative_path_to_mets,
+    current_location,
     api_url,
     timestamp_str,
     package_list_no,
     storage_service_id,
+    storage_location_id,
     fetch_job_id,
 ):
     """Request METS XML file from the storage service and parse.
@@ -271,7 +297,6 @@ def get_mets(
 
     TODO: Log METS errors.
     """
-
     download_file = download_mets(
         api_url, package_uuid, relative_path_to_mets, timestamp_str, package_list_no
     )
@@ -317,6 +342,7 @@ def get_mets(
         create_date=mets.createdate,
         mets_sha256=mets_hash,
         storage_service_id=storage_service_id,
+        storage_location_id=storage_location_id,
         fetch_job_id=fetch_job_id,
     )
 

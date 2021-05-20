@@ -7,7 +7,7 @@ import metsrw
 import pytest
 
 from AIPscan.Aggregator import database_helpers
-from AIPscan.models import AIP, Agent, File, FileType
+from AIPscan.models import AIP, Agent, File, FileType, StorageLocation
 
 FIXTURES_DIR = "fixtures"
 
@@ -32,6 +32,28 @@ ORIGINAL_FILE_DICT["file_type"] = FileType.original
 PRESERVATION_FILE_DICT = BASE_FILE_DICT.copy()
 PRESERVATION_FILE_DICT["file_type"] = FileType.preservation
 PRESERVATION_FILE_DICT["related_uuid"] = str(uuid.uuid4())
+
+
+def test_create_storage_location_object(app_instance):
+    LOCATION_UUID = str(uuid.uuid4())
+    CURRENT_LOCATION = "/api/v2/location/{}".format(LOCATION_UUID)
+    DESCRIPTION = "My test AIP Store location"
+    STORAGE_SERVICE_ID = 1
+
+    database_helpers.create_storage_location_object(
+        current_location=CURRENT_LOCATION,
+        description=DESCRIPTION,
+        storage_service_id=STORAGE_SERVICE_ID,
+    )
+
+    storage_location = StorageLocation.query.filter_by(
+        current_location=CURRENT_LOCATION
+    ).first()
+    assert storage_location is not None
+    assert storage_location.current_location == CURRENT_LOCATION
+    assert storage_location.uuid == LOCATION_UUID
+    assert storage_location.description == DESCRIPTION
+    assert storage_location.storage_service_id == STORAGE_SERVICE_ID
 
 
 def test_create_aip(app_instance):

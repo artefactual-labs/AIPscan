@@ -12,6 +12,8 @@ from AIPscan.Aggregator.types import StorageServicePackage
 
 FIXTURES_DIR = "fixtures"
 
+LOCATION_UUID = "1b60c346-85a0-4a3c-a88b-0c1b3255e2ec"
+
 
 @pytest.mark.parametrize(
     "input_date,output_date,now_year",
@@ -95,6 +97,26 @@ def test_get_mets_url(api_url, package_uuid, path_to_mets, result):
     """
     mets_url = task_helpers.get_mets_url(api_url, package_uuid, path_to_mets)
     assert mets_url == result
+
+
+@pytest.mark.parametrize(
+    "api_url, current_location, expected_url, expected_url_without_api_key",
+    [
+        (
+            {"baseUrl": "http://example.com", "userName": "1234", "apiKey": "12345"},
+            "/api/v2/location/{}".format(LOCATION_UUID),
+            "http://example.com/api/v2/location/1b60c346-85a0-4a3c-a88b-0c1b3255e2ec?username=1234&api_key=12345",
+            "http://example.com/api/v2/location/1b60c346-85a0-4a3c-a88b-0c1b3255e2ec",
+        )
+    ],
+)
+def test_get_location_url(
+    api_url, current_location, expected_url, expected_url_without_api_key
+):
+    """Ensure construction of URL to fetch location information."""
+    url, url_without_secrets = task_helpers.get_location_url(api_url, current_location)
+    assert url == expected_url
+    assert url_without_secrets == expected_url_without_api_key
 
 
 @pytest.mark.parametrize(
