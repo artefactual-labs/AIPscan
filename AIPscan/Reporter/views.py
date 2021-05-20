@@ -9,7 +9,15 @@ from datetime import datetime
 
 from flask import jsonify, make_response, render_template, request, session
 
-from AIPscan.models import AIP, Event, FetchJob, File, FileType, StorageService
+from AIPscan.models import (
+    AIP,
+    Event,
+    FetchJob,
+    File,
+    FileType,
+    StorageLocation,
+    StorageService,
+)
 
 # Flask's idiom requires code using routing decorators to be imported
 # up-front. But that means it might not be called directly by a module.
@@ -63,28 +71,12 @@ def view_aips(storage_service_id=0):
     storage_service = StorageService.query.get(storage_id)
     if storage_service:
         aips = AIP.query.filter_by(storage_service_id=storage_service.id).all()
-        aips_list = []
-        for aip in aips:
-            aip_info = {}
-            aip_info["id"] = aip.id
-            aip_info["transfer_name"] = aip.transfer_name
-            aip_info["uuid"] = aip.uuid
-            aip_info["create_date"] = aip.create_date
-            aip_info["originals_count"] = aip.original_file_count
-            aip_info["copies_count"] = aip.preservation_file_count
-            aips_list.append(aip_info)
-
-        aips_count = len(aips)
-        storage_services = StorageService.query.all()
-    else:
-        aips_list = []
-        aips_count = 0
+    storage_services = StorageService.query.all()
     return render_template(
         "aips.html",
         storage_services=storage_services,
         storage_service_id=storage_id,
-        aips_count=aips_count,
-        aips=aips_list,
+        aips=aips,
     )
 
 
@@ -97,6 +89,7 @@ def view_aip(aip_id):
     aip = AIP.query.get(aip_id)
     fetch_job = FetchJob.query.get(aip.fetch_job_id)
     storage_service = StorageService.query.get(fetch_job.storage_service_id)
+    storage_location = StorageLocation.query.get(aip.storage_location_id)
     aips_count = AIP.query.filter_by(storage_service_id=storage_service.id).count()
     original_file_count = aip.original_file_count
     preservation_file_count = aip.preservation_file_count
@@ -125,6 +118,7 @@ def view_aip(aip_id):
         "aip.html",
         aip=aip,
         storage_service=storage_service,
+        storage_location=storage_location,
         aips_count=aips_count,
         originals=originals,
         original_file_count=original_file_count,

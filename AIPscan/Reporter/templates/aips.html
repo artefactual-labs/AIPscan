@@ -2,7 +2,7 @@
 
 {% block content %}
 
-<div class="alert alert-header"><strong>AIPs ({{ aips_count }})</strong></div>
+<div class="alert alert-header"><strong>AIPs ({{ aips|length }})</strong></div>
 
 <div class="container-fluid">
 
@@ -33,12 +33,12 @@
   {% if aips %}
     {% for aip in aips %}
       <tr>
-        <td>{{ aip["transfer_name"] }}</td>
-        <td>{{ aip["uuid"] }}</td>
-        <td>{{ aip["create_date"] }}</td>
-        <td>{{ aip["originals_count"] }}</td>
-        <td>{{ aip["copies_count"] }}</td>
-        <td><a href='{{ url_for("reporter.view_aip", aip_id = aip["id"]) }}'><button type="button" class="btn btn-info">View</button></a></td>
+        <td>{{ aip.transfer_name }}</td>
+        <td>{{ aip.uuid }}</td>
+        <td>{{ aip.create_date }}</td>
+        <td>{{ aip.original_file_count }}</td>
+        <td>{{ aip.preservation_file_count }}</td>
+        <td><a href='{{ url_for("reporter.view_aip", aip_id = aip.id) }}'><button type="button" class="btn btn-info">View</button></a></td>
       </tr>
     {% endfor %}
   {% endif %}

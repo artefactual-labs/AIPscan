@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import enum
+import re
 from datetime import date
 
 from AIPscan import db
@@ -124,6 +125,14 @@ class StorageLocation(db.Model):
 
     def __repr__(self):
         return "<StorageLocation '{}'>".format(self.current_location)
+
+    @property
+    def uuid(self):
+        UUID_REGEX = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+        match = re.search(UUID_REGEX, self.current_location)
+        if match:
+            return match.group(0)
+        return None
 
 
 class FetchJob(db.Model):
