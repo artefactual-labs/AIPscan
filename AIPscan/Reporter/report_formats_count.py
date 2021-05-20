@@ -31,6 +31,7 @@ def report_formats_count():
     disk across all AIPs in the storage service.
     """
     storage_service_id = request.args.get(request_params.STORAGE_SERVICE_ID)
+    storage_location_id = request.args.get(request_params.STORAGE_LOCATION_ID)
     start_date = parse_datetime_bound(request.args.get(request_params.START_DATE))
     end_date = parse_datetime_bound(
         request.args.get(request_params.END_DATE), upper=True
@@ -38,7 +39,10 @@ def report_formats_count():
     csv = parse_bool(request.args.get(request_params.CSV), default=False)
 
     formats_data = report_data.formats_count(
-        storage_service_id=storage_service_id, start_date=start_date, end_date=end_date
+        storage_service_id=storage_service_id,
+        start_date=start_date,
+        end_date=end_date,
+        storage_location_id=storage_location_id,
     )
     formats = formats_data.get(fields.FIELD_FORMATS)
 

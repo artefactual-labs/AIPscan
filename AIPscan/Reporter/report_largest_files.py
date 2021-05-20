@@ -38,6 +38,7 @@ CSV_HEADERS = [
 def largest_files():
     """Return largest files."""
     storage_service_id = request.args.get(request_params.STORAGE_SERVICE_ID)
+    storage_location_id = request.args.get(request_params.STORAGE_LOCATION_ID)
     file_type = request.args.get(request_params.FILE_TYPE)
     limit = 20
     try:
@@ -49,7 +50,10 @@ def largest_files():
     headers = translate_headers(HEADERS)
 
     file_data = report_data.largest_files(
-        storage_service_id=storage_service_id, file_type=file_type, limit=limit
+        storage_service_id=storage_service_id,
+        storage_location_id=storage_location_id,
+        file_type=file_type,
+        limit=limit,
     )
 
     if csv:
