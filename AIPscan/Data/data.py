@@ -7,11 +7,16 @@ from AIPscan.helpers import _simplify_datetime
 from AIPscan.models import AIP, File, FileType
 
 
-def file_format_aip_overview(storage_service_id, original_files=True):
+def file_format_aip_overview(
+    storage_service_id, original_files=True, storage_location_id=None
+):
     """Return summary overview of file formats and the AIPs they're in."""
     report = {}
     storage_service = _get_storage_service(storage_service_id)
-    aips = AIP.query.filter_by(storage_service_id=storage_service.id).all()
+    aips = AIP.query.filter_by(storage_service_id=storage_service.id)
+    if storage_location_id:
+        aips = aips.filter_by(storage_location_id=storage_location_id)
+    aips = aips.all()
     for aip in aips:
         files = None
         if original_files is True:
@@ -45,12 +50,17 @@ def file_format_aip_overview(storage_service_id, original_files=True):
     return report
 
 
-def aip_file_format_overview(storage_service_id, original_files=True):
+def aip_file_format_overview(
+    storage_service_id, original_files=True, storage_location_id=None
+):
     """Return summary overview of AIPs and their file formats."""
     report = {}
     formats = {}
     storage_service = _get_storage_service(storage_service_id)
-    aips = AIP.query.filter_by(storage_service_id=storage_service.id).all()
+    aips = AIP.query.filter_by(storage_service_id=storage_service.id)
+    if storage_location_id:
+        aips = aips.filter_by(storage_location_id=storage_location_id)
+    aips = aips.all()
     for aip in aips:
         report[aip.uuid] = {}
         report[aip.uuid][fields.FIELD_AIP_NAME] = aip.transfer_name
@@ -112,13 +122,16 @@ def aip_file_format_overview(storage_service_id, original_files=True):
     return report
 
 
-def derivative_overview(storage_service_id):
+def derivative_overview(storage_service_id, storage_location_id=None):
     """Return a summary of derivatives across AIPs with a mapping
     created between the original format and the preservation copy.
     """
     report = {}
     storage_service = _get_storage_service(storage_service_id)
-    aips = AIP.query.filter_by(storage_service_id=storage_service.id).all()
+    aips = AIP.query.filter_by(storage_service_id=storage_service.id)
+    if storage_location_id:
+        aips = aips.filter_by(storage_location_id=storage_location_id)
+    aips = aips.all()
     all_aips = []
     for aip in aips:
         if not aip.preservation_file_count > 0:
