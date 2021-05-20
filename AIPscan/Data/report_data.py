@@ -535,19 +535,20 @@ def preservation_derivatives(
         file_info[fields.FIELD_FORMAT] = file_.file_format
 
         original_file = file_.original_file
-        file_info[fields.FIELD_ORIGINAL_UUID] = original_file.uuid
-        file_info[fields.FIELD_ORIGINAL_NAME] = original_file.name
-        file_info[fields.FIELD_ORIGINAL_FORMAT] = original_file.file_format
-        file_info[fields.FIELD_ORIGINAL_VERSION] = ""
-        try:
-            file_info[fields.FIELD_ORIGINAL_VERSION] = original_file.format_version
-        except AttributeError:
-            pass
-        file_info[fields.FIELD_ORIGINAL_PUID] = ""
-        try:
-            file_info[fields.FIELD_ORIGINAL_PUID] = original_file.puid
-        except AttributeError:
-            pass
+        if original_file:
+            file_info[fields.FIELD_ORIGINAL_UUID] = original_file.uuid
+            file_info[fields.FIELD_ORIGINAL_NAME] = original_file.name
+            file_info[fields.FIELD_ORIGINAL_FORMAT] = original_file.file_format
+            file_info[fields.FIELD_ORIGINAL_VERSION] = ""
+            try:
+                file_info[fields.FIELD_ORIGINAL_VERSION] = original_file.format_version
+            except AttributeError:
+                pass
+            file_info[fields.FIELD_ORIGINAL_PUID] = ""
+            try:
+                file_info[fields.FIELD_ORIGINAL_PUID] = original_file.puid
+            except AttributeError:
+                pass
 
         report[fields.FIELD_FILES].append(file_info)
 
