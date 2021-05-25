@@ -51,6 +51,14 @@ def test_get_mets_task(app_instance, tmpdir, mocker, fixture_path, package_uuid)
     mocker.patch("AIPscan.Aggregator.tasks.download_mets", mock_download_mets)
 
     storage_service = test_helpers.create_test_storage_service()
+    storage_location = test_helpers.create_test_storage_location(
+        storage_service_id=storage_service.id
+    )
+
+    get_storage_location = mocker.patch(
+        "AIPscan.Aggregator.tasks._get_storage_location"
+    )
+    get_storage_location.return_value = storage_location
 
     # No AIPs should exist at this point.
     aips = _get_aips(storage_service.id)
@@ -65,6 +73,7 @@ def test_get_mets_task(app_instance, tmpdir, mocker, fixture_path, package_uuid)
     get_mets(
         package_uuid=package_uuid,
         relative_path_to_mets="test",
+        current_location="/api/v2/test-location/",
         api_url=api_url,
         timestamp_str=datetime.now()
         .replace(microsecond=0)
@@ -87,6 +96,7 @@ def test_get_mets_task(app_instance, tmpdir, mocker, fixture_path, package_uuid)
     get_mets(
         package_uuid=package_uuid,
         relative_path_to_mets="test",
+        current_location="/api/v2/test-location/",
         api_url=api_url,
         timestamp_str=datetime.now()
         .replace(microsecond=0)
@@ -111,6 +121,7 @@ def test_get_mets_task(app_instance, tmpdir, mocker, fixture_path, package_uuid)
     get_mets(
         package_uuid=package_uuid,
         relative_path_to_mets="test",
+        current_location="/api/v2/test-location/",
         api_url=api_url,
         timestamp_str=datetime.now()
         .replace(microsecond=0)

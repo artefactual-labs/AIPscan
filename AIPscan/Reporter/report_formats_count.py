@@ -11,9 +11,9 @@ from datetime import datetime, timedelta
 from flask import render_template, request
 
 from AIPscan.Data import (
-    _get_storage_location_description,
-    _get_storage_service_name,
     fields,
+    get_storage_location_description,
+    get_storage_service_name,
     report_data,
 )
 from AIPscan.helpers import filesizeformat, parse_bool, parse_datetime_bound
@@ -120,8 +120,8 @@ def chart_formats_count():
         "chart_formats_count.html",
         startdate=start_date,
         enddate=end_date,
-        storage_service_name=_get_storage_service_name(storage_service_id),
-        storage_location_description=_get_storage_location_description(
+        storage_service_name=get_storage_service_name(storage_service_id),
+        storage_location_description=get_storage_location_description(
             storage_location_id
         ),
         labels=labels,
@@ -198,8 +198,8 @@ def plot_formats_count():
         "plot_formats_count.html",
         startdate=start_date,
         enddate=end_date,
-        storage_service_name=_get_storage_service_name(storage_service_id),
-        storage_location_description=_get_storage_location_description(
+        storage_service_name=get_storage_service_name(storage_service_id),
+        storage_location_description=get_storage_location_description(
             storage_location_id
         ),
         originalsCount=originals_count,

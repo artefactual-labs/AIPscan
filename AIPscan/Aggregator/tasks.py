@@ -38,6 +38,11 @@ class TaskError(Exception):
     """
 
 
+def _get_storage_location(current_location):
+    """Return first StorageLocation."""
+    return StorageLocation.query.filter_by(current_location=current_location).first()
+
+
 def write_packages_json(count, packages, packages_directory):
     """Write package JSON to disk"""
     json_download_file = os.path.join(

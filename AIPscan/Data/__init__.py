@@ -17,7 +17,7 @@ def _get_storage_service(storage_service_id):
     return StorageService.query.get(storage_service_id)
 
 
-def _get_storage_service_name(storage_service_id):
+def get_storage_service_name(storage_service_id):
     """Return name of Storage Service or None."""
     name = None
     if storage_service_id:
@@ -27,11 +27,16 @@ def _get_storage_service_name(storage_service_id):
     return name
 
 
-def _get_storage_location_description(storage_location_id):
+def _get_storage_location(storage_location_id):
+    """Return Storage Location with ID or None."""
+    return StorageLocation.query.get(storage_location_id)
+
+
+def get_storage_location_description(storage_location_id):
     """Return description of Storage Location or None."""
     description = None
     if storage_location_id:
-        storage_location = StorageLocation.query.get(storage_location_id)
+        storage_location = _get_storage_location(storage_location_id)
         if storage_location:
             description = storage_location.description
     return description

@@ -4,9 +4,9 @@
 
 from AIPscan import db
 from AIPscan.Data import (
-    _get_storage_location_description,
-    _get_storage_service_name,
     fields,
+    get_storage_location_description,
+    get_storage_service_name,
 )
 from AIPscan.models import AIP, Event, File, FileType, StorageLocation, StorageService
 
@@ -78,8 +78,8 @@ def formats_count(storage_service_id, start_date, end_date, storage_location_id=
     """
     report = {}
     report[fields.FIELD_FORMATS] = []
-    report[fields.FIELD_STORAGE_NAME] = _get_storage_service_name(storage_service_id)
-    report[fields.FIELD_STORAGE_LOCATION] = _get_storage_location_description(
+    report[fields.FIELD_STORAGE_NAME] = get_storage_service_name(storage_service_id)
+    report[fields.FIELD_STORAGE_LOCATION] = get_storage_location_description(
         storage_location_id
     )
 
@@ -162,8 +162,8 @@ def format_versions_count(
     """
     report = {}
     report[fields.FIELD_FORMAT_VERSIONS] = []
-    report[fields.FIELD_STORAGE_NAME] = _get_storage_service_name(storage_service_id)
-    report[fields.FIELD_STORAGE_LOCATION] = _get_storage_location_description(
+    report[fields.FIELD_STORAGE_NAME] = get_storage_service_name(storage_service_id)
+    report[fields.FIELD_STORAGE_LOCATION] = get_storage_location_description(
         storage_location_id
     )
 
@@ -235,8 +235,8 @@ def largest_files(
     """
     report = {}
     report[fields.FIELD_FILES] = []
-    report[fields.FIELD_STORAGE_NAME] = _get_storage_service_name(storage_service_id)
-    report[fields.FIELD_STORAGE_LOCATION] = _get_storage_location_description(
+    report[fields.FIELD_STORAGE_NAME] = get_storage_service_name(storage_service_id)
+    report[fields.FIELD_STORAGE_LOCATION] = get_storage_location_description(
         storage_location_id
     )
 
@@ -354,8 +354,8 @@ def _aips_by_file_format_or_puid(
     """
     report = {}
 
-    report[fields.FIELD_STORAGE_NAME] = _get_storage_service_name(storage_service_id)
-    report[fields.FIELD_STORAGE_LOCATION] = _get_storage_location_description(
+    report[fields.FIELD_STORAGE_NAME] = get_storage_service_name(storage_service_id)
+    report[fields.FIELD_STORAGE_LOCATION] = get_storage_location_description(
         storage_location_id
     )
 
@@ -437,16 +437,17 @@ def agents_transfers(storage_service_id, storage_location_id=None):
     report = {}
     ingests = []
 
-    storage_service_name = _get_storage_service_name(storage_service_id)
+    storage_service_name = get_storage_service_name(storage_service_id)
     if not storage_service_name:
         # No storage service has been returned and so we have nothing
         # to return.
         report[fields.FIELD_STORAGE_NAME] = None
+        report[fields.FIELD_STORAGE_LOCATION] = None
         report[fields.FIELD_INGESTS] = ingests
         return report
 
-    report[fields.FIELD_STORAGE_NAME] = _get_storage_service_name(storage_service_id)
-    report[fields.FIELD_STORAGE_LOCATION] = _get_storage_location_description(
+    report[fields.FIELD_STORAGE_NAME] = get_storage_service_name(storage_service_id)
+    report[fields.FIELD_STORAGE_LOCATION] = get_storage_location_description(
         storage_location_id
     )
 
@@ -524,8 +525,8 @@ def preservation_derivatives(
     """
     report = {}
     report[fields.FIELD_FILES] = []
-    report[fields.FIELD_STORAGE_NAME] = _get_storage_service_name(storage_service_id)
-    report[fields.FIELD_STORAGE_LOCATION] = _get_storage_location_description(
+    report[fields.FIELD_STORAGE_NAME] = get_storage_service_name(storage_service_id)
+    report[fields.FIELD_STORAGE_LOCATION] = get_storage_location_description(
         storage_location_id
     )
 

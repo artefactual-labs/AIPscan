@@ -3,9 +3,9 @@
 """Data endpoints optimized for providing general overviews of AIPs."""
 
 from AIPscan.Data import (
-    _get_storage_location_description,
-    _get_storage_service_name,
     fields,
+    get_storage_location_description,
+    get_storage_service_name,
 )
 from AIPscan.helpers import _simplify_datetime
 from AIPscan.models import AIP, File, FileType
@@ -53,8 +53,8 @@ def file_format_aip_overview(
                 formats[format_key][fields.FIELD_AIPS].append(aip.uuid)
 
     report[fields.FIELD_FORMATS] = formats
-    report[fields.FIELD_STORAGE_NAME] = _get_storage_service_name(storage_service_id)
-    report[fields.FIELD_STORAGE_LOCATION] = _get_storage_location_description(
+    report[fields.FIELD_STORAGE_NAME] = get_storage_service_name(storage_service_id)
+    report[fields.FIELD_STORAGE_LOCATION] = get_storage_location_description(
         storage_location_id
     )
     return report
@@ -127,8 +127,8 @@ def aip_file_format_overview(
                 ] = (count + 1)
 
     report[fields.FIELD_FORMATS] = formats
-    report[fields.FIELD_STORAGE_NAME] = _get_storage_service_name(storage_service_id)
-    report[fields.FIELD_STORAGE_LOCATION] = _get_storage_location_description(
+    report[fields.FIELD_STORAGE_NAME] = get_storage_service_name(storage_service_id)
+    report[fields.FIELD_STORAGE_LOCATION] = get_storage_location_description(
         storage_location_id
     )
     return report
@@ -185,8 +185,8 @@ def derivative_overview(storage_service_id, storage_location_id=None):
         all_aips.append(aip_report)
 
     report[fields.FIELD_ALL_AIPS] = all_aips
-    report[fields.FIELD_STORAGE_NAME] = _get_storage_service_name(storage_service_id)
-    report[fields.FIELD_STORAGE_LOCATION] = _get_storage_location_description(
+    report[fields.FIELD_STORAGE_NAME] = get_storage_service_name(storage_service_id)
+    report[fields.FIELD_STORAGE_LOCATION] = get_storage_location_description(
         storage_location_id
     )
     return report

@@ -96,6 +96,9 @@ def app_with_populated_files(scope="package"):
         db.create_all()
 
         storage_service = test_helpers.create_test_storage_service()
+        storage_location = test_helpers.create_test_storage_location(
+            storage_service_id=storage_service.id
+        )
         fetch_job = test_helpers.create_test_fetch_job(
             storage_service_id=storage_service.id
         )
@@ -104,6 +107,7 @@ def app_with_populated_files(scope="package"):
             uuid=AIP_1_UUID,
             create_date=AIP_CREATION_TIME,
             storage_service_id=storage_service.id,
+            storage_location_id=storage_location.id,
             fetch_job_id=fetch_job.id,
         )
 
@@ -148,6 +152,9 @@ def app_with_populated_files_no_ingestion_event(scope="package"):
         db.create_all()
 
         storage_service = test_helpers.create_test_storage_service()
+        storage_location = test_helpers.create_test_storage_location(
+            storage_service_id=storage_service.id
+        )
         fetch_job = test_helpers.create_test_fetch_job(
             storage_service_id=storage_service.id
         )
@@ -156,6 +163,7 @@ def app_with_populated_files_no_ingestion_event(scope="package"):
             uuid=AIP_1_UUID,
             create_date=AIP_CREATION_TIME,
             storage_service_id=storage_service.id,
+            storage_location_id=storage_location.id,
             fetch_job_id=fetch_job.id,
         )
 
@@ -190,6 +198,9 @@ def app_with_populated_format_versions(scope="package"):
         db.create_all()
 
         storage_service = test_helpers.create_test_storage_service()
+        storage_location = test_helpers.create_test_storage_location(
+            storage_service_id=storage_service.id
+        )
         fetch_job = test_helpers.create_test_fetch_job(
             storage_service_id=storage_service.id
         )
@@ -198,6 +209,7 @@ def app_with_populated_format_versions(scope="package"):
             uuid=AIP_1_UUID,
             create_date=datetime.strptime(AIP_1_CREATION_DATE, AIP_DATE_FORMAT),
             storage_service_id=storage_service.id,
+            storage_location_id=storage_location.id,
             fetch_job_id=fetch_job.id,
         )
 
@@ -205,6 +217,7 @@ def app_with_populated_format_versions(scope="package"):
             uuid=AIP_2_UUID,
             create_date=datetime.strptime(AIP_2_CREATION_DATE, AIP_DATE_FORMAT),
             storage_service_id=storage_service.id,
+            storage_location_id=storage_location.id,
             fetch_job_id=fetch_job.id,
         )
 
@@ -257,6 +270,9 @@ def preservation_derivatives(scope="package"):
         storage_service = test_helpers.create_test_storage_service(
             name=STORAGE_SERVICE_NAME
         )
+        storage_location = test_helpers.create_test_storage_location(
+            storage_service_id=storage_service.id
+        )
         fetch_job = test_helpers.create_test_fetch_job(
             storage_service_id=storage_service.id
         )
@@ -265,12 +281,14 @@ def preservation_derivatives(scope="package"):
             uuid=AIP_1_UUID,
             transfer_name=AIP_1_NAME,
             storage_service_id=storage_service.id,
+            storage_location_id=storage_location.id,
             fetch_job_id=fetch_job.id,
         )
         aip2 = test_helpers.create_test_aip(
             uuid=AIP_2_UUID,
             transfer_name=AIP_2_NAME,
             storage_service_id=storage_service.id,
+            storage_location_id=storage_location.id,
             fetch_job_id=fetch_job.id,
         )
 
@@ -333,6 +351,9 @@ def aip_contents(scope="package"):
         db.create_all()
 
         storage_service = test_helpers.create_test_storage_service()
+        storage_location = test_helpers.create_test_storage_location(
+            storage_service_id=storage_service.id
+        )
         fetch_job = test_helpers.create_test_fetch_job(
             storage_service_id=storage_service.id
         )
@@ -341,6 +362,7 @@ def aip_contents(scope="package"):
             uuid=AIP_1_UUID,
             create_date=datetime.strptime(AIP_1_CREATION_DATE, AIP_DATE_FORMAT),
             storage_service_id=storage_service.id,
+            storage_location_id=storage_location.id,
             fetch_job_id=fetch_job.id,
         )
 
@@ -348,6 +370,7 @@ def aip_contents(scope="package"):
             uuid=AIP_2_UUID,
             create_date=datetime.strptime(AIP_2_CREATION_DATE, AIP_DATE_FORMAT),
             storage_service_id=storage_service.id,
+            storage_location_id=storage_location.id,
             fetch_job_id=fetch_job.id,
         )
 

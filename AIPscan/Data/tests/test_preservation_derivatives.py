@@ -24,13 +24,18 @@ from AIPscan.Data import fields, report_data
 # Two preservation files are created in fixture.
 EXPECTED_RESULTS_COUNT = 2
 
+STORAGE_LOCATION_DESCRIPTION = "test storage location"
+
 
 def test_preservation_derivatives(preservation_derivatives):
     """Test preservation derivatives report_data endpoint."""
-    report = report_data.preservation_derivatives(storage_service_id=1)
+    report = report_data.preservation_derivatives(
+        storage_service_id=1, storage_location_id=1
+    )
     file_data = report[fields.FIELD_FILES]
 
     assert report[fields.FIELD_STORAGE_NAME] == STORAGE_SERVICE_NAME
+    assert report[fields.FIELD_STORAGE_LOCATION] == STORAGE_LOCATION_DESCRIPTION
     assert len(file_data) == EXPECTED_RESULTS_COUNT
 
     preservation_file_1 = [

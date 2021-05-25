@@ -61,6 +61,7 @@ def test_create_aip(app_instance):
     PACKAGE_UUID = str(uuid.uuid4())
     TRANSFER_NAME = "some name"
     STORAGE_SERVICE_ID = 1
+    STORAGE_LOCATION_ID = 1
     FETCH_JOB_ID = 1
 
     database_helpers.create_aip_object(
@@ -69,6 +70,7 @@ def test_create_aip(app_instance):
         create_date="2020-11-02",
         mets_sha256=TEST_SHA_256,
         storage_service_id=STORAGE_SERVICE_ID,
+        storage_location_id=STORAGE_LOCATION_ID,
         fetch_job_id=FETCH_JOB_ID,
     )
 
@@ -89,6 +91,7 @@ def test_delete_aip(app_instance):
         create_date="2020-11-02",
         mets_sha256=TEST_SHA_256,
         storage_service_id=1,
+        storage_location_id=1,
         fetch_job_id=1,
     )
 
