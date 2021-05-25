@@ -2,7 +2,11 @@
 
 """Data endpoints optimized for providing general overviews of AIPs."""
 
-from AIPscan.Data import _get_storage_service, fields
+from AIPscan.Data import (
+    _get_storage_location_description,
+    _get_storage_service_name,
+    fields,
+)
 from AIPscan.helpers import _simplify_datetime
 from AIPscan.models import AIP, File, FileType
 
@@ -12,8 +16,8 @@ def file_format_aip_overview(
 ):
     """Return summary overview of file formats and the AIPs they're in."""
     report = {}
-    storage_service = _get_storage_service(storage_service_id)
-    aips = AIP.query.filter_by(storage_service_id=storage_service.id)
+    formats = {}
+    aips = AIP.query.filter_by(storage_service_id=storage_service_id)
     if storage_location_id:
         aips = aips.filter_by(storage_location_id=storage_location_id)
     aips = aips.all()
@@ -31,22 +35,28 @@ def file_format_aip_overview(
             except AttributeError:
                 format_key = file_.file_format
             if format_key in report:
-                report[format_key][fields.FIELD_COUNT] = (
-                    report[format_key][fields.FIELD_COUNT] + 1
+                formats[format_key][fields.FIELD_COUNT] = (
+                    formats[format_key][fields.FIELD_COUNT] + 1
                 )
-                if aip.uuid not in report[format_key][fields.FIELD_AIPS]:
-                    report[format_key][fields.FIELD_AIPS].append(aip.uuid)
+                if aip.uuid not in formats[format_key][fields.FIELD_AIPS]:
+                    formats[format_key][fields.FIELD_AIPS].append(aip.uuid)
             else:
-                report[format_key] = {}
-                report[format_key][fields.FIELD_COUNT] = 1
+                formats[format_key] = {}
+                formats[format_key][fields.FIELD_COUNT] = 1
                 try:
-                    report[format_key][fields.FIELD_VERSION] = file_.format_version
-                    report[format_key][fields.FIELD_NAME] = file_.file_format
+                    formats[format_key][fields.FIELD_VERSION] = file_.format_version
+                    formats[format_key][fields.FIELD_NAME] = file_.file_format
                 except AttributeError:
                     pass
-                if report[format_key].get(fields.FIELD_AIPS) is None:
-                    report[format_key][fields.FIELD_AIPS] = []
-                report[format_key][fields.FIELD_AIPS].append(aip.uuid)
+                if formats[format_key].get(fields.FIELD_AIPS) is None:
+                    formats[format_key][fields.FIELD_AIPS] = []
+                formats[format_key][fields.FIELD_AIPS].append(aip.uuid)
+
+    report[fields.FIELD_FORMATS] = formats
+    report[fields.FIELD_STORAGE_NAME] = _get_storage_service_name(storage_service_id)
+    report[fields.FIELD_STORAGE_LOCATION] = _get_storage_location_description(
+        storage_location_id
+    )
     return report
 
 
@@ -56,8 +66,7 @@ def aip_file_format_overview(
     """Return summary overview of AIPs and their file formats."""
     report = {}
     formats = {}
-    storage_service = _get_storage_service(storage_service_id)
-    aips = AIP.query.filter_by(storage_service_id=storage_service.id)
+    aips = AIP.query.filter_by(storage_service_id=storage_service_id)
     if storage_location_id:
         aips = aips.filter_by(storage_location_id=storage_location_id)
     aips = aips.all()
@@ -118,7 +127,10 @@ def aip_file_format_overview(
                 ] = (count + 1)
 
     report[fields.FIELD_FORMATS] = formats
-    report[fields.FIELD_STORAGE_NAME] = storage_service.name
+    report[fields.FIELD_STORAGE_NAME] = _get_storage_service_name(storage_service_id)
+    report[fields.FIELD_STORAGE_LOCATION] = _get_storage_location_description(
+        storage_location_id
+    )
     return report
 
 
@@ -127,8 +139,7 @@ def derivative_overview(storage_service_id, storage_location_id=None):
     created between the original format and the preservation copy.
     """
     report = {}
-    storage_service = _get_storage_service(storage_service_id)
-    aips = AIP.query.filter_by(storage_service_id=storage_service.id)
+    aips = AIP.query.filter_by(storage_service_id=storage_service_id)
     if storage_location_id:
         aips = aips.filter_by(storage_location_id=storage_location_id)
     aips = aips.all()
@@ -174,6 +185,8 @@ def derivative_overview(storage_service_id, storage_location_id=None):
         all_aips.append(aip_report)
 
     report[fields.FIELD_ALL_AIPS] = all_aips
-    report[fields.FIELD_STORAGE_NAME] = storage_service.name
-
+    report[fields.FIELD_STORAGE_NAME] = _get_storage_service_name(storage_service_id)
+    report[fields.FIELD_STORAGE_LOCATION] = _get_storage_location_description(
+        storage_location_id
+    )
     return report

@@ -49,6 +49,7 @@ FIELD_PUID = "PUID"
 FIELD_RELATED_PAIRING = "RelatedPairing"
 
 FIELD_SIZE = "Size"
+FIELD_STORAGE_LOCATION = "StorageLocation"
 FIELD_STORAGE_NAME = "StorageName"
 
 FIELD_TRANSFER_NAME = "TransferName"

@@ -98,6 +98,7 @@ def aip_contents():
 
     aip_data.pop(fields.FIELD_FORMATS, None)
     aip_data.pop(fields.FIELD_STORAGE_NAME, None)
+    aip_data.pop(fields.FIELD_STORAGE_LOCATION, None)
     rows = []
     for k, v in aip_data.items():
         row = []

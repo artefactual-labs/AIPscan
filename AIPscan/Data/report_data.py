@@ -3,7 +3,11 @@
 """Data endpoints optimized for reports in the Reporter blueprint."""
 
 from AIPscan import db
-from AIPscan.Data import _get_storage_service, fields
+from AIPscan.Data import (
+    _get_storage_location_description,
+    _get_storage_service_name,
+    fields,
+)
 from AIPscan.models import AIP, Event, File, FileType, StorageLocation, StorageService
 
 VALID_FILE_TYPES = set(item.value for item in FileType)
@@ -74,11 +78,10 @@ def formats_count(storage_service_id, start_date, end_date, storage_location_id=
     """
     report = {}
     report[fields.FIELD_FORMATS] = []
-    report[fields.FIELD_STORAGE_NAME] = None
-
-    storage_service = _get_storage_service(storage_service_id)
-    if storage_service is not None:
-        report[fields.FIELD_STORAGE_NAME] = storage_service.name
+    report[fields.FIELD_STORAGE_NAME] = _get_storage_service_name(storage_service_id)
+    report[fields.FIELD_STORAGE_LOCATION] = _get_storage_location_description(
+        storage_location_id
+    )
 
     formats = _formats_count_query(
         storage_service_id, start_date, end_date, storage_location_id
@@ -159,11 +162,10 @@ def format_versions_count(
     """
     report = {}
     report[fields.FIELD_FORMAT_VERSIONS] = []
-    report[fields.FIELD_STORAGE_NAME] = None
-
-    storage_service = _get_storage_service(storage_service_id)
-    if storage_service is not None:
-        report[fields.FIELD_STORAGE_NAME] = storage_service.name
+    report[fields.FIELD_STORAGE_NAME] = _get_storage_service_name(storage_service_id)
+    report[fields.FIELD_STORAGE_LOCATION] = _get_storage_location_description(
+        storage_location_id
+    )
 
     versions = _format_versions_count_query(
         storage_service_id, start_date, end_date, storage_location_id
@@ -233,8 +235,10 @@ def largest_files(
     """
     report = {}
     report[fields.FIELD_FILES] = []
-    storage_service = _get_storage_service(storage_service_id)
-    report[fields.FIELD_STORAGE_NAME] = storage_service.name
+    report[fields.FIELD_STORAGE_NAME] = _get_storage_service_name(storage_service_id)
+    report[fields.FIELD_STORAGE_LOCATION] = _get_storage_location_description(
+        storage_location_id
+    )
 
     files = _largest_files_query(
         storage_service_id, storage_location_id, file_type, limit
@@ -350,8 +354,10 @@ def _aips_by_file_format_or_puid(
     """
     report = {}
 
-    storage_service = _get_storage_service(storage_service_id)
-    report[fields.FIELD_STORAGE_NAME] = storage_service.name
+    report[fields.FIELD_STORAGE_NAME] = _get_storage_service_name(storage_service_id)
+    report[fields.FIELD_STORAGE_LOCATION] = _get_storage_location_description(
+        storage_location_id
+    )
 
     if file_format:
         report[fields.FIELD_FORMAT] = search_string
@@ -431,18 +437,20 @@ def agents_transfers(storage_service_id, storage_location_id=None):
     report = {}
     ingests = []
 
-    storage_service = _get_storage_service(storage_service_id)
-
-    try:
-        report[fields.FIELD_STORAGE_NAME] = storage_service.name
-    except AttributeError:
+    storage_service_name = _get_storage_service_name(storage_service_id)
+    if not storage_service_name:
         # No storage service has been returned and so we have nothing
         # to return.
         report[fields.FIELD_STORAGE_NAME] = None
         report[fields.FIELD_INGESTS] = ingests
         return report
 
-    aips = AIP.query.filter_by(storage_service_id=storage_service.id)
+    report[fields.FIELD_STORAGE_NAME] = _get_storage_service_name(storage_service_id)
+    report[fields.FIELD_STORAGE_LOCATION] = _get_storage_location_description(
+        storage_location_id
+    )
+
+    aips = AIP.query.filter_by(storage_service_id=storage_service_id)
     if storage_location_id:
         aips = aips.filter(AIP.storage_location_id == storage_location_id)
     aips = aips.all()
@@ -516,8 +524,10 @@ def preservation_derivatives(
     """
     report = {}
     report[fields.FIELD_FILES] = []
-    storage_service = _get_storage_service(storage_service_id)
-    report[fields.FIELD_STORAGE_NAME] = storage_service.name
+    report[fields.FIELD_STORAGE_NAME] = _get_storage_service_name(storage_service_id)
+    report[fields.FIELD_STORAGE_LOCATION] = _get_storage_location_description(
+        storage_location_id
+    )
 
     files = _preservation_derivatives_query(
         storage_service_id, storage_location_id, aip_uuid
