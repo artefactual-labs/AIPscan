@@ -10,8 +10,12 @@
   </a>
   <strong>User ingest log</strong>
   </br>
-  <strong>Storage service:</strong> {{ storage_service_name }}
+  <strong>Storage Service:</strong> {{ storage_service_name }}
   </br>
+  {% if storage_location_description %}
+    <strong>Location:</strong> {{ storage_location_description }}
+    <br>
+  {% endif %}
   <strong>Number of transfers:</strong> {{ number_of_transfers }}
 </div>
 

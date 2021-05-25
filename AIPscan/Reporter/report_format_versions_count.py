@@ -52,6 +52,7 @@ def report_format_versions_count():
         "report_format_versions_count.html",
         storage_service_id=storage_service_id,
         storage_service_name=version_data.get(fields.FIELD_STORAGE_NAME),
+        storage_location_description=version_data.get(fields.FIELD_STORAGE_LOCATION),
         columns=translate_headers(headers),
         versions=versions,
         total_file_count=sum(

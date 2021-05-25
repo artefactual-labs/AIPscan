@@ -84,6 +84,8 @@ def preservation_derivatives():
         "report_preservation_derivatives.html",
         storage_service_id=storage_service_id,
         storage_service_name=derivative_data.get(fields.FIELD_STORAGE_NAME),
+        storage_location_id=storage_location_id,
+        storage_location_description=derivative_data.get(fields.FIELD_STORAGE_LOCATION),
         columns=headers,
         files=derivative_files,
         total_files=total_files,

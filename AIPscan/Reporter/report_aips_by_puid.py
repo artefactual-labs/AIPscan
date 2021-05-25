@@ -71,6 +71,7 @@ def aips_by_puid():
         "report_aips_by_puid.html",
         storage_service_id=storage_service_id,
         storage_service_name=aip_data.get(fields.FIELD_STORAGE_NAME),
+        storage_location_description=aip_data.get(fields.FIELD_STORAGE_LOCATION),
         puid=puid,
         file_format=get_format_string_from_puid(puid),
         original_files=original_files,

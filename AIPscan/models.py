@@ -134,6 +134,50 @@ class StorageLocation(db.Model):
             return match.group(0)
         return None
 
+    @property
+    def unique_file_formats(self):
+        return (
+            db.session.query(File.file_format.distinct().label("name"))
+            .join(AIP)
+            .join(StorageLocation)
+            .filter(StorageLocation.id == self.id)
+            .order_by(File.file_format)
+        )
+
+    @property
+    def unique_original_file_formats(self):
+        formats = self.unique_file_formats
+        original_formats = formats.filter(File.file_type == FileType.original)
+        return [format_.name for format_ in original_formats]
+
+    @property
+    def unique_preservation_file_formats(self):
+        formats = self.unique_file_formats
+        preservation_formats = formats.filter(File.file_type == FileType.preservation)
+        return [format_.name for format_ in preservation_formats]
+
+    @property
+    def unique_puids(self):
+        return (
+            db.session.query(File.puid.distinct().label("puid"))
+            .join(AIP)
+            .join(StorageLocation)
+            .filter(StorageLocation.id == self.id)
+            .order_by(File.puid)
+        )
+
+    @property
+    def unique_original_puids(self):
+        puids = self.unique_puids
+        original_puids = puids.filter(File.file_type == FileType.original)
+        return [puid.puid for puid in original_puids if puid.puid is not None]
+
+    @property
+    def unique_preservation_puids(self):
+        puids = self.unique_puids
+        preservation_puids = puids.filter(File.file_type == FileType.preservation)
+        return [puid.puid for puid in preservation_puids if puid.puid is not None]
+
 
 class FetchJob(db.Model):
     __tablename__ = "fetch_job"

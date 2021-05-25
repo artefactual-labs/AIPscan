@@ -9,15 +9,20 @@ $(document).ready(function() {
   $("#fileTypeSelector").on("change", function() {
     var fileType = $('#fileTypeSelector').val();
     var storageServiceId = $('#storageServiceID').text();
+    var storageLocationId = $('#storageLocationID').text();
     var limit = $('#limit').text();
-    var url = window.location.origin +
+    var url = (
+      window.location.origin +
       '/reporter/largest_files?' +
       'amss_id=' +
       storageServiceId +
+      '&storage_location=' +
+      storageLocationId +
       '&file_type=' +
       fileType +
       '&limit=' +
-      limit;
+      limit
+    );
     window.location.href = url;
   });
 
@@ -25,12 +30,17 @@ $(document).ready(function() {
   $("#aipSelector").on("change", function() {
     var aipUUID = $('#aipSelector').val();
     var storageServiceId = $('#storageServiceID').text();
-    var url = window.location.origin +
+    var storageLocationId = $('#storageLocationID').text();
+    var url = (
+      window.location.origin +
       '/reporter/preservation_derivatives?' +
       'amss_id=' +
       storageServiceId +
+      '&storage_location=' +
+      storageLocationId +
       '&aip_uuid=' +
-      aipUUID;
+      aipUUID
+    );
     window.location.href = url;
   });
 

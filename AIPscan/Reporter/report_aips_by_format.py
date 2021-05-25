@@ -46,6 +46,7 @@ def aips_by_format():
         "report_aips_by_format.html",
         storage_service_id=storage_service_id,
         storage_service_name=aip_data.get(fields.FIELD_STORAGE_NAME),
+        storage_location_description=aip_data.get(fields.FIELD_STORAGE_LOCATION),
         file_format=file_format,
         original_files=original_files,
         columns=headers,

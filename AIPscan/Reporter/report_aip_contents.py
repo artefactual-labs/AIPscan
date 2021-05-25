@@ -95,6 +95,7 @@ def aip_contents():
     format_headers = list(aip_data[fields.FIELD_FORMATS].keys())
 
     storage_name = aip_data[fields.FIELD_STORAGE_NAME]
+    storage_location_description = aip_data[fields.FIELD_STORAGE_LOCATION]
 
     aip_data.pop(fields.FIELD_FORMATS, None)
     aip_data.pop(fields.FIELD_STORAGE_NAME, None)
@@ -130,6 +131,7 @@ def aip_contents():
         "report_aip_contents.html",
         storage_service=storage_service_id,
         storage_service_name=storage_name,
+        storage_location_description=storage_location_description,
         aip_data=aip_data,
         columns=headers,
         rows=rows,

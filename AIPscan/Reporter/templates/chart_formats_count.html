@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>{{ storageService.name }}: file formats count</title>
+  <title>{{ storage_service_name }}: file formats count</title>
   <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
   <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/custom.css') }}">
   <script type="text/javascript" language="javascript" src="{{ url_for('static', filename='js/Chart.min.js') }}"></script>
@@ -16,8 +16,16 @@
 
 <div class="alert alert-secondary">
   <a class="noprint" onClick="window.print();return false"><button type="button" class="btn btn-info" style="float:right;">Print</button></a>
-  <strong>{{ storageService.name }}: file formats count</strong><br />
-  {{ originalsCount }} original files ingested between {{startdate}} and {{enddate}}<br />
+  <strong>Report: file formats count</strong>
+  <br>
+  <strong>Storage Service:</strong> {{ storage_service_name }}
+  <br>
+  {% if storage_location_description %}
+    <strong>Location:</strong> {{ storage_location_description }}
+    <br>
+  {% endif %}
+  {{ originalsCount }} original files ingested between {{startdate}} and {{enddate}}
+  <br>
   {{ differentFormats }} different formats
 </div>
 

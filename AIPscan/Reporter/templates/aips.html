@@ -4,52 +4,108 @@
 
 <div class="alert alert-header"><strong>AIPs ({{ aips|length }})</strong></div>
 
-<div class="container-fluid">
+{% if storage_services %}
 
-<div style="margin-bottom: 20px;">
-  <strong>Storage service:</strong>
-    <select id="ss" method="GET" action="/" class="form-control" style="width:auto;">
-        {% for ss in storage_services %}
-          {% if ss.id == storage_service_id %}
-            <option value="{{ ss.id }}" SELECTED>{{ ss.name }}</option>
-          {% else %}
-           <option value="{{ ss.id }}">{{ ss.name }}</option>
-          {% endif %}
-        {% endfor %}
-    </select>
+  <div class="report-opts" style="margin-bottom: 0.2em;">
+    <div>
+      <i class="fa fa-database" aria-hidden="true"></i>
+      Storage Service
+      <select id="ss" method="GET" action="/">
+          {% for ss in storage_services %}
+            {% if ss.id == storage_service.id %}
+              <option value="{{ ss.id }}" SELECTED>{{ ss.name }}</option>
+            {% else %}
+              <option value="{{ ss.id }}">{{ ss.name }}</option>
+            {% endif %}
+          {% endfor %}
+      </select>
+    </div>
+  </div>
+  <div class="report-opts" style="margin-bottom: 1em;">
+    <div>
+      <i class="fa fa-archive" aria-hidden="true"></i>
+      Location
+      <select id="sl" method="GET" action="/">
+          <option value="">All locations</option>
+          {% for sl in storage_locations %}
+            {% if sl.id == storage_location.id %}
+              <option value="{{ sl.id }}" SELECTED>{{ sl.description }}</option>
+            {% else %}
+              <option value="{{ sl.id }}">{{ sl.description }}</option>
+            {% endif %}
+          {% endfor %}
+      </select>
+    </div>
   </div>
 
-<table id="aiptable" class="table table-striped table-bordered">
-  <thead>
-  <tr>
-  <th><strong>Transfer name</strong></th>
-  <th><strong>AIP UUID</strong></th>
-  <th><strong>Creation date</strong></th>
-  <th><strong>Originals</strong></th>
-  <th><strong>Preservation copies</strong></th>
-  <th><strong>Action</strong></th>
-  </tr>
-  </thead>
   {% if aips %}
-    {% for aip in aips %}
+
+    <table id="aiptable" class="table table-striped table-bordered">
+      <thead>
       <tr>
-        <td>{{ aip.transfer_name }}</td>
-        <td>{{ aip.uuid }}</td>
-        <td>{{ aip.create_date }}</td>
-        <td>{{ aip.original_file_count }}</td>
-        <td>{{ aip.preservation_file_count }}</td>
-        <td><a href='{{ url_for("reporter.view_aip", aip_id = aip.id) }}'><button type="button" class="btn btn-info">View</button></a></td>
+      <th><strong>Transfer name</strong></th>
+      <th><strong>AIP UUID</strong></th>
+      <th><strong>Creation date</strong></th>
+      <th><strong>Originals</strong></th>
+      <th><strong>Preservation copies</strong></th>
+      <th><strong>Action</strong></th>
       </tr>
-    {% endfor %}
+      </thead>
+      {% if aips %}
+        {% for aip in aips %}
+          <tr>
+            <td>{{ aip.transfer_name }}</td>
+            <td>{{ aip.uuid }}</td>
+            <td>{{ aip.create_date }}</td>
+            <td>{{ aip.original_file_count }}</td>
+            <td>{{ aip.preservation_file_count }}</td>
+            <td><a href='{{ url_for("reporter.view_aip", aip_id = aip.id) }}'><button type="button" class="btn btn-info">View</button></a></td>
+          </tr>
+        {% endfor %}
+      {% endif %}
+    </table>
+
+  {% else %}
+
+  <div style="padding:1em;">
+      No data available. Run a Fetch Job to populate AIPscan with data from this Storage Service or select a different Storage Service.
+  </div>
+
   {% endif %}
-</table>
+
+{% else %}
+
+  <div style="padding:1em;">
+      Storage Service information is not yet available for reporting. <a href="{{ url_for('aggregator.storage_services') }}">Configure a Storage Service</a> and run a Fetch Job to get started.</a>
+  </div>
+
+{% endif %}
 
 <script>
 $(document).ready(function(){
-  $("#ss").change(function(){
+  var storageServiceId = $('#ss').val();
+  var storageLocationId = $('#sl').val();
+
+  function reloadPage (ignoreLocation) {
     var storageServiceId = $('#ss').val();
-    var url = window.location.origin + '/reporter/aips/' + storageServiceId
+    var storageLocationId = $ ('#sl').val();
+    var url = (
+      window.location.origin +
+      '/reporter/aips/?amss_id=' +
+      storageServiceId
+    );
+    if (ignoreLocation !== true) {
+      url += '&storage_location=' + storageLocationId;
+    }
     window.location.href = url;
+  }
+
+  $("#ss").on("change", function() {
+    reloadPage(true);
+  });
+
+  $("#sl").on("change", function() {
+    reloadPage(false);
   });
 });
 </script>

@@ -7,7 +7,12 @@
   {% include "report_buttons.html" %}
 
   <strong>Report: Preservation derivatives</strong><br>
-  <strong>Storage Service:</strong> {{ storage_service_name }}<br>
+  <strong>Storage Service:</strong> {{ storage_service_name }}
+  <br>
+  {% if storage_location_description %}
+    <strong>Location:</strong> {{ storage_location_description }}
+    <br>
+  {% endif %}
   {{ total_files }} preservation derivatives found across {{ aips|length }} AIPs
 </div>
 
@@ -15,6 +20,7 @@
 
 <!-- Hidden elements we want available from JS for URL generation -->
 <span id="storageServiceID" style="display:none;">{{ storage_service_id }}</span>
+<span id="storageLocationID" style="display:none;">{{ storage_location_id }}</span>
 
 <!-- AIP selector -->
 <div class="noprint" style="margin-bottom: 10px;">

@@ -65,7 +65,8 @@ def ingest_log_tabular():
 
     return render_template(
         TABULAR_TEMPLATE,
-        storage_service_name=ingests[fields.FIELD_STORAGE_NAME],
+        storage_service_name=ingests.get(fields.FIELD_STORAGE_NAME),
+        storage_location_description=ingests.get(fields.FIELD_STORAGE_LOCATION),
         number_of_transfers=ingests[TRANSFER_COUNT],
         data=ingests[fields.FIELD_INGESTS],
     )
@@ -108,7 +109,8 @@ def ingest_log():
     ingests = get_figure_html(ingests)
     return render_template(
         GANTT_TEMPLATE,
-        storage_service_name=ingests[fields.FIELD_STORAGE_NAME],
+        storage_service_name=ingests.get(fields.FIELD_STORAGE_NAME),
+        storage_location_description=ingests.get(fields.FIELD_STORAGE_LOCATION),
         number_of_transfers=ingests[TRANSFER_COUNT],
         plot=ingests[FIGURE_HTML],
     )
