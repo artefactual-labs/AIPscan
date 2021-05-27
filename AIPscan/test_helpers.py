@@ -56,7 +56,9 @@ def create_test_fetch_job(**kwargs):
 def create_test_storage_location(**kwargs):
     """Create and return a test Storage Location with overridable defaults."""
     storage_location = StorageLocation(
-        current_location=kwargs.get("current_location", "/api/v2/test-location/"),
+        current_location=kwargs.get(
+            "current_location", "/api/v2/location/test-location/"
+        ),
         description=kwargs.get("description", "test storage location"),
         storage_service_id=kwargs.get("storage_service_id", 1),
     )

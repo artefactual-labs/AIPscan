@@ -45,6 +45,9 @@ PRESERVATION_FILE_2_NAME = "preservation-file-2.tif"
 PRESERVATION_FILE_1_UUID = "555555555555-5555-5555-55555555"
 PRESERVATION_FILE_2_UUID = "666666666666-6666-6666-66666666"
 
+PRESERVATION_FORMAT = "Very special preservation format"
+PRESERVATION_PUID = "fmt/000"
+
 PUID_1 = "fmt/43"
 PUID_2 = "fmt/61"
 PUID_3 = "x-fmt/111"
@@ -447,16 +450,53 @@ def storage_locations(scope="package"):
             fetch_job_id=fetch_job.id,
         )
 
-        # Create files associated with AIP 1, each 300 bytes:
-        _ = test_helpers.create_test_file(size=300, aip_id=aip1.id)
-        _ = test_helpers.create_test_file(size=300, aip_id=aip1.id)
+        # Create files associated with AIP 1, each 300 bytes, plus empty file:
+        _ = test_helpers.create_test_file(
+            size=0, file_type=FileType.original, file_format="txt", aip_id=aip1.id
+        )
+        _ = test_helpers.create_test_file(
+            size=300,
+            file_type=FileType.preservation,
+            file_format=TIFF_FILE_FORMAT,
+            puid=TIFF_PUID,
+            aip_id=aip1.id,
+        )
+        _ = test_helpers.create_test_file(
+            size=300,
+            file_type=FileType.original,
+            file_format=JPEG_FILE_FORMAT,
+            format_version=JPEG_1_01_FORMAT_VERSION,
+            puid=JPEG_1_01_PUID,
+            aip_id=aip1.id,
+        )
 
         # Create a file associated with AIP 2 of 1000 bytes:
-        _ = test_helpers.create_test_file(size=1000, aip_id=aip2.id)
+        _ = test_helpers.create_test_file(
+            size=1000,
+            file_type=FileType.original,
+            file_format=JPEG_FILE_FORMAT,
+            format_version=JPEG_1_02_FORMAT_VERSION,
+            puid=JPEG_1_02_PUID,
+            aip_id=aip2.id,
+        )
 
-        # Create files associated with AIP 3, each 2500 bytes.
-        _ = test_helpers.create_test_file(size=2500, aip_id=aip3.id)
-        _ = test_helpers.create_test_file(size=2500, aip_id=aip3.id)
+        # Create files associated with AIP 3, each 2500 bytes, plus empty file:
+        _ = test_helpers.create_test_file(
+            size=2500,
+            file_type=FileType.preservation,
+            file_format=PRESERVATION_FORMAT,
+            puid=PRESERVATION_PUID,
+            aip_id=aip3.id,
+        )
+        _ = test_helpers.create_test_file(
+            size=2500, file_type=FileType.original, aip_id=aip3.id
+        )
+        _ = test_helpers.create_test_file(
+            size=0,
+            file_type=FileType.original,
+            file_format="yet another format",
+            aip_id=aip3.id,
+        )
 
         yield app
 

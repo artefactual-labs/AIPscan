@@ -160,10 +160,12 @@ class StorageLocation(db.Model):
             .filter(AIP.storage_location_id == self.id)
             .first()
         )
-        try:
-            return results[0]
-        except (IndexError, TypeError):
-            return DEFAULT
+        if results[0]:
+            try:
+                return results[0]
+            except (IndexError, TypeError):
+                pass
+        return DEFAULT
 
     @property
     def unique_file_formats(self):
