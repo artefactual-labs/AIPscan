@@ -49,6 +49,18 @@ PUID_1 = "fmt/43"
 PUID_2 = "fmt/61"
 PUID_3 = "x-fmt/111"
 
+STORAGE_LOCATION_1_UUID = "2bbcea40-eb4d-4076-a81d-1ab046e34f6a"
+STORAGE_LOCATION_1_CURRENT_LOCATION = "/api/v2/location/{}/".format(
+    STORAGE_LOCATION_1_UUID
+)
+STORAGE_LOCATION_1_DESCRIPTION = "AIP Store Location 1"
+
+STORAGE_LOCATION_2_UUID = "e69beb57-0e32-4c45-8db7-9b7723724a05"
+STORAGE_LOCATION_2_CURRENT_LOCATION = "/api/v2/location/{}/".format(
+    STORAGE_LOCATION_2_UUID
+)
+STORAGE_LOCATION_2_DESCRIPTION = "AIP Store Location 2"
+
 STORAGE_SERVICE_NAME = "Test Storage Service"
 
 
@@ -388,6 +400,63 @@ def aip_contents(scope="package"):
         _ = test_helpers.create_test_file(puid=PUID_3, aip_id=aip2.id)
         _ = test_helpers.create_test_file(puid=PUID_3, aip_id=aip2.id)
         _ = test_helpers.create_test_file(puid=PUID_3, aip_id=aip2.id)
+
+        yield app
+
+        db.drop_all()
+
+
+@pytest.fixture
+def storage_locations(scope="package"):
+    """Fixture with pre-populated Storage locations."""
+    app = create_app("test")
+    with app.app_context():
+        db.create_all()
+
+        storage_service = test_helpers.create_test_storage_service()
+        storage_location1 = test_helpers.create_test_storage_location(
+            storage_service_id=storage_service.id,
+            current_location=STORAGE_LOCATION_1_CURRENT_LOCATION,
+            description=STORAGE_LOCATION_1_DESCRIPTION,
+        )
+        storage_location2 = test_helpers.create_test_storage_location(
+            storage_service_id=storage_service.id,
+            current_location=STORAGE_LOCATION_2_CURRENT_LOCATION,
+            description=STORAGE_LOCATION_2_DESCRIPTION,
+        )
+        fetch_job = test_helpers.create_test_fetch_job(
+            storage_service_id=storage_service.id
+        )
+
+        # Create two AIPs associated with Storage Location 1.
+        aip1 = test_helpers.create_test_aip(
+            storage_service_id=storage_service.id,
+            storage_location_id=storage_location1.id,
+            fetch_job_id=fetch_job.id,
+        )
+        aip2 = test_helpers.create_test_aip(
+            storage_service_id=storage_service.id,
+            storage_location_id=storage_location1.id,
+            fetch_job_id=fetch_job.id,
+        )
+
+        # Create one AIP associated with Storage Location 2.
+        aip3 = test_helpers.create_test_aip(
+            storage_service_id=storage_service.id,
+            storage_location_id=storage_location2.id,
+            fetch_job_id=fetch_job.id,
+        )
+
+        # Create files associated with AIP 1, each 300 bytes:
+        _ = test_helpers.create_test_file(size=300, aip_id=aip1.id)
+        _ = test_helpers.create_test_file(size=300, aip_id=aip1.id)
+
+        # Create a file associated with AIP 2 of 1000 bytes:
+        _ = test_helpers.create_test_file(size=1000, aip_id=aip2.id)
+
+        # Create files associated with AIP 3, each 2500 bytes.
+        _ = test_helpers.create_test_file(size=2500, aip_id=aip3.id)
+        _ = test_helpers.create_test_file(size=2500, aip_id=aip3.id)
 
         yield app
 

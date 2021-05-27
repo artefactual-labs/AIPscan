@@ -63,6 +63,7 @@ def translate_headers(headers):
         fields.FIELD_PUID: "PUID",
         fields.FIELD_RELATED_PAIRING: "Related Pairing",
         fields.FIELD_SIZE: "Size",
+        fields.FIELD_STORAGE_LOCATION: "Location",
         fields.FIELD_STORAGE_NAME: "Storage Service Name",
         fields.FIELD_TRANSFER_NAME: "Transfer Name",
         fields.FIELD_USER: "User",

@@ -183,3 +183,10 @@ class AgentData(Resource):
             storage_service_id=storage_service_id,
             storage_location_id=storage_location_id,
         )
+
+
+@api.route("/storage_locations/<storage_service_id>")
+class StorageLocations(Resource):
+    def get(self, storage_service_id):
+        """List AIP store locations and their usage."""
+        return report_data.storage_locations(storage_service_id=storage_service_id)

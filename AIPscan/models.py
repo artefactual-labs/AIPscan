@@ -135,6 +135,37 @@ class StorageLocation(db.Model):
         return None
 
     @property
+    def aip_count(self):
+        """Return count of AIPs in this location."""
+        DEFAULT = 0
+        results = (
+            db.session.query(db.func.count(AIP.id))
+            .join(StorageLocation)
+            .filter(AIP.storage_location_id == self.id)
+            .first()
+        )
+        try:
+            return results[0]
+        except (IndexError, TypeError):
+            return DEFAULT
+
+    @property
+    def aip_total_size(self):
+        """Return size in bytes of all AIPs in this location."""
+        DEFAULT = 0
+        results = (
+            db.session.query(db.func.sum(File.size))
+            .join(AIP)
+            .join(StorageLocation)
+            .filter(AIP.storage_location_id == self.id)
+            .first()
+        )
+        try:
+            return results[0]
+        except (IndexError, TypeError):
+            return DEFAULT
+
+    @property
     def unique_file_formats(self):
         return (
             db.session.query(File.file_format.distinct().label("name"))

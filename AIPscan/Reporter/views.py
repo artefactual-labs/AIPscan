@@ -30,6 +30,7 @@ from AIPscan.Reporter import (  # noqa: F401
     report_ingest_log,
     report_largest_files,
     report_preservation_derivatives,
+    report_storage_locations,
     reporter,
     request_params,
     sort_puids,

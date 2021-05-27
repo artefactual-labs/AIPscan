@@ -11,6 +11,7 @@ FIELD_ALL_AIPS = "AllAIPs"
 
 FIELD_COUNT = "Count"
 FIELD_CREATED_DATE = "CreatedDate"
+FIELD_CURRENT_LOCATION = "CurrentLocation"
 
 FIELD_DATE_START = "IngestStartDate"
 FIELD_DATE_END = "IngestFinishDate"
@@ -34,6 +35,8 @@ FIELD_ID = "ID"
 FIELD_INGESTS = "Ingests"
 FIELD_INGEST_START_DATE = "IngestStartDate"
 FIELD_INGEST_FINISH_DATE = "IngestFinishDate"
+
+FIELD_LOCATIONS = "Locations"
 
 FIELD_NAME = "Name"
 

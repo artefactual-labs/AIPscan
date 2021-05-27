@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """Data endpoints optimized for reports in the Reporter blueprint."""
+from operator import itemgetter
 
 from AIPscan import db
 from AIPscan.Data import (
@@ -562,5 +563,47 @@ def preservation_derivatives(
                 pass
 
         report[fields.FIELD_FILES].append(file_info)
+
+    return report
+
+
+def _get_storage_locations(storage_service_id):
+    """Return queryset of locations in this Storage Service."""
+    return StorageLocation.query.filter_by(storage_service_id=storage_service_id).all()
+
+
+def _sort_storage_locations(unsorted_locations):
+    """Sort list of location dictionaries by AIP count descending."""
+    return sorted(unsorted_locations, key=itemgetter(fields.FIELD_AIPS), reverse=True)
+
+
+def storage_locations(storage_service_id):
+    """Return details of AIP store locations in Storage Service.
+
+    :param storage_service_id: Storage Service ID (int)
+
+    :returns: "report" dict containing following fields:
+        report["StorageName"]: Name of Storage Service queried
+        report["Locations"]: List of result locations ordered desc by size
+    """
+    report = {}
+    report[fields.FIELD_STORAGE_NAME] = get_storage_service_name(storage_service_id)
+
+    locations = _get_storage_locations(storage_service_id)
+
+    unsorted_results = []
+
+    for location in locations:
+        loc_info = {}
+
+        loc_info[fields.FIELD_ID] = location.id
+        loc_info[fields.FIELD_UUID] = location.uuid
+        loc_info[fields.FIELD_STORAGE_LOCATION] = location.description
+        loc_info[fields.FIELD_AIPS] = location.aip_count
+        loc_info[fields.FIELD_SIZE] = location.aip_total_size
+
+        unsorted_results.append(loc_info)
+
+    report[fields.FIELD_LOCATIONS] = _sort_storage_locations(unsorted_results)
 
     return report
