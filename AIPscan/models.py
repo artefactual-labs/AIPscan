@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import enum
 import re
-from datetime import date
+from datetime import date, datetime
 
 from AIPscan import db
 
@@ -135,39 +135,6 @@ class StorageLocation(db.Model):
         return None
 
     @property
-    def aip_count(self):
-        """Return count of AIPs in this location."""
-        DEFAULT = 0
-        results = (
-            db.session.query(db.func.count(AIP.id))
-            .join(StorageLocation)
-            .filter(AIP.storage_location_id == self.id)
-            .first()
-        )
-        try:
-            return results[0]
-        except (IndexError, TypeError):
-            return DEFAULT
-
-    @property
-    def aip_total_size(self):
-        """Return size in bytes of all AIPs in this location."""
-        DEFAULT = 0
-        results = (
-            db.session.query(db.func.sum(File.size))
-            .join(AIP)
-            .join(StorageLocation)
-            .filter(AIP.storage_location_id == self.id)
-            .first()
-        )
-        if results[0]:
-            try:
-                return results[0]
-            except (IndexError, TypeError):
-                pass
-        return DEFAULT
-
-    @property
     def unique_file_formats(self):
         return (
             db.session.query(File.file_format.distinct().label("name"))
@@ -210,6 +177,49 @@ class StorageLocation(db.Model):
         puids = self.unique_puids
         preservation_puids = puids.filter(File.file_type == FileType.preservation)
         return [puid.puid for puid in preservation_puids if puid.puid is not None]
+
+    def aip_count(self, start_date=None, end_date=None):
+        """Return count of AIPs in this location."""
+        DEFAULT = 0
+        if not start_date:
+            start_date = datetime.min
+        if not end_date:
+            end_date = datetime.max
+        results = (
+            db.session.query(db.func.count(AIP.id))
+            .join(StorageLocation)
+            .filter(AIP.storage_location_id == self.id)
+            .filter(AIP.create_date >= start_date)
+            .filter(AIP.create_date < end_date)
+            .first()
+        )
+        try:
+            return results[0]
+        except (IndexError, TypeError):
+            return DEFAULT
+
+    def aip_total_size(self, start_date=None, end_date=None):
+        """Return size in bytes of all AIPs in this location."""
+        DEFAULT = 0
+        if not start_date:
+            start_date = datetime.min
+        if not end_date:
+            end_date = datetime.max
+        results = (
+            db.session.query(db.func.sum(File.size))
+            .join(AIP)
+            .join(StorageLocation)
+            .filter(AIP.storage_location_id == self.id)
+            .filter(AIP.create_date >= start_date)
+            .filter(AIP.create_date < end_date)
+            .first()
+        )
+        if results[0]:
+            try:
+                return results[0]
+            except (IndexError, TypeError):
+                pass
+        return DEFAULT
 
 
 class FetchJob(db.Model):

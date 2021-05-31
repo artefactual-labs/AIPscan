@@ -9,6 +9,10 @@
   <strong>Report: AIP Storage Locations</strong>
   <br>
   <strong>Storage Service:</strong> {{ storage_service_name }}
+  <br>
+  <strong>Start date:</strong> {{ start_date.strftime('%Y-%m-%d') }}
+  <br>
+  <strong>End date:</strong> {{ end_date.strftime('%Y-%m-%d') }}
 </div>
 
 {% if locations %}

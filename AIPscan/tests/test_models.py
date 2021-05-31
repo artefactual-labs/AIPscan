@@ -15,6 +15,7 @@ from AIPscan.conftest import (
     STORAGE_LOCATION_2_CURRENT_LOCATION,
     TIFF_PUID,
 )
+from AIPscan.helpers import parse_datetime_bound
 from AIPscan.models import StorageLocation, StorageService
 
 VALID_UUID = "3ce6fbcb-cdfc-4cca-97e4-d19a469ca043"
@@ -122,16 +123,21 @@ def test_storage_location_uuid(app_instance, current_location, expected_uuid):
 
 
 @pytest.mark.parametrize(
-    "current_location, expected_aip_count",
+    "current_location, start_date, end_date, expected_aip_count",
     [
         # Test Storage Location populated with AIPs.
-        (STORAGE_LOCATION_1_CURRENT_LOCATION, 2),
+        (STORAGE_LOCATION_1_CURRENT_LOCATION, None, None, 2),
+        # Test date parameters in populated Storage Location.
+        (STORAGE_LOCATION_1_CURRENT_LOCATION, "2020-01-02", None, 1),
+        (STORAGE_LOCATION_1_CURRENT_LOCATION, None, "2020-05-31", 1),
+        (STORAGE_LOCATION_1_CURRENT_LOCATION, "2020-01-02", "2020-05-31", 0),
+        (STORAGE_LOCATION_1_CURRENT_LOCATION, "2020-01-01", "2020-06-01", 2),
         # Test new Storage Location (no AIPs).
-        (None, 0),
+        (None, None, None, 0),
     ],
 )
 def test_storage_location_aip_count(
-    storage_locations, current_location, expected_aip_count
+    storage_locations, current_location, start_date, end_date, expected_aip_count
 ):
     """Test Storage Location aip_count property."""
     if current_location:
@@ -140,20 +146,27 @@ def test_storage_location_aip_count(
         ).first()
     else:
         storage_location = test_helpers.create_test_storage_location()
-    assert storage_location.aip_count == expected_aip_count
+    start_date = parse_datetime_bound(start_date)
+    end_date = parse_datetime_bound(end_date, upper=True)
+    assert storage_location.aip_count(start_date, end_date) == expected_aip_count
 
 
 @pytest.mark.parametrize(
-    "current_location, expected_total_size",
+    "current_location, start_date, end_date, expected_total_size",
     [
         # Test Storage Location populated with AIPs and files.
-        (STORAGE_LOCATION_1_CURRENT_LOCATION, 1600),
+        (STORAGE_LOCATION_1_CURRENT_LOCATION, None, None, 1600),
+        # Test data parameters in populated Storage Location.
+        (STORAGE_LOCATION_1_CURRENT_LOCATION, "2020-01-02", None, 1000),
+        (STORAGE_LOCATION_1_CURRENT_LOCATION, None, "2020-05-31", 600),
+        (STORAGE_LOCATION_1_CURRENT_LOCATION, "2020-01-02", "2020-05-31", 0),
+        (STORAGE_LOCATION_1_CURRENT_LOCATION, "2020-01-01", "2020-06-01", 1600),
         # Test new Storage Location (no AIPs or files).
-        (None, 0),
+        (None, None, None, 0),
     ],
 )
 def test_storage_location_aip_total_size(
-    storage_locations, current_location, expected_total_size
+    storage_locations, current_location, start_date, end_date, expected_total_size
 ):
     """Test Storage Location aip_total_size property."""
     if current_location:
@@ -162,7 +175,9 @@ def test_storage_location_aip_total_size(
         ).first()
     else:
         storage_location = test_helpers.create_test_storage_location()
-    assert storage_location.aip_total_size == expected_total_size
+    start_date = parse_datetime_bound(start_date)
+    end_date = parse_datetime_bound(end_date, upper=True)
+    assert storage_location.aip_total_size(start_date, end_date) == expected_total_size
 
 
 @pytest.mark.parametrize(

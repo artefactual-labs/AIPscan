@@ -187,6 +187,29 @@ class AgentData(Resource):
 
 @api.route("/storage_locations/<storage_service_id>")
 class StorageLocations(Resource):
+    @api.doc(
+        "list_format_versions",
+        params={
+            fields.FIELD_START_DATE: {
+                "description": "AIP creation start date (inclusive, YYYY-MM-DD)",
+                "in": "query",
+                "type": "str",
+            },
+            fields.FIELD_END_DATE: {
+                "description": "AIP creation end date (inclusive, YYYY-MM-DD)",
+                "in": "query",
+                "type": "str",
+            },
+        },
+    )
     def get(self, storage_service_id):
         """List AIP store locations and their usage."""
-        return report_data.storage_locations(storage_service_id=storage_service_id)
+        start_date = parse_datetime_bound(request.args.get(fields.FIELD_START_DATE))
+        end_date = parse_datetime_bound(
+            request.args.get(fields.FIELD_END_DATE), upper=True
+        )
+        return report_data.storage_locations(
+            storage_service_id=storage_service_id,
+            start_date=start_date,
+            end_date=end_date,
+        )

@@ -577,7 +577,7 @@ def _sort_storage_locations(unsorted_locations):
     return sorted(unsorted_locations, key=itemgetter(fields.FIELD_AIPS), reverse=True)
 
 
-def storage_locations(storage_service_id):
+def storage_locations(storage_service_id, start_date, end_date):
     """Return details of AIP store locations in Storage Service.
 
     :param storage_service_id: Storage Service ID (int)
@@ -594,13 +594,14 @@ def storage_locations(storage_service_id):
     unsorted_results = []
 
     for location in locations:
+
         loc_info = {}
 
         loc_info[fields.FIELD_ID] = location.id
         loc_info[fields.FIELD_UUID] = location.uuid
         loc_info[fields.FIELD_STORAGE_LOCATION] = location.description
-        loc_info[fields.FIELD_AIPS] = location.aip_count
-        loc_info[fields.FIELD_SIZE] = location.aip_total_size
+        loc_info[fields.FIELD_AIPS] = location.aip_count(start_date, end_date)
+        loc_info[fields.FIELD_SIZE] = location.aip_total_size(start_date, end_date)
 
         unsorted_results.append(loc_info)
 

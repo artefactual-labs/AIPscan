@@ -172,9 +172,9 @@
           <td>
               AIP storage locations
               <br>
-              <span class="text-muted">Overview of AIP storage locations in the selected Storage Service (ignores Location filter).</span>
+              <span class="text-muted">Overview of AIP storage locations in the selected Storage Service, ignoring Location filter.</span>
           </td>
-          <td></td>
+          <td>Uses date fields</td>
           <td>
               <a href="#"><button type="button" id="storageLocations" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a>
           </td>
@@ -203,6 +203,9 @@ $(document).ready(function() {
   var storageServiceId = $('#ss').val();
   var storageLocationId = $('#sl').val();
 
+  const DATE_ALERT_START = 'The start date must be before the end date';
+  const DATE_ALERT_END = 'The end date must be after the start date';
+
   function reloadPage (ignoreLocation) {
     var storageServiceId = $('#ss').val();
     var storageLocationId = $ ('#sl').val();
@@ -224,10 +227,7 @@ $(document).ready(function() {
 
   $("#sl").on("change", function() {
     reloadPage(false);
-  });
-
-  const DATE_ALERT_START = 'The start date must be before the end date';
-  const DATE_ALERT_END = 'The end date must be after the start date';
+  });  
 
   $("#startdate").datepicker({
       dateFormat: 'yy-mm-dd',
@@ -260,220 +260,219 @@ $(document).ready(function() {
   });
 
   $("#report1a").on("click", function() {
-      var startdate = $('#startdate').val();
-      var enddate = $('#enddate').val();
-      if (enddate < startdate) {
-          alert(DATE_ALERT_START);
-      } else {
-          var url = (
-            window.location.origin +
-            '/reporter/report_formats_count?start_date=' +
-            startdate +
-            '&end_date=' +
-            enddate +
-            '&amss_id=' +
-            storageServiceId +
-            '&storage_location=' +
-            storageLocationId
-          );
-          window.open(url);
-      }
+    var startdate = $('#startdate').val();
+    var enddate = $('#enddate').val();
+    if (enddate < startdate) {
+        alert(DATE_ALERT_START);
+    } else {
+        var url = (
+          window.location.origin +
+          '/reporter/report_formats_count?start_date=' +
+          startdate +
+          '&end_date=' +
+          enddate +
+          '&amss_id=' +
+          storageServiceId +
+          '&storage_location=' +
+          storageLocationId
+        );
+        window.open(url);
+    }
   });
   $("#report1b").on("click", function() {
-      var startdate = $('#startdate').val();
-      var enddate = $('#enddate').val();
-      if (enddate < startdate) {
-          alert(DATE_ALERT_START);
-      } else {
-          var url = (
-            window.location.origin +
-            '/reporter/chart_formats_count?start_date=' +
-            startdate +
-            '&end_date=' +
-            enddate +
-            '&amss_id=' +
-            storageServiceId +
-            '&storage_location=' +
-            storageLocationId
-          );
-          window.open(url);
-      }
+    var startdate = $('#startdate').val();
+    var enddate = $('#enddate').val();
+    if (enddate < startdate) {
+        alert(DATE_ALERT_START);
+    } else {
+        var url = (
+          window.location.origin +
+          '/reporter/chart_formats_count?start_date=' +
+          startdate +
+          '&end_date=' +
+          enddate +
+          '&amss_id=' +
+          storageServiceId +
+          '&storage_location=' +
+          storageLocationId
+        );
+        window.open(url);
+    }
   });
   $("#report1c").on("click", function() {
-      var startdate = $('#startdate').val();
-      var enddate = $('#enddate').val();
-      if (enddate < startdate) {
-          alert(DATE_ALERT_START);
-      } else {
-          var url = (
-            window.location.origin +
-            '/reporter/plot_formats_count?start_date=' +
-            startdate +
-            '&end_date=' +
-            enddate +
-            '&amss_id=' +
-            storageServiceId +
-            '&storage_location=' +
-            storageLocationId
-          );
-          window.open(url);
-      }
+    var startdate = $('#startdate').val();
+    var enddate = $('#enddate').val();
+    if (enddate < startdate) {
+        alert(DATE_ALERT_START);
+    } else {
+        var url = (
+          window.location.origin +
+          '/reporter/plot_formats_count?start_date=' +
+          startdate +
+          '&end_date=' +
+          enddate +
+          '&amss_id=' +
+          storageServiceId +
+          '&storage_location=' +
+          storageLocationId
+        );
+        window.open(url);
+    }
   });
   $("#report2a").on("click", function() {
-      const URL_AIP_CONTENTS = "/reporter/aip_contents/"
-      var url = (
-        window.location.origin +
-        URL_AIP_CONTENTS +
-        '?amss_id=' +
-        storageServiceId +
-        '&storage_location=' +
-        storageLocationId
-      );
-      window.open(url);
+    var url = (
+      window.location.origin +
+      '/reporter/aip_contents/' +
+      '?amss_id=' +
+      storageServiceId +
+      '&storage_location=' +
+      storageLocationId
+    );
+    window.open(url);
   });
   $("#report3a").on("click", function() {
-      var startdate = $('#startdate').val();
-      var enddate = $('#enddate').val();
-      if (enddate < startdate) {
-          alert(DATE_ALERT_START);
-      } else {
-          const URL_FORMAT_VERSION_COUNT = "/reporter/report_format_versions_count/";
-          var url = (
-            window.location.origin +
-            URL_FORMAT_VERSION_COUNT +
-            '?amss_id=' +
-            storageServiceId +
-            '&storage_location=' +
-            storageLocationId +
-            '&start_date=' +
-            startdate +
-            '&end_date=' +
-            enddate
-          );
-          window.open(url);
-      }
+    var startdate = $('#startdate').val();
+    var enddate = $('#enddate').val();
+    if (enddate < startdate) {
+        alert(DATE_ALERT_START);
+    } else {
+        var url = (
+          window.location.origin +
+          '/reporter/report_format_versions_count/' +
+          '?amss_id=' +
+          storageServiceId +
+          '&storage_location=' +
+          storageLocationId +
+          '&start_date=' +
+          startdate +
+          '&end_date=' +
+          enddate
+        );
+        window.open(url);
+    }
   });
   $("#preservationDerivatives").on("click", function() {
-      const URL_AIP_CONTENTS = "/reporter/preservation_derivatives/";
-      var url = (
-        window.location.origin +
-        URL_AIP_CONTENTS +
-        '?amss_id=' +
-        storageServiceId +
-        '&storage_location=' +
-        storageLocationId
-      );
-      window.open(url);
+    var url = (
+      window.location.origin +
+      '/reporter/preservation_derivatives/' +
+      '?amss_id=' +
+      storageServiceId +
+      '&storage_location=' +
+      storageLocationId
+    );
+    window.open(url);
   });
   $("#report9a").on("click", function() {
-      const URL_LARGEST_FILES = "/reporter/largest_files/";
-      var url = (
-        window.location.origin +
-        URL_LARGEST_FILES +
-        '?amss_id=' +
-        storageServiceId +
-        '&storage_location=' +
-        storageLocationId
-      );
-      window.open(url);
+    var url = (
+      window.location.origin +
+      '/reporter/largest_files/' +
+      '?amss_id=' +
+      storageServiceId +
+      '&storage_location=' +
+      storageLocationId
+    );
+    window.open(url);
   });
   $("#aipsByOriginalFormat").on("click", function() {
-      const URL_AIP_CONTENTS = "/reporter/aips_by_file_format/";
-      var fileFormat = $('#originalFormatSelect').val();
-      var url = (
-        window.location.origin +
-        URL_AIP_CONTENTS +
-        '?amss_id=' +
-        storageServiceId +
-        '&storage_location=' +
-        storageLocationId +
-        '&file_format=' +
-        fileFormat +
-        '&original_files=True'
-      );
-      window.open(url);
+    var fileFormat = $('#originalFormatSelect').val();
+    var url = (
+      window.location.origin +
+      '/reporter/aips_by_file_format/' +
+      '?amss_id=' +
+      storageServiceId +
+      '&storage_location=' +
+      storageLocationId +
+      '&file_format=' +
+      fileFormat +
+      '&original_files=True'
+    );
+    window.open(url);
   });
   $("#aipsByPreservationFormat").on("click", function() {
-      const URL_AIP_CONTENTS = "/reporter/aips_by_file_format/";
-      var fileFormat = $('#preservationFormatSelect').val();
-      var url = (
-        window.location.origin +
-        URL_AIP_CONTENTS +
-        '?amss_id=' +
-        storageServiceId +
-        '&storage_location=' +
-        storageLocationId +
-        '&file_format=' +
-        fileFormat +
-        '&original_files=False'
-      );
-      window.open(url);
+    var fileFormat = $('#preservationFormatSelect').val();
+    var url = (
+      window.location.origin +
+      '/reporter/aips_by_file_format/' +
+      '?amss_id=' +
+      storageServiceId +
+      '&storage_location=' +
+      storageLocationId +
+      '&file_format=' +
+      fileFormat +
+      '&original_files=False'
+    );
+    window.open(url);
   });
   $("#aipsByOriginalPUID").on("click", function() {
-      const URL_AIP_CONTENTS = "/reporter/aips_by_puid/";
-      var puid = $('#originalPUIDSelect').val();
-      var url = (
-        window.location.origin +
-        URL_AIP_CONTENTS +
-        '?amss_id=' +
-        storageServiceId +
-        '&storage_location=' +
-        storageLocationId +
-        '&puid=' +
-        puid +
-        '&original_files=True'
-      );
-      window.open(url);
+    var puid = $('#originalPUIDSelect').val();
+    var url = (
+      window.location.origin +
+      '/reporter/aips_by_puid/' +
+      '?amss_id=' +
+      storageServiceId +
+      '&storage_location=' +
+      storageLocationId +
+      '&puid=' +
+      puid +
+      '&original_files=True'
+    );
+    window.open(url);
   });
   $("#aipsByPreservationPUID").on("click", function() {
-      const URL_AIP_CONTENTS = "/reporter/aips_by_puid/";
-      var puid = $('#preservationPUIDSelect').val();
-      var url = (
-        window.location.origin +
-        URL_AIP_CONTENTS +
-        '?amss_id=' +
-        storageServiceId +
-        '&storage_location=' +
-        storageLocationId +
-        '&puid=' +
-        puid +
-        '&original_files=False'
-      );
-      window.open(url);
+    var puid = $('#preservationPUIDSelect').val();
+    var url = (
+      window.location.origin +
+      '/reporter/aips_by_puid/' +
+      '?amss_id=' +
+      storageServiceId +
+      '&storage_location=' +
+      storageLocationId +
+      '&puid=' +
+      puid +
+      '&original_files=False'
+    );
+    window.open(url);
   });
  $("#transferLogTabular").on("click", function() {
-      const URL_AIP_CONTENTS = "/reporter/ingest_log_tabular/";
-      var url = (
-        window.location.origin +
-        URL_AIP_CONTENTS +
-        '?amss_id=' +
-        storageServiceId +
-        '&storage_location=' +
-        storageLocationId
-      );
-      window.open(url);
+    var url = (
+      window.location.origin +
+      '/reporter/ingest_log_tabular/' +
+      '?amss_id=' +
+      storageServiceId +
+      '&storage_location=' +
+      storageLocationId
+    );
+    window.open(url);
   });
   $("#transferLogGantt").on("click", function() {
-      const URL_AIP_CONTENTS = "/reporter/ingest_log_gantt/";
-      var url = (
-        window.location.origin +
-        URL_AIP_CONTENTS +
-        '?amss_id=' +
-        storageServiceId +
-        '&storage_location=' +
-        storageLocationId
-      );
-      window.open(url);
+    var url = (
+      window.location.origin +
+      '/reporter/ingest_log_gantt/' +
+      '?amss_id=' +
+      storageServiceId +
+      '&storage_location=' +
+      storageLocationId
+    );
+    window.open(url);
   });
   $("#storageLocations").on("click", function() {
-      const URL_AIP_CONTENTS = "/reporter/storage_locations/";
+    var startdate = $('#startdate').val();
+    var enddate = $('#enddate').val();
+    if (enddate < startdate) {
+        alert(DATE_ALERT_START);
+    } else {
       var url = (
         window.location.origin +
-        URL_AIP_CONTENTS +
+        '/reporter/storage_locations/' +
         '?amss_id=' +
-        storageServiceId
+        storageServiceId +
+        '&start_date=' +
+        startdate +
+        '&end_date=' +
+        enddate
       );
       window.open(url);
+    }
   });
 });
 </script>

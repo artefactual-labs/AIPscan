@@ -26,6 +26,7 @@ PRESERVATION_FILE_SIZE = 2000
 
 AIP_1_CREATION_DATE = "2020-01-01"
 AIP_2_CREATION_DATE = "2020-06-01"
+AIP_3_CREATION_DATE = "2021-05-31"
 
 AIP_1_NAME = "TestAIP1"
 AIP_2_NAME = "TestAIP2"
@@ -433,11 +434,17 @@ def storage_locations(scope="package"):
 
         # Create two AIPs associated with Storage Location 1.
         aip1 = test_helpers.create_test_aip(
+            uuid=AIP_1_UUID,
+            transfer_name=AIP_1_NAME,
+            create_date=datetime.strptime(AIP_1_CREATION_DATE, AIP_DATE_FORMAT),
             storage_service_id=storage_service.id,
             storage_location_id=storage_location1.id,
             fetch_job_id=fetch_job.id,
         )
         aip2 = test_helpers.create_test_aip(
+            uuid=AIP_2_UUID,
+            transfer_name=AIP_2_NAME,
+            create_date=datetime.strptime(AIP_2_CREATION_DATE, AIP_DATE_FORMAT),
             storage_service_id=storage_service.id,
             storage_location_id=storage_location1.id,
             fetch_job_id=fetch_job.id,
@@ -445,6 +452,7 @@ def storage_locations(scope="package"):
 
         # Create one AIP associated with Storage Location 2.
         aip3 = test_helpers.create_test_aip(
+            create_date=datetime.strptime(AIP_3_CREATION_DATE, AIP_DATE_FORMAT),
             storage_service_id=storage_service.id,
             storage_location_id=storage_location2.id,
             fetch_job_id=fetch_job.id,
