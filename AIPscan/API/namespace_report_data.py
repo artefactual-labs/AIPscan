@@ -188,7 +188,7 @@ class AgentData(Resource):
 @api.route("/storage_locations/<storage_service_id>")
 class StorageLocations(Resource):
     @api.doc(
-        "list_format_versions",
+        "storage_locations",
         params={
             fields.FIELD_START_DATE: {
                 "description": "AIP creation start date (inclusive, YYYY-MM-DD)",
