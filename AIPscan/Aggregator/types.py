@@ -27,6 +27,7 @@ class StorageServicePackage(object):
         UUID = "uuid"
         CURRENT_LOCATION = "current_location"
         CURRENT_PATH = "current_path"
+        ORIGIN_PIPELINE = "origin_pipeline"
 
         self.deleted = False
         self.replica = False
@@ -36,6 +37,7 @@ class StorageServicePackage(object):
         self.uuid = None
         self.current_location = None
         self.current_path = None
+        self.origin_pipeline = None
 
         if kwargs:
             self.deleted = kwargs.get(DELETED, self.deleted)
@@ -46,6 +48,7 @@ class StorageServicePackage(object):
             self.uuid = kwargs.get(UUID, self.uuid)
             self.current_location = kwargs.get(CURRENT_LOCATION, self.current_location)
             self.current_path = kwargs.get(CURRENT_PATH, self.uuid)
+            self.origin_pipeline = kwargs.get(ORIGIN_PIPELINE, self.origin_pipeline)
 
     def __repr__(self):
         ret = "aip: '{}'; dip: '{}'; sip: '{}'; deleted: '{}'; replica: '{}';".format(
@@ -71,6 +74,8 @@ class StorageServicePackage(object):
         if self.current_location != other.current_location:
             ret = False
         if self.current_path != other.current_path:
+            ret = False
+        if self.origin_pipeline != other.origin_pipeline:
             ret = False
         return ret
 

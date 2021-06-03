@@ -7,7 +7,7 @@ import metsrw
 import pytest
 
 from AIPscan.Aggregator import database_helpers
-from AIPscan.conftest import STORAGE_LOCATION_1_CURRENT_LOCATION
+from AIPscan.conftest import ORIGIN_PIPELINE, STORAGE_LOCATION_1_CURRENT_LOCATION
 from AIPscan.models import AIP, Agent, File, FileType, StorageLocation
 
 FIXTURES_DIR = "fixtures"
@@ -64,6 +64,7 @@ def test_create_aip(app_instance):
     STORAGE_SERVICE_ID = 1
     STORAGE_LOCATION_ID = 1
     FETCH_JOB_ID = 1
+    ORIGIN_PIPELINE_ID = 1
 
     database_helpers.create_aip_object(
         package_uuid=PACKAGE_UUID,
@@ -73,6 +74,7 @@ def test_create_aip(app_instance):
         storage_service_id=STORAGE_SERVICE_ID,
         storage_location_id=STORAGE_LOCATION_ID,
         fetch_job_id=FETCH_JOB_ID,
+        origin_pipeline_id=ORIGIN_PIPELINE_ID,
     )
 
     aip = AIP.query.filter_by(uuid=PACKAGE_UUID).first()
@@ -80,6 +82,7 @@ def test_create_aip(app_instance):
     assert aip.transfer_name == TRANSFER_NAME
     assert aip.storage_service_id == STORAGE_SERVICE_ID
     assert aip.fetch_job_id == FETCH_JOB_ID
+    assert aip.origin_pipeline_id == ORIGIN_PIPELINE_ID
 
 
 def test_delete_aip(app_instance):
@@ -94,6 +97,7 @@ def test_delete_aip(app_instance):
         storage_service_id=1,
         storage_location_id=1,
         fetch_job_id=1,
+        origin_pipeline_id=1,
     )
 
     aip = AIP.query.filter_by(uuid=PACKAGE_UUID).first()
@@ -275,3 +279,32 @@ def test_create_or_update_storage_location(
         create_storage_location_object.assert_called_once()
     else:
         assert storage_location.description == new_description
+
+
+@pytest.mark.parametrize(
+    "origin_pipeline, new_url, pipeline_created",
+    [
+        # Create Pipeline if matching one doesn't exist.
+        ("/api/v2/pipeline/new-pipeline/", "", True),
+        # Update Pipeline's dashboard URL if already exists.
+        (ORIGIN_PIPELINE, "http://new-url.example.com", False),
+    ],
+)
+def test_create_or_update_pipeline(
+    storage_locations, mocker, origin_pipeline, new_url, pipeline_created
+):
+    """Test that Storage Locations are created or updated as expected."""
+    make_request = mocker.patch("AIPscan.Aggregator.tasks.make_request")
+    make_request.return_value = {"remote_name": new_url}
+    create_pipeline_object = mocker.patch(
+        "AIPscan.Aggregator.database_helpers.create_pipeline_object"
+    )
+
+    pipeline = database_helpers.create_or_update_pipeline(
+        origin_pipeline=origin_pipeline, api_url={}
+    )
+
+    if pipeline_created:
+        create_pipeline_object.assert_called_once()
+    else:
+        assert pipeline.dashboard_url == new_url

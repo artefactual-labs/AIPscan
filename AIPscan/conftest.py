@@ -40,6 +40,9 @@ ORIGINAL_FILE_1_UUID = "333333333333-3333-3333-33333333"
 ORIGINAL_FILE_2_NAME = "original-file-2.jpg"
 ORIGINAL_FILE_2_UUID = "444444444444-4444-4444-44444444"
 
+ORIGIN_PIPELINE_UUID = "777777777777-7777-7777-77777777"
+ORIGIN_PIPELINE = "/api/v2/pipeline/{}/".format(ORIGIN_PIPELINE_UUID)
+
 PRESERVATION_FILE_1_NAME = "preservation-file-1.tif"
 PRESERVATION_FILE_2_NAME = "preservation-file-2.tif"
 
@@ -115,6 +118,7 @@ def app_with_populated_files(scope="package"):
         storage_location = test_helpers.create_test_storage_location(
             storage_service_id=storage_service.id
         )
+        _ = test_helpers.create_test_pipeline(storage_service_id=storage_service.id)
         fetch_job = test_helpers.create_test_fetch_job(
             storage_service_id=storage_service.id
         )
@@ -171,6 +175,7 @@ def app_with_populated_files_no_ingestion_event(scope="package"):
         storage_location = test_helpers.create_test_storage_location(
             storage_service_id=storage_service.id
         )
+        _ = test_helpers.create_test_pipeline(storage_service_id=storage_service.id)
         fetch_job = test_helpers.create_test_fetch_job(
             storage_service_id=storage_service.id
         )
@@ -217,6 +222,7 @@ def app_with_populated_format_versions(scope="package"):
         storage_location = test_helpers.create_test_storage_location(
             storage_service_id=storage_service.id
         )
+        _ = test_helpers.create_test_pipeline(storage_service_id=storage_service.id)
         fetch_job = test_helpers.create_test_fetch_job(
             storage_service_id=storage_service.id
         )
@@ -289,6 +295,7 @@ def preservation_derivatives(scope="package"):
         storage_location = test_helpers.create_test_storage_location(
             storage_service_id=storage_service.id
         )
+        _ = test_helpers.create_test_pipeline(storage_service_id=storage_service.id)
         fetch_job = test_helpers.create_test_fetch_job(
             storage_service_id=storage_service.id
         )
@@ -370,6 +377,7 @@ def aip_contents(scope="package"):
         storage_location = test_helpers.create_test_storage_location(
             storage_service_id=storage_service.id
         )
+        _ = test_helpers.create_test_pipeline(storage_service_id=storage_service.id)
         fetch_job = test_helpers.create_test_fetch_job(
             storage_service_id=storage_service.id
         )
@@ -427,6 +435,9 @@ def storage_locations(scope="package"):
             storage_service_id=storage_service.id,
             current_location=STORAGE_LOCATION_2_CURRENT_LOCATION,
             description=STORAGE_LOCATION_2_DESCRIPTION,
+        )
+        _ = test_helpers.create_test_pipeline(
+            origin_pipeline=ORIGIN_PIPELINE, storage_service_id=storage_service.id
         )
         fetch_job = test_helpers.create_test_fetch_job(
             storage_service_id=storage_service.id

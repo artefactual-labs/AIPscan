@@ -49,6 +49,7 @@ def start_mets_task(
     package_uuid,
     relative_path_to_mets,
     current_location,
+    origin_pipeline,
     api_url,
     timestamp_str,
     package_list_no,
@@ -62,16 +63,18 @@ def start_mets_task(
         current_location, api_url, storage_service_id
     )
 
+    pipeline = database_helpers.create_or_update_pipeline(origin_pipeline, api_url)
+
     # Call worker to download and parse METS File.
     get_mets_task = get_mets.delay(
         package_uuid,
         relative_path_to_mets,
-        current_location,
         api_url,
         timestamp_str,
         package_list_no,
         storage_service_id,
         storage_location.id,
+        pipeline.id,
         fetch_job_id,
     )
     mets_task = get_mets_tasks(
@@ -109,6 +112,7 @@ def parse_packages_and_load_mets(
             package.uuid,
             package.get_relative_path(),
             package.current_location,
+            package.origin_pipeline,
             api_url,
             timestamp,
             package_list_no,
@@ -263,12 +267,12 @@ def package_lists_request(self, apiUrl, timestamp, packages_directory):
 def get_mets(
     package_uuid,
     relative_path_to_mets,
-    current_location,
     api_url,
     timestamp_str,
     package_list_no,
     storage_service_id,
     storage_location_id,
+    origin_pipeline_id,
     fetch_job_id,
 ):
     """Request METS XML file from the storage service and parse.
@@ -320,6 +324,8 @@ def get_mets(
         )
         database_helpers.delete_aip_object(previous_aip)
 
+    # TODO: ADD ORIGIN PIPELINE!
+
     aip = database_helpers.create_aip_object(
         package_uuid=package_uuid,
         transfer_name=original_name,
@@ -328,6 +334,7 @@ def get_mets(
         storage_service_id=storage_service_id,
         storage_location_id=storage_location_id,
         fetch_job_id=fetch_job_id,
+        origin_pipeline_id=origin_pipeline_id,
     )
 
     database_helpers.process_aip_data(aip, mets)

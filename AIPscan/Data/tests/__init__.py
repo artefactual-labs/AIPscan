@@ -70,4 +70,5 @@ MOCK_AIP = AIP(
     storage_service_id=MOCK_STORAGE_SERVICE_ID,
     storage_location_id=MOCK_STORAGE_LOCATION_ID,
     fetch_job_id=1,
+    origin_pipeline_id=1,
 )

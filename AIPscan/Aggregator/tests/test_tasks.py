@@ -54,6 +54,7 @@ def test_get_mets_task(app_instance, tmpdir, mocker, fixture_path, package_uuid)
     storage_location = test_helpers.create_test_storage_location(
         storage_service_id=storage_service.id
     )
+    pipeline = test_helpers.create_test_pipeline(storage_service_id=storage_service.id)
 
     get_storage_location = mocker.patch(
         "AIPscan.Aggregator.database_helpers.create_or_update_storage_location"
@@ -73,7 +74,6 @@ def test_get_mets_task(app_instance, tmpdir, mocker, fixture_path, package_uuid)
     get_mets(
         package_uuid=package_uuid,
         relative_path_to_mets="test",
-        current_location="/api/v2/test-location/",
         api_url=api_url,
         timestamp_str=datetime.now()
         .replace(microsecond=0)
@@ -82,6 +82,7 @@ def test_get_mets_task(app_instance, tmpdir, mocker, fixture_path, package_uuid)
         storage_service_id=storage_service.id,
         storage_location_id=storage_location.id,
         fetch_job_id=fetch_job1.id,
+        origin_pipeline_id=pipeline.id,
     )
     aips = _get_aips(storage_service.id)
     assert len(aips) == 1
@@ -96,7 +97,6 @@ def test_get_mets_task(app_instance, tmpdir, mocker, fixture_path, package_uuid)
     get_mets(
         package_uuid=package_uuid,
         relative_path_to_mets="test",
-        current_location="/api/v2/test-location/",
         api_url=api_url,
         timestamp_str=datetime.now()
         .replace(microsecond=0)
@@ -105,6 +105,7 @@ def test_get_mets_task(app_instance, tmpdir, mocker, fixture_path, package_uuid)
         storage_service_id=storage_service.id,
         storage_location_id=storage_location.id,
         fetch_job_id=fetch_job2.id,
+        origin_pipeline_id=pipeline.id,
     )
     aips = _get_aips(storage_service.id)
     assert len(aips) == 1
@@ -121,7 +122,6 @@ def test_get_mets_task(app_instance, tmpdir, mocker, fixture_path, package_uuid)
     get_mets(
         package_uuid=package_uuid,
         relative_path_to_mets="test",
-        current_location="/api/v2/test-location/",
         api_url=api_url,
         timestamp_str=datetime.now()
         .replace(microsecond=0)
@@ -130,6 +130,7 @@ def test_get_mets_task(app_instance, tmpdir, mocker, fixture_path, package_uuid)
         storage_service_id=storage_service.id,
         storage_location_id=storage_location.id,
         fetch_job_id=fetch_job3.id,
+        origin_pipeline_id=pipeline.id,
     )
     aips = _get_aips(storage_service.id)
     assert len(aips) == 1

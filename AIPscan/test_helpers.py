@@ -10,6 +10,7 @@ from AIPscan.models import (
     FetchJob,
     File,
     FileType,
+    Pipeline,
     StorageLocation,
     StorageService,
 )
@@ -66,6 +67,16 @@ def create_test_storage_location(**kwargs):
     return storage_location
 
 
+def create_test_pipeline(**kwargs):
+    """Create and return a test Pipeline with overridable defaults."""
+    pipeline = Pipeline(
+        origin_pipeline=kwargs.get("origin_pipeline", "/api/v2/pipeline/test-pipeline"),
+        dashboard_url=kwargs.get("dashboard_url", "http://example.com"),
+    )
+    _add_test_object_to_db(pipeline)
+    return pipeline
+
+
 def create_test_aip(**kwargs):
     """Create and return a test AIP with overridable defaults."""
     aip = AIP(
@@ -76,6 +87,7 @@ def create_test_aip(**kwargs):
         storage_service_id=kwargs.get("storage_service_id", 1),
         storage_location_id=kwargs.get("storage_location_id", 1),
         fetch_job_id=kwargs.get("fetch_job_id", 1),
+        origin_pipeline_id=kwargs.get("origin_pipeline_id", 1),
     )
     _add_test_object_to_db(aip)
     return aip
