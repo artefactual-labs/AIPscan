@@ -5,6 +5,8 @@ from datetime import date, datetime
 
 from AIPscan import db
 
+UUID_REGEX = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+
 
 class package_tasks(db.Model):
     __bind_key__ = "celery"
@@ -128,7 +130,6 @@ class StorageLocation(db.Model):
 
     @property
     def uuid(self):
-        UUID_REGEX = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
         match = re.search(UUID_REGEX, self.current_location)
         if match:
             return match.group(0)
@@ -261,6 +262,30 @@ class FetchJob(db.Model):
         return "<Fetch Job '{}'>".format(self.download_start)
 
 
+class Pipeline(db.Model):
+    __tablename__ = "pipeline"
+    id = db.Column(db.Integer(), primary_key=True)
+    origin_pipeline = db.Column(db.String(255), unique=True, index=True)
+    dashboard_url = db.Column(db.Text())
+    aips = db.relationship(
+        "AIP", cascade="all,delete", backref="origin_pipeline", lazy=True
+    )
+
+    def __init__(self, origin_pipeline, dashboard_url):
+        self.origin_pipeline = origin_pipeline
+        self.dashboard_url = dashboard_url
+
+    def __repr__(self):
+        return "<Pipeline '{}'>".format(self.origin_pipeline)
+
+    @property
+    def uuid(self):
+        match = re.search(UUID_REGEX, self.origin_pipeline)
+        if match:
+            return match.group(0)
+        return None
+
+
 class AIP(db.Model):
     __tablename__ = "aip"
     id = db.Column(db.Integer(), primary_key=True)
@@ -277,6 +302,9 @@ class AIP(db.Model):
     fetch_job_id = db.Column(
         db.Integer(), db.ForeignKey("fetch_job.id"), nullable=False
     )
+    origin_pipeline_id = db.Column(
+        db.Integer(), db.ForeignKey("pipeline.id"), nullable=False
+    )
     files = db.relationship("File", cascade="all,delete", backref="aip", lazy=True)
 
     def __init__(
@@ -288,6 +316,7 @@ class AIP(db.Model):
         storage_service_id,
         storage_location_id,
         fetch_job_id,
+        origin_pipeline_id,
     ):
         self.uuid = uuid
         self.transfer_name = transfer_name
@@ -296,6 +325,7 @@ class AIP(db.Model):
         self.storage_service_id = storage_service_id
         self.storage_location_id = storage_location_id
         self.fetch_job_id = fetch_job_id
+        self.origin_pipeline_id = origin_pipeline_id
 
     def __repr__(self):
         return "<AIP '{}'>".format(self.transfer_name)

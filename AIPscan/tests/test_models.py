@@ -20,9 +20,11 @@ from AIPscan.models import StorageLocation, StorageService
 
 VALID_UUID = "3ce6fbcb-cdfc-4cca-97e4-d19a469ca043"
 VALID_CURRENT_LOCATION = "/api/v2/location/{}/".format(VALID_UUID)
+VALID_ORIGIN_PIPELINE = "/api/v2/pipeline/{}/".format(VALID_UUID)
 
 INVALID_UUID = "not-a-uuid"
 INVALID_CURRENT_LOCATION = "/api/v2/location/{}/".format(INVALID_UUID)
+INVALID_ORIGIN_PIPELINE = "/api/v2/pipeline/{}/".format(INVALID_UUID)
 
 
 def test_new_storage_service(app_with_populated_files):
@@ -242,3 +244,18 @@ def test_storage_location_unique_puids(
 
     assert storage_location.unique_original_puids == original_puids
     assert storage_location.unique_preservation_puids == preservation_puids
+
+
+@pytest.mark.parametrize(
+    "origin_pipeline, expected_uuid",
+    [
+        # Test that UUID is returned for valid current location.
+        (VALID_ORIGIN_PIPELINE, VALID_UUID),
+        # Test that None is returned for invalid current location.
+        (INVALID_ORIGIN_PIPELINE, None),
+    ],
+)
+def test_pipeline_uuid(app_instance, origin_pipeline, expected_uuid):
+    """Test Storage Location uuid property."""
+    pipeline = test_helpers.create_test_pipeline(origin_pipeline=origin_pipeline)
+    assert pipeline.uuid == expected_uuid

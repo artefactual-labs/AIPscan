@@ -48,6 +48,7 @@ def process_package_object(package_obj):
     REPL = "replicated_package"
     CURRENT_LOCATION = "current_location"
     CURRENT_PATH = "current_path"
+    ORIGIN_PIPELINE = "origin_pipeline"
     UUID = "uuid"
 
     PKG_AIP = "AIP"
@@ -71,6 +72,7 @@ def process_package_object(package_obj):
     package.uuid = package_obj.get(UUID)
     package.current_location = package_obj.get(CURRENT_LOCATION)
     package.current_path = package_obj.get(CURRENT_PATH)
+    package.origin_pipeline = package_obj.get(ORIGIN_PIPELINE)
 
     return package
 
@@ -110,10 +112,10 @@ def get_mets_url(api_url, package_uuid, path_to_mets):
     return mets_url
 
 
-def get_location_url(api_url, current_location):
+def get_storage_service_api_url(api_url, api_path):
     """Return URL to fetch location infofrom Storage Service."""
     base_url = api_url.get("baseUrl", "").rstrip("/")
-    request_url_without_api_key = "{}{}".format(base_url, current_location).rstrip("/")
+    request_url_without_api_key = "{}{}".format(base_url, api_path).rstrip("/")
     user_name = api_url.get("userName")
     api_key = api_url.get("apiKey", "")
     request_url = "{}?username={}&api_key={}".format(

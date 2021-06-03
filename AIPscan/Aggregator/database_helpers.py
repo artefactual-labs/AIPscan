@@ -8,7 +8,10 @@ from celery.utils.log import get_task_logger
 
 from AIPscan import db
 from AIPscan.Aggregator import tasks
-from AIPscan.Aggregator.task_helpers import _tz_neutral_date, get_location_url
+from AIPscan.Aggregator.task_helpers import (
+    _tz_neutral_date,
+    get_storage_service_api_url,
+)
 from AIPscan.models import (
     AIP,
     Agent,
@@ -16,6 +19,7 @@ from AIPscan.models import (
     EventAgent,
     File,
     FileType,
+    Pipeline,
     StorageLocation,
 )
 
@@ -153,6 +157,7 @@ def create_aip_object(
     storage_service_id,
     storage_location_id,
     fetch_job_id,
+    origin_pipeline_id,
 ):
     """Create an AIP object and save it to the database."""
     aip = AIP(
@@ -163,6 +168,7 @@ def create_aip_object(
         storage_service_id=storage_service_id,
         storage_location_id=storage_location_id,
         fetch_job_id=fetch_job_id,
+        origin_pipeline_id=origin_pipeline_id,
     )
     db.session.add(aip)
     db.session.commit()
@@ -195,7 +201,7 @@ def create_or_update_storage_location(current_location, api_url, storage_service
     storage_location = StorageLocation.query.filter_by(
         current_location=current_location
     ).first()
-    request_url, request_url_without_api_key = get_location_url(
+    request_url, request_url_without_api_key = get_storage_service_api_url(
         api_url, current_location
     )
     response = tasks.make_request(request_url, request_url_without_api_key)
@@ -210,6 +216,32 @@ def create_or_update_storage_location(current_location, api_url, storage_service
         db.session.commit()
 
     return storage_location
+
+
+def create_pipeline_object(origin_pipeline, dashboard_url):
+    """Create a Pipeline and save it to the database."""
+    pipeline = Pipeline(origin_pipeline=origin_pipeline, dashboard_url=dashboard_url)
+    db.session.add(pipeline)
+    db.session.commit()
+    return pipeline
+
+
+def create_or_update_pipeline(origin_pipeline, api_url):
+    """Create or update Storage Location and return it."""
+    pipeline = Pipeline.query.filter_by(origin_pipeline=origin_pipeline).first()
+    request_url, request_url_without_api_key = get_storage_service_api_url(
+        api_url, origin_pipeline
+    )
+    response = tasks.make_request(request_url, request_url_without_api_key)
+    dashboard_url = response.get("remote_name")
+    if not pipeline:
+        return create_pipeline_object(origin_pipeline, dashboard_url)
+
+    if pipeline.dashboard_url != dashboard_url:
+        pipeline.dashboard_url = dashboard_url
+        db.session.commit()
+
+    return pipeline
 
 
 def _get_file_properties(fs_entry):
