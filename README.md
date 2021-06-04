@@ -1,6 +1,7 @@
 [![GitHub CI](https://github.com/artefactual-labs/AIPscan/actions/workflows/test.yml/badge.svg)](https://github.com/artefactual-labs/AIPscan/actions/workflows/test.yml)
 [![codecov](https://codecov.io/gh/artefactual-labs/AIPscan/branch/main/graph/badge.svg?token=2RRFAM8P89)](https://codecov.io/gh/artefactual-labs/AIPscan)
 
+
 # About
 
 AIPscan was developed to provide a more in-depth reporting solution for Archivematica users. It crawls METS files from AIPs in the Archivematica Storage Service to generate tabular and visual reports about repository holdings. It is designed to run as a stand-alone, add-one to Archivematica. It only needs a valid Storage Service API key to fetch source data.  
@@ -9,6 +10,11 @@ AIPscan was developed to provide a more in-depth reporting solution for Archivem
 
 [Apache License Version 2.0](LICENSE)  
 Copyright Artefactual Systems Inc (2021)
+
+# Contents
+* [Screenshots](#screenshots)
+* [Installation](#installation)
+* [Usage](#usage)
 
 # Screenshots
 
@@ -45,9 +51,11 @@ Below are the developer quickstart instructions. See [INSTALL](INSTALL.md) for p
 ![screencap5](screencaps/aipscan_hello_world.png)
 
 
-## RabbitMQ
-Crawling and parsing many Archivematica AIP METS xml files at a time is resource intensive. Therefore, AIPscan uses the [RabbitMQ][rabbit-MQ1] message broker and the [Celery][celery-1] task manager to coordinate this activity as background worker tasks. **Both must be installed and running properly before attempting a METS fetch job.**
+## Background workers
+Crawling and parsing many Archivematica AIP METS xml files at a time is resource intensive. Therefore, AIPscan uses the [RabbitMQ][rabbit-MQ1] message broker and the [Celery][celery-1] task manager to coordinate this activity as background worker tasks. **Both RabbitMQ and Celery must be running properly before attempting a METS fetch job.**
 
+
+## RabbitMQ
 You can downnload and install RabbitMQ server directly on your local or cloud machine or you can run it in either location from a Docker container.
 
 
@@ -81,13 +89,17 @@ You can downnload and install RabbitMQ server directly on your local or cloud ma
 ## Celery
 Celery was automatically installed into the AIPscan project as a Python module dependency during the initial AIPscan requirements import command:  `pip install -r requirements/base.txt`
 
-To start up Celery workers that are ready to receive tasks from RabbitMQ: `celery worker -A AIPscan.worker.celery --loglevel=info`
+To start up Celery workers that are ready to receive tasks from RabbitMQ:
+* Open a new terminal tab or window.
+* Navigate to the AIPscan root project directory.
+* Enter the following command:  
+  `celery worker -A AIPscan.worker.celery --loglevel=info`
 
 # Usage
 
 ### Connecting to a storage service and initiating AIPScan's use
 
-* Ensure that RabbitMQ & Celery are up and running. Ensure that the AIPscan Flask server is up and runnning. 
+* Ensure that the Flask Server, RabbitMQ server, and Celery worker queu are up and running.  
 * Go to [`localhost:5000`][usage-1] in your browser.
 * Select "New Storage Service"
 * Add an Archivematica Storage Service record, including API Key, eg.
