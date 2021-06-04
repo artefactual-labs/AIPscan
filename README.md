@@ -62,7 +62,7 @@ You can downnload and install RabbitMQ server directly on your local or cloud ma
 ### Docker installation
 
 
-  ```bash
+  ```
   docker run --rm \
     -it \
     --hostname my-rabbit \
