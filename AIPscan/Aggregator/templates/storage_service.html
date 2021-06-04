@@ -51,12 +51,16 @@
         <td>{% if mets_fetch_job.download_end %} {{ mets_fetch_job.download_end - mets_fetch_job.download_start }} {% endif %}</td>
         <td>{{ mets_fetch_job.total_packages }} packages
           <i class="fa fa-info-circle fa-lg" id="{{ mets_fetch_job.id }}" style="margin-left: 5px;"></i><br/>
-          <div id="stats-{{ mets_fetch_job.id }}" class="stats" style="font-size:80%; color: #999;">
-            {{ mets_fetch_job.total_aips }} AIPs <br />
-            {{ mets_fetch_job.total_sips }} SIPs <br />
-            {{ mets_fetch_job.total_dips }} DIPs <br />
-            {{ mets_fetch_job.total_replicas }} replicated AIPs <br />
-            {{ mets_fetch_job.total_replicas }} deleted AIPs <br />
+          <div id="stats-{{ mets_fetch_job.id }}">
+            <span class="text-muted">
+              <small>
+                {{ mets_fetch_job.total_aips }} AIPs <br>
+                {{ mets_fetch_job.total_sips }} SIPs <br>
+                {{ mets_fetch_job.total_dips }} DIPs <br>
+                {{ mets_fetch_job.total_replicas }} replicated AIPs <br>
+                {{ mets_fetch_job.total_replicas }} deleted AIPs <br>
+              </small>
+          </span>
           </div>
         </td>
         <td>{{ mets_fetch_job.total_aips }}</td>
