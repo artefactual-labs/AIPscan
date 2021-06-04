@@ -97,8 +97,6 @@ To start up Celery workers that are ready to receive tasks from RabbitMQ:
 
 # Usage
 
-### Connecting to a storage service and initiating AIPScan's use
-
 * Ensure that the Flask Server, RabbitMQ server, and Celery worker queu are up and running.  
 * Go to [`localhost:5000`][usage-1] in your browser.
 * Select "New Storage Service"
