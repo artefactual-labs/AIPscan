@@ -40,15 +40,19 @@ Below are the developer quickstart instructions. See [INSTALL](INSTALL.md) for p
 * Install requirements (this includes Flask & Celery): `pip install -r requirements/base.txt`
 * Enable DEBUG mode if desired for development: `export FLASK_CONFIG=dev`
 * In a terminal window, start the Flask server: `python run.py`
+* Confirm that the Flask server and AIPscan app are up and running at http://localhost:50000. You should see a blank AIPscan page like this:
+
+![screencap5](screencaps/aipscan_hello_world.png)
+
 
 ## RabbitMQ
+Crawling and parsing many Archivematica AIP METS xml files at a time is resource intensive. Therefore, AIPscan uses the [RabbitMQ][rabbit-MQ1] message broker and the [Celery][celery-1] task manager to coordinate this activity as background worker tasks. Both must be installed and running properly before attempting a METS fetch job.
 
-RabbitMQ acts as a queue manager so that work is queued and then actioned as
-needed. There are two options to running RabbitMQ at present:
+You can downnload and install RabbitMQ server directly on your local or cloud machine or you can run it in either location from a Docker container.
 
-### Path of least resistance (Docker)
 
-* With docker installed, run the following command:
+### Docker installation
+
 
   ```bash
   docker run --rm \
@@ -58,12 +62,9 @@ needed. There are two options to running RabbitMQ at present:
     -p 5672:5672 rabbitmq:3-management
   ```
 
-* RabbitMQ's server will be visible at [`http://localhost:15672/`][rabbit-MQ2]
-and AIPScan will automatically be able to connect to the queue at `:5672`.
+### Download and install
 
-### Download to run...
-
-* Download and install RabbitMQ queue manager: [Download Link][rabbit-MQ1]
+* [Download][rabbit-MQ3] RabbitMQ installer. 
 * In another terminal window, start RabbitMQ queue manager:
 
   ```bash
@@ -71,19 +72,23 @@ and AIPScan will automatically be able to connect to the queue at `:5672`.
   sudo rabbitmq-server
   ```
 
-* To see RabbitMQ dashboard visit: [`http://localhost:15672/`][rabbit-MQ2]
-* The user name will be `guest` and password `guest`.
+### RabbitMQ dashboard
+* The RabbitMQ dashboard is available at [`http://localhost:15672/`][rabbit-MQ2]
+* username: `guest` / passwordL `guest`
+* AIPScan connects to the RabbitMQ queue on port `:5672`.
+
 
 ## Celery
+Celery was automatically installed into the AIPscan project as a Python module dependency during the initial AIPscan requirements import command:  `pip install -r requirements/base.txt`
 
-* In another terminal window, from the AIPscan root directory, start a Celery
-worker: `celery worker -A AIPscan.worker.celery --loglevel=info`
+To start up Celery workers that are ready to receive tasks from RabbitMQ: `celery worker -A AIPscan.worker.celery --loglevel=info`
 
 # Usage
 
 ### Connecting to a storage service and initiating AIPScan's use
 
-* Go to [`localhost:5000`][usage-1] in a browser.
+* Ensure that RabbitMQ & Celery are up and running. Ensure that the AIPscan Flask server is up and runnning. 
+* Go to [`localhost:5000`][usage-1] in your browser.
 * Select "New Storage Service"
 * Add an Archivematica Storage Service record, including API Key, eg.
 `https://amdemo.artefactual.com:8000`
@@ -94,6 +99,8 @@ worker: `celery worker -A AIPscan.worker.celery --loglevel=info`
 
 
 [am-1]: https://archivematica.org
-[rabbit-MQ1]: https://www.rabbitmq.com/download.html
+[rabbit-MQ1]: https://www.rabbitmq.com/
+[celery-1]: https://docs.celeryproject.org/en/stable/getting-started/introduction.html
 [rabbit-MQ2]: http://localhost:15672/
+[rabbit-MQ3]: https://www.rabbitmq.com/download.html
 [usage-1]: http://localhost:5000
