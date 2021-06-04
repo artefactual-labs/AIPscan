@@ -1,21 +1,38 @@
 [![GitHub CI](https://github.com/artefactual-labs/AIPscan/actions/workflows/test.yml/badge.svg)](https://github.com/artefactual-labs/AIPscan/actions/workflows/test.yml)
 [![codecov](https://codecov.io/gh/artefactual-labs/AIPscan/branch/main/graph/badge.svg?token=2RRFAM8P89)](https://codecov.io/gh/artefactual-labs/AIPscan)
 
-# AIPscan
+# About
 
-Collect repository-wide info about [Archivematica][am-1] Archival
-Information Packages (AIPs)
+AIPscan was developed to provide a more in-depth reporting solution for Archivematica users. It crawls METS files from AIPs in the Archivematica Storage Service to generate tabular and visual reports about repository holdings. It is designed to run as a stand-alone, add-one to Archivematica. It only needs a valid Storage Service API key to fetch source data.  
 
-## License
+# License
 
-Copyright Artefactual Systems Inc (2020).
-[Apache License Version 2.0](LICENSE)
+[Apache License Version 2.0](LICENSE)  
+Copyright Artefactual Systems Inc (2021)
 
-## Installation
+# Screenshots
+
+## Example AIPScan fetch job
+
+![screencap1](screencaps/aipscan_fetch_job.png)
+
+## Viewing an AIP in AIPScan
+
+![screencap2](screencaps/aipscan_view_aip.png)
+
+## Selecting a report to run in AIPScan
+
+![screencap3](screencaps/aipscan_select_report.png)
+
+## Demonstration of a scatter chart report
+
+![screencap4](screencaps/aipscan_scatterplot_report.png)
+
+# Installation
 
 Below are the developer quickstart instructions. See [INSTALL](INSTALL.md) for production deployment instructions.
 
-### AIPScan Flask server
+## AIPScan Flask server
 
 * Clone files and cd to directory:  `git clone https://github.com/artefactual-labs/AIPscan && cd AIPscan`
 * Set up virtualenv in the project root directory: `virtualenv venv`
@@ -24,12 +41,12 @@ Below are the developer quickstart instructions. See [INSTALL](INSTALL.md) for p
 * Enable DEBUG mode if desired for development: `export FLASK_CONFIG=dev`
 * In a terminal window, start the Flask server: `python run.py`
 
-### RabbitMQ
+## RabbitMQ
 
 RabbitMQ acts as a queue manager so that work is queued and then actioned as
 needed. There are two options to running RabbitMQ at present:
 
-#### Path of least resistance (Docker)
+### Path of least resistance (Docker)
 
 * With docker installed, run the following command:
 
@@ -44,7 +61,7 @@ needed. There are two options to running RabbitMQ at present:
 * RabbitMQ's server will be visible at [`http://localhost:15672/`][rabbit-MQ2]
 and AIPScan will automatically be able to connect to the queue at `:5672`.
 
-#### Download to run...
+### Download to run...
 
 * Download and install RabbitMQ queue manager: [Download Link][rabbit-MQ1]
 * In another terminal window, start RabbitMQ queue manager:
@@ -57,12 +74,12 @@ and AIPScan will automatically be able to connect to the queue at `:5672`.
 * To see RabbitMQ dashboard visit: [`http://localhost:15672/`][rabbit-MQ2]
 * The user name will be `guest` and password `guest`.
 
-### Celery
+## Celery
 
 * In another terminal window, from the AIPscan root directory, start a Celery
 worker: `celery worker -A AIPscan.worker.celery --loglevel=info`
 
-## Usage
+# Usage
 
 ### Connecting to a storage service and initiating AIPScan's use
 
@@ -74,23 +91,7 @@ worker: `celery worker -A AIPscan.worker.celery --loglevel=info`
 * When the Fetch Job completes, select "View AIPs" button, "AIPs" menu, or
 "Reports" menu.
 
-## Screenshots
 
-### Example AIPScan fetch job
-
-![screencap1](screencaps/aipscan_fetch_job.png)
-
-### Viewing an AIP in AIPScan
-
-![screencap2](screencaps/aipscan_view_aip.png)
-
-### Selecting a report to run in AIPScan
-
-![screencap3](screencaps/aipscan_select_report.png)
-
-### Demonstration of a scatter chart report
-
-![screencap4](screencaps/aipscan_scatterplot_report.png)
 
 [am-1]: https://archivematica.org
 [rabbit-MQ1]: https://www.rabbitmq.com/download.html
