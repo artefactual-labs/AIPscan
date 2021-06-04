@@ -37,7 +37,7 @@ Below are the developer quickstart instructions. See [INSTALL](INSTALL.md) for p
 * Clone files and cd to directory:  `git clone https://github.com/artefactual-labs/AIPscan && cd AIPscan`
 * Set up virtualenv in the project root directory: `virtualenv venv`
 * Activate virtualenv: `source venv/bin/activate`
-* Install requirements (this includes Flask & Celery): `pip install -r requirements.txt`
+* Install requirements (this includes Flask & Celery): `pip install -r requirements/base.txt`
 * Enable DEBUG mode if desired for development: `export FLASK_CONFIG=dev`
 * In a terminal window, start the Flask server: `python run.py`
 
