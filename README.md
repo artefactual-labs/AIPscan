@@ -36,7 +36,7 @@ Copyright Artefactual Systems Inc (2021)
 
 # Installation
 
-Below are the developer quickstart instructions. See [INSTALL](INSTALL.md) for production deployment instructions.
+AIPscan is a web-based application that is built using the Python [Flask](https://pypi.org/project/Flask/) micro-framework. Below are the developer quickstart instructions. See [INSTALL](INSTALL.md) for production deployment instructions.
 
 ## AIPScan Flask server
 
