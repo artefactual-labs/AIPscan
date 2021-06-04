@@ -46,7 +46,7 @@ Below are the developer quickstart instructions. See [INSTALL](INSTALL.md) for p
 
 
 ## RabbitMQ
-Crawling and parsing many Archivematica AIP METS xml files at a time is resource intensive. Therefore, AIPscan uses the [RabbitMQ][rabbit-MQ1] message broker and the [Celery][celery-1] task manager to coordinate this activity as background worker tasks. Both must be installed and running properly before attempting a METS fetch job.
+Crawling and parsing many Archivematica AIP METS xml files at a time is resource intensive. Therefore, AIPscan uses the [RabbitMQ][rabbit-MQ1] message broker and the [Celery][celery-1] task manager to coordinate this activity as background worker tasks. **Both must be installed and running properly before attempting a METS fetch job.**
 
 You can downnload and install RabbitMQ server directly on your local or cloud machine or you can run it in either location from a Docker container.
 
@@ -74,7 +74,7 @@ You can downnload and install RabbitMQ server directly on your local or cloud ma
 
 ### RabbitMQ dashboard
 * The RabbitMQ dashboard is available at [`http://localhost:15672/`][rabbit-MQ2]
-* username: `guest` / passwordL `guest`
+* username: `guest` / password: `guest`
 * AIPScan connects to the RabbitMQ queue on port `:5672`.
 
 
