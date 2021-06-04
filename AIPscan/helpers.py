@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+import hashlib
 from datetime import datetime, timedelta
 from distutils.util import strtobool
 
@@ -45,13 +45,45 @@ def parse_datetime_bound(date_string, upper=False):
         return default_datetime
 
 
-def get_human_readable_file_size(size, precision=2):
-    suffixes = ["B", "KiB", "MiB", "GiB", "TiB"]
-    suffixIndex = 0
-    while size > 1024 and suffixIndex < 4:
-        suffixIndex += 1  # increment the index of the suffix
-        size = size / 1024.0  # apply the division
-    return "%.*f %s" % (precision, size, suffixes[suffixIndex])
+def filesizeformat(value, binary=False):
+    """Format the value like a 'human-readable' file size (i.e. 13 kB,
+    4.1 MB, 102 Bytes, etc).  Per default decimal prefixes are used (Mega,
+    Giga, etc.), if the second parameter is set to `True` the binary
+    prefixes are used (Mebi, Gibi).
+
+    Copied from jinja2 source code to ensure consistency of human-readable
+    dates regardless of whether conversion happens in a view or a template.
+    Source code: https://github.com/pallets/jinja/blob/
+    9d4689b04d53f233b8b9ab664edb2f7430d2bbde/src/jinja2/filters.py
+
+    Copyright 2007 Pallets
+    BSD 3 license
+    """
+    bytes = float(value)
+    base = 1024 if binary else 1000
+    prefixes = [
+        ("KiB" if binary else "kB"),
+        ("MiB" if binary else "MB"),
+        ("GiB" if binary else "GB"),
+        ("TiB" if binary else "TB"),
+        ("PiB" if binary else "PB"),
+        ("EiB" if binary else "EB"),
+        ("ZiB" if binary else "ZB"),
+        ("YiB" if binary else "YB"),
+    ]
+
+    if bytes == 1:
+        return "1 Byte"
+    elif bytes < base:
+        return f"{int(bytes)} Bytes"
+    else:
+        for i, prefix in enumerate(prefixes):
+            unit = base ** (i + 2)
+
+            if bytes < unit:
+                return f"{base * bytes / unit:.1f} {prefix}"
+
+        return f"{base * bytes / unit:.1f} {prefix}"
 
 
 def _split_ms(date_string):
@@ -68,3 +100,10 @@ def _simplify_datetime(date_string, return_object=True):
     if return_object:
         return formatted_date
     return formatted_date.strftime(DATE_FORMAT_FULL)
+
+
+def file_sha256_hash(filepath):
+    """Return SHA256 hash for contents of file."""
+    with open(filepath, "rb") as f:
+        expected_bytes = f.read()
+        return hashlib.sha256(expected_bytes).hexdigest()

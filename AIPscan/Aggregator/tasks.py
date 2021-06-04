@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 import json
 import os
 
@@ -11,7 +10,7 @@ from AIPscan.Aggregator import database_helpers
 from AIPscan.Aggregator.celery_helpers import write_celery_update
 from AIPscan.Aggregator.mets_parse_helpers import (
     METSError,
-    _download_mets,
+    download_mets,
     get_aip_original_name,
     parse_mets_with_metsrw,
 )
@@ -20,7 +19,8 @@ from AIPscan.Aggregator.task_helpers import (
     process_package_object,
 )
 from AIPscan.extensions import celery
-from AIPscan.models import FetchJob, get_mets_tasks  # Custom celery Models.
+from AIPscan.helpers import file_sha256_hash
+from AIPscan.models import AIP, FetchJob, get_mets_tasks  # Custom celery Models.
 
 logger = get_task_logger(__name__)
 
@@ -179,7 +179,7 @@ def workflow_coordinator(
     db.session.commit()
 
 
-def _make_request(request_url, request_url_without_api_key):
+def make_request(request_url, request_url_without_api_key):
     """Make our request to the storage service and return a valid
     response to our caller or raise a TaskError for celery.
     """
@@ -215,7 +215,7 @@ def package_lists_request(self, apiUrl, timestamp, packages_directory):
         request_url,
     ) = format_api_url_with_limit_offset(apiUrl)
     # First packages request.
-    packages = _make_request(request_url, request_url_without_api_key)
+    packages = make_request(request_url, request_url_without_api_key)
     packages_count = 1
     # Calculate how many package list files will be downloaded based on
     # total number of packages and the download limit
@@ -232,7 +232,7 @@ def package_lists_request(self, apiUrl, timestamp, packages_directory):
     write_packages_json(packages_count, packages, packages_directory)
     while next_url is not None:
         next_request = "{}{}".format(base_url, next_url)
-        next_packages = _make_request(next_request, request_url_without_api_key)
+        next_packages = make_request(next_request, request_url_without_api_key)
         packages_count += 1
         write_packages_json(packages_count, next_packages, packages_directory)
         next_url = next_packages.get(META, {}).get(NEXT, None)
@@ -272,9 +272,22 @@ def get_mets(
     TODO: Log METS errors.
     """
 
-    download_file = _download_mets(
+    download_file = download_mets(
         api_url, package_uuid, relative_path_to_mets, timestamp_str, package_list_no
     )
+    mets_name = os.path.basename(download_file)
+    mets_hash = file_sha256_hash(download_file)
+
+    # If METS file's hash matches an existing value, this is a duplicate of an
+    # existing AIP and we can safely ignore it.
+    matching_aip = AIP.query.filter_by(mets_sha256=mets_hash).first()
+    if matching_aip is not None:
+        logger.info(
+            "Skipping METS file {} - identical to existing record".format(mets_name)
+        )
+        return
+
+    logger.info("Processing METS file {}".format(mets_name))
 
     try:
         mets = parse_mets_with_metsrw(download_file)
@@ -289,10 +302,20 @@ def get_mets(
         # log and act upon.
         original_name = package_uuid
 
+    # Delete records of any previous versions of this AIP, which will shortly
+    # be replaced by new records from the updated METS.
+    previous_aips = AIP.query.filter_by(uuid=package_uuid).all()
+    for previous_aip in previous_aips:
+        logger.info(
+            "Deleting record for AIP {} to replace from newer METS".format(package_uuid)
+        )
+        database_helpers.delete_aip_object(previous_aip)
+
     aip = database_helpers.create_aip_object(
         package_uuid=package_uuid,
         transfer_name=original_name,
         create_date=mets.createdate,
+        mets_sha256=mets_hash,
         storage_service_id=storage_service_id,
         fetch_job_id=fetch_job_id,
     )

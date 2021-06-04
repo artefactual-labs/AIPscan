@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import enum
+from datetime import date
 
 from AIPscan import db
 
@@ -45,6 +46,16 @@ class StorageService(db.Model):
 
     def __repr__(self):
         return "<Storage Service '{}'>".format(self.name)
+
+    @property
+    def earliest_aip_created(self):
+        results = (
+            db.session.query(AIP.create_date).order_by(AIP.create_date.desc()).first()
+        )
+        try:
+            return results[0]
+        except TypeError:
+            return date.today()
 
     @property
     def unique_file_formats(self):
@@ -136,6 +147,7 @@ class AIP(db.Model):
     uuid = db.Column(db.String(255), index=True)
     transfer_name = db.Column(db.String(255))
     create_date = db.Column(db.DateTime())
+    mets_sha256 = db.Column(db.String(64))
     storage_service_id = db.Column(
         db.Integer(), db.ForeignKey("storage_service.id"), nullable=False
     )
@@ -145,11 +157,18 @@ class AIP(db.Model):
     files = db.relationship("File", cascade="all,delete", backref="aip", lazy=True)
 
     def __init__(
-        self, uuid, transfer_name, create_date, storage_service_id, fetch_job_id
+        self,
+        uuid,
+        transfer_name,
+        create_date,
+        mets_sha256,
+        storage_service_id,
+        fetch_job_id,
     ):
         self.uuid = uuid
         self.transfer_name = transfer_name
         self.create_date = create_date
+        self.mets_sha256 = mets_sha256
         self.storage_service_id = storage_service_id
         self.fetch_job_id = fetch_job_id
 

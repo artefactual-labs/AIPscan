@@ -1,0 +1,10 @@
+[run]
+
+omit =
+    **/static/*
+    **/templates/*
+    **/tests/*
+
+source = AIPscan
+
+branch = True

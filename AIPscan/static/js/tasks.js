@@ -9,10 +9,10 @@ function new_fetch_job(storageServiceId){
       $('#console').append('<div class="log">Downloading package lists</div>')
       var showcount = false
       package_list_task_status(data["taskId"], showcount, data["fetchJobId"]);
-      },
+    },
     error: function() {
-      alert('Unexpected error');
-      }
+      alert('Storage Service connection error. Check URL and credentials.');
+    }
   });
 }
 

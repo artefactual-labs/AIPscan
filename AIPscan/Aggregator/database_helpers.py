@@ -138,19 +138,34 @@ def _get_unique_agents(all_agents, agents_list):
 
 
 def create_aip_object(
-    package_uuid, transfer_name, create_date, storage_service_id, fetch_job_id
+    package_uuid,
+    transfer_name,
+    create_date,
+    mets_sha256,
+    storage_service_id,
+    fetch_job_id,
 ):
     """Create an AIP object and save it to the database."""
     aip = AIP(
         uuid=package_uuid,
         transfer_name=transfer_name,
         create_date=_tz_neutral_date(create_date),
+        mets_sha256=mets_sha256,
         storage_service_id=storage_service_id,
         fetch_job_id=fetch_job_id,
     )
     db.session.add(aip)
     db.session.commit()
     return aip
+
+
+def delete_aip_object(aip):
+    """Delete AIP object from database.
+
+    :param aip: AIP model instance
+    """
+    db.session.delete(aip)
+    db.session.commit()
 
 
 def _get_file_properties(fs_entry):
@@ -213,7 +228,12 @@ def _add_normalization_date(file_id):
         db.session.commit()
 
 
-def _add_file(file_type, fs_entry, aip_id):
+def _get_original_file(related_uuid):
+    """Get original file related to preservation derivative."""
+    return File.query.filter_by(uuid=related_uuid, file_type=FileType.original).first()
+
+
+def create_file_object(file_type, fs_entry, aip_id):
     """Add file to database
 
     :param file_type: models.FileType enum
@@ -224,8 +244,9 @@ def _add_file(file_type, fs_entry, aip_id):
 
     original_file_id = None
     if file_type is FileType.preservation:
-        original_file = File.query.filter_by(uuid=file_info["related_uuid"]).first()
-        original_file_id = original_file.id
+        original_file = _get_original_file(file_info["related_uuid"])
+        if original_file:
+            original_file_id = original_file.id
 
     new_file = File(
         name=file_info.get("name"),
@@ -283,8 +304,8 @@ def process_aip_data(aip, mets):
     # when we parse preservation and derivative files.
     original_files = [file_ for file_ in all_files if file_.use == "original"]
     for file_ in original_files:
-        _add_file(FileType.original, file_, aip.id)
+        create_file_object(FileType.original, file_, aip.id)
 
     preservation_files = [file_ for file_ in all_files if file_.use == "preservation"]
     for file_ in preservation_files:
-        _add_file(FileType.preservation, file_, aip.id)
+        create_file_object(FileType.preservation, file_, aip.id)

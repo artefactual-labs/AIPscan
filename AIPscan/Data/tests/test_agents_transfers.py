@@ -6,8 +6,8 @@ the ingest log report and agents-transfers API endpoint.
 
 import pytest
 
+from AIPscan.conftest import AIP_CREATION_TIME, INGEST_EVENT_CREATION_TIME
 from AIPscan.Data import report_data
-from AIPscan.Data.tests.conftest import AIP_CREATION_TIME, INGEST_EVENT_CREATION_TIME
 
 
 @pytest.mark.parametrize(
@@ -54,3 +54,24 @@ def test_agents_transfers(
     assert ingests[0]["User"] == "user one"
     assert ingests[0]["IngestStartDate"] == str(ingest_date)
     assert ingests[0]["IngestFinishDate"] == str(aip_creation_date)
+
+
+@pytest.mark.parametrize(
+    "storage_id, storage_name, number_of_ingests",
+    [
+        # Simple transfer with limited amount of data from the DB.
+        (1, "test storage service", 0)
+    ],
+)
+def test_agents_transfers_no_ingestion_event(
+    app_with_populated_files_no_ingestion_event,
+    storage_id,
+    storage_name,
+    number_of_ingests,
+):
+    """Test that lack of ingestion event doesn't throw error."""
+
+    report = report_data.agents_transfers(storage_service_id=storage_id)
+
+    assert report["StorageName"] == storage_name
+    assert len(report["Ingests"]) == number_of_ingests

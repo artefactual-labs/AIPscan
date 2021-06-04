@@ -9,8 +9,8 @@ import requests
 
 from AIPscan.Aggregator.task_helpers import (
     create_numbered_subdirs,
-    download_mets,
     get_mets_url,
+    write_mets,
 )
 
 
@@ -84,7 +84,7 @@ def get_aip_original_name(mets):
     return original_name
 
 
-def _download_mets(
+def download_mets(
     api_url, package_uuid, relative_path_to_mets, timestamp, package_list_no
 ):
     """Download METS from the storage service."""
@@ -98,6 +98,6 @@ def _download_mets(
     numbered_subdir = create_numbered_subdirs(timestamp, package_list_no)
 
     # Output METS to a convenient location to later be parsed.
-    download_file = download_mets(mets_response, package_uuid, numbered_subdir)
+    download_file = write_mets(mets_response, package_uuid, numbered_subdir)
 
     return download_file

@@ -1,40 +1,26 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <title>{{ storage_service_name }}: Largest files</title>
-  <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+{% extends "report_base.html" %}
 
-  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
-
-  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/custom.css') }}">
-  
-  <script type="text/javascript" language="javascript" src="{{ url_for('static', filename='js/jquery-3.3.1.js') }}"></script>
-
-  {% include "datatable.html" %}
-</head>
-<body>
-
-<div class="container-fluid" style="margin: 20px 0;">
+{% block content %}
 
 <div class="alert alert-secondary" style="height: 100px;">
-<a class="noprint" onClick="window.print();return false">
-	<button type="button" class="btn btn-info" style="float:right;">Print</button>
-</a>
-<strong>Report: Largest files</strong>
-<br>
-<strong>Storage Service:</strong> {{ storage_service_name }}
-<br>
-{% if file_type == "original" %}
-  <strong>File type:</strong> Original files
-{% elif file_type == "preservation" %}
-  <strong>File type:</strong> Preservation files
-{% else %}
-  <strong>File type:</strong> All files
-{% endif %}
 
-<!-- Hidden elements we want available from JS for URL generation -->
-<span id="storageServiceID" style="display:none;">{{ storage_service_id }}</span>
-<span id="limit" style="display:none;">{{ limit }}</span>
+  {% include "report_buttons.html" %}
+
+  <strong>Report: Largest files</strong>
+  <br>
+  <strong>Storage Service:</strong> {{ storage_service_name }}
+  <br>
+  {% if file_type == "original" %}
+    <strong>File type:</strong> Original files
+  {% elif file_type == "preservation" %}
+    <strong>File type:</strong> Preservation files
+  {% else %}
+    <strong>File type:</strong> All files
+  {% endif %}
+
+  <!-- Hidden elements we want available from JS for URL generation -->
+  <span id="storageServiceID" style="display:none;">{{ storage_service_id }}</span>
+  <span id="limit" style="display:none;">{{ limit }}</span>
 </div>
 
 <div class="noprint" style="margin-bottom: 10px;">
@@ -100,24 +86,4 @@
 
 </div>
 
-<script>
-// Todo: Move this into separate JS file and include from base template
-$(document).ready(function() {
-  $("#fileTypeSelector").on("change", function() {
-    var fileType = $('#fileTypeSelector').val();
-    var storageServiceId = $('#storageServiceID').text();
-    var limit = $('#limit').text();
-    var url = window.location.origin +
-      '/reporter/largest_files?' +
-      'amss_id=' +
-      storageServiceId +
-      '&file_type=' +
-      fileType +
-      '&limit=' +
-      limit;
-    window.location.href = url;
-  });
-});
-</script>
-</body>
-</html>
+{% endblock %}

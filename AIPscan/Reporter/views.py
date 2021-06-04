@@ -7,7 +7,7 @@ files with singular responsibility for a report.
 
 from datetime import datetime
 
-from flask import render_template, request
+from flask import jsonify, make_response, render_template, request, session
 
 from AIPscan.models import AIP, Event, FetchJob, File, FileType, StorageService
 
@@ -21,7 +21,7 @@ from AIPscan.Reporter import (  # noqa: F401
     report_formats_count,
     report_ingest_log,
     report_largest_files,
-    report_originals_with_derivatives,
+    report_preservation_derivatives,
     reporter,
     request_params,
     sort_puids,
@@ -164,7 +164,7 @@ def reports():
     Storage Service ID can be specified as an optional parameter. If
     one is not specified, use the default Storage Service.
     """
-    storage_service_id = request.args.get(request_params["storage_service_id"])
+    storage_service_id = request.args.get(request_params.STORAGE_SERVICE_ID)
     storage_service = _get_storage_service(storage_service_id)
 
     original_file_formats = []
@@ -192,9 +192,13 @@ def reports():
     except AttributeError:
         pass
 
-    now = datetime.now()
-    start_date = str(datetime(now.year, 1, 1))[:-9]
-    end_date = str(datetime(now.year, now.month, now.day))[:-9]
+    if "start_date" not in session:
+        earliest_aip_created = storage_service.earliest_aip_created
+        session["start_date"] = earliest_aip_created.strftime("%Y-%m-%d")
+
+    if "end_date" not in session:
+        now = datetime.now()
+        session["end_date"] = str(datetime(now.year, now.month, now.day))[:-9]
 
     return render_template(
         "reports.html",
@@ -204,6 +208,19 @@ def reports():
         preservation_file_formats=preservation_file_formats,
         original_puids=original_puids,
         preservation_puids=preservation_puids,
-        start_date=start_date,
-        end_date=end_date,
+        start_date=session["start_date"],
+        end_date=session["end_date"],
     )
+
+
+@reporter.route("/update_dates/", methods=["POST"])
+def update_dates():
+    if request.json and request.json.get("start_date"):
+        req = request.get_json()
+        session["start_date"] = request.json.get("start_date")
+        return make_response(jsonify(req), 200)
+
+    if request.json and request.json.get("end_date"):
+        req = request.get_json()
+        session["end_date"] = request.json.get("end_date")
+        return make_response(jsonify(req), 200)

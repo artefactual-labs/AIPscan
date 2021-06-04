@@ -1,49 +1,49 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <title>{{ storageService.name }}: file formats count</title>
-  <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+{% extends "report_base.html" %}
 
-  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+{% block content %}
 
-  <script type="text/javascript" language="javascript" src="{{ url_for('static', filename='js/jquery-3.3.1.js') }}"></script>
+  <div class="alert alert-secondary">
+    
+    {% include "report_buttons.html" %}
 
-  {% include "datatable.html" %}
-</head>
-<body>
+    <strong>Report:</strong> File formats count
+    <br>
+    <strong>Storage Service:</strong> {{ storage_service_name }}
+    <br>
+    {% if start_date and end_date %}
+      {{ total_file_count }} original files ingested between {{ start_date.strftime('%Y-%m-%d') }} and {{ end_date.strftime('%Y-%m-%d') }}
+    {% elif start_date %}
+      {{ total_file_count }} original files ingested on and since {{ start_date.strftime('%Y-%m-%d') }}
+    {% elif end_date %}
+      {{ total_file_count }} original files ingested on and before {{ end_date.strftime('%Y-%m-%d') }}
+    {% else %}
+      {{ total_file_count }} original files
+    {% endif %}
+    <br>
+    {{ formats_count }} different file formats totalling {{ total_size | filesizeformat }}
+  </div>
 
-<div class="container-fluid" style="margin: 20px 0;">
-
-<div class="alert alert-secondary">
-<a class="noprint" onClick="window.print();return false"><button type="button" class="btn btn-info" style="float:right;">Print</button></a>
-<strong>{{ storageService.name }}: file formats count</strong><br />
-{{ originalsCount }} original files ingested between {{startdate}} and {{enddate}}<br />
-{{ differentFormats }} different formats totalling {{ totalHumanSize }}
-</div>
-
-<table id="formats1" class="table table-striped table-bordered">
+  {% if formats %}
+    <table id="formatversioncounts" class="table table-striped table-bordered">
       <thead>
-      <tr>
-      <th><strong>Format</strong></th>
-      <th width="15%"><strong>Count</strong></th>
-      <th width="15%"><strong>Size in bytes</strong></th>
-      <th width="15%"><strong>Size</strong></th>
-      </tr>
+        <tr>
+          {% for column in columns %}
+          <th><strong>{{ column }}</strong></th>
+          {% endfor %}
+        </tr>
       </thead>
-      {% if formatCount %}
-        {% for key,value in formatCount.items() %}
-          <tr>
-            <td>{{ key }}</td>
-            <td>{{ value["count"] }}</td>
-            <td>{% if value["size"] == None %} 0
-              {% else %}{{ value["size"] }}
-              {% endif %}</td>
-            <td>{{ value["humansize"] }}</td>
-          </tr>
-        {% endfor %}
-      {% endif %}
-  </table>
+      <tbody>
+      {% for format in formats %}
+        <tr>
+          <td>{{ format["Format"] }}</td>
+          <td>{{ format["Count"] }}</td>
+          <td>{{ format["Size"] | filesizeformat }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="h4" style="margin-top:20px;">No file formats to display.</p>
+  {% endif %}
 
-</div>
-</body>
-</html>
+{% endblock %}
