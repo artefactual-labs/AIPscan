@@ -92,8 +92,13 @@ Celery was automatically installed into the AIPscan project as a Python module d
 To start up Celery workers that are ready to receive tasks from RabbitMQ:
 * Open a new terminal tab or window.
 * Navigate to the AIPscan root project directory.
+* Activate the Python virtualenv in the AIPscan project directory so that the Celery dependency gets automatically loaded: 
+  `source venv/bin/activate`
 * Enter the following command:  
   `celery worker -A AIPscan.worker.celery --loglevel=info`
+* You should see terminal output similar to this to indicate that the Celery task queu is ready:
+
+![screencap6](screencaps/aipscan_celery_hello_world.png)
 
 # Usage
 
