@@ -58,7 +58,20 @@
       <tr>
         <td>{{ mets_fetch_job.download_start }}</td>
         <td>{% if mets_fetch_job.download_end %} {{ mets_fetch_job.download_end - mets_fetch_job.download_start }} {% endif %}</td>
-        <td>{{ mets_fetch_job.total_packages }}</td>
+        <td>{{ mets_fetch_job.total_packages }} packages
+          <i class="fa fa-info-circle fa-lg" id="{{ mets_fetch_job.id }}" style="margin-left: 5px;"></i><br/>
+          <div id="stats-{{ mets_fetch_job.id }}">
+            <span class="text-muted">
+              <small>
+                {{ mets_fetch_job.total_aips }} AIPs <br>
+                {{ mets_fetch_job.total_sips }} SIPs <br>
+                {{ mets_fetch_job.total_dips }} DIPs <br>
+                {{ mets_fetch_job.total_replicas }} AIP replicas<br>
+                {{ mets_fetch_job.total_replicas }} deleted AIPs <br>
+              </small>
+          </span>
+          </div>
+        </td>
         <td>{{ mets_fetch_job.total_aips }}</td>
         <td>{{ mets_fetch_job.aips|length }}</td>
         <td>
@@ -76,6 +89,13 @@ $(document).ready(function(){
   $('#newfetchjob').on('click', function () {
     new_fetch_job({{ storage_service.id }});
   });
+  $('.stats').hide();
+  $('.fa-info-circle').click(function() {
+    if($('#stats-'+this.id).is(':visible'))
+        $('#stats-'+this.id).hide();
+    else
+        $('#stats-'+this.id).show();    
+  });
 
   // Handle API key visibility
   let apiKeyVisible = false;
@@ -88,7 +108,7 @@ $(document).ready(function(){
       $('#apikey').html(apiKeyHiddenText);
     }
   });
-})
+});
 </script>
 
 {% endblock %}
