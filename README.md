@@ -87,7 +87,7 @@ You can downnload and install RabbitMQ server directly on your local or cloud ma
 
 
 ## Celery
-Celery was automatically installed into the AIPscan project as a Python module dependency during the initial AIPscan requirements import command:  `pip install -r requirements/base.txt`
+Celery is installed as a Python module dependency during the initial AIPscan requirements import command: `pip install -r requirements.txt`
 
 To start up Celery workers that are ready to receive tasks from RabbitMQ:
 * Open a new terminal tab or window.
