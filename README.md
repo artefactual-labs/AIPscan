@@ -46,7 +46,7 @@ AIPscan is a web-based application that is built using the Python [Flask](https:
 * Install requirements (this includes Flask & Celery): `pip install -r requirements/base.txt`
 * Enable DEBUG mode if desired for development: `export FLASK_CONFIG=dev`
 * In a terminal window, start the Flask server: `python run.py`
-* Confirm that the Flask server and AIPscan app are up and running at http://localhost:50000. You should see a blank AIPscan page like this:
+* Confirm that the Flask server and AIPscan application are up and running at [`localhost:5000`][usage-1] in your browser.. You should see a blank AIPscan page like this:
 
 ![screencap5](screencaps/aipscan_hello_world.png)
 
