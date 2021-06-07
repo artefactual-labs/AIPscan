@@ -16,23 +16,28 @@ Copyright Artefactual Systems Inc (2021)
 * [Installation](#installation)
 * [Usage](#usage)
 
-# Screenshots
+## Screenshots
 
-## Example AIPScan fetch job
+### AIPScan fetch job
 
 ![screencap1](screencaps/aipscan_fetch_job.png)
 
-## Viewing an AIP in AIPScan
+### Finding an AIP  
 
-![screencap2](screencaps/aipscan_view_aip.png)
+![screencap2](screencaps/aipscan_find_aip.png)
 
-## Selecting a report to run in AIPScan
+### Viewing an AIP
 
-![screencap3](screencaps/aipscan_select_report.png)
+![screencap3](screencaps/aipscan_view_aip.png)
 
-## Demonstration of a scatter chart report
+### Selecting a report
 
-![screencap4](screencaps/aipscan_scatterplot_report.png)
+![screencap4](screencaps/aipscan_select_report.png)
+
+### Report examples
+
+![screencap5](screencaps/aipscan_piechart_report.png)
+![screencap6](screencaps/aipscan_tabular_report.png)
 
 # Installation
 
