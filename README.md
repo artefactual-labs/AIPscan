@@ -109,7 +109,7 @@ To start up Celery workers that are ready to receive tasks from RabbitMQ:
 `https://amdemo.artefactual.com:8000`
 * Select "New Fetch Job"
 * Check the black and green terminal to confirm that AIPscan successfully connected to the Archivematica Storage Service, that it received the lists of available packages from Archivematica, and that it has begun downloading and parsing the AIP METS files.
-* Sit back and have a coffee, tea, beer, wine or whatever rocks your boat. This could take a while (i.e. a few hours) depending on the total number of AIPs in your Storage Service and the size of your METS xml files. Therefore, if you have the option, it is recommended that you test AIPscan on a smaller subset of your full AIP holdings first. This should help you estimate the total time to run AIPscan against all packages in your Storage Service.
+* This could take a while (i.e. a few hours) depending on the total number of AIPs in your Storage Service and the size of your METS xml files. Therefore, if you have the option, it is recommended that you test AIPscan on a smaller subset of your full AIP holdings first. This should help you estimate the total time to run AIPscan against all packages in your Storage Service.
 * When the Fetch Job completes, select "View AIPs" button, "AIPs" menu, or "Reports" menu to view all the interesting information about your Archivematica content in a variety of layouts.
 
 [am-1]: https://archivematica.org
