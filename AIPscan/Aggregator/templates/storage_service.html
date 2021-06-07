@@ -48,8 +48,7 @@
   <th><strong>Scan date</strong></th>
   <th><strong>Download duration</strong></th>
   <th><strong>Packages in SS</strong></th>
-  <th><strong>AIP METS downloaded</strong></th>
-  <th><strong>Current AIPs</strong></th>
+  <th><strong>New AIPs added</strong></th>
   <th><strong>Action</strong></th>
   </tr>
   </thead>
@@ -72,7 +71,6 @@
           </span>
           </div>
         </td>
-        <td>{{ mets_fetch_job.total_aips }}</td>
         <td>{{ mets_fetch_job.aips|length }}</td>
         <td>
           <a href="{{ url_for('aggregator.delete_fetch_job', id= mets_fetch_job.id) }}"><button type="button" class="btn btn-danger">Delete</button></a>
