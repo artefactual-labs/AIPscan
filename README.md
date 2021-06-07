@@ -34,9 +34,12 @@ Copyright Artefactual Systems Inc (2021)
 
 ![screencap4](screencaps/aipscan_select_report.png)
 
-### Report examples
+### Example: pie chart "format types" report
 
 ![screencap5](screencaps/aipscan_piechart_report.png)
+
+### Example: tabular "largest files" report
+
 ![screencap6](screencaps/aipscan_tabular_report.png)
 
 # Installation
