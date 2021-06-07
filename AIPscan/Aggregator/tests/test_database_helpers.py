@@ -7,6 +7,7 @@ import metsrw
 import pytest
 
 from AIPscan.Aggregator import database_helpers
+from AIPscan.conftest import STORAGE_LOCATION_1_CURRENT_LOCATION
 from AIPscan.models import AIP, Agent, File, FileType, StorageLocation
 
 FIXTURES_DIR = "fixtures"
@@ -238,3 +239,39 @@ def test_create_file_object(
         ).all()
         assert len(preservation_files) == 2
         add_normalization_date.assert_called_once()
+
+
+@pytest.mark.parametrize(
+    "current_location, storage_service_id, new_description, location_created",
+    [
+        # Create Storage Location if matching one doesn't exist.
+        ("/api/v2/location/new-location/", 1, "", True),
+        # Update Storage Location description if already exists.
+        (STORAGE_LOCATION_1_CURRENT_LOCATION, 1, "updated description", False),
+    ],
+)
+def test_create_or_update_storage_location(
+    storage_locations,
+    mocker,
+    current_location,
+    storage_service_id,
+    new_description,
+    location_created,
+):
+    """Test that Storage Locations are created or updated as expected."""
+    make_request = mocker.patch("AIPscan.Aggregator.tasks.make_request")
+    make_request.return_value = {"description": new_description}
+    create_storage_location_object = mocker.patch(
+        "AIPscan.Aggregator.database_helpers.create_storage_location_object"
+    )
+
+    storage_location = database_helpers.create_or_update_storage_location(
+        current_location=current_location,
+        api_url={},
+        storage_service_id=storage_service_id,
+    )
+
+    if location_created:
+        create_storage_location_object.assert_called_once()
+    else:
+        assert storage_location.description == new_description

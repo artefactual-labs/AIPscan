@@ -16,17 +16,11 @@ from AIPscan.Aggregator.mets_parse_helpers import (
 )
 from AIPscan.Aggregator.task_helpers import (
     format_api_url_with_limit_offset,
-    get_location_url,
     process_package_object,
 )
 from AIPscan.extensions import celery
 from AIPscan.helpers import file_sha256_hash
-from AIPscan.models import (  # Custom celery Models.
-    AIP,
-    FetchJob,
-    StorageLocation,
-    get_mets_tasks,
-)
+from AIPscan.models import AIP, FetchJob, get_mets_tasks  # Custom celery Models.
 
 logger = get_task_logger(__name__)
 
@@ -36,11 +30,6 @@ class TaskError(Exception):
     storage service. The exception is known and asks for user
     intervention.
     """
-
-
-def _get_storage_location(current_location):
-    """Return first StorageLocation."""
-    return StorageLocation.query.filter_by(current_location=current_location).first()
 
 
 def write_packages_json(count, packages, packages_directory):
@@ -69,19 +58,9 @@ def start_mets_task(
     """Initiate a get_mets task worker and record the event in the
     celery database.
     """
-    # Add Storage Location if it doesn't already exist.
-    storage_location = StorageLocation.query.filter_by(
-        current_location=current_location
-    ).first()
-    if not storage_location:
-        request_url, request_url_without_api_key = get_location_url(
-            api_url, current_location
-        )
-        response = make_request(request_url, request_url_without_api_key)
-        description = response.get("description")
-        storage_location = database_helpers.create_storage_location_object(
-            current_location, description, storage_service_id
-        )
+    storage_location = database_helpers.create_or_update_storage_location(
+        current_location, api_url, storage_service_id
+    )
 
     # Call worker to download and parse METS File.
     get_mets_task = get_mets.delay(

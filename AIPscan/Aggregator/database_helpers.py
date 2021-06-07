@@ -8,7 +8,7 @@ from celery.utils.log import get_task_logger
 
 from AIPscan import db
 from AIPscan.Aggregator import tasks
-from AIPscan.Aggregator.task_helpers import _tz_neutral_date
+from AIPscan.Aggregator.task_helpers import _tz_neutral_date, get_location_url
 from AIPscan.models import (
     AIP,
     Agent,
@@ -187,6 +187,28 @@ def create_storage_location_object(current_location, description, storage_servic
     )
     db.session.add(storage_location)
     db.session.commit()
+    return storage_location
+
+
+def create_or_update_storage_location(current_location, api_url, storage_service_id):
+    """Create or update Storage Location and return it."""
+    storage_location = StorageLocation.query.filter_by(
+        current_location=current_location
+    ).first()
+    request_url, request_url_without_api_key = get_location_url(
+        api_url, current_location
+    )
+    response = tasks.make_request(request_url, request_url_without_api_key)
+    description = response.get("description")
+    if not storage_location:
+        return create_storage_location_object(
+            current_location, description, storage_service_id
+        )
+
+    if storage_location.description != description:
+        storage_location.description = description
+        db.session.commit()
+
     return storage_location
 
 

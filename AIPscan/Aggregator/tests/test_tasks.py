@@ -56,7 +56,7 @@ def test_get_mets_task(app_instance, tmpdir, mocker, fixture_path, package_uuid)
     )
 
     get_storage_location = mocker.patch(
-        "AIPscan.Aggregator.tasks._get_storage_location"
+        "AIPscan.Aggregator.database_helpers.create_or_update_storage_location"
     )
     get_storage_location.return_value = storage_location
 
