@@ -102,7 +102,7 @@ To start up Celery workers that are ready to receive tasks from RabbitMQ:
 
 # Usage
 
-* Ensure that the Flask Server, RabbitMQ server, and Celery worker queu are up and running.  
+* Ensure that the Flask Server, RabbitMQ server, and Celery worker queue are up and running.
 * Go to [`localhost:5000`][usage-1] in your browser.
 * Select "New Storage Service"
 * Add an Archivematica Storage Service record, including API Key, eg.
