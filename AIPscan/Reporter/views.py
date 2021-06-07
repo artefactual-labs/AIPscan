@@ -63,6 +63,11 @@ def _get_storage_location(storage_location_id):
     return StorageLocation.query.get(storage_location_id)
 
 
+def storage_locations_with_aips(storage_locations):
+    """Return list of Storage Locations filtered to those with AIPs."""
+    return [loc for loc in storage_locations if loc.aips]
+
+
 @reporter.route("/aips/", methods=["GET"])
 def view_aips():
     """Overview of AIPs in given Storage Service and Location."""
@@ -84,7 +89,9 @@ def view_aips():
         "aips.html",
         storage_services=StorageService.query.all(),
         storage_service=storage_service,
-        storage_locations=storage_service.storage_locations,
+        storage_locations=storage_locations_with_aips(
+            storage_service.storage_locations
+        ),
         storage_location=storage_location,
         aips=aips,
     )
@@ -236,7 +243,9 @@ def reports():
         storage_service=storage_service,
         storage_services=StorageService.query.all(),
         storage_location=storage_location,
-        storage_locations=storage_service.storage_locations,
+        storage_locations=storage_locations_with_aips(
+            storage_service.storage_locations
+        ),
         original_file_formats=original_file_formats,
         preservation_file_formats=preservation_file_formats,
         original_puids=original_puids,
