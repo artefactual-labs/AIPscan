@@ -9,44 +9,52 @@
   <!-- First row: Storage Service and Start date -->
   <div class="report-opts">
     <div>
+      <span class="fixed-width-menu-span-left">
         <i class="fa fa-database" aria-hidden="true"></i>
         Storage Service
-        <select id="ss" method="GET" action="/">
-            {% for ss in storage_services %}
-              {% if ss.id == storage_service.id %}
-                <option value="{{ ss.id }}" SELECTED>{{ ss.name }}</option>
-              {% else %}
-                <option value="{{ ss.id }}">{{ ss.name }}</option>
-              {% endif %}
-            {% endfor %}
-        </select>
+      </span>
+      <select id="ss" method="GET" action="/">
+          {% for ss in storage_services %}
+            {% if ss.id == storage_service.id %}
+              <option value="{{ ss.id }}" SELECTED>{{ ss.name }}</option>
+            {% else %}
+              <option value="{{ ss.id }}">{{ ss.name }}</option>
+            {% endif %}
+          {% endfor %}
+      </select>
     </div>
     <div>
+      <span class="fixed-width-menu-span-right">
         <i class="fa fa-calendar-alt" aria-hidden="true"></i>
             Start date
-        <input type="text" id="startdate" value="{{ start_date }}">
-        </div>
+      </span>
+      <input type="text" id="startdate" value="{{ start_date }}">
+    </div>
   </div>
   <!-- Second row: Location and End date -->
   <div class="report-opts">
     <div>
+      <span class="fixed-width-menu-span-left">
         <i class="fa fa-archive" aria-hidden="true"></i>
         Location
-        <select id="sl" method="GET" action="/">
-            <option value="">All locations</option>
-            {% for sl in storage_locations %}
-              {% if sl.id == storage_location.id %}
-                <option value="{{ sl.id }}" SELECTED>{{ sl.description }}</option>
-              {% else %}
-                <option value="{{ sl.id }}">{{ sl.description }}</option>
-              {% endif %}
-            {% endfor %}
-        </select>
+      </span>
+      <select id="sl" method="GET" action="/">
+          <option value="">All locations</option>
+          {% for sl in storage_locations %}
+            {% if sl.id == storage_location.id %}
+              <option value="{{ sl.id }}" SELECTED>{{ sl.description }}</option>
+            {% else %}
+              <option value="{{ sl.id }}">{{ sl.description }}</option>
+            {% endif %}
+          {% endfor %}
+      </select>
     </div>
     <div>
+      <span class="fixed-width-menu-span-right">
         <i class="fa fa-calendar-alt" aria-hidden="true"></i>
             End date
-        <input type="text" id="enddate" value="{{ end_date }}">
+      </span>
+      <input type="text" id="enddate" value="{{ end_date }}">
     </div>
   </div>
 

@@ -58,3 +58,13 @@ body {
 .report-opts i {
   font-size: 1.5em;
 }
+
+.fixed-width-menu-span-left {
+  float: left;
+  width: 10em;
+}
+
+.fixed-width-menu-span-right {
+  float: left;
+  width: 7em;
+}
