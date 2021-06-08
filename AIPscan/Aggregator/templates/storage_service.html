@@ -60,7 +60,7 @@
         <td>{% if mets_fetch_job.download_end %} {{ mets_fetch_job.download_end - mets_fetch_job.download_start }} {% endif %}</td>
         <td>{{ mets_fetch_job.total_packages }} packages
           <i class="fa fa-info-circle fa-lg" id="{{ mets_fetch_job.id }}" style="margin-left: 5px;"></i><br/>
-          <div id="stats-{{ mets_fetch_job.id }}">
+          <div class="stats" id="stats-{{ mets_fetch_job.id }}">
             <span class="text-muted">
               <small>
                 {{ mets_fetch_job.total_aips }} AIPs <br>
