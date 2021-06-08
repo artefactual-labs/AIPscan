@@ -324,8 +324,6 @@ def get_mets(
         )
         database_helpers.delete_aip_object(previous_aip)
 
-    # TODO: ADD ORIGIN PIPELINE!
-
     aip = database_helpers.create_aip_object(
         package_uuid=package_uuid,
         transfer_name=original_name,
