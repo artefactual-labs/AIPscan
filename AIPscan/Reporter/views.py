@@ -15,6 +15,7 @@ from AIPscan.models import (
     FetchJob,
     File,
     FileType,
+    Pipeline,
     StorageLocation,
     StorageService,
 )
@@ -112,6 +113,7 @@ def view_aip(aip_id):
     original_files = File.query.filter_by(
         aip_id=aip.id, file_type=FileType.original
     ).all()
+    origin_pipeline = Pipeline.query.get(aip.origin_pipeline_id)
     for file_ in original_files:
         original = {}
         original["id"] = file_.id
@@ -138,6 +140,7 @@ def view_aip(aip_id):
         originals=originals,
         original_file_count=original_file_count,
         preservation_file_count=preservation_file_count,
+        origin_pipeline=origin_pipeline,
     )
 
 
