@@ -12,7 +12,7 @@ from flask_restx import Namespace, Resource
 
 from AIPscan.API import fields
 from AIPscan.Data import data
-from AIPscan.helpers import parse_bool
+from AIPscan.helpers import parse_bool, parse_datetime_bound
 
 api = Namespace("data", description="Retrieve data from AIPscan to shape as you desire")
 
@@ -39,14 +39,30 @@ class AIPList(Resource):
                 "in": "query",
                 "type": "int",
             },
+            fields.FIELD_START_DATE: {
+                "description": "AIP creation start date (inclusive, YYYY-MM-DD)",
+                "in": "query",
+                "type": "str",
+            },
+            fields.FIELD_END_DATE: {
+                "description": "AIP creation end date (inclusive, YYYY-MM-DD)",
+                "in": "query",
+                "type": "str",
+            },
         },
     )
     def get(self, storage_service_id):
         """Return data on AIPs and the file formats they contain."""
         original_files = parse_bool(request.args.get(fields.FIELD_ORIGINAL_FILES, True))
         storage_location_id = request.args.get(fields.FIELD_STORAGE_LOCATION)
+        start_date = parse_datetime_bound(request.args.get(fields.FIELD_START_DATE))
+        end_date = parse_datetime_bound(
+            request.args.get(fields.FIELD_END_DATE), upper=True
+        )
         return data.aip_file_format_overview(
             storage_service_id=storage_service_id,
+            start_date=start_date,
+            end_date=end_date,
             original_files=original_files,
             storage_location_id=storage_location_id,
         )

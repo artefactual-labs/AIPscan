@@ -3,81 +3,92 @@ from operator import itemgetter
 
 from flask import render_template, request
 
-from AIPscan import db
 from AIPscan.Data import data, fields
-from AIPscan.helpers import filesizeformat, parse_bool
-from AIPscan.models import AIP, File, FileType, StorageService
-from AIPscan.Reporter import download_csv, reporter, request_params, translate_headers
+from AIPscan.helpers import parse_bool, parse_datetime_bound
+from AIPscan.Reporter import (
+    download_csv,
+    format_size_for_csv,
+    get_display_end_date,
+    reporter,
+    request_params,
+    translate_headers,
+)
 
-HEADERS = [
+CSV_HEADERS = [
     fields.FIELD_UUID,
     fields.FIELD_AIP_NAME,
     fields.FIELD_CREATED_DATE,
-    fields.FIELD_AIP_SIZE,
+    fields.FIELD_SIZE,
+    fields.FIELD_FORMATS,
+]
+
+HEADERS = [
+    fields.FIELD_AIP_NAME,
+    fields.FIELD_CREATED_DATE,
+    fields.FIELD_SIZE,
+    fields.FIELD_FORMATS,
 ]
 
 
-def _prepare_csv_data(storage_service_id, rows, puids):
+def _create_aip_formats_string_representation(aips, separator="<br>"):
     """Return data prepared for CSV file.
 
-    :param storage_service_id: Storage Service ID (int)
-    :param rows: Data assembled for tabular report (list of lists)
-    :param puids: List of all PUIDs in report (list)
+    :param aips: AIPS data returned by data.aip_file_format_overview
+        endpoint (list of dicts)
 
-    :returns: Data formatted for CSV export (list of dicts)
+    :returns: Input data with each AIP's formats value formatted as a string
+        (list of dicts)
     """
-    csv_rows = []
-    sorted_rows = _sort_rows_by_uuid(rows)
-    for row in sorted_rows:
-        row_dict = {}
-        aip_uuid = row[0]
-        row_dict[fields.FIELD_AIP_UUID] = aip_uuid
-        row_dict[fields.FIELD_AIP_NAME] = row[1]
-        row_dict[fields.FIELD_CREATED_DATE] = row[2]
-        row_dict[fields.FIELD_AIP_SIZE] = row[3]
-        for puid in puids:
-            row_dict[puid] = _get_aip_puid_count(storage_service_id, aip_uuid, puid)
-        csv_rows.append(row_dict)
-    return csv_rows
+    for aip in aips:
+        formats = []
+        aip_formats = _create_aip_formats_list_sorted_by_count(
+            aip.get(fields.FIELD_FORMATS)
+        )
+        for format_ in aip_formats:
+            plural = ""
+            count = format_.get(fields.FIELD_COUNT)
+            if count > 1:
+                plural = "s"
+            format_string = "{puid} ({format_name}): {count} file{plural}".format(
+                puid=format_.get(fields.FIELD_PUID),
+                format_name=format_.get(fields.FIELD_FORMAT),
+                count=count,
+                plural=plural,
+            )
+            formats.append(format_string)
+        aip[fields.FIELD_FORMATS] = f"{separator}".join(
+            [format_ for format_ in formats]
+        )
+    return aips
 
 
-def _sort_rows_by_uuid(rows):
-    """Sort list of lists by AIP UUID.
+def _create_aip_formats_list_sorted_by_count(formats):
+    """Return list of AIP format dicts sorted by count from input dict.
 
-    :param rows: Data assembled for tabular report (list of lists)
+    The dict returned for each AIP in fields.FIELD_FORMATS by the data module's
+    aip_file_format_overview endpoint is difficult to sort, as it is a dict of
+    dicts with an unpredictable key (PUID or format name) for each child
+    dict. This function transforms this into an easier to parse list of dicts,
+    sorted descending by count.
 
-    :returns: rows but sorted by PUID (list of lists)
+    :param formats: Dict of dicts returned by data.aip_file_format_overview for
+        each aip (dict)
+
+    :returns: Input data transformed into a sorted list of dicts.
     """
-    return sorted(rows, key=itemgetter(0))
-
-
-def _get_aip_puid_count(storage_service_id, aip_uuid, puid):
-    """Return count of files in AIP with given PUID.
-
-    :param storage_service_id: Storage Service ID (int)
-    :param aip_uuid: AIP UUID (str)
-    :param puid: PUID to get count for (str)
-
-    :returns: Count of files with PUID in given AIP for CSV report (str)
-    """
-    count = 0
-    if puid == "null":
-        puid = None
-    aip_puid_count = (
-        db.session.query(db.func.count(File.file_format).label("count"))
-        .join(AIP)
-        .join(StorageService)
-        .filter(StorageService.id == storage_service_id)
-        .filter(File.file_type == FileType.original.value)
-        .filter(AIP.uuid == aip_uuid)
-        .filter(File.puid == puid)
-        .first()
-    )
-    try:
-        count = str(aip_puid_count.count)
-    except AttributeError:
-        pass
-    return str(count)
+    formats_list = []
+    for key, values in formats.items():
+        format_info = {}
+        format_info[fields.FIELD_PUID] = key
+        format_info[fields.FIELD_FORMAT] = values.get(fields.FIELD_NAME)
+        if values.get(fields.FIELD_VERSION):
+            format_info[fields.FIELD_FORMAT] = "{format_name} {version}".format(
+                format_name=values.get(fields.FIELD_NAME),
+                version=values.get(fields.FIELD_VERSION),
+            )
+        format_info[fields.FIELD_COUNT] = values.get(fields.FIELD_COUNT)
+        formats_list.append(format_info)
+    return sorted(formats_list, key=itemgetter(fields.FIELD_COUNT), reverse=True)
 
 
 @reporter.route("/aip_contents/", methods=["GET"])
@@ -85,55 +96,37 @@ def aip_contents():
     """Return AIP contents organized by format."""
     storage_service_id = request.args.get(request_params.STORAGE_SERVICE_ID)
     storage_location_id = request.args.get(request_params.STORAGE_LOCATION_ID)
+    start_date = parse_datetime_bound(request.args.get(request_params.START_DATE))
+    end_date = parse_datetime_bound(
+        request.args.get(request_params.END_DATE), upper=True
+    )
     csv = parse_bool(request.args.get(request_params.CSV), default=False)
 
     aip_data = data.aip_file_format_overview(
-        storage_service_id=storage_service_id, storage_location_id=storage_location_id
+        storage_service_id=storage_service_id,
+        start_date=start_date,
+        end_date=end_date,
+        storage_location_id=storage_location_id,
     )
-
-    format_lookup = aip_data[fields.FIELD_FORMATS]
-    format_headers = list(aip_data[fields.FIELD_FORMATS].keys())
-
-    storage_name = aip_data[fields.FIELD_STORAGE_NAME]
-    storage_location_description = aip_data[fields.FIELD_STORAGE_LOCATION]
-
-    aip_data.pop(fields.FIELD_FORMATS, None)
-    aip_data.pop(fields.FIELD_STORAGE_NAME, None)
-    aip_data.pop(fields.FIELD_STORAGE_LOCATION, None)
-    rows = []
-    for k, v in aip_data.items():
-        row = []
-        for header in HEADERS:
-            if header == fields.FIELD_UUID:
-                row.append(k)
-            elif header == fields.FIELD_AIP_SIZE:
-                row.append(filesizeformat(v.get(header)))
-            elif header != fields.FIELD_FORMATS:
-                row.append(v.get(header))
-        formats = v.get(fields.FIELD_FORMATS)
-        for format_header in format_headers:
-            format_ = formats.get(format_header)
-            count = 0
-            if format_:
-                count = format_.get(fields.FIELD_COUNT, 0)
-            row.append(count)
-        rows.append(row)
-
-    headers = HEADERS + format_headers
-    headers = translate_headers(headers)
 
     if csv:
         filename = "aip_contents.csv"
-        csv_data = _prepare_csv_data(storage_service_id, rows, format_headers)
+        headers = translate_headers(CSV_HEADERS)
+        aips = _create_aip_formats_string_representation(
+            aip_data.get(fields.FIELD_AIPS), separator="|"
+        )
+        csv_data = format_size_for_csv(aips)
         return download_csv(headers, csv_data, filename)
+
+    aips = _create_aip_formats_string_representation(aip_data.get(fields.FIELD_AIPS))
 
     return render_template(
         "report_aip_contents.html",
         storage_service=storage_service_id,
-        storage_service_name=storage_name,
-        storage_location_description=storage_location_description,
-        aip_data=aip_data,
-        columns=headers,
-        rows=rows,
-        format_lookup=format_lookup,
+        storage_service_name=aip_data.get(fields.FIELD_STORAGE_NAME),
+        storage_location_description=aip_data.get(fields.FIELD_STORAGE_LOCATION),
+        columns=translate_headers(HEADERS),
+        aips=aip_data.get(fields.FIELD_AIPS),
+        start_date=start_date,
+        end_date=get_display_end_date(end_date),
     )

@@ -70,9 +70,13 @@
       </tr>
 
       <tr>
-          <td>AIP contents</td>
-          <td></td>
-          <td><a href="#"><button type="button" id="report2a" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a></td>
+          <td>
+            AIP contents
+            <br>
+            <span class="text-muted">Condensed overview of AIPs, including sorted list of file format versions by PUID.</span>
+          </td>
+          <td>Uses date fields</td>
+          <td><a href="#"><button type="button" id="aipContents" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a></td>
       </tr>
 
       <tr>
@@ -327,16 +331,26 @@ $(document).ready(function() {
         window.open(url);
     }
   });
-  $("#report2a").on("click", function() {
-    var url = (
-      window.location.origin +
-      '/reporter/aip_contents/' +
-      '?amss_id=' +
-      storageServiceId +
-      '&storage_location=' +
-      storageLocationId
-    );
-    window.open(url);
+  $("#aipContents").on("click", function() {
+    var startdate = $('#startdate').val();
+    var enddate = $('#enddate').val();
+    if (enddate < startdate) {
+        alert(DATE_ALERT_START);
+    } else {
+      var url = (
+        window.location.origin +
+        '/reporter/aip_contents/' +
+        '?amss_id=' +
+        storageServiceId +
+        '&storage_location=' +
+        storageLocationId +
+        '&start_date=' +
+        startdate +
+        '&end_date=' +
+        enddate
+      );
+      window.open(url);
+    }
   });
   $("#report3a").on("click", function() {
     var startdate = $('#startdate').val();

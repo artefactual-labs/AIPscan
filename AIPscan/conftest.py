@@ -30,9 +30,11 @@ AIP_3_CREATION_DATE = "2021-05-31"
 
 AIP_1_NAME = "TestAIP1"
 AIP_2_NAME = "TestAIP2"
+AIP_3_NAME = "TestAIP3"
 
 AIP_1_UUID = "111111111111-1111-1111-11111111"
 AIP_2_UUID = "222222222222-2222-2222-22222222"
+AIP_3_UUID = "333333333333-3333-3333-33333333"
 
 ORIGINAL_FILE_1_NAME = "original-file-1.jpg"
 ORIGINAL_FILE_1_UUID = "333333333333-3333-3333-33333333"
@@ -463,6 +465,8 @@ def storage_locations(scope="package"):
 
         # Create one AIP associated with Storage Location 2.
         aip3 = test_helpers.create_test_aip(
+            uuid=AIP_3_UUID,
+            transfer_name=AIP_3_NAME,
             create_date=datetime.strptime(AIP_3_CREATION_DATE, AIP_DATE_FORMAT),
             storage_service_id=storage_service.id,
             storage_location_id=storage_location2.id,

@@ -61,29 +61,41 @@ def file_format_aip_overview(
 
 
 def aip_file_format_overview(
-    storage_service_id, original_files=True, storage_location_id=None
+    storage_service_id,
+    start_date,
+    end_date,
+    original_files=True,
+    storage_location_id=None,
 ):
     """Return summary overview of AIPs and their file formats."""
     report = {}
+    report[fields.FIELD_AIPS] = []
     formats = {}
+
     aips = AIP.query.filter_by(storage_service_id=storage_service_id)
     if storage_location_id:
         aips = aips.filter_by(storage_location_id=storage_location_id)
     aips = aips.all()
+
     for aip in aips:
-        report[aip.uuid] = {}
-        report[aip.uuid][fields.FIELD_AIP_NAME] = aip.transfer_name
-        report[aip.uuid][fields.FIELD_CREATED_DATE] = _simplify_datetime(
-            aip.create_date, False
-        )
-        report[aip.uuid][fields.FIELD_AIP_SIZE] = 0
-        report[aip.uuid][fields.FIELD_FORMATS] = {}
+
+        if aip.create_date < start_date or aip.create_date >= end_date:
+            continue
+
+        aip_info = {}
+        aip_info[fields.FIELD_UUID] = aip.uuid
+        aip_info[fields.FIELD_AIP_NAME] = aip.transfer_name
+        aip_info[fields.FIELD_CREATED_DATE] = _simplify_datetime(aip.create_date, False)
+        aip_info[fields.FIELD_SIZE] = 0
+        aip_info[fields.FIELD_FORMATS] = {}
+
         files = None
         format_key = None
-        if original_files is True:
-            files = File.query.filter_by(aip_id=aip.id, file_type=FileType.original)
-        else:
+
+        files = File.query.filter_by(aip_id=aip.id, file_type=FileType.original)
+        if not original_files:
             files = File.query.filter_by(aip_id=aip.id, file_type=FileType.preservation)
+
         for file_ in files:
             try:
                 format_key = file_.puid
@@ -91,40 +103,38 @@ def aip_file_format_overview(
                 format_key = file_.file_format
             if format_key is None:
                 continue
-            try:
+
+            formats[format_key] = file_.file_format
+            if file_.format_version:
                 formats[format_key] = "{} {}".format(
                     file_.file_format, file_.format_version
                 )
-            except AttributeError:
-                formats[format_key] = "{}".format(file_.file_format)
-            size = report[aip.uuid][fields.FIELD_AIP_SIZE]
+
+            size = aip_info[fields.FIELD_SIZE]
             try:
-                report[aip.uuid][fields.FIELD_AIP_SIZE] = size + file_.size
+                aip_info[fields.FIELD_SIZE] = size + file_.size
             # TODO: Find out why size is sometimes None.
-            except TypeError:
-                report[aip.uuid][fields.FIELD_AIP_SIZE] = size
+            except (AttributeError, TypeError):
                 pass
-            if format_key not in report[aip.uuid][fields.FIELD_FORMATS]:
-                report[aip.uuid][fields.FIELD_FORMATS][format_key] = {}
-                report[aip.uuid][fields.FIELD_FORMATS][format_key][
-                    fields.FIELD_COUNT
-                ] = 1
+
+            if format_key not in aip_info[fields.FIELD_FORMATS]:
+                aip_info[fields.FIELD_FORMATS][format_key] = {}
+                aip_info[fields.FIELD_FORMATS][format_key][fields.FIELD_COUNT] = 1
                 try:
-                    report[aip.uuid][fields.FIELD_FORMATS][format_key][
+                    aip_info[fields.FIELD_FORMATS][format_key][
                         fields.FIELD_VERSION
                     ] = file_.format_version
-                    report[aip.uuid][fields.FIELD_FORMATS][format_key][
+                    aip_info[fields.FIELD_FORMATS][format_key][
                         fields.FIELD_NAME
                     ] = file_.file_format
                 except AttributeError:
                     pass
             else:
-                count = report[aip.uuid][fields.FIELD_FORMATS][format_key][
-                    fields.FIELD_COUNT
-                ]
-                report[aip.uuid][fields.FIELD_FORMATS][format_key][
-                    fields.FIELD_COUNT
-                ] = (count + 1)
+                count = aip_info[fields.FIELD_FORMATS][format_key][fields.FIELD_COUNT]
+                aip_info[fields.FIELD_FORMATS][format_key][fields.FIELD_COUNT] = (
+                    count + 1
+                )
+        report[fields.FIELD_AIPS].append(aip_info)
 
     report[fields.FIELD_FORMATS] = formats
     report[fields.FIELD_STORAGE_NAME] = get_storage_service_name(storage_service_id)

@@ -14,32 +14,39 @@
     <strong>Location:</strong> {{ storage_location_description }}
     <br>
   {% endif %}
-  <strong>AIPS:</strong> {{ rows|length }}
+  <strong>Start date:</strong> {{ start_date.strftime('%Y-%m-%d') }}
+  <br>
+  <strong>End date:</strong> {{ end_date.strftime('%Y-%m-%d') }}
+  <br>
+  <strong>AIPs:</strong> {{ aips|length }}
 </div>
 
-<table id="aips-1" class="table table-striped table-bordered">
-	<thead>
-    {% if rows %}
+{% if aips %}
+  <table id="aip-contents" class="table table-striped table-bordered">
+  	<thead>
     	<tr>
-      {% for column in columns %}
-      	{% if column.strip() == "UUID" %}
-		<th  width="300px">{{ column }}</th>
-		{% else %}
-		<th width="100px" title="{{ format_lookup.get(column, column) }}"><strong>{{ column }}</strong></th>
-		{% endif %}
-      {% endfor %}
+        {% for column in columns %}
+  		      <th>{{ column }}</th>
+        {% endfor %}
       </tr>
-      <tbody>
-      {% for row in rows %}
+    </thead>
+    <tbody>
+      {% for aip in aips %}
       	<tr>
-      	{% for cell in row %}
-      		<td>{{ cell }}</td>
-      	{% endfor %}
+          <td>
+            {{ aip["AIPName"] }}
+            <br>
+            <span class="small text-muted">UUID: {{ aip["UUID"] }}</span>
+          </td>
+          <td>{{ aip["CreatedDate"] }}</td>
+          <td>{{ aip["Size"] | filesizeformat }}</td>
+          <td>{{ aip["Formats"] | safe }}</td>
       	</tr>
       {% endfor %}
-    {% endif %}
     <tbody>
-  <thead>
-</table>
+  </table>
+{% else %}
+  <p class="h4" style="margin-top:20px;">No AIPs to display.</p>
+{% endif %}
 
 {% endblock %}
