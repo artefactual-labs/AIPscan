@@ -8,8 +8,10 @@
 
   <div class="report-opts" style="margin-bottom: 0.2em;">
     <div>
-      <i class="fa fa-database" aria-hidden="true"></i>
-      Storage Service
+      <span class="fixed-width-menu-span-left">
+        <i class="fa fa-database" aria-hidden="true"></i>
+        Storage Service
+      </span>
       <select id="ss" method="GET" action="/">
           {% for ss in storage_services %}
             {% if ss.id == storage_service.id %}
@@ -23,8 +25,10 @@
   </div>
   <div class="report-opts" style="margin-bottom: 1em;">
     <div>
-      <i class="fa fa-archive" aria-hidden="true"></i>
-      Location
+      <span class="fixed-width-menu-span-left">
+        <i class="fa fa-archive" aria-hidden="true"></i>
+        Location
+      </span>
       <select id="sl" method="GET" action="/">
           <option value="">All locations</option>
           {% for sl in storage_locations %}
