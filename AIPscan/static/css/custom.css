@@ -68,3 +68,7 @@ body {
   float: left;
   width: 7em;
 }
+
+.table-header {
+  background-color: #CCC !important;
+}
