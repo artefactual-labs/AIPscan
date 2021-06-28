@@ -49,7 +49,7 @@ AIPscan is a web-based application that is built using the Python [Flask](https:
 ## AIPScan Flask server
 
 * Clone files and cd to directory:  `git clone https://github.com/artefactual-labs/AIPscan && cd AIPscan`
-* Set up virtualenv in the project root directory: `virtualenv venv`
+* Set up virtualenv in the project root directory: `virtualenv -p python3 venv`
 * Activate virtualenv: `source venv/bin/activate`
 * Install requirements (this includes Flask & Celery): `pip install -r requirements/base.txt`
 * Enable DEBUG mode if desired for development: `export FLASK_CONFIG=dev`
