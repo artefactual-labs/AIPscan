@@ -360,7 +360,7 @@ def collect_mets_agents(mets):
         if aip_file.use != ORIGINAL_OBJECT and aip_file.use != PRESERVATION_OBJECT:
             continue
         agents = agents + _get_unique_agents(aip_file.get_premis_agents(), agents)
-    logger.info("Total  agents: %d", len(agents))
+    logger.info("Total agents: %d", len(agents))
     return agents
 
 

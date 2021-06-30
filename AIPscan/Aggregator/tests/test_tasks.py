@@ -1,10 +1,16 @@
+import json
 import os
 from datetime import datetime
 
 import pytest
 
 from AIPscan import test_helpers
-from AIPscan.Aggregator.tasks import TaskError, get_mets, make_request
+from AIPscan.Aggregator.tasks import (
+    TaskError,
+    get_mets,
+    make_request,
+    parse_packages_and_load_mets,
+)
 from AIPscan.Aggregator.tests import (
     INVALID_JSON,
     REQUEST_URL,
@@ -49,6 +55,7 @@ def test_get_mets_task(app_instance, tmpdir, mocker, fixture_path, package_uuid)
         return mets_file
 
     mocker.patch("AIPscan.Aggregator.tasks.download_mets", mock_download_mets)
+    delete_mets_file = mocker.patch("AIPscan.Aggregator.tasks.os.remove")
 
     storage_service = test_helpers.create_test_storage_service()
     storage_location = test_helpers.create_test_storage_location(
@@ -139,6 +146,12 @@ def test_get_mets_task(app_instance, tmpdir, mocker, fixture_path, package_uuid)
     assert len(fetch_job2.aips) == 0
     assert len(fetch_job3.aips) == 1
 
+    delete_calls = [
+        mocker.call(os.path.join(FIXTURES_DIR, fixture_path)),
+        mocker.call(mets_file),
+    ]
+    delete_mets_file.assert_has_calls(delete_calls, any_order=True)
+
 
 @pytest.mark.parametrize(
     "response, raises_task_error",
@@ -162,3 +175,15 @@ def test_make_request(mocker, response, raises_task_error):
     else:
         return_dict = make_request(REQUEST_URL, REQUEST_URL_WITHOUT_API_KEY)
         assert return_dict["key"] == RESPONSE_DICT["key"]
+
+
+def test_parse_packages_and_load_mets(app_instance, tmpdir, mocker):
+    """Test that JSON package lists are deleted after being parsed."""
+    json_file_path = tmpdir.join("packages.json")
+    json_file_path.write(json.dumps({"objects": []}))
+
+    delete_package_json = mocker.patch("AIPscan.Aggregator.tasks.os.remove")
+
+    parse_packages_and_load_mets(json_file_path, {}, str(datetime.now()), 1, 1, 1)
+
+    delete_package_json.assert_called_with(json_file_path)

@@ -101,8 +101,14 @@ def parse_packages_and_load_mets(
     """
     OBJECTS = "objects"
     packages = []
-    with open(json_file_path, "r") as packagesJson:
-        package_list = json.load(packagesJson)
+    with open(json_file_path, "r") as packages_json:
+        package_list = json.load(packages_json)
+
+    try:
+        os.remove(json_file_path)
+    except OSError as err:
+        logger.warning("Unable to delete package JSON file: {}".format(err))
+
     for package_obj in package_list.get(OBJECTS, []):
         package = process_package_object(package_obj)
         packages.append(package)
@@ -336,3 +342,9 @@ def get_mets(
     )
 
     database_helpers.process_aip_data(aip, mets)
+
+    # Delete downloaded METS file.
+    try:
+        os.remove(download_file)
+    except OSError as err:
+        logger.warning("Unable to delete METS file: {}".format(err))
