@@ -151,6 +151,7 @@ def test_get_mets_task(app_instance, tmpdir, mocker, fixture_path, package_uuid)
         mocker.call(mets_file),
     ]
     delete_mets_file.assert_has_calls(delete_calls, any_order=True)
+    delete_mets_file.call_count == 3
 
 
 @pytest.mark.parametrize(

@@ -304,6 +304,10 @@ def get_mets(
         logger.info(
             "Skipping METS file {} - identical to existing record".format(mets_name)
         )
+        try:
+            os.remove(download_file)
+        except OSError as err:
+            logger.warning("Unable to delete METS file: {}".format(err))
         return
 
     logger.info("Processing METS file {}".format(mets_name))
