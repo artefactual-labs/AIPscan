@@ -1,0 +1,364 @@
+threagile_version: 1.0.0
+
+title: AIPscan Threat model
+
+date: 2022-02-15
+
+author:
+  name: Artefactual Systems Inc.
+  homepage: www.artefactual.com
+
+management_summary_comment:
+
+business_criticality: operational
+
+business_overview:
+  description: AIPscan was developed to provide a more in-depth reporting solution for Archivematica users. It crawls METS files from AIPs in the Archivematica Storage Service to generate tabular and visual reports about repository holdings. It is designed to run as a stand-alone add-on to Archivematica. It only needs a valid Storage Service API key to fetch source data.
+
+technical_overview:
+  description: AIPscan is a web-based application that is built using the Python [Flask](https://pypi.org/project/Flask/) micro-framework.
+
+questions: # simply use "" as answer to signal "unanswered"
+#  Some question without an answer?: ""
+#  Some question with an answer?: Some answer
+
+abuse_cases:
+  Denial-of-Service: >
+    As a criminal I want to disturb the functionality of the backend system in order to take the archives offline.
+  CPU-Cycle Theft: >
+    As a criminal I want to steal CPU cycles in order to transform them into money via installed crypto currency miners.
+  Ransomware: >
+    As a criminal I want to encrypt the storage and file systems in order to demand ransom.
+  Identity Theft: >
+    As a criminal I want to steal identity data in order to reuse credentials and/or keys on other targets of the same company or outside.
+  PII Theft: >
+    As a criminal I want to steal PII (Personally Identifiable Information) data in order to blackmail the company and/or damage their repudiation by publishing the stolen data.
+  Defacement: >
+    As a criminal I want to modify the backend system (Archivematica) for political purposes.
+
+security_requirements:
+  Input Validation: Strict input validation is required to reduce the overall attack surface.
+  EU-GDPR: Mandatory EU-GDPR
+  PIPEDA: The Personal Information Protection and Electronic Documents Act
+
+# Tags can be used for anything, it's just a tag. Also risk rules can act based on tags if you like.
+tags_available:
+  - nginx
+  - sqlite
+  - database
+  - python
+  - flask
+  - aip
+  - archivematica
+
+data_assets:
+  AIP Metadata:
+    id: aip-metadata
+    description: AIPscans copy of data extracted from the Archivematica Storage Service
+    usage: business
+    tags:
+      - aip
+      - archivematica
+    origin: Archivematica Storage Service
+    owner: Artefactual
+    quantity: very-many
+    confidentiality: internal # values: public, internal, restricted, confidential, strictly-confidential
+    integrity: important # values: archive, operational, important, critical, mission-critical
+    availability: operational # values: archive, operational, important, critical, mission-critical
+    justification_cia_rating:
+
+  Archivematica Storage Service Credentials:
+    id: am-ss-credentials
+    description: AIPscan maintains a copy of the AM SS credentials.
+    usage: business
+    tags:
+      - archivematica
+    origin: User
+    owner: Artefactual
+    quantity: very-few
+    confidentiality: strictly-confidential # values: public, internal, restricted, confidential, strictly-confidential
+    integrity: important # values: archive, operational, important, critical, mission-critical
+    availability: operational # values: archive, operational, important, critical, mission-critical
+    justification_cia_rating:
+
+  HTTP Auth Credentials:
+    id: http-auth-credentials
+    description: HTTP auth credentials protecting access to AIPscan.
+    usage: business
+    tags:
+    origin: User
+    owner: Artefactual
+    quantity: very-few
+    confidentiality: strictly-confidential # values: public, internal, restricted, confidential, strictly-confidential
+    integrity: important # values: archive, operational, important, critical, mission-critical
+    availability: operational # values: archive, operational, important, critical, mission-critical
+    justification_cia_rating:
+
+technical_assets:
+  User Web Client:
+    id: web-client
+    description: Customer Web Client
+    type: external-entity # values: external-entity, process, datastore
+    usage: business # values: business, devops
+    used_as_client_by_human: true
+    out_of_scope: true
+    justification_out_of_scope: Owned and managed by user.
+    size: component # values: system, service, application, component
+    technology: browser # values: see help
+    tags:
+    internet: true
+    machine: physical # values: physical, virtual, container, serverless
+    encryption: none # values: none, transparent, data-with-symmetric-shared-key, data-with-asymmetric-shared-key, data-with-enduser-individual-key
+    owner: User
+    confidentiality: internal # values: public, internal, restricted, confidential, strictly-confidential
+    integrity: operational # values: archive, operational, important, critical, mission-critical
+    availability: operational # values: archive, operational, important, critical, mission-critical
+    justification_cia_rating: >
+      The client used by the customer to access the system.
+    multi_tenant: false
+    redundant: false
+    custom_developed_parts: false
+    data_assets_processed: # sequence of IDs to reference
+      - http-auth-credentials
+      - aip-metadata
+      - am-ss-credentials
+    data_assets_stored: # sequence of IDs to reference
+    data_formats_accepted: # sequence of formats like: json, xml, serialization, file, csv
+    communication_links:
+      Customer Traffic:
+        target: nginx
+        description: Link to NGINX for HTTP Auth. AIPscan page requests sent via NGINX.
+        protocol: https # values: see help
+        authentication: credentials # values: none, credentials, session-id, token, client-certificate, two-factor
+        authorization: none # values: none, technical-user, enduser-identity-propagation
+        tags:
+        vpn: false
+        ip_filtered: false
+        readonly: false
+        usage: business # values: business, devops
+        data_assets_sent: # sequence of IDs to reference
+          - am-ss-credentials
+          - http-auth-credentials
+        data_assets_received: # sequence of IDs to reference
+          - am-ss-credentials
+          - aip-metadata
+        #diagram_tweak_weight: 1
+        #diagram_tweak_constraint: false
+
+  nginx:
+    id: nginx
+    description: NGINX instance which enforces HTTP auth and forwards requests to gunicorn.
+    type: process # values: external-entity, process, datastore
+    usage: business # values: business, devops
+    used_as_client_by_human: true # values: true, false
+    out_of_scope: false # values: true, false
+    justification_out_of_scope: justification
+    size: component # values: system, service, application, component
+    technology: reverse-proxy
+    tags:
+      - nginx
+    internet: true # values: true, false
+    machine: virtual # values: physical, virtual, container, serverless
+    encryption: none # values: none, transparent, data-with-symmetric-shared-key, data-with-asymmetric-shared-key, data-with-enduser-individual-key
+    owner: Artefactual
+    confidentiality: restricted # values: public, internal, restricted, confidential, strictly-confidential
+    integrity: critical # values: archive, operational, important, critical, mission-critical
+    availability: operational # values: archive, operational, important, critical, mission-critical
+    justification_cia_rating: justification
+    multi_tenant: false # values: true, false
+    redundant: false # values: true, false
+    custom_developed_parts: false # values: true, false
+    data_assets_processed: # sequence of IDs to reference
+    data_assets_stored: # sequence of IDs to reference
+    data_formats_accepted:
+    communication_links:
+      Forward to gunicorn:
+        target: aipscan
+        description: forward request to gunicorn to server Python Flask pages.
+        protocol: http # values: see help
+        authentication: none # values: none, credentials, session-id, token, client-certificate, two-factor
+        authorization: none # values: none, technical-user, enduser-identity-propagation
+        tags:
+        vpn: true
+        ip_filtered: false
+        readonly: false
+        usage: business # values: business, devops
+        data_assets_sent: # sequence of IDs to reference
+          - am-ss-credentials
+          - aip-metadata
+        data_assets_received: # sequence of IDs to reference
+          - am-ss-credentials
+          - aip-metadata
+
+  aipscan:
+    id: aipscan
+    description: Python Flask application. Incl front end, aggregator, AM SS config, reporting, API
+    type: process # values: external-entity, process, datastore
+    usage: business # values: business, devops
+    used_as_client_by_human: true # values: true, false
+    out_of_scope: false # values: true, false
+    justification_out_of_scope: justification
+    size: application # values: system, service, application, component
+    technology: web-application
+    tags:
+      - python
+      - flask
+      - aip
+    internet: true # values: true, false
+    machine: virtual # values: physical, virtual, container, serverless
+    encryption: none # values: none, transparent, data-with-symmetric-shared-key, data-with-asymmetric-shared-key, data-with-enduser-individual-key
+    owner: Artefactual
+    confidentiality: confidential # values: public, internal, restricted, confidential, strictly-confidential
+    integrity: critical # values: archive, operational, important, critical, mission-critical
+    availability: important # values: archive, operational, important, critical, mission-critical
+    justification_cia_rating: justification
+    multi_tenant: false # values: true, false
+    redundant: false # values: true, false
+    custom_developed_parts: true # values: true, false
+    data_assets_processed: # sequence of IDs to reference
+      - aip-metadata
+      - am-ss-credentials
+    data_assets_stored: # sequence of IDs to reference
+    data_formats_accepted:
+    communication_links:
+      Database Traffic:
+        target: aipscan-database
+        description: Link to the DB system
+        protocol: local-file-access # values: see help
+        authentication: none # values: none, credentials, session-id, token, client-certificate, two-factor
+        authorization: none # values: none, technical-user, enduser-identity-propagation
+        tags:
+        vpn: true
+        ip_filtered: false
+        readonly: false
+        usage: business # values: business, devops
+        data_assets_sent: # sequence of IDs to reference
+          - am-ss-credentials
+          - aip-metadata
+        data_assets_received: # sequence of IDs to reference
+          - am-ss-credentials
+          - aip-metadata
+
+      Archivematica Storage Service Traffic:
+        target: archivematica-storage-service
+        description: REST API requests made to the AM Storage Service
+        protocol: http # values: see help
+        authentication: credentials # values: none, credentials, session-id, token, client-certificate, two-factor
+        authorization: technical-user # values: none, technical-user, enduser-identity-propagation
+        tags:
+        vpn: true
+        ip_filtered: true
+        readonly: true
+        usage: business # values: business, devops
+        data_assets_sent: # sequence of IDs to reference
+          - am-ss-credentials
+          - aip-metadata
+        data_assets_received: # sequence of IDs to reference
+          - am-ss-credentials
+          - aip-metadata
+
+  Archivematica Storage Service:
+    id: archivematica-storage-service
+    description: Production AM Storage Service serving as data source for the AIPscan reporting tool.
+    type: external-entity # values: external-entity, process, datastore
+    usage: business # values: business, devops
+    used_as_client_by_human: false # values: true, false
+    out_of_scope: true # values: true, false
+    justification_out_of_scope: Covered by Archivematica threat analysis document.
+    size: application # values: system, service, application, component
+    technology: web-service-rest
+    tags:
+      - archivematica
+    internet: false # values: true, false
+    machine: virtual # values: physical, virtual, container, serverless
+    encryption: none # values: none, transparent, data-with-symmetric-shared-key, data-with-asymmetric-shared-key, data-with-enduser-individual-key
+    owner: Artefactual
+    confidentiality: confidential # values: public, internal, restricted, confidential, strictly-confidential
+    integrity: mission-critical # values: archive, operational, important, critical, mission-critical
+    availability: important # values: archive, operational, important, critical, mission-critical
+    justification_cia_rating: justification
+    multi_tenant: false # values: true, false
+    redundant: false # values: true, false
+    custom_developed_parts: true # values: true, false
+    data_assets_processed: # sequence of IDs to reference
+    data_assets_stored: # sequence of IDs to reference
+      - am-ss-credentials
+      - aip-metadata
+    data_formats_accepted:
+    communication_links:
+      #!ta-comm-link
+
+  AIPscan Database:
+    id: aipscan-database
+    description: This a an unencrypted binary store containing the retrieved and transformed AIP data, in addition to the AM SS configuration and credentials.
+    type: datastore # values: external-entity, process, datastore
+    usage: business # values: business, devops
+    used_as_client_by_human: false # values: true, false
+    out_of_scope: false # values: true, false
+    justification_out_of_scope: justification
+    size: component # values: system, service, application, component
+    technology: database
+    tags:
+      - sqlite
+    internet: false # values: true, false
+    machine: virtual # values: physical, virtual, container, serverless
+    encryption: none # values: none, transparent, data-with-symmetric-shared-key, data-with-asymmetric-shared-key, data-with-enduser-individual-key
+    owner: Artefactual
+    confidentiality: confidential # values: public, internal, restricted, confidential, strictly-confidential
+    integrity: critical # values: archive, operational, important, critical, mission-critical
+    availability: important # values: archive, operational, important, critical, mission-critical
+    justification_cia_rating: justification
+    multi_tenant: false # values: true, false
+    redundant: false # values: true, false
+    custom_developed_parts: false # values: true, false
+    data_assets_processed: # sequence of IDs to reference
+    data_assets_stored:
+      - am-ss-credentials
+      - aip-metadata
+    data_formats_accepted:
+    communication_links:
+      #!ta-comm-link
+
+trust_boundaries:
+  AIPscan Application Network:
+    id: aipscan-application-network
+    description: AIPscan Application Network
+    type: network-cloud-provider
+    tags:
+    # sequence of IDs to reference
+    technical_assets_inside:
+      - aipscan
+      - nginx
+      - aipscan-database
+      - archivematica-storage-service
+    # sequence of IDs to reference
+    trust_boundaries_nested:
+
+shared_runtimes:
+  Python3:
+    id: python
+    description: Python libraries installed and used to run AIPscan.
+    tags:
+      - python
+      - flask
+    technical_assets_running: # sequence of IDs to reference
+      - aipscan
+
+individual_risk_categories:
+# NOTE:
+# For risk tracking each risk-id needs to be defined (the string with the @ sign in it). These unique risk IDs are visible in the PDF report (the small grey string under each risk), the Excel (column "ID"), as well as the JSON responses.
+# Some risk IDs have only one @ sign in them, while others multiple. The idea is to allow for unique but still speaking IDs.
+# Therefore each risk instance creates its individual ID by taking all affected elements causing the risk to be within an @-delimited part.
+# Using wildcards (the * sign) for parts delimited by @ signs allows to handle groups of certain risks at once. Best is to lookup the IDs to use in the created Excel file. Alternatively a model macro "seed-risk-tracking" is available that helps in initially
+# seeding the risk tracking part here based on already identified and not yet handled risks.
+#!ta-ind-
+
+risk_tracking:
+  cross-site-scripting@aipscan: # wildcards "*" between the @ characters are possible
+    status: mitigated # values: unchecked, in-discussion, accepted, in-progress, mitigated, false-positive
+    justification: Gunicorn protects the AIPscan pages from XSS attacks.
+    ticket: no ticket
+    date: 2022-02-17
+    checked_by: sbreker
+
+  #!ta-risk-
