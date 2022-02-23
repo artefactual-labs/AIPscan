@@ -1,0 +1,16 @@
+services:
+  aipscan:
+    networks:
+      - hack_default
+
+  rabbitmq:
+    networks:
+      - hack_default
+
+  celery-worker:
+    networks:
+      - hack_default
+
+networks:
+  hack_default:
+    external: true
