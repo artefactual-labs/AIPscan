@@ -7,7 +7,6 @@ services:
     build: ./
     environment:
       - CELERY_BROKER_URL=amqp://guest@rabbitmq//
-    command: aipscan
     ports:
       - 5000:5000
     volumes:
@@ -22,13 +21,16 @@ services:
     volumes:
       - rabbitmq_data/:/var/lib/rabbitmq/
       - rabbitmq_logs/:/var/log/rabbitmq/
+    depends_on:
+      - aipscan
 
   celery-worker:
     build: ./
     environment:
       - CELERY_BROKER_URL=amqp://guest@rabbitmq//
-    command: worker
+    command: celery worker -A AIPscan.worker.celery --loglevel=info
     volumes:
       - "./:/src:rw"
     depends_on:
       - rabbitmq
+      - aipscan

@@ -22,4 +22,4 @@ COPY ./ /src
 
 WORKDIR /src
 
-ENTRYPOINT ["docker/entrypoint.sh"]
+CMD ["python", "run.py"]
