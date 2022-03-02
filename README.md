@@ -108,6 +108,53 @@ To start up Celery workers that are ready to receive tasks from RabbitMQ:
 
 ![screencap6](screencaps/aipscan_celery_hello_world.png)
 
+# Development
+
+Requires [Docker CE](https://www.docker.com/community-edition) and [Docker Compose](https://docs.docker.com/compose/).
+
+Clone the repository and go to its directory:
+
+```
+git clone https://github.com/artefactual-labs/AIPscan
+cd AIPscan
+```
+
+Build images, initialize services, etc.:
+
+```
+docker-compose up -d
+```
+
+Optional: attach AIPscan to the Docker Archivematica container network directly:
+
+```
+docker-compose -f docker-compose.yml -f docker-compose.am-network.yml up -d
+```
+
+In this case, the AIPscan Storage Service record's URL field can be set with the Storage Service container name:
+
+```
+http://archivematica-storage-service:8000
+```
+
+Access the logs:
+
+```
+docker-compose logs -f aipscan rabbitmq celery-worker
+```
+
+Shut down the AIPscan Docker containers:
+
+```
+docker-compose down
+```
+
+Shut down the AIPscan Docker containers and remove the rabbitmq volumes:
+
+```
+docker-composer down --volumes
+```
+
 # Usage
 
 * Ensure that the Flask Server, RabbitMQ server, and Celery worker queue are up and running.
