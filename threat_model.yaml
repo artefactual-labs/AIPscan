@@ -2,7 +2,7 @@ threagile_version: 1.0.0
 
 title: AIPscan Threat model
 
-date: 2022-02-15
+date: 2022-03-10
 
 author:
   name: Artefactual Systems Inc.
@@ -18,9 +18,7 @@ business_overview:
 technical_overview:
   description: AIPscan is a web-based application that is built using the Python [Flask](https://pypi.org/project/Flask/) micro-framework.
 
-questions: # simply use "" as answer to signal "unanswered"
-#  Some question without an answer?: ""
-#  Some question with an answer?: Some answer
+questions:
 
 abuse_cases:
   Denial-of-Service: >
@@ -50,6 +48,9 @@ tags_available:
   - flask
   - aip
   - archivematica
+  - ssh
+  - source
+  - github
 
 data_assets:
   AIP Metadata:
@@ -90,14 +91,42 @@ data_assets:
     owner: Artefactual
     quantity: very-few
     confidentiality: strictly-confidential # values: public, internal, restricted, confidential, strictly-confidential
-    integrity: important # values: archive, operational, important, critical, mission-critical
+    integrity: mission-critical # values: archive, operational, important, critical, mission-critical
+    availability: operational # values: archive, operational, important, critical, mission-critical
+    justification_cia_rating:
+
+  AIPscan Source:
+    id: aipscan-source
+    description: This is the public source code of the AIPscan project.
+    usage: devops
+    tags:
+      - source
+    origin: Artefactual
+    owner: Artefactual
+    quantity: very-few # values: very-few, few, many, very-many
+    confidentiality: public # values: public, internal, restricted, confidential, strictly-confidential
+    integrity: mission-critical # values: archive, operational, important, critical, mission-critical
+    availability: operational # values: archive, operational, important, critical, mission-critical
+    justification_cia_rating:
+
+  Ansible AIPscan Source:
+    id: ansible-aipscan-source
+    description: This is the Ansible deployment repo for the AIPscan project.
+    usage: devops
+    tags:
+      - source
+    origin: Artefactual
+    owner: Artefactual
+    quantity: very-few # values: very-few, few, many, very-many
+    confidentiality: public # values: public, internal, restricted, confidential, strictly-confidential
+    integrity: mission-critical # values: archive, operational, important, critical, mission-critical
     availability: operational # values: archive, operational, important, critical, mission-critical
     justification_cia_rating:
 
 technical_assets:
   User Web Client:
     id: web-client
-    description: Customer Web Client
+    description: Archives User Web Client
     type: external-entity # values: external-entity, process, datastore
     usage: business # values: business, devops
     used_as_client_by_human: true
@@ -114,7 +143,7 @@ technical_assets:
     integrity: operational # values: archive, operational, important, critical, mission-critical
     availability: operational # values: archive, operational, important, critical, mission-critical
     justification_cia_rating: >
-      The client used by the customer to access the system.
+      The client used by the user to access the system.
     multi_tenant: false
     redundant: false
     custom_developed_parts: false
@@ -125,7 +154,7 @@ technical_assets:
     data_assets_stored: # sequence of IDs to reference
     data_formats_accepted: # sequence of formats like: json, xml, serialization, file, csv
     communication_links:
-      Customer Traffic:
+      Archives User Traffic:
         target: nginx
         description: Link to NGINX for HTTP Auth. AIPscan page requests sent via NGINX.
         protocol: https # values: see help
@@ -142,8 +171,143 @@ technical_assets:
         data_assets_received: # sequence of IDs to reference
           - am-ss-credentials
           - aip-metadata
-        #diagram_tweak_weight: 1
-        #diagram_tweak_constraint: false
+
+  Dev/Ops ssh Client:
+    id: ssh-client
+    description: ssh client used by dev/ops to support Artefactual servers.
+    type: external-entity # values: external-entity, process, datastore
+    usage: devops # values: business, devops
+    used_as_client_by_human: true # values: true, false
+    out_of_scope: false # values: true, false
+    justification_out_of_scope: Artefactual
+    size: application # values: system, service, application, component
+    technology: cli
+    tags:
+      - ssh
+    internet: true # values: true, false
+    machine: physical # values: physical, virtual, container, serverless
+    encryption: data-with-symmetric-shared-key # values: none, transparent, data-with-symmetric-shared-key, data-with-asymmetric-shared-key, data-with-enduser-individual-key
+    owner: Artefactual
+    confidentiality: strictly-confidential # values: public, internal, restricted, confidential, strictly-confidential
+    integrity: critical # values: archive, operational, important, critical, mission-critical
+    availability: critical # values: archive, operational, important, critical, mission-critical
+    justification_cia_rating: justification
+    multi_tenant: false # values: true, false
+    redundant: false # values: true, false
+    custom_developed_parts: false # values: true, false
+    data_assets_processed: # sequence of IDs to reference
+    data_assets_stored: # sequence of IDs to reference
+    data_formats_accepted:
+    communication_links:
+      AIPscan Server Connection:
+        target: aipscan
+        description: ssh link to connect to AIPscan server and deploy/administer.
+        protocol: ssh
+        authentication: client-certificate # values: none, credentials, session-id, token, client-certificate, two-factor
+        authorization: enduser-identity-propagation # values: none, technical-user, enduser-identity-propagation
+        tags:
+          - ssh
+        vpn: false # values: true, false
+        ip_filtered: false # values: true, false
+        readonly: false # values: true, false
+        usage: devops # values: business, devops
+        data_assets_sent: # sequence of IDs to reference
+          - aipscan-source
+          - ansible-aipscan-source
+        data_assets_received: # sequence of IDs to reference
+
+      AIPscan Github Connection:
+        target: github-aipscan
+        description: ssh link to connect to AIPscan github server repo.
+        protocol: ssh
+        authentication: client-certificate # values: none, credentials, session-id, token, client-certificate, two-factor
+        authorization: enduser-identity-propagation # values: none, technical-user, enduser-identity-propagation
+        tags:
+          - ssh
+        vpn: false # values: true, false
+        ip_filtered: false # values: true, false
+        readonly: false # values: true, false
+        usage: devops # values: business, devops
+        data_assets_sent: # sequence of IDs to reference
+          - aipscan-source
+        data_assets_received: # sequence of IDs to reference
+
+      Ansible AIPscan Github Connection:
+        target: github-ansible-aipscan
+        description: ssh link to connect to AIPscan ansible github repo.
+        protocol: ssh
+        authentication: client-certificate # values: none, credentials, session-id, token, client-certificate, two-factor
+        authorization: enduser-identity-propagation # values: none, technical-user, enduser-identity-propagation
+        tags:
+          - ssh
+        vpn: false # values: true, false
+        ip_filtered: false # values: true, false
+        readonly: false # values: true, false
+        usage: devops # values: business, devops
+        data_assets_sent: # sequence of IDs to reference
+          - ansible-aipscan-source
+        data_assets_received: # sequence of IDs to reference
+
+  AIPscan Github:
+    id: github-aipscan
+    description: This is the AIPscan code repo hosted on github.com
+    type: datastore # values: external-entity, process, datastore
+    usage: devops # values: business, devops
+    used_as_client_by_human: false # values: true, false
+    out_of_scope: true # values: true, false
+    justification_out_of_scope: justification
+    size: service # values: system, service, application, component
+    technology: sourcecode-repository
+    tags:
+      - github
+    internet: true # values: true, false
+    machine: virtual # values: physical, virtual, container, serverless
+    encryption: data-with-symmetric-shared-key # values: none, transparent, data-with-symmetric-shared-key, data-with-asymmetric-shared-key, data-with-enduser-individual-key
+    owner: github.com
+    confidentiality: public # values: public, internal, restricted, confidential, strictly-confidential
+    integrity: mission-critical # values: archive, operational, important, critical, mission-critical
+    availability: operational # values: archive, operational, important, critical, mission-critical
+    justification_cia_rating: justification
+    multi_tenant: false # values: true, false
+    redundant: false # values: true, false
+    custom_developed_parts: false # values: true, false
+    data_assets_processed: # sequence of IDs to reference
+      - aipscan-source
+    data_assets_stored: # sequence of IDs to reference
+      - aipscan-source
+    data_formats_accepted:
+    communication_links:
+      #!ta-comm-link
+
+  AIPscan Ansible Github:
+    id: github-ansible-aipscan
+    description: This is the Ansible AIPscan code repo hosted on github.com
+    type: datastore # values: external-entity, process, datastore
+    usage: devops # values: business, devops
+    used_as_client_by_human: false # values: true, false
+    out_of_scope: true # values: true, false
+    justification_out_of_scope: justification
+    size: service # values: system, service, application, component
+    technology: sourcecode-repository
+    tags:
+      - github
+    internet: true # values: true, false
+    machine: virtual # values: physical, virtual, container, serverless
+    encryption: data-with-symmetric-shared-key # values: none, transparent, data-with-symmetric-shared-key, data-with-asymmetric-shared-key, data-with-enduser-individual-key
+    owner: github.com
+    confidentiality: public # values: public, internal, restricted, confidential, strictly-confidential
+    integrity: mission-critical # values: archive, operational, important, critical, mission-critical
+    availability: operational # values: archive, operational, important, critical, mission-critical
+    justification_cia_rating: justification
+    multi_tenant: false # values: true, false
+    redundant: false # values: true, false
+    custom_developed_parts: false # values: true, false
+    data_assets_processed: # sequence of IDs to reference
+      - ansible-aipscan-source
+    data_assets_stored: # sequence of IDs to reference
+      - ansible-aipscan-source
+    data_formats_accepted:
+    communication_links:
 
   nginx:
     id: nginx
@@ -286,7 +450,6 @@ technical_assets:
       - aip-metadata
     data_formats_accepted:
     communication_links:
-      #!ta-comm-link
 
   AIPscan Database:
     id: aipscan-database
@@ -311,27 +474,24 @@ technical_assets:
     multi_tenant: false # values: true, false
     redundant: false # values: true, false
     custom_developed_parts: false # values: true, false
-    data_assets_processed: # sequence of IDs to reference
+    data_assets_processed:
     data_assets_stored:
       - am-ss-credentials
       - aip-metadata
     data_formats_accepted:
     communication_links:
-      #!ta-comm-link
 
 trust_boundaries:
-  AIPscan Application Network:
-    id: aipscan-application-network
-    description: AIPscan Application Network
+  Artefactual Application Network:
+    id: artefactual-application-network
+    description: Artefactual Application Network
     type: network-cloud-provider
     tags:
-    # sequence of IDs to reference
     technical_assets_inside:
       - aipscan
       - nginx
       - aipscan-database
       - archivematica-storage-service
-    # sequence of IDs to reference
     trust_boundaries_nested:
 
 shared_runtimes:
@@ -341,7 +501,7 @@ shared_runtimes:
     tags:
       - python
       - flask
-    technical_assets_running: # sequence of IDs to reference
+    technical_assets_running:
       - aipscan
 
 individual_risk_categories:
@@ -360,5 +520,3 @@ risk_tracking:
     ticket: no ticket
     date: 2022-02-17
     checked_by: sbreker
-
-  #!ta-risk-
