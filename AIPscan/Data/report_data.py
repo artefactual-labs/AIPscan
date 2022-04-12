@@ -581,6 +581,10 @@ def storage_locations(storage_service_id, start_date, end_date):
     """Return details of AIP store locations in Storage Service.
 
     :param storage_service_id: Storage Service ID (int)
+    :param start_date: Inclusive AIP creation start date
+        (datetime.datetime object)
+    :param end_date: Inclusive AIP creation end date
+        (datetime.datetime object)
 
     :returns: "report" dict containing following fields:
         report["StorageName"]: Name of Storage Service queried
@@ -602,6 +606,7 @@ def storage_locations(storage_service_id, start_date, end_date):
         loc_info[fields.FIELD_STORAGE_LOCATION] = location.description
         loc_info[fields.FIELD_AIPS] = location.aip_count(start_date, end_date)
         loc_info[fields.FIELD_SIZE] = location.aip_total_size(start_date, end_date)
+        loc_info[fields.FIELD_FILE_COUNT] = location.file_count(start_date, end_date)
 
         unsorted_results.append(loc_info)
 

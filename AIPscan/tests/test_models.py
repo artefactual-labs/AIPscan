@@ -183,6 +183,49 @@ def test_storage_location_aip_total_size(
 
 
 @pytest.mark.parametrize(
+    "current_location, start_date, end_date, originals_only, expected_file_count",
+    [
+        # Test Storage Location populated with AIPs.
+        (STORAGE_LOCATION_1_CURRENT_LOCATION, None, None, True, 3),
+        (STORAGE_LOCATION_1_CURRENT_LOCATION, None, None, False, 4),
+        # Test date parameters in populated Storage Location.
+        (STORAGE_LOCATION_1_CURRENT_LOCATION, "2020-01-02", None, True, 1),
+        (STORAGE_LOCATION_1_CURRENT_LOCATION, "2020-01-02", None, False, 1),
+        (STORAGE_LOCATION_1_CURRENT_LOCATION, None, "2020-05-31", True, 2),
+        (STORAGE_LOCATION_1_CURRENT_LOCATION, None, "2020-05-31", False, 3),
+        (STORAGE_LOCATION_1_CURRENT_LOCATION, "2020-01-02", "2020-05-31", True, 0),
+        (STORAGE_LOCATION_1_CURRENT_LOCATION, "2020-01-02", "2020-05-31", False, 0),
+        (STORAGE_LOCATION_1_CURRENT_LOCATION, "2020-01-01", "2020-06-01", True, 3),
+        (STORAGE_LOCATION_1_CURRENT_LOCATION, "2020-01-01", "2020-06-01", False, 4),
+        # Test new Storage Location (no AIPs).
+        (None, None, None, True, 0),
+        (None, None, None, False, 0),
+    ],
+)
+def test_storage_location_file_count(
+    storage_locations,
+    current_location,
+    start_date,
+    end_date,
+    originals_only,
+    expected_file_count,
+):
+    """Test Storage Location file_count property."""
+    if current_location:
+        storage_location = StorageLocation.query.filter_by(
+            current_location=current_location
+        ).first()
+    else:
+        storage_location = test_helpers.create_test_storage_location()
+    start_date = parse_datetime_bound(start_date)
+    end_date = parse_datetime_bound(end_date, upper=True)
+    assert (
+        storage_location.file_count(start_date, end_date, originals=originals_only)
+        == expected_file_count
+    )
+
+
+@pytest.mark.parametrize(
     "current_location, original_formats, preservation_formats",
     [
         # Test with first Storage Location.

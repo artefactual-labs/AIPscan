@@ -222,6 +222,24 @@ class StorageLocation(db.Model):
                 pass
         return DEFAULT
 
+    def file_count(self, start_date=None, end_date=None, originals=True):
+        """Return number of files in this location. Defaults to originals only."""
+        if not start_date:
+            start_date = datetime.min
+        if not end_date:
+            end_date = datetime.max
+        files = (
+            db.session.query(File)
+            .join(AIP)
+            .join(StorageLocation)
+            .filter(AIP.storage_location_id == self.id)
+            .filter(AIP.create_date >= start_date)
+            .filter(AIP.create_date < end_date)
+        )
+        if originals:
+            files = files.filter(File.file_type == FileType.original)
+        return files.count()
+
 
 class FetchJob(db.Model):
     __tablename__ = "fetch_job"

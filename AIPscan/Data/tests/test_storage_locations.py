@@ -35,7 +35,7 @@ def test_sort_storage_locations(input_list, expected_output):
 
 
 @pytest.mark.parametrize(
-    "storage_service_id, storage_service_name, start_date, end_date, locations_count, location_1_aips_count, location_1_total_size, location_2_aips_count, location_2_total_size",
+    "storage_service_id, storage_service_name, start_date, end_date, locations_count, location_1_aips_count, location_1_total_size, location_1_file_count, location_2_aips_count, location_2_total_size, location_2_file_count",
     [
         # Request for a Storage Service populated with two locations, each
         # containing AIPs and files.
@@ -47,13 +47,15 @@ def test_sort_storage_locations(input_list, expected_output):
             2,
             2,
             1600,
+            3,
             1,
             5000,
+            2,
         ),
         # Request for a non-existent Storage Service.
-        (4, None, DATE_BEFORE_AIP_1, DATE_BEFORE_AIP_3, 0, 0, 0, 0, 0),
+        (4, None, DATE_BEFORE_AIP_1, DATE_BEFORE_AIP_3, 0, 0, 0, 0, 0, 0, 0),
         # Request for a None Storage Service.
-        (None, None, DATE_BEFORE_AIP_1, DATE_BEFORE_AIP_3, 0, 0, 0, 0, 0),
+        (None, None, DATE_BEFORE_AIP_1, DATE_BEFORE_AIP_3, 0, 0, 0, 0, 0, 0, 0),
         # Test date filtering.
         (
             1,
@@ -63,6 +65,8 @@ def test_sort_storage_locations(input_list, expected_output):
             2,
             1,
             1000,
+            1,
+            0,
             0,
             0,
         ),
@@ -74,6 +78,8 @@ def test_sort_storage_locations(input_list, expected_output):
             2,
             1,
             600,
+            2,
+            0,
             0,
             0,
         ),
@@ -85,6 +91,8 @@ def test_sort_storage_locations(input_list, expected_output):
             2,
             2,
             1600,
+            3,
+            0,
             0,
             0,
         ),
@@ -96,8 +104,10 @@ def test_sort_storage_locations(input_list, expected_output):
             2,
             0,
             0,
+            0,
             1,
             5000,
+            2,
         ),
     ],
 )
@@ -110,8 +120,10 @@ def test_storage_locations_data(
     locations_count,
     location_1_aips_count,
     location_1_total_size,
+    location_1_file_count,
     location_2_aips_count,
     location_2_total_size,
+    location_2_file_count,
 ):
     """Test response from report_data.storage_locations endpoint."""
     report = report_data.storage_locations(
@@ -136,6 +148,7 @@ def test_storage_locations_data(
         )
         assert first_location[fields.FIELD_AIPS] == location_1_aips_count
         assert first_location[fields.FIELD_SIZE] == location_1_total_size
+        assert first_location[fields.FIELD_FILE_COUNT] == location_1_file_count
     else:
         assert first_location[fields.FIELD_UUID] == STORAGE_LOCATION_2_UUID
         assert (
@@ -144,6 +157,7 @@ def test_storage_locations_data(
         )
         assert first_location[fields.FIELD_AIPS] == location_2_aips_count
         assert first_location[fields.FIELD_SIZE] == location_2_total_size
+        assert first_location[fields.FIELD_FILE_COUNT] == location_2_file_count
 
     second_location = locations[1]
     # Account for sorting changes made possible by date filtering.
@@ -155,6 +169,7 @@ def test_storage_locations_data(
         )
         assert second_location[fields.FIELD_AIPS] == location_2_aips_count
         assert second_location[fields.FIELD_SIZE] == location_2_total_size
+        assert second_location[fields.FIELD_FILE_COUNT] == location_2_file_count
     else:
         assert second_location[fields.FIELD_UUID] == STORAGE_LOCATION_1_UUID
         assert (
@@ -163,3 +178,4 @@ def test_storage_locations_data(
         )
         assert second_location[fields.FIELD_AIPS] == location_1_aips_count
         assert second_location[fields.FIELD_SIZE] == location_1_total_size
+        assert second_location[fields.FIELD_FILE_COUNT] == location_1_file_count

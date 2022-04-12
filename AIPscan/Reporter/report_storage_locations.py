@@ -17,6 +17,7 @@ HEADERS = [
     fields.FIELD_STORAGE_LOCATION,
     fields.FIELD_AIPS,
     fields.FIELD_SIZE,
+    fields.FIELD_FILE_COUNT,
 ]
 
 
