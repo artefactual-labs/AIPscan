@@ -169,18 +169,34 @@ class AgentData(Resource):
     @api.doc(
         "agent_info",
         params={
+            fields.FIELD_START_DATE: {
+                "description": "AIP creation start date (inclusive, YYYY-MM-DD)",
+                "in": "query",
+                "type": "str",
+            },
+            fields.FIELD_END_DATE: {
+                "description": "AIP creation end date (inclusive, YYYY-MM-DD)",
+                "in": "query",
+                "type": "str",
+            },
             fields.FIELD_STORAGE_LOCATION: {
                 "description": "Storage Location ID",
                 "in": "query",
                 "type": "int",
-            }
+            },
         },
     )
     def get(self, storage_service_id):
         """List user agents and their transfers"""
+        start_date = parse_datetime_bound(request.args.get(fields.FIELD_START_DATE))
+        end_date = parse_datetime_bound(
+            request.args.get(fields.FIELD_END_DATE), upper=True
+        )
         storage_location_id = request.args.get(fields.FIELD_STORAGE_LOCATION)
         return report_data.agents_transfers(
             storage_service_id=storage_service_id,
+            start_date=start_date,
+            end_date=end_date,
             storage_location_id=storage_location_id,
         )
 

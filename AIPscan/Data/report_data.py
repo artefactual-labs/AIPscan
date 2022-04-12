@@ -430,10 +430,24 @@ def aips_by_puid(
     )
 
 
-def agents_transfers(storage_service_id, storage_location_id=None):
-    """Return information about agents involved in creating a transfer
-    and provide some simple statistics, e.g. ingest start time and
-    ingest finish time.
+def agents_transfers(
+    storage_service_id, start_date, end_date, storage_location_id=None
+):
+    """Return overview of transfers and their agents.
+
+    Includes simple statistics such as ingest start and finish times.
+
+    :param storage_service_id: Storage Service ID (int)
+    :param start_date: Inclusive AIP creation start date
+        (datetime.datetime object)
+    :param end_date: Inclusive AIP creation end date
+        (datetime.datetime object)
+    :param storage_location_id: Storage Location ID (int)
+
+    :returns: "report" dict containing following fields:
+        report["StorageName"]: Name of Storage Service queried
+        report["StorageLocation"]: Name of storage location, if applicable
+        report["Ingest"]: List of ingest event dictionaries
     """
     report = {}
     ingests = []
@@ -452,7 +466,11 @@ def agents_transfers(storage_service_id, storage_location_id=None):
         storage_location_id
     )
 
-    aips = AIP.query.filter_by(storage_service_id=storage_service_id)
+    aips = (
+        AIP.query.filter_by(storage_service_id=storage_service_id)
+        .filter(AIP.create_date >= start_date)
+        .filter(AIP.create_date < end_date)
+    )
     if storage_location_id:
         aips = aips.filter(AIP.storage_location_id == storage_location_id)
     aips = aips.all()

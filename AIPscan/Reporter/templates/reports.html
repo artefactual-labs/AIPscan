@@ -195,7 +195,7 @@
       <tr>
           <td><strong>User ingest log</strong></td>
           <td><span class="text-muted">List all Archivematica ingest events, per user.
-            <br>Filter by storage location.</span></td>
+            <br>Filter by date range and storage location.</span></td>
           <td>
               <a href="#"><button type="button" id="transferLogTabular" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a>
               <a href="#"><button type="button" id="transferLogGantt" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Gantt Chart</button></a>
@@ -466,24 +466,36 @@ $(document).ready(function() {
     window.open(url);
   });
  $("#transferLogTabular").on("click", function() {
+    var startdate = $('#startdate').val();
+    var enddate = $('#enddate').val();
     var url = (
       window.location.origin +
       '/reporter/ingest_log_tabular/' +
       '?amss_id=' +
       storageServiceId +
       '&storage_location=' +
-      storageLocationId
+      storageLocationId +
+      '&start_date=' +
+      startdate +
+      '&end_date=' +
+      enddate
     );
     window.open(url);
   });
   $("#transferLogGantt").on("click", function() {
+    var startdate = $('#startdate').val();
+    var enddate = $('#enddate').val();
     var url = (
       window.location.origin +
       '/reporter/ingest_log_gantt/' +
       '?amss_id=' +
       storageServiceId +
       '&storage_location=' +
-      storageLocationId
+      storageLocationId +
+      '&start_date=' +
+      startdate +
+      '&end_date=' +
+      enddate
     );
     window.open(url);
   });

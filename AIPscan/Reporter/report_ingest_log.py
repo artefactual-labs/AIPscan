@@ -8,8 +8,14 @@ import plotly.express as px
 from flask import render_template, request
 
 from AIPscan.Data import fields, report_data
-from AIPscan.helpers import _simplify_datetime, parse_bool
-from AIPscan.Reporter import download_csv, reporter, request_params, translate_headers
+from AIPscan.helpers import _simplify_datetime, parse_bool, parse_datetime_bound
+from AIPscan.Reporter import (
+    download_csv,
+    get_display_end_date,
+    reporter,
+    request_params,
+    translate_headers,
+)
 
 # Response fields.
 TRANSFER_COUNT = "transfer_count"
@@ -50,12 +56,17 @@ def get_table_data(ingests):
 @reporter.route("/ingest_log_tabular/", methods=["GET"])
 def ingest_log_tabular():
     """Return the information needed to present an ingest gantt chart."""
-    TABULAR_TEMPLATE = "report_ingest_log_tabular.html"
     storage_service_id = request.args.get(request_params.STORAGE_SERVICE_ID)
     storage_location_id = request.args.get(request_params.STORAGE_LOCATION_ID)
+    start_date = parse_datetime_bound(request.args.get(request_params.START_DATE))
+    end_date = parse_datetime_bound(
+        request.args.get(request_params.END_DATE), upper=True
+    )
     csv = parse_bool(request.args.get(request_params.CSV), default=False)
 
-    ingests = report_data.agents_transfers(storage_service_id, storage_location_id)
+    ingests = report_data.agents_transfers(
+        storage_service_id, start_date, end_date, storage_location_id
+    )
     ingests = get_table_data(ingests)
 
     if csv:
@@ -64,11 +75,13 @@ def ingest_log_tabular():
         return download_csv(headers, ingests[fields.FIELD_INGESTS], filename)
 
     return render_template(
-        TABULAR_TEMPLATE,
+        "report_ingest_log_tabular.html",
         storage_service_name=ingests.get(fields.FIELD_STORAGE_NAME),
         storage_location_description=ingests.get(fields.FIELD_STORAGE_LOCATION),
         number_of_transfers=ingests[TRANSFER_COUNT],
         data=ingests[fields.FIELD_INGESTS],
+        start_date=start_date,
+        end_date=get_display_end_date(end_date),
     )
 
 
@@ -102,15 +115,22 @@ def get_figure_html(ingests):
 @reporter.route("/ingest_log_gantt/", methods=["GET"])
 def ingest_log():
     """Return the information needed to present an ingest gantt chart."""
-    GANTT_TEMPLATE = "report_ingest_log_gantt.html"
     storage_service_id = request.args.get(request_params.STORAGE_SERVICE_ID)
     storage_location_id = request.args.get(request_params.STORAGE_LOCATION_ID)
-    ingests = report_data.agents_transfers(storage_service_id, storage_location_id)
+    start_date = parse_datetime_bound(request.args.get(request_params.START_DATE))
+    end_date = parse_datetime_bound(
+        request.args.get(request_params.END_DATE), upper=True
+    )
+    ingests = report_data.agents_transfers(
+        storage_service_id, start_date, end_date, storage_location_id
+    )
     ingests = get_figure_html(ingests)
     return render_template(
-        GANTT_TEMPLATE,
+        "report_ingest_log_gantt.html",
         storage_service_name=ingests.get(fields.FIELD_STORAGE_NAME),
         storage_location_description=ingests.get(fields.FIELD_STORAGE_LOCATION),
         number_of_transfers=ingests[TRANSFER_COUNT],
         plot=ingests[FIGURE_HTML],
+        start_date=start_date,
+        end_date=get_display_end_date(end_date),
     )
