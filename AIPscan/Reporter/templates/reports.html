@@ -77,6 +77,7 @@
             <br>Filter by date range.</span></span></td>
           <td>
               <a href="#"><button type="button" id="storageLocations" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a>
+              <a href="#"><button type="button" id="storageLocationsTimeseries" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Time Series</button></a>
           </td>
       </tr>
 
@@ -554,6 +555,27 @@ $(document).ready(function() {
         startdate +
         '&end_date=' +
         enddate
+      );
+      window.open(url);
+    }
+  });
+  $("#storageLocationsTimeseries").on("click", function() {
+    var startdate = $('#startdate').val();
+    var enddate = $('#enddate').val();
+    if (enddate < startdate) {
+        alert(DATE_ALERT_START);
+    } else {
+      var url = (
+        window.location.origin +
+        '/reporter/storage_locations_usage_over_time/' +
+        '?amss_id=' +
+        storageServiceId +
+        '&start_date=' +
+        startdate +
+        '&end_date=' +
+        enddate +
+        '&metric=aips' +
+        '&cumulative=false'
       );
       window.open(url);
     }

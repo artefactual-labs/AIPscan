@@ -98,7 +98,7 @@ def format_size_for_csv(rows):
 
 
 def download_csv(headers, rows, filename="report.csv"):
-    """Write CSV and send it as an attachment.
+    """Write CSV from string and send it as an attachment.
 
     :param headers: Row headers (list of str)
     :param rows: Data to write to CSV, returned from Data endpoint (list of dicts)

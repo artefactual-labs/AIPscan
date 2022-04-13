@@ -292,3 +292,42 @@ class StorageLocations(Resource):
             start_date=start_date,
             end_date=end_date,
         )
+
+
+@api.route("/storage_location_usage_over_time/<storage_service_id>")
+class StorageLocationsUsageOverTime(Resource):
+    @api.doc(
+        "storage_locations_usage_over_time",
+        params={
+            fields.FIELD_START_DATE: {
+                "description": "AIP creation start date (inclusive, YYYY-MM-DD)",
+                "in": "query",
+                "type": "str",
+            },
+            fields.FIELD_END_DATE: {
+                "description": "AIP creation end date (inclusive, YYYY-MM-DD)",
+                "in": "query",
+                "type": "str",
+            },
+            fields.FIELD_CUMULATIVE: {
+                "description": "Return per month storage location usage: differential (False, default) or cumulative (True)",
+                "in": "query",
+                "type": "bool",
+            },
+        },
+    )
+    def get(self, storage_service_id):
+        """List AIP store locations and their usage."""
+        start_date = parse_datetime_bound(request.args.get(fields.FIELD_START_DATE))
+        end_date = parse_datetime_bound(
+            request.args.get(fields.FIELD_END_DATE), upper=True
+        )
+        cumulative = parse_bool(
+            request.args.get(fields.FIELD_CUMULATIVE), default=False
+        )
+        return report_data.storage_locations_usage_over_time(
+            storage_service_id=storage_service_id,
+            start_date=start_date,
+            end_date=end_date,
+            cumulative=cumulative,
+        )

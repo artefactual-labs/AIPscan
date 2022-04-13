@@ -1,0 +1,60 @@
+{% extends "report_base.html" %}
+
+{% block content %}
+
+<div class="alert alert-secondary">
+
+  {% include "report_buttons.html" %}
+
+  <strong>Report: Storage location usage time series</strong>
+  <br>
+  <strong>Storage Service:</strong> {{ storage_service_name }}
+  <br>
+  <strong>Start date:</strong> {{ start_date.strftime('%Y-%m-%d') }}
+  <br>
+  <strong>End date:</strong> {{ end_date.strftime('%Y-%m-%d') }}
+  
+  <!-- Hidden elements we want available from JS for URL generation -->
+  <span id="storageServiceID" style="display:none;">{{ storage_service_id }}</span>
+  <span id="startDate" style="display:none;">{{ start_date.strftime('%Y-%m-%d') }}</span>
+  <span id="endDate" style="display:none;">{{ end_date.strftime('%Y-%m-%d') }}</span>
+</div>
+
+<div class="noprint" style="margin-bottom: 10px;">
+  <strong>Metric:</strong>
+  <select id="metricSelector" class="form-control" style="width:auto;">
+  {% if metric == "size" %}
+    <option value="aips">AIP count</option>
+    <option value="size" selected>Total AIP size (GB)</option>
+    <option value="files">File count</option>
+  {% elif metric == "files" %}
+    <option value="aips">AIP count</option>
+    <option value="size">Total AIP size (GB)</option>
+    <option value="files" selected>File count</option>
+  {% else %}
+    <option value="aips" selected>AIP count</option>
+    <option value="size">Total AIP size (GB)</option>
+    <option value="files">File count</option>
+  {% endif %}
+  </select>
+</div>
+
+<div class="noprint" style="margin-bottom: 10px;">
+  <strong>Show totals:</strong>
+  <select id="cumulativeSelector" class="form-control" style="width:auto;">
+  {% if cumulative %}
+    <option value="false">Differential</option>
+    <option value="true" selected>Cumulative</option>
+  {% else %}
+    <option value="false" selected>Differential</option>
+    <option value="true">Cumulative</option>
+  {% endif %}
+  </select>
+</div>
+
+<div>
+  <!-- Plotly bar chart here -->
+  {{ plot|safe }}
+</div>
+
+{% endblock %}

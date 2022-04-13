@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 
 """Data endpoints optimized for reports in the Reporter blueprint."""
+from datetime import datetime, timedelta
 from operator import itemgetter
+
+from dateutil.rrule import DAILY, rrule
 
 from AIPscan import db
 from AIPscan.Data import (
@@ -690,5 +693,89 @@ def storage_locations(storage_service_id, start_date, end_date):
         unsorted_results.append(loc_info)
 
     report[fields.FIELD_LOCATIONS] = _sort_storage_locations(unsorted_results)
+
+    return report
+
+
+def _get_days_covered_by_date_range(storage_service_id, start_date, end_date):
+    """Return days covered by date range as list of ISO values.
+
+    First, replace datetime.min and datetime.max, if used, with more sensible
+    values so that we do not end up returning every day since the beginning
+    of time.
+
+    :param storage_service_id: Storage Service ID (int)
+    :param start_date: Inclusive AIP creation start date
+        (datetime.datetime object)
+    :param end_date: Inclusive AIP creation end date
+        (datetime.datetime object)
+
+    :returns: List of strings like "YYYY-MM-DD"
+    """
+    if start_date == datetime.min:
+        storage_service = StorageService.query.get(storage_service_id)
+        start_date = storage_service.earliest_aip_created
+    if end_date >= datetime.now():
+        end_date = datetime.now()
+
+    return [
+        dt.isoformat()[:10] for dt in rrule(DAILY, dtstart=start_date, until=end_date)
+    ]
+
+
+def storage_locations_usage_over_time(
+    storage_service_id, start_date, end_date, cumulative=False
+):
+    """Return details of AIP store locations in Storage Service over time.
+
+    :param storage_service_id: Storage Service ID (int)
+    :param start_date: Inclusive AIP creation start date
+        (datetime.datetime object)
+    :param end_date: Inclusive AIP creation end date
+        (datetime.datetime object)
+    :param cumulative: Flag indicating whether to calculate cumulatively, where
+        each month adds to previous totals (bool)
+
+    :returns: "report" dict containing following fields:
+        report["StorageName"]: Name of Storage Service queried
+        report["Locations"]: List of result locations ordered desc by size
+    """
+    report = {}
+    report[fields.FIELD_STORAGE_NAME] = get_storage_service_name(storage_service_id)
+
+    locations = _get_storage_locations(storage_service_id)
+    days = _get_days_covered_by_date_range(storage_service_id, start_date, end_date)
+
+    results = {}
+
+    for day in days:
+        daily_locations_data = []
+
+        for location in locations:
+            loc_info = {}
+
+            subquery_start_date = datetime.strptime(day, "%Y-%m-%d")
+            subquery_end_date = subquery_start_date + timedelta(days=1)
+            if cumulative:
+                subquery_start_date = datetime.strptime(days[0], "%Y-%m-%d")
+
+            loc_info[fields.FIELD_ID] = location.id
+            loc_info[fields.FIELD_UUID] = location.uuid
+            loc_info[fields.FIELD_STORAGE_LOCATION] = location.description
+            loc_info[fields.FIELD_AIPS] = location.aip_count(
+                subquery_start_date, subquery_end_date
+            )
+            loc_info[fields.FIELD_SIZE] = location.aip_total_size(
+                subquery_start_date, subquery_end_date
+            )
+            loc_info[fields.FIELD_FILE_COUNT] = location.file_count(
+                subquery_start_date, subquery_end_date
+            )
+
+            daily_locations_data.append(loc_info)
+
+        results[day] = daily_locations_data
+
+    report[fields.FIELD_LOCATIONS_USAGE_OVER_TIME] = results
 
     return report

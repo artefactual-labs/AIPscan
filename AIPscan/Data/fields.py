@@ -37,6 +37,7 @@ FIELD_INGEST_START_DATE = "IngestStartDate"
 FIELD_INGEST_FINISH_DATE = "IngestFinishDate"
 
 FIELD_LOCATIONS = "Locations"
+FIELD_LOCATIONS_USAGE_OVER_TIME = "LocationsUsageOverTime"
 
 FIELD_NAME = "Name"
 

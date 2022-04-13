@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import pytest
 
 from AIPscan.conftest import (
@@ -7,6 +9,7 @@ from AIPscan.conftest import (
     STORAGE_LOCATION_2_UUID,
 )
 from AIPscan.Data import fields, report_data
+from AIPscan.helpers import parse_datetime_bound
 
 ORDERED_LIST = [{fields.FIELD_AIPS: 8}, {fields.FIELD_AIPS: 3}]
 UNORDERED_LIST = [{fields.FIELD_AIPS: 3}, {fields.FIELD_AIPS: 8}]
@@ -179,3 +182,114 @@ def test_storage_locations_data(
         assert second_location[fields.FIELD_AIPS] == location_1_aips_count
         assert second_location[fields.FIELD_SIZE] == location_1_total_size
         assert second_location[fields.FIELD_FILE_COUNT] == location_1_file_count
+
+
+@pytest.mark.parametrize(
+    "start_date, end_date, expected_output",
+    [
+        # Test span within month.
+        (
+            "2022-01-01",
+            "2022-01-04",
+            ["2022-01-01", "2022-01-02", "2022-01-03", "2022-01-04"],
+        ),
+        # Test span across months.
+        (
+            "2022-02-27",
+            "2022-03-02",
+            ["2022-02-27", "2022-02-28", "2022-03-01", "2022-03-02"],
+        ),
+        # Test what happens if end is before start.
+        ("2022-06-01", "2022-05-01", []),
+        # Test that datetime.min is replaced by earliest AIP created date
+        (datetime.min, "2020-01-03", ["2020-01-01", "2020-01-02", "2020-01-03"]),
+        # Test that datetime.max is replaced by datetime.now()
+        (
+            datetime.now().isoformat()[:10],
+            datetime.max,
+            [datetime.now().isoformat()[:10]],
+        ),
+    ],
+)
+def test_get_days_covered_by_date_range(
+    storage_locations, start_date, end_date, expected_output
+):
+    if start_date != datetime.min:
+        start_date = parse_datetime_bound(start_date)
+    if end_date != datetime.max:
+        end_date = parse_datetime_bound(end_date)
+    assert (
+        report_data._get_days_covered_by_date_range(1, start_date, end_date)
+        == expected_output
+    )
+
+
+@pytest.mark.parametrize(
+    "cumulative",
+    [
+        # Differential totals
+        (False),
+        # Cumulative totals
+        (True),
+    ],
+)
+def test_storage_locations_usage_over_time(storage_locations, cumulative):
+    """Test response from report_data.storage_locations_usage_over_time endpoint."""
+    report = report_data.storage_locations_usage_over_time(
+        storage_service_id=1,
+        start_date=parse_datetime_bound(DATE_BEFORE_AIP_1),
+        end_date=parse_datetime_bound(DATE_AFTER_AIP_3, upper=True),
+        cumulative=cumulative,
+    )
+
+    assert report[fields.FIELD_STORAGE_NAME] == "test storage service"
+
+    locations = report[fields.FIELD_LOCATIONS_USAGE_OVER_TIME]
+
+    # Assert that every day between Jan 1, 2020 and June 1, 2021, inclusive, is
+    # accounted for.
+    assert len(locations) == 884
+
+    first_day = locations["2020-01-01"]
+
+    # Test that we have data for both storage locations.
+    assert len(first_day) == 2
+
+    # Test correctness of that data.
+    first_location = first_day[0]
+    assert first_location[fields.FIELD_AIPS] == 1
+    assert first_location[fields.FIELD_SIZE] == 600
+    assert first_location[fields.FIELD_FILE_COUNT] == 2
+
+    second_location = first_day[1]
+    assert second_location[fields.FIELD_AIPS] == 0
+    assert second_location[fields.FIELD_SIZE] == 0
+    assert second_location[fields.FIELD_FILE_COUNT] == 0
+
+    last_day = locations["2021-06-01"]
+
+    # Test that we have data for both storage locations.
+    assert len(last_day) == 2
+
+    if cumulative:
+        # All AIPs in fixture should be accounted for.
+        first_location = last_day[0]
+        assert first_location[fields.FIELD_AIPS] == 2
+        assert first_location[fields.FIELD_SIZE] == 1600
+        assert first_location[fields.FIELD_FILE_COUNT] == 3
+
+        second_location = last_day[1]
+        assert second_location[fields.FIELD_AIPS] == 1
+        assert second_location[fields.FIELD_SIZE] == 5000
+        assert second_location[fields.FIELD_FILE_COUNT] == 2
+    else:
+        # Data should reflect no ingests this day.
+        first_location = last_day[0]
+        assert first_location[fields.FIELD_AIPS] == 0
+        assert first_location[fields.FIELD_SIZE] == 0
+        assert first_location[fields.FIELD_FILE_COUNT] == 0
+
+        second_location = last_day[1]
+        assert second_location[fields.FIELD_AIPS] == 0
+        assert second_location[fields.FIELD_SIZE] == 0
+        assert second_location[fields.FIELD_FILE_COUNT] == 0

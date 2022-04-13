@@ -2,9 +2,11 @@
 
 AIP_UUID = "aip_uuid"
 CSV = "csv"
+CUMULATIVE = "cumulative"
 FILE_FORMAT = "file_format"
 FILE_TYPE = "file_type"
 LIMIT = "limit"
+METRIC = "metric"
 ORIGINAL_FILES = "original_files"
 PUID = "puid"
 STORAGE_LOCATION_ID = "storage_location"

@@ -50,4 +50,52 @@ $(document).ready(function() {
     window.location.href = url;
   });
 
+  // Reload storage locations timeseries report on change to metrics or
+  // cumulative selectors
+  $("#metricSelector").on("change", function() {
+    var metric = $('#metricSelector').val();
+    var cumulative = $('#cumulativeSelector').val();
+    var storageServiceId = $('#storageServiceID').text();
+    var startDate = $('#startDate').text();
+    var endDate = $('#endDate').text();
+    var url = (
+      window.location.origin +
+      '/reporter/storage_locations_usage_over_time?' +
+      'amss_id=' +
+      storageServiceId +
+      '&start_date=' +
+      startDate +
+      '&end_date=' +
+      endDate +
+      '&metric=' +
+      metric +
+      '&cumulative=' +
+      cumulative
+    );
+    window.location.href = url;
+  });
+
+  $("#cumulativeSelector").on("change", function() {
+    var metric = $('#metricSelector').val();
+    var cumulative = $('#cumulativeSelector').val();
+    var storageServiceId = $('#storageServiceID').text();
+    var startDate = $('#startDate').text();
+    var endDate = $('#endDate').text();
+    var url = (
+      window.location.origin +
+      '/reporter/storage_locations_usage_over_time?' +
+      'amss_id=' +
+      storageServiceId +
+      '&start_date=' +
+      startDate +
+      '&end_date=' +
+      endDate +
+      '&metric=' +
+      metric +
+      '&cumulative=' +
+      cumulative
+    );
+    window.location.href = url;
+  });
+
 });
