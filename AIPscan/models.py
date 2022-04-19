@@ -311,6 +311,7 @@ class AIP(db.Model):
     transfer_name = db.Column(db.String(255))
     create_date = db.Column(db.DateTime())
     mets_sha256 = db.Column(db.String(64))
+    size = db.Column(db.Integer())
     storage_service_id = db.Column(
         db.Integer(), db.ForeignKey("storage_service.id"), nullable=False
     )
@@ -331,6 +332,7 @@ class AIP(db.Model):
         transfer_name,
         create_date,
         mets_sha256,
+        size,
         storage_service_id,
         storage_location_id,
         fetch_job_id,
@@ -340,6 +342,7 @@ class AIP(db.Model):
         self.transfer_name = transfer_name
         self.create_date = create_date
         self.mets_sha256 = mets_sha256
+        self.size = size
         self.storage_service_id = storage_service_id
         self.storage_location_id = storage_location_id
         self.fetch_job_id = fetch_job_id

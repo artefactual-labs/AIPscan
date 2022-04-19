@@ -59,7 +59,7 @@ class FormatVersionList(Resource):
 @api.route("/largest-files/<storage_service_id>")
 class LargestFileList(Resource):
     @api.doc(
-        "list_formats",
+        "list_largest_files",
         params={
             fields.FIELD_FILE_TYPE: {
                 "description": "Optional file type filter (original or preservation)",
@@ -90,6 +90,37 @@ class LargestFileList(Resource):
             storage_service_id=storage_service_id,
             storage_location_id=storage_location_id,
             file_type=file_type,
+            limit=limit,
+        )
+
+
+@api.route("/largest-aips/<storage_service_id>")
+class LargestAIPList(Resource):
+    @api.doc(
+        "list_largest_aips",
+        params={
+            fields.FIELD_LIMIT: {
+                "description": "Number of results to return (default is 20)",
+                "in": "query",
+                "type": "int",
+            },
+            fields.FIELD_STORAGE_LOCATION: {
+                "description": "Storage Location ID",
+                "in": "query",
+                "type": "int",
+            },
+        },
+    )
+    def get(self, storage_service_id, limit=20):
+        """List largest AIPs"""
+        storage_location_id = request.args.get(fields.FIELD_STORAGE_LOCATION)
+        try:
+            limit = int(request.args.get(fields.FIELD_LIMIT, 20))
+        except ValueError:
+            pass
+        return report_data.largest_aips(
+            storage_service_id=storage_service_id,
+            storage_location_id=storage_location_id,
             limit=limit,
         )
 

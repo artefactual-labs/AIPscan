@@ -154,10 +154,11 @@ def create_aip_object(
     transfer_name,
     create_date,
     mets_sha256,
-    storage_service_id,
-    storage_location_id,
-    fetch_job_id,
-    origin_pipeline_id,
+    size=0,
+    storage_service_id=1,
+    storage_location_id=1,
+    fetch_job_id=1,
+    origin_pipeline_id=1,
 ):
     """Create an AIP object and save it to the database."""
     aip = AIP(
@@ -165,6 +166,7 @@ def create_aip_object(
         transfer_name=transfer_name,
         create_date=_tz_neutral_date(create_date),
         mets_sha256=mets_sha256,
+        size=size,
         storage_service_id=storage_service_id,
         storage_location_id=storage_location_id,
         fetch_job_id=fetch_job_id,

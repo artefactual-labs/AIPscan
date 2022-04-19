@@ -47,6 +47,7 @@ def write_packages_json(count, packages, packages_directory):
 
 def start_mets_task(
     package_uuid,
+    aip_size,
     relative_path_to_mets,
     current_location,
     origin_pipeline,
@@ -68,6 +69,7 @@ def start_mets_task(
     # Call worker to download and parse METS File.
     get_mets_task = get_mets.delay(
         package_uuid,
+        aip_size,
         relative_path_to_mets,
         api_url,
         timestamp_str,
@@ -116,6 +118,7 @@ def parse_packages_and_load_mets(
             continue
         start_mets_task(
             package.uuid,
+            package.size,
             package.get_relative_path(),
             package.current_location,
             package.origin_pipeline,
@@ -272,6 +275,7 @@ def package_lists_request(self, apiUrl, timestamp, packages_directory):
 @celery.task()
 def get_mets(
     package_uuid,
+    aip_size,
     relative_path_to_mets,
     api_url,
     timestamp_str,
@@ -339,6 +343,7 @@ def get_mets(
         transfer_name=original_name,
         create_date=mets.createdate,
         mets_sha256=mets_hash,
+        size=aip_size,
         storage_service_id=storage_service_id,
         storage_location_id=storage_location_id,
         fetch_job_id=fetch_job_id,

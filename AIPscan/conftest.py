@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """This module defines shared AIPscan pytest fixtures."""
+import uuid
 from datetime import datetime
 
 import pytest
@@ -414,6 +415,83 @@ def aip_contents(scope="package"):
         _ = test_helpers.create_test_file(puid=PUID_3, aip_id=aip2.id)
         _ = test_helpers.create_test_file(puid=PUID_3, aip_id=aip2.id)
         _ = test_helpers.create_test_file(puid=PUID_3, aip_id=aip2.id)
+
+        yield app
+
+        db.drop_all()
+
+
+@pytest.fixture
+def largest_aips(scope="package"):
+    """Fixture with pre-populated data.
+
+    This fixture is used to create expected state which is then used to
+    test the Data.report_data.largest_aips endpoint.
+    """
+    app = create_app("test")
+    with app.app_context():
+        db.create_all()
+
+        storage_service = test_helpers.create_test_storage_service()
+        storage_location_1 = test_helpers.create_test_storage_location(
+            storage_service_id=storage_service.id, description="storage location 1"
+        )
+        storage_location_2 = test_helpers.create_test_storage_location(
+            storage_service_id=storage_service.id,
+            description="storage location 2",
+            current_location="/api/v2/location/test-location-2/",
+        )
+        _ = test_helpers.create_test_pipeline(storage_service_id=storage_service.id)
+        fetch_job = test_helpers.create_test_fetch_job(
+            storage_service_id=storage_service.id
+        )
+
+        # Create two AIPs in first storage location.
+        test_helpers.create_test_aip(
+            uuid=AIP_1_UUID,
+            create_date=datetime.strptime(AIP_1_CREATION_DATE, AIP_DATE_FORMAT),
+            size=10000,
+            storage_service_id=storage_service.id,
+            storage_location_id=storage_location_1.id,
+            fetch_job_id=fetch_job.id,
+        )
+
+        test_helpers.create_test_aip(
+            uuid=AIP_2_UUID,
+            create_date=datetime.strptime(AIP_2_CREATION_DATE, AIP_DATE_FORMAT),
+            size=250,
+            storage_service_id=storage_service.id,
+            storage_location_id=storage_location_1.id,
+            fetch_job_id=fetch_job.id,
+        )
+
+        # Create three AIPS in second storage location.
+        test_helpers.create_test_aip(
+            uuid=AIP_3_UUID,
+            create_date=datetime.strptime(AIP_3_CREATION_DATE, AIP_DATE_FORMAT),
+            size=500,
+            storage_service_id=storage_service.id,
+            storage_location_id=storage_location_2.id,
+            fetch_job_id=fetch_job.id,
+        )
+
+        test_helpers.create_test_aip(
+            uuid=str(uuid.uuid4()),
+            create_date=datetime.strptime(AIP_3_CREATION_DATE, AIP_DATE_FORMAT),
+            size=25,
+            storage_service_id=storage_service.id,
+            storage_location_id=storage_location_2.id,
+            fetch_job_id=fetch_job.id,
+        )
+
+        test_helpers.create_test_aip(
+            uuid=str(uuid.uuid4()),
+            create_date=datetime.strptime(AIP_3_CREATION_DATE, AIP_DATE_FORMAT),
+            size=750,
+            storage_service_id=storage_service.id,
+            storage_location_id=storage_location_2.id,
+            fetch_job_id=fetch_job.id,
+        )
 
         yield app
 

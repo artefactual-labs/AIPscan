@@ -84,6 +84,7 @@ def create_test_aip(**kwargs):
         transfer_name=kwargs.get("transfer_name", "Test AIP"),
         create_date=kwargs.get("create_date", datetime.now()),
         mets_sha256=kwargs.get("mets_sha256", TEST_SHA_256),
+        size=kwargs.get("size", 100),
         storage_service_id=kwargs.get("storage_service_id", 1),
         storage_location_id=kwargs.get("storage_location_id", 1),
         fetch_job_id=kwargs.get("fetch_job_id", 1),

@@ -80,6 +80,7 @@ def test_get_mets_task(app_instance, tmpdir, mocker, fixture_path, package_uuid)
     )
     get_mets(
         package_uuid=package_uuid,
+        aip_size=1000,
         relative_path_to_mets="test",
         api_url=api_url,
         timestamp_str=datetime.now()
@@ -103,6 +104,7 @@ def test_get_mets_task(app_instance, tmpdir, mocker, fixture_path, package_uuid)
     )
     get_mets(
         package_uuid=package_uuid,
+        aip_size=1000,
         relative_path_to_mets="test",
         api_url=api_url,
         timestamp_str=datetime.now()
@@ -128,6 +130,7 @@ def test_get_mets_task(app_instance, tmpdir, mocker, fixture_path, package_uuid)
     )
     get_mets(
         package_uuid=package_uuid,
+        aip_size=1000,
         relative_path_to_mets="test",
         api_url=api_url,
         timestamp_str=datetime.now()

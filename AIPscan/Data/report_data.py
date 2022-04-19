@@ -281,6 +281,51 @@ def largest_files(
     return report
 
 
+def _largest_aips_query(storage_service_id, storage_location_id, limit):
+    """Fetch information from database for largest AIPs query."""
+    aips = (
+        # TODO: Make this query actually work!
+        AIP.query.join(StorageLocation)
+        .join(StorageService)
+        .filter(StorageService.id == storage_service_id)
+    )
+    if storage_location_id:
+        aips = aips.filter(StorageLocation.id == storage_location_id)
+    return aips.order_by(AIP.size.desc()).limit(limit)
+
+
+def largest_aips(storage_service_id, storage_location_id=None, limit=20):
+    """Return a summary of the largest AIPs in a given Storage Service
+
+    :param storage_service_id: Storage Service ID
+    :param storage_location_id: Storage Location ID (int)
+    :param limit: Upper limit of number of results to return
+
+    :returns: "report" dict containing following fields:
+        report["StorageName"]: Name of Storage Service queried
+        report["AIPs"]: List of result AIPs ordered desc by size
+    """
+    report = {}
+    report[fields.FIELD_AIPS] = []
+    report[fields.FIELD_STORAGE_NAME] = get_storage_service_name(storage_service_id)
+    report[fields.FIELD_STORAGE_LOCATION] = get_storage_location_description(
+        storage_location_id
+    )
+
+    aips = _largest_aips_query(storage_service_id, storage_location_id, limit)
+
+    for aip in aips:
+        aip_info = {}
+
+        aip_info[fields.FIELD_UUID] = aip.uuid
+        aip_info[fields.FIELD_NAME] = aip.transfer_name
+        aip_info[fields.FIELD_AIP_SIZE] = aip.size
+
+        report[fields.FIELD_AIPS].append(aip_info)
+
+    return report
+
+
 def _query_aips_by_file_format_or_puid(
     storage_service_id,
     storage_location_id,

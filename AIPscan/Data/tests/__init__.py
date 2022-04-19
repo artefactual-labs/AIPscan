@@ -67,6 +67,7 @@ MOCK_AIP = AIP(
     transfer_name=MOCK_AIP_NAME,
     create_date=datetime.datetime.now(),
     mets_sha256="test",
+    size=0,
     storage_service_id=MOCK_STORAGE_SERVICE_ID,
     storage_location_id=MOCK_STORAGE_LOCATION_ID,
     fetch_job_id=1,

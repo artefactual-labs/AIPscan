@@ -73,6 +73,7 @@ def process_package_object(package_obj):
     package.current_location = package_obj.get(CURRENT_LOCATION)
     package.current_path = package_obj.get(CURRENT_PATH)
     package.origin_pipeline = package_obj.get(ORIGIN_PIPELINE)
+    package.size = package_obj.get("size")
 
     return package
 
