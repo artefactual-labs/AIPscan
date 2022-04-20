@@ -317,9 +317,10 @@ def largest_aips(storage_service_id, storage_location_id=None, limit=20):
     for aip in aips:
         aip_info = {}
 
-        aip_info[fields.FIELD_UUID] = aip.uuid
         aip_info[fields.FIELD_NAME] = aip.transfer_name
-        aip_info[fields.FIELD_AIP_SIZE] = aip.size
+        aip_info[fields.FIELD_UUID] = aip.uuid
+        aip_info[fields.FIELD_SIZE] = aip.size
+        aip_info[fields.FIELD_FILE_COUNT] = aip.original_file_count
 
         report[fields.FIELD_AIPS].append(aip_info)
 

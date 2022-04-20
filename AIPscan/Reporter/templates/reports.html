@@ -81,11 +81,18 @@
       </tr>
 
       <tr>
+          <td><strong>Largest AIPs</strong></td>
+          <td><span class="text-muted">Top twenty largest AIPs in the Storage Service.
+            <br>Filter by storage location.</span></td>
+          <td><a href="#"><button type="button" id="largestAIPs" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a></td>
+      </tr>
+
+      <tr>
           <td><strong>Largest files</strong></td>
           <td><span class="text-muted">Top twenty largest files in the Storage Service.
             <br>Filter by storage location.
             <br>Filter by originals or preservation copies (in report).</span></td>
-          <td><a href="#"><button type="button" id="report9a" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a></td>
+          <td><a href="#"><button type="button" id="largestFiles" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a></td>
       </tr>
 
       <tr>
@@ -394,7 +401,18 @@ $(document).ready(function() {
     );
     window.open(url);
   });
-  $("#report9a").on("click", function() {
+  $("#largestAIPs").on("click", function() {
+    var url = (
+      window.location.origin +
+      '/reporter/largest_aips/' +
+      '?amss_id=' +
+      storageServiceId +
+      '&storage_location=' +
+      storageLocationId
+    );
+    window.open(url);
+  });
+  $("#largestFiles").on("click", function() {
     var url = (
       window.location.origin +
       '/reporter/largest_files/' +

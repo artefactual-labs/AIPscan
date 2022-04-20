@@ -28,5 +28,5 @@ def test_largest_aips(
     assert report[fields.FIELD_STORAGE_LOCATION] == storage_location_description
 
     assert len(report_aips) == aip_count
-    assert report_aips[0][fields.FIELD_AIP_SIZE] == largest_aip_size
-    assert report_aips[1][fields.FIELD_AIP_SIZE] == second_largest_aip_size
+    assert report_aips[0][fields.FIELD_SIZE] == largest_aip_size
+    assert report_aips[1][fields.FIELD_SIZE] == second_largest_aip_size
