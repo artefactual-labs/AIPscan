@@ -1,10 +1,11 @@
 from flask import render_template, request
 
 from AIPscan.Data import fields, report_data
-from AIPscan.helpers import parse_bool
+from AIPscan.helpers import parse_bool, parse_datetime_bound
 from AIPscan.Reporter import (
     download_csv,
     format_size_for_csv,
+    get_display_end_date,
     reporter,
     request_params,
     translate_headers,
@@ -22,6 +23,10 @@ HEADERS = [
 def largest_aips():
     """Return largest files."""
     storage_service_id = request.args.get(request_params.STORAGE_SERVICE_ID)
+    start_date = parse_datetime_bound(request.args.get(request_params.START_DATE))
+    end_date = parse_datetime_bound(
+        request.args.get(request_params.END_DATE), upper=True
+    )
     storage_location_id = request.args.get(request_params.STORAGE_LOCATION_ID)
     limit = 20
     try:
@@ -34,6 +39,8 @@ def largest_aips():
 
     aip_data = report_data.largest_aips(
         storage_service_id=storage_service_id,
+        start_date=start_date,
+        end_date=end_date,
         storage_location_id=storage_location_id,
         limit=limit,
     )
@@ -53,4 +60,6 @@ def largest_aips():
         columns=headers,
         aips=aip_data[fields.FIELD_AIPS],
         limit=limit,
+        start_date=start_date,
+        end_date=get_display_end_date(end_date),
     )

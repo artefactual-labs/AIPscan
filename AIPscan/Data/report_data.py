@@ -281,23 +281,32 @@ def largest_files(
     return report
 
 
-def _largest_aips_query(storage_service_id, storage_location_id, limit):
+def _largest_aips_query(
+    storage_service_id, start_date, end_date, storage_location_id, limit
+):
     """Fetch information from database for largest AIPs query."""
     aips = (
-        # TODO: Make this query actually work!
         AIP.query.join(StorageLocation)
         .join(StorageService)
         .filter(StorageService.id == storage_service_id)
+        .filter(AIP.create_date >= start_date)
+        .filter(AIP.create_date < end_date)
     )
     if storage_location_id:
         aips = aips.filter(StorageLocation.id == storage_location_id)
     return aips.order_by(AIP.size.desc()).limit(limit)
 
 
-def largest_aips(storage_service_id, storage_location_id=None, limit=20):
+def largest_aips(
+    storage_service_id, start_date, end_date, storage_location_id=None, limit=20
+):
     """Return a summary of the largest AIPs in a given Storage Service
 
     :param storage_service_id: Storage Service ID
+    :param start_date: Inclusive AIP creation start date
+        (datetime.datetime object)
+    :param end_date: Inclusive AIP creation end date
+        (datetime.datetime object)
     :param storage_location_id: Storage Location ID (int)
     :param limit: Upper limit of number of results to return
 
@@ -312,7 +321,9 @@ def largest_aips(storage_service_id, storage_location_id=None, limit=20):
         storage_location_id
     )
 
-    aips = _largest_aips_query(storage_service_id, storage_location_id, limit)
+    aips = _largest_aips_query(
+        storage_service_id, start_date, end_date, storage_location_id, limit
+    )
 
     for aip in aips:
         aip_info = {}
