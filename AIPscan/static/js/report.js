@@ -10,12 +10,18 @@ $(document).ready(function() {
     var fileType = $('#fileTypeSelector').val();
     var storageServiceId = $('#storageServiceID').text();
     var storageLocationId = $('#storageLocationID').text();
+    var startDate = $('#startDate').text();
+    var endDate = $('#endDate').text();
     var limit = $('#limit').text();
     var url = (
       window.location.origin +
       '/reporter/largest_files?' +
       'amss_id=' +
       storageServiceId +
+      '&start_date=' +
+      startDate +
+      '&end_date=' +
+      endDate +
       '&storage_location=' +
       storageLocationId +
       '&file_type=' +

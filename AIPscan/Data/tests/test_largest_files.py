@@ -11,10 +11,9 @@ from AIPscan.Data.tests import (
     MOCK_AIP_UUID,
     MOCK_STORAGE_SERVICE,
     MOCK_STORAGE_SERVICE_ID,
-    MOCK_STORAGE_SERVICE_NAME,
 )
+from AIPscan.helpers import parse_datetime_bound
 from AIPscan.models import File, FileType
-from AIPscan.test_helpers import create_test_storage_location
 
 TEST_FILES = [
     File(
@@ -60,31 +59,41 @@ TEST_FILES = [
 
 
 @pytest.mark.parametrize(
-    "file_data, file_count", [([], 0), (TEST_FILES, 3), (TEST_FILES[:2], 2)]
+    "storage_location_id, storage_location_description, start_date, end_date, file_count, largest_file_size, second_largest_file_size",
+    [
+        # Test all AIPs.
+        (None, None, "2020-01-01", "2022-12-31", 7, 2500, 2500),
+        # Test filtering by date.
+        (None, None, "2020-01-01", "2020-06-01", 4, 1000, 300),
+        # Test filtering by storage location.
+        (1, "AIP Store Location 1", "2020-01-01", "2022-12-31", 4, 1000, 300),
+        (2, "AIP Store Location 2", "2020-01-01", "2022-12-31", 3, 2500, 2500),
+    ],
 )
-def test_largest_files(app_instance, mocker, file_data, file_count):
-    """Test that return value conforms to expected structure.
-    """
-    query = mocker.patch("AIPscan.Data.report_data._largest_files_query")
-    query.return_value = file_data
-
-    get_ss = mocker.patch("AIPscan.Data._get_storage_service")
-    get_ss.return_value = MOCK_STORAGE_SERVICE
-
-    test_location = create_test_storage_location()
-    get_location = mocker.patch("AIPscan.Data._get_storage_location")
-    get_location.return_value = test_location
-
-    get_aip = mocker.patch("sqlalchemy.orm.query.Query.get")
-    get_aip.return_value = MOCK_AIP
-
+def test_largest_files(
+    storage_locations,
+    storage_location_id,
+    storage_location_description,
+    start_date,
+    end_date,
+    file_count,
+    largest_file_size,
+    second_largest_file_size,
+):
+    """Test that files and order returned by report_data.largest_files match expectations."""
     report = report_data.largest_files(
-        storage_service_id=MOCK_STORAGE_SERVICE_ID, storage_location_id=test_location.id
+        storage_service_id=1,
+        start_date=parse_datetime_bound(start_date),
+        end_date=parse_datetime_bound(end_date, upper=True),
+        storage_location_id=storage_location_id,
     )
     report_files = report[fields.FIELD_FILES]
-    assert report[fields.FIELD_STORAGE_NAME] == MOCK_STORAGE_SERVICE_NAME
-    assert report[fields.FIELD_STORAGE_LOCATION] == test_location.description
+    assert report[fields.FIELD_STORAGE_NAME] == "test storage service"
+    assert report[fields.FIELD_STORAGE_LOCATION] == storage_location_description
+
     assert len(report_files) == file_count
+    assert report_files[0][fields.FIELD_SIZE] == largest_file_size
+    assert report_files[1][fields.FIELD_SIZE] == second_largest_file_size
 
 
 @pytest.mark.parametrize(
@@ -98,8 +107,7 @@ def test_largest_files(app_instance, mocker, file_data, file_count):
 def test_largest_files_elements(
     app_instance, mocker, test_file, has_format_version, has_puid
 ):
-    """Test that returned file data matches expected values.
-    """
+    """Test that returned file data matches expected values."""
     mock_query = mocker.patch("AIPscan.Data.report_data._largest_files_query")
     mock_query.return_value = [test_file]
 
@@ -109,7 +117,11 @@ def test_largest_files_elements(
     mock_get_aip = mocker.patch("sqlalchemy.orm.query.Query.get")
     mock_get_aip.return_value = MOCK_AIP
 
-    report = report_data.largest_files(MOCK_STORAGE_SERVICE_ID)
+    report = report_data.largest_files(
+        MOCK_STORAGE_SERVICE_ID,
+        start_date=parse_datetime_bound("2000-01-01"),
+        end_date=parse_datetime_bound("2022-12-31", upper=True),
+    )
     report_file = report[fields.FIELD_FILES][0]
 
     # Required elements

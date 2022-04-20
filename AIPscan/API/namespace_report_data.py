@@ -108,6 +108,16 @@ class LargestFileList(Resource):
     @api.doc(
         "list_largest_files",
         params={
+            fields.FIELD_START_DATE: {
+                "description": "AIP creation start date (inclusive, YYYY-MM-DD)",
+                "in": "query",
+                "type": "str",
+            },
+            fields.FIELD_END_DATE: {
+                "description": "AIP creation end date (inclusive, YYYY-MM-DD)",
+                "in": "query",
+                "type": "str",
+            },
             fields.FIELD_FILE_TYPE: {
                 "description": "Optional file type filter (original or preservation)",
                 "in": "query",
@@ -127,6 +137,10 @@ class LargestFileList(Resource):
     )
     def get(self, storage_service_id, file_type=None, limit=20):
         """List largest files"""
+        start_date = parse_datetime_bound(request.args.get(fields.FIELD_START_DATE))
+        end_date = parse_datetime_bound(
+            request.args.get(fields.FIELD_END_DATE), upper=True
+        )
         file_type = request.args.get(fields.FIELD_FILE_TYPE)
         storage_location_id = request.args.get(fields.FIELD_STORAGE_LOCATION)
         try:
@@ -135,6 +149,8 @@ class LargestFileList(Resource):
             pass
         return report_data.largest_files(
             storage_service_id=storage_service_id,
+            start_date=start_date,
+            end_date=end_date,
             storage_location_id=storage_location_id,
             file_type=file_type,
             limit=limit,

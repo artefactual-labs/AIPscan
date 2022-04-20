@@ -90,7 +90,7 @@
       <tr>
           <td><strong>Largest files</strong></td>
           <td><span class="text-muted">Top twenty largest files in the Storage Service.
-            <br>Filter by storage location.
+            <br>Filter by date range and storage location.
             <br>Filter by originals or preservation copies (in report).</span></td>
           <td><a href="#"><button type="button" id="largestFiles" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a></td>
       </tr>
@@ -423,15 +423,25 @@ $(document).ready(function() {
     }
   });
   $("#largestFiles").on("click", function() {
-    var url = (
-      window.location.origin +
-      '/reporter/largest_files/' +
-      '?amss_id=' +
-      storageServiceId +
-      '&storage_location=' +
-      storageLocationId
-    );
-    window.open(url);
+    var startdate = $('#startdate').val();
+    var enddate = $('#enddate').val();
+    if (enddate < startdate) {
+      alert(DATE_ALERT_START);
+    } else {
+      var url = (
+        window.location.origin +
+        '/reporter/largest_files/' +
+        '?amss_id=' +
+        storageServiceId +
+        '&start_date=' +
+        startdate +
+        '&end_date=' +
+        enddate +
+        '&storage_location=' +
+        storageLocationId
+      );
+      window.open(url);
+    }
   });
   $("#aipsByOriginalFormat").on("click", function() {
     var fileFormat = $('#originalFormatSelect').val();

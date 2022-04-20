@@ -191,40 +191,44 @@ def format_versions_count(
     return report
 
 
-def _largest_files_query(storage_service_id, storage_location_id, file_type, limit):
+def _largest_files_query(
+    storage_service_id, start_date, end_date, storage_location_id, file_type, limit
+):
     """Fetch file information from database for largest files query
 
     This is separated into its own helper function to aid in testing.
     """
+    files = (
+        File.query.join(AIP)
+        .join(StorageLocation)
+        .join(StorageService)
+        .filter(StorageService.id == storage_service_id)
+        .filter(AIP.create_date >= start_date)
+        .filter(AIP.create_date < end_date)
+        .order_by(File.size.desc())
+    )
     if file_type is not None and file_type in VALID_FILE_TYPES:
-        files = (
-            File.query.join(AIP)
-            .join(StorageLocation)
-            .join(StorageService)
-            .filter(StorageService.id == storage_service_id)
-            .filter(File.file_type == file_type)
-            .order_by(File.size.desc())
-        )
-    else:
-        files = (
-            File.query.join(AIP)
-            .join(StorageLocation)
-            .join(StorageService)
-            .filter(StorageService.id == storage_service_id)
-            .order_by(File.size.desc())
-        )
+        files = files.filter(File.file_type == file_type)
     if storage_location_id:
         files = files.filter(StorageLocation.id == storage_location_id)
-    files = files.limit(limit)
-    return files
+    return files.limit(limit)
 
 
 def largest_files(
-    storage_service_id, storage_location_id=None, file_type=None, limit=20
+    storage_service_id,
+    start_date,
+    end_date,
+    storage_location_id=None,
+    file_type=None,
+    limit=20,
 ):
     """Return a summary of the largest files in a given Storage Service
 
     :param storage_service_id: Storage Service ID
+    :param start_date: Inclusive AIP creation start date
+        (datetime.datetime object)
+    :param end_date: Inclusive AIP creation end date
+        (datetime.datetime object)
     :param storage_location_id: Storage Location ID (int)
     :param file_type: Optional filter for type of file to return
         (acceptable values are "original" or "preservation")
@@ -242,7 +246,7 @@ def largest_files(
     )
 
     files = _largest_files_query(
-        storage_service_id, storage_location_id, file_type, limit
+        storage_service_id, start_date, end_date, storage_location_id, file_type, limit
     )
 
     for file_ in files:

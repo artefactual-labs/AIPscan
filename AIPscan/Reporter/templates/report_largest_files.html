@@ -21,10 +21,17 @@
   {% else %}
     <strong>File type:</strong> All files
   {% endif %}
+  <br>
+  <strong>Start date:</strong> {{ start_date.strftime('%Y-%m-%d') }}
+  <br>
+  <strong>End date:</strong> {{ end_date.strftime('%Y-%m-%d') }}
+  <br>
 
   <!-- Hidden elements we want available from JS for URL generation -->
   <span id="storageServiceID" style="display:none;">{{ storage_service_id }}</span>
   <span id="storageLocationID" style="display:none;">{{ storage_location_id }}</span>
+  <span id="startDate" style="display:none;">{{ start_date.strftime('%Y-%m-%d') }}</span>
+  <span id="endDate" style="display:none;">{{ end_date.strftime('%Y-%m-%d') }}</span>
   <span id="limit" style="display:none;">{{ limit }}</span>
 </div>
 
