@@ -93,7 +93,7 @@ class LargestAIPList(Resource):
         try:
             limit = int(request.args.get(fields.FIELD_LIMIT, 20))
         except ValueError:
-            pass
+            limit = 20
         return report_data.largest_aips(
             storage_service_id=storage_service_id,
             start_date=start_date,
@@ -146,7 +146,7 @@ class LargestFileList(Resource):
         try:
             limit = int(request.args.get(fields.FIELD_LIMIT, 20))
         except ValueError:
-            pass
+            limit = 20
         return report_data.largest_files(
             storage_service_id=storage_service_id,
             start_date=start_date,
