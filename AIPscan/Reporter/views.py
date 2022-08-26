@@ -163,6 +163,7 @@ def view_file(file_id):
     return render_template(
         "file.html",
         file_=file_,
+        premisxml=file_.premis_object.decode("utf-8").split("\\n"),
         aip=aip,
         events=events,
         preservation_file=preservation_file,

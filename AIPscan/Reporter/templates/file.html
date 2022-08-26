@@ -66,6 +66,17 @@
       {{ file_.checksum_value }}
     </td>
   </tr>
+  {% if file_.premis_object %}
+  <tr>
+    <td width=20%>
+      <strong>PREMIS Object XML</strong>
+    </td>
+    <td>
+      <pre>{% for line in premisxml: %}{{ line }}
+{% endfor %}</pre>
+    </td>
+  </tr>
+  {% endif %}
   {% if preservation_file %}
     <tr>
       <td width=20%>

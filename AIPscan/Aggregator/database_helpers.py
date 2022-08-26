@@ -5,6 +5,7 @@ database.
 """
 
 from celery.utils.log import get_task_logger
+from lxml import etree
 
 from AIPscan import db
 from AIPscan.Aggregator import tasks
@@ -57,8 +58,7 @@ def _extract_event_detail(premis_event, file_id):
 
 
 def _create_agent_type_id(identifier_type, identifier_value):
-    """Create a key-pair string for the linking_type_value in the db.
-    """
+    """Create a key-pair string for the linking_type_value in the db."""
     return "{}-{}".format(identifier_type, identifier_value)
 
 
@@ -306,6 +306,19 @@ def _add_normalization_date(file_id):
         db.session.commit()
 
 
+def _add_premis_object_xml(fs_entry, file_id):
+    """Add string representation of PREMIS Object to File object."""
+    file_ = File.query.get(file_id)
+
+    if hasattr(fs_entry, "amdsecs"):
+        for ss in fs_entry.amdsecs[0].subsections:
+            if ss.contents.mdtype == fs_entry.PREMIS_OBJECT:
+                file_.premis_object = etree.tostring(
+                    ss.contents.serialize(), pretty_print=True
+                )
+        db.session.commit()
+
+
 def _get_original_file(related_uuid):
     """Get original file related to preservation derivative."""
     return File.query.filter_by(uuid=related_uuid, file_type=FileType.original).first()
@@ -351,6 +364,8 @@ def create_file_object(file_type, fs_entry, aip_id):
 
     if file_type == FileType.preservation:
         _add_normalization_date(new_file.id)
+
+    _add_premis_object_xml(fs_entry, new_file.id)
 
 
 def collect_mets_agents(mets):
