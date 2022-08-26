@@ -384,6 +384,7 @@ class File(db.Model):
     format_version = db.Column(db.String(255))
     checksum_type = db.Column(db.String(255))
     checksum_value = db.Column(db.String(255), index=True)
+    characteristics_extension = db.Column(db.Text())
 
     original_file_id = db.Column(db.Integer(), db.ForeignKey("file.id"))
     original_file = db.relationship(
@@ -405,6 +406,7 @@ class File(db.Model):
         checksum_value,
         aip_id,
         file_type=FileType.original,
+        characteristics_extension=None,
         format_version=None,
         puid=None,
         original_file_id=None,
@@ -420,6 +422,7 @@ class File(db.Model):
         self.format_version = format_version
         self.checksum_type = checksum_type
         self.checksum_value = checksum_value
+        self.characteristics_extension = characteristics_extension
         self.original_file_id = original_file_id
         self.aip_id = aip_id
 
