@@ -306,14 +306,12 @@ def _add_normalization_date(file_id):
         db.session.commit()
 
 
-def _add_characteristics_extension(fs_entry, file_id):
-    """Add string representation of PREMIS Object characteristics_extension to File object."""
+def _add_premis_object_with_characteristics_extension(fs_entry, file_id):
+    """Add string representation of PREMIS Object to File object."""
     file_ = File.query.get(file_id)
     for premis_object in fs_entry.get_premis_objects():
         if premis_object.characteristics_extension:
-            file_.characteristics_extension = str(
-                premis_object.characteristics_extension
-            )
+            file_.premis_object = premis_object.tostring()
             db.session.commit()
             return
 
@@ -364,7 +362,7 @@ def create_file_object(file_type, fs_entry, aip_id):
     if file_type == FileType.preservation:
         _add_normalization_date(new_file.id)
 
-    _add_characteristics_extension(fs_entry, new_file.id)
+    _add_premis_object_with_characteristics_extension(fs_entry, new_file.id)
 
 
 def collect_mets_agents(mets):

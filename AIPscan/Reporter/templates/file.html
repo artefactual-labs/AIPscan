@@ -66,14 +66,16 @@
       {{ file_.checksum_value }}
     </td>
   </tr>
+  {% if file_.premis_object %}
   <tr>
     <td width=20%>
-      <strong>Characterization tool output</strong>
+      <strong>PREMIS Object XML</strong>
     </td>
     <td>
-      {{ file_.characteristics_extension }}
+      {{ file_.premis_object }}
     </td>
   </tr>
+  {% endif %}
   {% if preservation_file %}
     <tr>
       <td width=20%>
