@@ -287,6 +287,9 @@ def get_mets_task_status(coordinatorid):
     downloadStart = _format_date(start)
     obj.download_end = downloadEnd
     db.session.commit()
+
+    tasks.fetch_job_file_cleanup.delay(fetchJobId)
+
     response = {"state": "COMPLETED"}
     flash("Fetch Job {} completed".format(downloadStart))
     return jsonify(response)
