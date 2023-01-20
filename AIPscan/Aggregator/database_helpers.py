@@ -314,7 +314,7 @@ def _add_premis_object_xml(fs_entry, file_id):
         for ss in fs_entry.amdsecs[0].subsections:
             if ss.contents.mdtype == fs_entry.PREMIS_OBJECT:
                 file_.premis_object = etree.tostring(
-                    ss.contents.serialize(), pretty_print=True
+                    ss.contents.serialize(), encoding="unicode", pretty_print=True
                 )
         db.session.commit()
 

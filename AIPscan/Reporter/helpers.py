@@ -128,3 +128,20 @@ def get_display_end_date(end_date):
     :return: End date minus one day (datetime.datetime object)
     """
     return end_date - timedelta(days=1)
+
+
+def get_premis_xml_lines(file_object):
+    """Get list of lines of XML from a file's PREMIS object XML field.
+
+    Get list of lines from a file object's PREMIS object XML property, if
+    not empty.
+
+    :param file_object: AIPscan.models.File object
+
+    :return: List of XML lines (list of str)
+    """
+    premis_xml_lines = []
+    if file_object.premis_object is not None:
+        premis_xml_lines = file_object.premis_object.split("\n")
+
+    return premis_xml_lines

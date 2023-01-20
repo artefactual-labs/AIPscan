@@ -1,4 +1,6 @@
 import csv
+import datetime
+import uuid
 
 import pytest
 
@@ -9,6 +11,7 @@ from AIPscan.Data.tests import (
 )
 from AIPscan.Data.tests import MOCK_STORAGE_SERVICE as STORAGE_SERVICE
 from AIPscan.Data.tests import MOCK_STORAGE_SERVICE_ID as STORAGE_SERVICE_ID
+from AIPscan.models import File, FileType
 from AIPscan.Reporter import helpers
 from AIPscan.Reporter.report_aips_by_format import HEADERS
 
@@ -103,3 +106,26 @@ def test_download_csv(app_instance, mocker):
 def test_format_size_for_csv(data, expected_output):
     """Test formatting size in report endpoint data."""
     assert helpers.format_size_for_csv(data) == expected_output
+
+
+def test_get_premis_xml_lines():
+    premis_xml = "First line\nSecond line"
+
+    file_ = File(
+        uuid=uuid.uuid4(),
+        name="test.txt",
+        size=12345,
+        aip_id=2,
+        file_type=FileType.original,
+        file_format="Plain Text File",
+        puid="x-fmt/111",
+        filepath="/path/to/file.txt",
+        date_created=datetime.datetime.now(),
+        checksum_type="md5",
+        checksum_value="anotherfakemd5",
+        premis_object=premis_xml,
+    )
+
+    lines = helpers.get_premis_xml_lines(file_)
+
+    assert len(lines) == 2

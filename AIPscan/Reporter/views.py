@@ -37,6 +37,7 @@ from AIPscan.Reporter import (  # noqa: F401
     request_params,
     sort_puids,
 )
+from AIPscan.Reporter.helpers import get_premis_xml_lines
 
 
 def _get_storage_service(storage_service_id):
@@ -163,7 +164,7 @@ def view_file(file_id):
     return render_template(
         "file.html",
         file_=file_,
-        premisxml=file_.premis_object.decode("utf-8").split("\\n"),
+        premisxml=get_premis_xml_lines(file_),
         aip=aip,
         events=events,
         preservation_file=preservation_file,
