@@ -1,6 +1,8 @@
 import json
+import logging
 import os
 from datetime import datetime
+from io import StringIO
 
 import pytest
 
@@ -74,6 +76,14 @@ def test_get_mets_task(app_instance, tmpdir, mocker, fixture_path, package_uuid)
 
     api_url = {"baseUrl": "http://test-url", "userName": "test", "apiKey": "test"}
 
+    # Set up custom logger and add handler to capture output
+    customlogger = logging.getLogger(__name__)
+    customlogger.setLevel(logging.DEBUG)
+
+    log_string = StringIO()
+    handler = logging.StreamHandler(log_string)
+    customlogger.addHandler(handler)
+
     # Create AIP and verify record.
     fetch_job1 = test_helpers.create_test_fetch_job(
         storage_service_id=storage_service.id
@@ -91,6 +101,7 @@ def test_get_mets_task(app_instance, tmpdir, mocker, fixture_path, package_uuid)
         storage_location_id=storage_location.id,
         fetch_job_id=fetch_job1.id,
         origin_pipeline_id=pipeline.id,
+        customlogger=customlogger,
     )
     aips = _get_aips(storage_service.id)
     assert len(aips) == 1
@@ -155,6 +166,12 @@ def test_get_mets_task(app_instance, tmpdir, mocker, fixture_path, package_uuid)
     ]
     delete_mets_file.assert_has_calls(delete_calls, any_order=True)
     delete_mets_file.call_count == 3
+
+    # Test that custom logger was used
+    assert (
+        log_string.getvalue()
+        == f"Processing METS file {os.path.basename(fixture_path)}\n"
+    )
 
 
 @pytest.mark.parametrize(
