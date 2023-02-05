@@ -4,6 +4,8 @@
 database.
 """
 
+from datetime import datetime
+
 from celery.utils.log import get_task_logger
 from lxml import etree
 
@@ -18,6 +20,7 @@ from AIPscan.models import (
     Agent,
     Event,
     EventAgent,
+    FetchJob,
     File,
     FileType,
     Pipeline,
@@ -402,3 +405,29 @@ def process_aip_data(aip, mets):
     preservation_files = [file_ for file_ in all_files if file_.use == "preservation"]
     for file_ in preservation_files:
         create_file_object(FileType.preservation, file_, aip.id)
+
+
+def update_fetch_job(fetch_job_id, processed_packages, total_packages_count):
+    # Count different types of packages
+    total_aips = len([package for package in processed_packages if package.is_aip()])
+    total_sips = len([package for package in processed_packages if package.is_sip()])
+    total_dips = len([package for package in processed_packages if package.is_dip()])
+    total_deleted_aips = len(
+        [package for package in processed_packages if package.is_deleted()]
+    )
+    total_replicas = len(
+        [package for package in processed_packages if package.is_replica()]
+    )
+
+    # Store counts of different types of packages
+    obj = FetchJob.query.filter_by(id=fetch_job_id).first()
+    obj.total_packages = total_packages_count
+    obj.total_aips = total_aips
+    obj.total_dips = total_dips
+    obj.total_sips = total_sips
+    obj.total_replicas = total_replicas
+    obj.total_deleted_aips = total_deleted_aips
+    obj.download_end = datetime.now().replace(microsecond=0)
+    db.session.commit()
+
+    return obj
