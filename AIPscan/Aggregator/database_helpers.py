@@ -18,6 +18,7 @@ from AIPscan.models import (
     Agent,
     Event,
     EventAgent,
+    FetchJob,
     File,
     FileType,
     Pipeline,
@@ -402,3 +403,25 @@ def process_aip_data(aip, mets):
     preservation_files = [file_ for file_ in all_files if file_.use == "preservation"]
     for file_ in preservation_files:
         create_file_object(FileType.preservation, file_, aip.id)
+
+
+def create_fetch_job(datetime_obj_start, timestamp_str, storage_server_id):
+    """Create new FetchJob model instance
+
+    :param datetome_obj_start: datetime.datetime
+    :param timestamp_str: string
+    :param storage_server_id: StorageService ID
+    """
+    fetch_job = FetchJob(
+        total_packages=None,
+        total_deleted_aips=None,
+        total_aips=None,
+        download_start=datetime_obj_start,
+        download_end=None,
+        download_directory=f"AIPscan/Aggregator/downloads/{timestamp_str}/",
+        storage_service_id=storage_server_id,
+    )
+    db.session.add(fetch_job)
+    db.session.commit()
+
+    return fetch_job

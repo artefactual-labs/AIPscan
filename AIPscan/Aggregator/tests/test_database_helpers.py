@@ -323,3 +323,25 @@ def test_create_or_update_pipeline(
         create_pipeline_object.assert_called_once()
     else:
         assert pipeline.dashboard_url == new_url
+
+
+def test_create_fetch_job(app_instance, mocker):
+    datetime_obj_start = datetime.now().replace(microsecond=0)
+    timestamp_str = datetime_obj_start.strftime("%Y-%m-%d-%H-%M-%S")
+    storage_service_id = 1
+
+    mocker.patch("AIPscan.db.session.add")
+    mocker.patch("AIPscan.db.session.commit")
+
+    fetch_job = database_helpers.create_fetch_job(
+        datetime_obj_start, timestamp_str, storage_service_id
+    )
+    assert fetch_job.total_packages is None
+    assert fetch_job.total_deleted_aips is None
+    assert fetch_job.total_aips is None
+    assert fetch_job.download_start == datetime_obj_start
+    assert fetch_job.download_end is None
+    assert (
+        fetch_job.download_directory == f"AIPscan/Aggregator/downloads/{timestamp_str}/"
+    )
+    assert fetch_job.storage_service_id == storage_service_id
