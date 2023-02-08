@@ -284,6 +284,7 @@ def get_mets(
     storage_location_id,
     origin_pipeline_id,
     fetch_job_id,
+    customlogger=None,
 ):
     """Request METS XML file from the storage service and parse.
 
@@ -294,7 +295,17 @@ def get_mets(
     is the primary object we will be passing about.
 
     TODO: Log METS errors.
+
+    The "customlogger" argument allows an external logger to be specified when
+    the task's logic is executed, using the task's "apply" method, by an
+    external application like a batch script.
     """
+    # Set logger
+    tasklogger = logger
+    if customlogger is not None:
+        tasklogger = customlogger
+
+    # Download METS file
     download_file = download_mets(
         api_url, package_uuid, relative_path_to_mets, timestamp_str, package_list_no
     )
@@ -305,16 +316,16 @@ def get_mets(
     # existing AIP and we can safely ignore it.
     matching_aip = AIP.query.filter_by(mets_sha256=mets_hash).first()
     if matching_aip is not None:
-        logger.info(
+        tasklogger.info(
             "Skipping METS file {} - identical to existing record".format(mets_name)
         )
         try:
             os.remove(download_file)
         except OSError as err:
-            logger.warning("Unable to delete METS file: {}".format(err))
+            tasklogger.warning("Unable to delete METS file: {}".format(err))
         return
 
-    logger.info("Processing METS file {}".format(mets_name))
+    tasklogger.info("Processing METS file {}".format(mets_name))
 
     try:
         mets = parse_mets_with_metsrw(download_file)
@@ -333,7 +344,7 @@ def get_mets(
     # be replaced by new records from the updated METS.
     previous_aips = AIP.query.filter_by(uuid=package_uuid).all()
     for previous_aip in previous_aips:
-        logger.info(
+        tasklogger.info(
             "Deleting record for AIP {} to replace from newer METS".format(package_uuid)
         )
         database_helpers.delete_aip_object(previous_aip)
@@ -356,4 +367,4 @@ def get_mets(
     try:
         os.remove(download_file)
     except OSError as err:
-        logger.warning("Unable to delete METS file: {}".format(err))
+        tasklogger.warning("Unable to delete METS file: {}".format(err))
