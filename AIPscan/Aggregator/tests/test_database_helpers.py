@@ -6,9 +6,17 @@ from datetime import datetime
 import metsrw
 import pytest
 
-from AIPscan.Aggregator import database_helpers
+from AIPscan.Aggregator import database_helpers, types
 from AIPscan.conftest import ORIGIN_PIPELINE, STORAGE_LOCATION_1_CURRENT_LOCATION
-from AIPscan.models import AIP, Agent, File, FileType, Pipeline, StorageLocation
+from AIPscan.models import (
+    AIP,
+    Agent,
+    FetchJob,
+    File,
+    FileType,
+    Pipeline,
+    StorageLocation,
+)
 
 FIXTURES_DIR = "fixtures"
 
@@ -323,3 +331,71 @@ def test_create_or_update_pipeline(
         create_pipeline_object.assert_called_once()
     else:
         assert pipeline.dashboard_url == new_url
+
+
+def test_create_fetch_job(app_instance, mocker):
+    datetime_obj_start = datetime.now().replace(microsecond=0)
+    timestamp_str = datetime_obj_start.strftime("%Y-%m-%d-%H-%M-%S")
+    storage_service_id = 1
+
+    mocker.patch("AIPscan.db.session.add")
+    mocker.patch("AIPscan.db.session.commit")
+
+    fetch_job = database_helpers.create_fetch_job(
+        datetime_obj_start, timestamp_str, storage_service_id
+    )
+    assert fetch_job.total_packages is None
+    assert fetch_job.total_deleted_aips is None
+    assert fetch_job.total_aips is None
+    assert fetch_job.download_start == datetime_obj_start
+    assert fetch_job.download_end is None
+    assert (
+        fetch_job.download_directory == f"AIPscan/Aggregator/downloads/{timestamp_str}/"
+    )
+    assert fetch_job.storage_service_id == storage_service_id
+
+
+def test_update_fetch_job(app_instance, mocker):
+    fetch_job = FetchJob(
+        total_packages=0,
+        total_aips=0,
+        total_deleted_aips=0,
+        download_start=datetime.now(),
+        download_end=datetime.now(),
+        download_directory="/some/directory/",
+        storage_service_id=1,
+    )
+
+    mocker.patch("sqlalchemy.orm.query.Query.first", return_value=fetch_job)
+    mocker.patch("AIPscan.db.session.commit")
+
+    # Define processed packages
+    deleted = types.StorageServicePackage()
+    deleted.deleted = True
+
+    replica = types.StorageServicePackage()
+    replica.replica = True
+    replica.aip = True
+
+    aip = types.StorageServicePackage()
+    aip.aip = True
+
+    dip = types.StorageServicePackage()
+    dip.dip = True
+
+    sip = types.StorageServicePackage()
+    sip.sip = True
+
+    processed_packages = [deleted, replica, aip, dip, sip]
+
+    # Only some packags may have been processed
+    total_packages_count = 10
+
+    obj = database_helpers.update_fetch_job(1, processed_packages, total_packages_count)
+
+    assert obj.total_packages == total_packages_count
+    assert obj.total_deleted_aips == 1
+    assert obj.total_replicas == 1
+    assert obj.total_aips == 1
+    assert obj.total_dips == 1
+    assert obj.total_sips == 1

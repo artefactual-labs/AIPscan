@@ -20,7 +20,7 @@ from AIPscan.Aggregator.task_helpers import (
 )
 from AIPscan.extensions import celery
 from AIPscan.helpers import file_sha256_hash
-from AIPscan.models import AIP, FetchJob, get_mets_tasks  # Custom celery Models.
+from AIPscan.models import AIP, get_mets_tasks  # Custom celery Models.
 
 logger = get_task_logger(__name__)
 
@@ -175,29 +175,20 @@ def workflow_coordinator(
         )
         all_packages = all_packages + packages
 
-    total_packages = package_lists_task.info["totalPackages"]
+    total_packages_count = package_lists_task.info["totalPackages"]
 
-    total_aips = len([package for package in all_packages if package.is_aip()])
-    total_sips = len([package for package in all_packages if package.is_sip()])
-    total_dips = len([package for package in all_packages if package.is_dip()])
-    total_deleted_aips = len(
-        [package for package in all_packages if package.is_deleted()]
+    obj = database_helpers.update_fetch_job(
+        fetch_job_id, all_packages, total_packages_count
     )
-    total_replicas = len([package for package in all_packages if package.is_replica()])
 
     summary = "aips: '{}'; sips: '{}'; dips: '{}'; deleted: '{}'; replicated: '{}'".format(
-        total_aips, total_sips, total_dips, total_deleted_aips, total_replicas
+        obj.total_aips,
+        obj.total_sips,
+        obj.total_dips,
+        obj.total_deleted_aips,
+        obj.total_replicas,
     )
     logger.info("%s", summary)
-
-    obj = FetchJob.query.filter_by(id=fetch_job_id).first()
-    obj.total_packages = total_packages
-    obj.total_aips = total_aips
-    obj.total_dips = total_dips
-    obj.total_sips = total_sips
-    obj.total_replicas = total_replicas
-    obj.total_deleted_aips = total_deleted_aips
-    db.session.commit()
 
 
 def make_request(request_url, request_url_without_api_key):

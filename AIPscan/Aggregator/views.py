@@ -8,7 +8,7 @@ from celery.result import AsyncResult
 from flask import Blueprint, flash, jsonify, redirect, render_template, request, url_for
 
 from AIPscan import db
-from AIPscan.Aggregator import tasks
+from AIPscan.Aggregator import database_helpers, tasks
 from AIPscan.Aggregator.forms import StorageServiceForm
 from AIPscan.Aggregator.task_helpers import (
     format_api_url_with_limit_offset,
@@ -193,18 +193,9 @@ def new_fetch_job(id):
     os.makedirs("AIPscan/Aggregator/downloads/" + timestamp_str + "/mets/")
 
     # create a fetch_job record in the aipscan database
-    # write fetch job info to database
-    fetch_job = FetchJob(
-        total_packages=None,
-        total_deleted_aips=None,
-        total_aips=None,
-        download_start=datetime_obj_start,
-        download_end=None,
-        download_directory="AIPscan/Aggregator/downloads/" + timestamp_str + "/",
-        storage_service_id=storage_service.id,
+    fetch_job = database_helpers.create_fetch_job(
+        datetime_obj_start, timestamp_str, storage_service.id
     )
-    db.session.add(fetch_job)
-    db.session.commit()
 
     packages_directory = get_packages_directory(timestamp_str)
 

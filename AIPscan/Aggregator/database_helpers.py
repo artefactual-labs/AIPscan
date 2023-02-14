@@ -4,6 +4,8 @@
 database.
 """
 
+from datetime import datetime
+
 from celery.utils.log import get_task_logger
 from lxml import etree
 
@@ -18,6 +20,7 @@ from AIPscan.models import (
     Agent,
     Event,
     EventAgent,
+    FetchJob,
     File,
     FileType,
     Pipeline,
@@ -402,3 +405,57 @@ def process_aip_data(aip, mets):
     preservation_files = [file_ for file_ in all_files if file_.use == "preservation"]
     for file_ in preservation_files:
         create_file_object(FileType.preservation, file_, aip.id)
+
+
+def create_fetch_job(datetime_obj_start, timestamp_str, storage_server_id):
+    fetch_job = FetchJob(
+        total_packages=None,
+        total_deleted_aips=None,
+        total_aips=None,
+        download_start=datetime_obj_start,
+        download_end=None,
+        download_directory=f"AIPscan/Aggregator/downloads/{timestamp_str}/",
+        storage_service_id=storage_server_id,
+    )
+    db.session.add(fetch_job)
+    db.session.commit()
+
+    return fetch_job
+
+
+def update_fetch_job(fetch_job_id, processed_packages, total_packages_count):
+    # Count different types of packages
+    total_aips = 0
+    total_sips = 0
+    total_dips = 0
+    total_deleted_aips = 0
+    total_replicas = 0
+
+    for package in processed_packages:
+        if package.is_aip():
+            total_aips += 1
+
+        if package.is_sip():
+            total_sips += 1
+
+        if package.is_dip():
+            total_dips += 1
+
+        if package.is_deleted():
+            total_deleted_aips += 1
+
+        if package.is_replica():
+            total_replicas += 1
+
+    # Store counts of different types of packages
+    obj = FetchJob.query.filter_by(id=fetch_job_id).first()
+    obj.total_packages = total_packages_count
+    obj.total_aips = total_aips
+    obj.total_dips = total_dips
+    obj.total_sips = total_sips
+    obj.total_replicas = total_replicas
+    obj.total_deleted_aips = total_deleted_aips
+    obj.download_end = datetime.now().replace(microsecond=0)
+    db.session.commit()
+
+    return obj
