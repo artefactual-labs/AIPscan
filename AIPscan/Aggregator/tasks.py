@@ -114,6 +114,10 @@ def parse_packages_and_load_mets(
     for package_obj in package_list.get(OBJECTS, []):
         package = process_package_object(package_obj)
         packages.append(package)
+
+        if package.is_deleted():
+            delete_aip(package.uuid)
+
         if not package.is_aip():
             continue
         start_mets_task(
@@ -129,6 +133,16 @@ def parse_packages_and_load_mets(
             fetch_job_id,
         )
     return packages
+
+
+def delete_aip(uuid):
+    logger.warning("Package deleted from SS: '%s'", uuid)
+
+    deleted_aip = AIP.query.filter_by(uuid=uuid).first()
+
+    if deleted_aip is not None:
+        logger.warning("Deleting AIP: %s", uuid)
+        database_helpers.delete_aip_object(deleted_aip)
 
 
 @celery.task(bind=True)
