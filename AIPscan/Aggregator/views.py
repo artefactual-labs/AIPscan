@@ -232,13 +232,10 @@ def new_fetch_job(id):
 
 @aggregator.route("/delete_fetch_job/<id>", methods=["GET"])
 def delete_fetch_job(id):
+    tasks.delete_fetch_job.delay(id)
     fetch_job = FetchJob.query.get(id)
     storage_service = StorageService.query.get(fetch_job.storage_service_id)
-    if os.path.exists(fetch_job.download_directory):
-        shutil.rmtree(fetch_job.download_directory)
-    db.session.delete(fetch_job)
-    db.session.commit()
-    flash("Fetch job {} is deleted".format(fetch_job.download_start))
+    flash("Fetch job {} is being deleted".format(fetch_job.download_start))
     return redirect(url_for("aggregator.storage_service", id=storage_service.id))
 
 

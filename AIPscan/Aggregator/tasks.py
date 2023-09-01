@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import json
 import os
+import shutil
 
 import requests
 from celery.utils.log import get_task_logger
@@ -20,7 +21,7 @@ from AIPscan.Aggregator.task_helpers import (
 )
 from AIPscan.extensions import celery
 from AIPscan.helpers import file_sha256_hash
-from AIPscan.models import AIP, get_mets_tasks  # Custom celery Models.
+from AIPscan.models import AIP, FetchJob, get_mets_tasks  # Custom celery Models.
 
 logger = get_task_logger(__name__)
 
@@ -373,3 +374,12 @@ def get_mets(
         os.remove(download_file)
     except OSError as err:
         tasklogger.warning("Unable to delete METS file: {}".format(err))
+
+
+@celery.task()
+def delete_fetch_job(fetch_job_id):
+    fetch_job = FetchJob.query.get(fetch_job_id)
+    if os.path.exists(fetch_job.download_directory):
+        shutil.rmtree(fetch_job.download_directory)
+    db.session.delete(fetch_job)
+    db.session.commit()

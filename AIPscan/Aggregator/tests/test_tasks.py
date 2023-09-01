@@ -11,6 +11,7 @@ from AIPscan import test_helpers
 from AIPscan.Aggregator.tasks import (
     TaskError,
     delete_aip,
+    delete_fetch_job,
     get_mets,
     make_request,
     parse_packages_and_load_mets,
@@ -23,7 +24,7 @@ from AIPscan.Aggregator.tests import (
     VALID_JSON,
     MockResponse,
 )
-from AIPscan.models import AIP
+from AIPscan.models import AIP, FetchJob
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 FIXTURES_DIR = os.path.join(SCRIPT_DIR, "fixtures")
@@ -174,6 +175,23 @@ def test_get_mets_task(app_instance, tmpdir, mocker, fixture_path, package_uuid)
         log_string.getvalue()
         == f"Processing METS file {os.path.basename(fixture_path)}\n"
     )
+
+
+def test_delete_fetch_job_task(app_instance, tmpdir, mocker):
+    """Test that fetch job gets deleted by delete fetch job task logic."""
+    storage_service = test_helpers.create_test_storage_service()
+
+    # Create fetch job and confirm expected ID
+    fetch_job1 = test_helpers.create_test_fetch_job(
+        storage_service_id=storage_service.id
+    )
+
+    assert fetch_job1.id == 1
+
+    # Delete fetch job and confirm it no longer exists
+    delete_fetch_job(fetch_job1.id)
+
+    assert FetchJob.query.filter_by(id=fetch_job1.id).first() is None
 
 
 @pytest.mark.parametrize(
