@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import uuid
 from datetime import datetime
 from io import StringIO
 
@@ -9,6 +10,7 @@ import pytest
 from AIPscan import test_helpers
 from AIPscan.Aggregator.tasks import (
     TaskError,
+    delete_aip,
     get_mets,
     make_request,
     parse_packages_and_load_mets,
@@ -208,3 +210,18 @@ def test_parse_packages_and_load_mets(app_instance, tmpdir, mocker):
     parse_packages_and_load_mets(json_file_path, {}, str(datetime.now()), 1, 1, 1)
 
     delete_package_json.assert_called_with(json_file_path)
+
+
+def test_delete_aip(app_instance):
+    """Test that SS deleted AIPs gets deleted in aipscan.db."""
+    PACKAGE_UUID = str(uuid.uuid4())
+
+    test_helpers.create_test_aip(uuid=PACKAGE_UUID)
+
+    deleted_aip = AIP.query.filter_by(uuid=PACKAGE_UUID).first()
+    assert deleted_aip is not None
+
+    delete_aip(PACKAGE_UUID)
+
+    deleted_aip = AIP.query.filter_by(uuid=PACKAGE_UUID).first()
+    assert deleted_aip is None
