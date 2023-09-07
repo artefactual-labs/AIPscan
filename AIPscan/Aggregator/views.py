@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import os
-import shutil
 from datetime import datetime
 
 from celery.result import AsyncResult
@@ -151,14 +150,9 @@ def new_storage_service():
 
 @aggregator.route("/delete_storage_service/<id>", methods=["GET"])
 def delete_storage_service(id):
+    tasks.delete_storage_service.delay(id)
     storage_service = StorageService.query.get(id)
-    mets_fetch_jobs = FetchJob.query.filter_by(storage_service_id=id).all()
-    for mets_fetch_job in mets_fetch_jobs:
-        if os.path.exists(mets_fetch_job.download_directory):
-            shutil.rmtree(mets_fetch_job.download_directory)
-    db.session.delete(storage_service)
-    db.session.commit()
-    flash("Storage service '{}' is deleted".format(storage_service.name))
+    flash("Storage service '{}' is being deleted".format(storage_service.name))
     return redirect(url_for("aggregator.storage_services"))
 
 

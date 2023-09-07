@@ -21,7 +21,7 @@ from AIPscan.Aggregator.task_helpers import (
 )
 from AIPscan.extensions import celery
 from AIPscan.helpers import file_sha256_hash
-from AIPscan.models import AIP, FetchJob, get_mets_tasks  # Custom celery Models.
+from AIPscan.models import AIP, FetchJob, StorageService, get_mets_tasks
 
 logger = get_task_logger(__name__)
 
@@ -382,4 +382,17 @@ def delete_fetch_job(fetch_job_id):
     if os.path.exists(fetch_job.download_directory):
         shutil.rmtree(fetch_job.download_directory)
     db.session.delete(fetch_job)
+    db.session.commit()
+
+
+@celery.task()
+def delete_storage_service(storage_service_id):
+    storage_service = StorageService.query.get(storage_service_id)
+    mets_fetch_jobs = FetchJob.query.filter_by(
+        storage_service_id=storage_service_id
+    ).all()
+    for mets_fetch_job in mets_fetch_jobs:
+        if os.path.exists(mets_fetch_job.download_directory):
+            shutil.rmtree(mets_fetch_job.download_directory)
+    db.session.delete(storage_service)
     db.session.commit()
