@@ -118,6 +118,7 @@ def parse_packages_and_load_mets(
 
         if package.is_deleted():
             delete_aip(package.uuid)
+            continue
 
         if not package.is_aip():
             continue
