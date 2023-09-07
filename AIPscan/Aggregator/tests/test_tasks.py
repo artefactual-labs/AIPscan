@@ -12,6 +12,7 @@ from AIPscan.Aggregator.tasks import (
     TaskError,
     delete_aip,
     delete_fetch_job,
+    delete_storage_service,
     get_mets,
     make_request,
     parse_packages_and_load_mets,
@@ -24,7 +25,7 @@ from AIPscan.Aggregator.tests import (
     VALID_JSON,
     MockResponse,
 )
-from AIPscan.models import AIP, FetchJob
+from AIPscan.models import AIP, FetchJob, StorageService
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 FIXTURES_DIR = os.path.join(SCRIPT_DIR, "fixtures")
@@ -192,6 +193,19 @@ def test_delete_fetch_job_task(app_instance, tmpdir, mocker):
     delete_fetch_job(fetch_job1.id)
 
     assert FetchJob.query.filter_by(id=fetch_job1.id).first() is None
+
+
+def test_delete_storage_service_task(app_instance, tmpdir, mocker):
+    """Test that storage service gets deleted by delete storage service job task logic."""
+    storage_service = test_helpers.create_test_storage_service()
+
+    deleted_ss = StorageService.query.filter_by(id=storage_service.id).first()
+    assert deleted_ss is not None
+
+    delete_storage_service(storage_service.id)
+
+    deleted_ss = StorageService.query.filter_by(id=storage_service.id).first()
+    assert deleted_ss is None
 
 
 @pytest.mark.parametrize(
