@@ -22,6 +22,8 @@
   Originals: {{ original_file_count }}
   <br>
   Preservation copies: {{ preservation_file_count }}
+  <br>
+  <a href="{{ url_for('reporter.download_mets', aip_id=aip.id) }}">Download METS</a>
 </div>
 
 <h3>Original files</h3>
