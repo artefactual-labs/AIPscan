@@ -7,8 +7,10 @@ files with singular responsibility for a report.
 
 from datetime import datetime
 
-from flask import jsonify, make_response, render_template, request, session
+import requests
+from flask import Response, jsonify, make_response, render_template, request, session
 
+from AIPscan.Aggregator.task_helpers import get_mets_url
 from AIPscan.models import (
     AIP,
     Event,
@@ -272,3 +274,29 @@ def update_dates():
         req = request.get_json()
         session["end_date"] = request.json.get("end_date")
         return make_response(jsonify(req), 200)
+
+
+@reporter.route("/download_mets/<aip_id>", methods=["GET"])
+def download_mets(aip_id):
+    aip = AIP.query.get(aip_id)
+    storage_service = StorageService.query.get(aip.storage_service_id)
+
+    api_url = {
+        "baseUrl": storage_service.url,
+        "userName": storage_service.user_name,
+        "apiKey": storage_service.api_key,
+    }
+
+    mets_response = requests.get(
+        get_mets_url(
+            api_url,
+            aip.uuid,
+            f"{aip.transfer_name}-{aip.uuid}/data/METS.{aip.uuid}.xml",
+        )
+    )
+
+    headers = {
+        "Content-Disposition": f'attachment; filename="METS-{aip.uuid}.xml"',
+        "Content-length": len(mets_response.content),
+    }
+    return Response(mets_response.content, mets_response.status_code, headers)
