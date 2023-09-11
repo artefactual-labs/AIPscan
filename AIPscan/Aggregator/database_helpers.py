@@ -98,7 +98,7 @@ def create_event_objects(fs_entry, file_id):
         db.session.commit()
 
 
-def _extract_agent_detail(agent):
+def _extract_agent_detail(agent, storage_service_id):
     """Pull the agent information from the agent record and return an
     agent object ready to insert into the database.
     """
@@ -109,20 +109,22 @@ def _extract_agent_detail(agent):
         linking_type_value=linking_type_value,
         agent_type=agent_type,
         agent_value=agent_value,
+        storage_service_id=storage_service_id,
     )
 
 
-def create_agent_objects(unique_agents):
+def create_agent_objects(unique_agents, storage_service_id):
     """Add our agents to the database. The list is already the
     equivalent of a set by the time it reaches here and so we don't
     need to perform any de-duplication.
     """
     for agent in unique_agents:
-        agent_obj = _extract_agent_detail(agent)
+        agent_obj = _extract_agent_detail(agent, storage_service_id)
         exists = Agent.query.filter_by(
             linking_type_value=agent_obj.linking_type_value,
             agent_type=agent_obj.agent_type,
             agent_value=agent_obj.agent_value,
+            storage_service_id=storage_service_id,
         ).count()
         if exists:
             continue
@@ -392,7 +394,7 @@ def process_aip_data(aip, mets):
     """
     tasks.get_mets.update_state(state="IN PROGRESS")
 
-    create_agent_objects(collect_mets_agents(mets))
+    create_agent_objects(collect_mets_agents(mets), aip.storage_service_id)
 
     all_files = mets.all_files()
 

@@ -159,6 +159,7 @@ def test_event_creation(
             linking_type_value="some_type_value",
             agent_type="an_agent_type",
             agent_value="an_agent_value",
+            storage_service_id="1",
         ),
     )
     mocked_events = mocker.patch("AIPscan.db.session.add")

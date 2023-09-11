@@ -21,7 +21,7 @@ from AIPscan.Aggregator.task_helpers import (
 )
 from AIPscan.extensions import celery
 from AIPscan.helpers import file_sha256_hash
-from AIPscan.models import AIP, FetchJob, StorageService, get_mets_tasks
+from AIPscan.models import AIP, Agent, FetchJob, StorageService, get_mets_tasks
 
 logger = get_task_logger(__name__)
 
@@ -395,5 +395,12 @@ def delete_storage_service(storage_service_id):
     for mets_fetch_job in mets_fetch_jobs:
         if os.path.exists(mets_fetch_job.download_directory):
             shutil.rmtree(mets_fetch_job.download_directory)
+
+    # Delete agents associated to the deleted storage service
+    agents = Agent.query.filter_by(storage_service_id=storage_service_id).all()
+    for agent in agents:
+        logger.info("Deleting agent: %s", agent)
+        db.session.delete(agent)
+
     db.session.delete(storage_service)
     db.session.commit()
