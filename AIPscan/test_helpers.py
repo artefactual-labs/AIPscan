@@ -123,6 +123,7 @@ def create_test_agent(**kwargs):
         agent_value=kwargs.get(
             "agent_value", 'username="user one", first_name="", last_name=""'
         ),
+        storage_service_id=kwargs.get("storage_service_id", 1),
     )
     _add_test_object_to_db(agent)
     return agent

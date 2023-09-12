@@ -470,11 +470,15 @@ class Agent(db.Model):
     linking_type_value = db.Column(db.String(255), index=True)
     agent_type = db.Column(db.String(255), index=True)
     agent_value = db.Column(db.String(255), index=True)
+    storage_service_id = db.Column(
+        db.Integer(), db.ForeignKey("storage_service.id"), nullable=False
+    )
 
-    def __init__(self, linking_type_value, agent_type, agent_value):
+    def __init__(self, linking_type_value, agent_type, agent_value, storage_service_id):
         self.linking_type_value = linking_type_value
         self.agent_type = agent_type
         self.agent_value = agent_value
+        self.storage_service_id = storage_service_id
 
     def __repr__(self):
         return "<Agent '{}: {}'>".format(self.agent_type, self.agent_value)
