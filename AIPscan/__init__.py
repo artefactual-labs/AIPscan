@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from flask import Flask
+from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 
 from AIPscan.celery import configure_celery
@@ -33,5 +33,9 @@ def create_app(config_name="default"):
         configure_celery(app)
 
         db.create_all()
+
+        @app.errorhandler(404)
+        def page_not_found(e):
+            return render_template("error/404.html"), 404
 
         return app
