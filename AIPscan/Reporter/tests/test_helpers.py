@@ -129,3 +129,39 @@ def test_get_premis_xml_lines():
     lines = helpers.get_premis_xml_lines(file_)
 
     assert len(lines) == 2
+
+
+@pytest.mark.parametrize(
+    "paging",
+    [
+        # Test paging window at start of results
+        {"per_page": 5, "total": 17, "page": 1, "first_item": 1, "last_item": 5},
+        # Test paging window on an arbitrary page of results
+        {"per_page": 5, "total": 17, "page": 3, "first_item": 11, "last_item": 15},
+        # Test paging window with last item being set to the total of items
+        {"per_page": 5, "total": 17, "page": 4, "first_item": 16, "last_item": 17},
+        # Test paging window at start of results with incomplete page
+        {"per_page": 7, "total": 4, "page": 1, "first_item": 1, "last_item": 4},
+    ],
+)
+def test_calculate_paging_window(paging):
+    class MockPagination(object):
+        pass
+
+    pagination = MockPagination()
+    pagination.page = paging["page"]
+    pagination.per_page = paging["per_page"]
+    pagination.total = paging["total"]
+
+    first_item, last_item = helpers.calculate_paging_window(pagination)
+
+    assert first_item == paging["first_item"]
+    assert last_item == paging["last_item"]
+
+
+def test_remove_dict_none_values():
+    test_values = {"foo": "bar", "nada": None}
+
+    querystring = helpers.remove_dict_none_values(test_values)
+
+    assert querystring == {"foo": "bar", "nada": ""}
