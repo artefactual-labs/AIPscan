@@ -1,0 +1,99 @@
+#!/usr/bin/env python3
+import sys
+
+import click
+from app import init
+from helpers import data
+
+from AIPscan import db
+from AIPscan.models import FetchJob
+from config import CONFIGS
+
+
+@click.command()
+@click.option("--storage-services-to-create", default=2)
+@click.option("--locations-per-storage-service", default=2)
+@click.option("--locations-min-aip-count", default=10)
+@click.option("--locations-max-aip-count", default=30)
+@click.option("--aip-min-file-count", default=10)
+@click.option("--aip-max-file-count", default=30)
+@click.option("--seed", default=0)
+def main(
+    storage_services_to_create,
+    locations_per_storage_service,
+    locations_min_aip_count,
+    locations_max_aip_count,
+    aip_min_file_count,
+    aip_max_file_count,
+    seed,
+):
+    # Initialize Flash app context
+    app = init.create_app_instance(CONFIGS[init.config_name], db)
+
+    # Change seed
+    if seed > 0:
+        data.seed(seed)
+
+    with app.app_context():
+        # Add example pipeline and storage services
+        print(
+            f"Creating/fetching pipeline and creating {storage_services_to_create} storage services..."
+        )
+        pipeline = data.create_or_fetch_fake_pipeline()
+
+        ss_ids = []
+        fetch_jobs = {}
+
+        for _ in range(storage_services_to_create):
+            is_default = len(ss_ids) == 0
+
+            ss = data.create_fake_storage_service(is_default)
+            ss_ids.append(ss.id)
+
+            fetch_job = data.create_fake_fetch_job(ss.id)
+            fetch_jobs[ss.id] = fetch_job.id
+
+        # Populate storage service locations
+        ss_locations_to_create = (
+            storage_services_to_create * locations_per_storage_service
+        )
+
+        print(
+            f"Creating {ss_locations_to_create} storage service locations (and their AIPs)..."
+        )
+
+        aip_batches_created = 0
+        total_aip_batches = len(ss_ids) * locations_per_storage_service
+        for ss_id in ss_ids:
+            for _ in range(locations_per_storage_service):
+                # Add location
+                sl = data.create_fake_location(ss_id)
+
+                # Add AIPs and AIP files
+                aip_batches_created += 1
+
+                print(f"Creating AIPs ({aip_batches_created}/{total_aip_batches})...")
+
+                aipcount = 0
+                for _ in range(
+                    1, data.randint(locations_min_aip_count, locations_max_aip_count)
+                ):
+                    aip = data.create_fake_aip(
+                        pipeline.id, ss_id, sl.id, fetch_jobs[ss.id]
+                    )
+                    data.create_fake_aip_files(
+                        aip_min_file_count, aip_max_file_count, aip.id
+                    )
+                    aipcount += 1
+
+                # Update package/AIP counts in fetch job
+                fetch_job = FetchJob.query.get(fetch_jobs[ss_id])
+                fetch_job.total_packages += aipcount
+                fetch_job.total_aips += aipcount
+                db.session.commit()
+
+        print("Done.")
+
+
+if __name__ == "__main__":
+    sys.exit(main())
