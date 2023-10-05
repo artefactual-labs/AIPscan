@@ -16,7 +16,7 @@ sys.path.append(parent)
 
 from AIPscan import create_app
 from AIPscan import db
-from AIPscan.models import AIP, FetchJob, StorageService
+from AIPscan.models import StorageService
 
 from AIPscan.Aggregator import database_helpers
 
@@ -27,13 +27,10 @@ from AIPscan.Aggregator.task_helpers import (
     process_package_object,
 )
 
-from AIPscan.Aggregator.tasks import (
-    delete_aip
-    make_request,
-    get_mets,
-)
+from AIPscan.Aggregator.tasks import delete_aip, make_request, get_mets
 
 from argparse import ArgumentParser, ArgumentTypeError
+
 
 def check_positive(value):
     ivalue = int(value)
@@ -41,29 +38,53 @@ def check_positive(value):
         raise ArgumentTypeError("%s is an invalid positive int value" % value)
     return ivalue
 
+
 def arg_parser():
     description = """The AIPscan fetch tool enables subsets of packages
         from a storage server to be processed."""
 
-    parser = ArgumentParser(
-        description=description)
+    parser = ArgumentParser(description=description)
 
-    storage_id_help = 'storage server ID'
-    parser.add_argument('-s', '--ss-id', action='store', type=check_positive, required=True, help=storage_id_help)
+    storage_id_help = "storage server ID"
+    parser.add_argument(
+        "-s",
+        "--ss-id",
+        action="store",
+        type=check_positive,
+        required=True,
+        help=storage_id_help,
+    )
 
     session_id_help = "session identifier"
-    parser.add_argument('-i', '--session-id', action='store', required=True, help=session_id_help)
+    parser.add_argument(
+        "-i", "--session-id", action="store", required=True, help=session_id_help
+    )
 
     page_help = "page"
-    parser.add_argument('-p', '--page', action='store', type=check_positive, required=True, help=page_help)
+    parser.add_argument(
+        "-p",
+        "--page",
+        action="store",
+        type=check_positive,
+        required=True,
+        help=page_help,
+    )
 
     packages_per_page_help = "items per page"
-    parser.add_argument('-n', '--packages-per-page', action='store', type=check_positive, required=True, help=packages_per_page_help)
+    parser.add_argument(
+        "-n",
+        "--packages-per-page",
+        action="store",
+        type=check_positive,
+        required=True,
+        help=packages_per_page_help,
+    )
 
     logging_help = "log file"
-    parser.add_argument('-l', '--log-file', action='store', help=logging_help)
+    parser.add_argument("-l", "--log-file", action="store", help=logging_help)
 
     return parser
+
 
 # Process CLI arguments
 parser = arg_parser()
@@ -81,7 +102,7 @@ package_list_no = "batch"
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s:%(levelname)s:%(name)s:%(message)s",
-    filename=logfile
+    filename=logfile,
 )
 
 logger_name = os.path.basename(sys.argv[0])
@@ -111,14 +132,12 @@ api_url = {
     "userName": storage_service.user_name,
     "apiKey": storage_service.api_key,
     "offset": 0,
-    "limit": 1000000
+    "limit": 1_000_000,
 }
 
-(
-    _,
-    request_url_without_api_key,
-    request_url,
-) = format_api_url_with_limit_offset(api_url)
+(_, request_url_without_api_key, request_url) = format_api_url_with_limit_offset(
+    api_url
+)
 
 # Create a fetch_job record in the AIPscan database and take note of its ID
 datetime_obj_start = datetime.now().replace(microsecond=0)
@@ -148,7 +167,7 @@ if os.path.isfile(package_filename):
         packages = json.load(f)
 else:
     packages = make_request(request_url, request_url_without_api_key)
-    with open(package_filename, 'w', encoding='utf-8') as f:
+    with open(package_filename, "w", encoding="utf-8") as f:
         json.dump(packages, f)
 
 # Determine start and end package
@@ -163,7 +182,9 @@ if total_packages < real_end_item:
 
 # Make sure page is valid and delete fetch job if not
 if start_item > total_packages:
-    logger.error(f"Fetch job deleted. Page {page} would start at package {start_item} but there are only {total_packages} packages.")
+    logger.error(
+        f"Fetch job deleted. Page {page} would start at package {start_item} but there are only {total_packages} packages."
+    )
     db.session.delete(fetch_job)
     db.session.commit()
     sys.exit(1)
@@ -183,7 +204,9 @@ for package_obj in packages["objects"]:
         processed_packages.append(package)
 
         current_item = len(processed_packages)
-        logger.info(f"Processing {package.uuid} ({current_item} of {packages_per_page})")
+        logger.info(
+            f"Processing {package.uuid} ({current_item} of {packages_per_page})"
+        )
 
         if package.is_deleted():
             delete_aip(package.uuid)
@@ -196,7 +219,9 @@ for package_obj in packages["objects"]:
             package.current_location, api_url, storage_service_id
         )
 
-        pipeline = database_helpers.create_or_update_pipeline(package.origin_pipeline, api_url)
+        pipeline = database_helpers.create_or_update_pipeline(
+            package.origin_pipeline, api_url
+        )
 
         args = [
             package.uuid,
@@ -209,7 +234,7 @@ for package_obj in packages["objects"]:
             storage_location.id,
             pipeline.id,
             fetch_job_id,
-            logger
+            logger,
         ]
         get_mets_task = get_mets.apply(args=args)
 
@@ -218,7 +243,11 @@ fetch_job = database_helpers.update_fetch_job(
 )
 
 summary = "aips: '{}'; sips: '{}'; dips: '{}'; deleted: '{}'; replicated: '{}'".format(
-    fetch_job.total_aips, fetch_job.total_sips, fetch_job.total_dips, fetch_job.total_deleted_aips, fetch_job.total_replicas
+    fetch_job.total_aips,
+    fetch_job.total_sips,
+    fetch_job.total_dips,
+    fetch_job.total_deleted_aips,
+    fetch_job.total_replicas,
 )
 logger.info("%s", summary)
 logger.info(f"Updated fetch job record {fetch_job_id} with package type counts.")
