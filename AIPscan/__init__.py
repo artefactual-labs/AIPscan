@@ -4,6 +4,7 @@ from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 
 from AIPscan.celery import configure_celery
+from AIPscan.navbar import NavBar
 from config import CONFIGS
 
 db = SQLAlchemy()
@@ -34,6 +35,24 @@ def create_app(config_name="default"):
 
         db.create_all()
 
+        # Define navigation bar sections and route-to-section mapping (needed
+        # given that the "AIPs" and "Reports" sections are in the same Blueprint)
+        navbar = NavBar()
+        navbar.add_section(
+            "Archivematica Storage Services", "aggregator.storage_services"
+        )
+        navbar.add_section("AIPs", "reporter.view_aips")
+        navbar.add_section("Reports", "reporter.reports")
+
+        navbar.map_route("reporter.view_aip", "AIPs")
+        navbar.map_route("reporter.view_file", "AIPs")
+
+        # Inject navigation bar into templates
+        @app.context_processor
+        def inject_navbar():
+            return dict(navbar=navbar)
+
+        # Set up 404 handling
         @app.errorhandler(404)
         def page_not_found(e):
             return render_template("error/404.html"), 404
