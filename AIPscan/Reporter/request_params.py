@@ -11,6 +11,7 @@ ORIGINAL_FILES = "original_files"
 PUID = "puid"
 STORAGE_LOCATION_ID = "storage_location"
 STORAGE_SERVICE_ID = "amss_id"
+PAGE = "page"
 
 START_DATE = "start_date"
 END_DATE = "end_date"

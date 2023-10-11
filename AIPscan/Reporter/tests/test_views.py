@@ -1,5 +1,9 @@
+import pytest
 from flask import current_app
 from werkzeug.datastructures import Headers
+
+from AIPscan import test_helpers
+from AIPscan.Reporter import views
 
 
 def test_download_mets(app_with_populated_files, mocker):
@@ -32,3 +36,25 @@ def test_download_mets(app_with_populated_files, mocker):
 
         assert response.data == return_response.content
         assert response.status_code == return_response.status_code
+
+
+@pytest.mark.parametrize("page,pager_page", [(1, 1), ("bad", 1)])
+def test_get_aip_pager(app_instance, mocker, page, pager_page):
+    paginate_mock = mocker.Mock()
+    filter_by_mock = mocker.Mock()
+    filter_by_mock.paginate.return_value = paginate_mock
+
+    query_mock = mocker.Mock()
+    query_mock.filter_by.return_value = filter_by_mock
+
+    storage_service = test_helpers.create_test_storage_service()
+    storage_location = test_helpers.create_test_storage_location(
+        storage_service_id=storage_service.id
+    )
+    pager = views.get_aip_pager(page, 2, storage_service, storage_location)
+
+    assert pager.page == pager_page
+    assert pager.pages == 0
+    assert pager.per_page == 2
+    assert pager.prev_num is None
+    assert pager.next_num is None
