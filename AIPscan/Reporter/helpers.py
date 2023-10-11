@@ -145,3 +145,14 @@ def get_premis_xml_lines(file_object):
         premis_xml_lines = file_object.premis_object.split("\n")
 
     return premis_xml_lines
+
+
+def calculate_paging_window(pagination):
+    first_item = ((pagination.page - 1) * pagination.per_page) + 1
+    last_item = pagination.page * pagination.per_page
+
+    return first_item, min(last_item, pagination.total)
+
+
+def remove_dict_none_values(values):
+    return {index: "" if value is None else value for (index, value) in values.items()}

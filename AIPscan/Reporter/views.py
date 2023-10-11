@@ -39,7 +39,11 @@ from AIPscan.Reporter import (  # noqa: F401
     request_params,
     sort_puids,
 )
-from AIPscan.Reporter.helpers import get_premis_xml_lines
+from AIPscan.Reporter.helpers import (
+    calculate_paging_window,
+    get_premis_xml_lines,
+    remove_dict_none_values,
+)
 
 
 def _get_storage_service(storage_service_id):
@@ -73,6 +77,24 @@ def storage_locations_with_aips(storage_locations):
     return [loc for loc in storage_locations if loc.aips]
 
 
+def get_aip_pager(page, per_page, storage_service, storage_location):
+    try:
+        page = int(page)
+    except ValueError:
+        page = 1
+
+    pager = AIP.query.filter_by(storage_service_id=storage_service.id).paginate(
+        page=page, per_page=per_page, error_out=False
+    )
+
+    if storage_location:
+        pager = pager.query.filter_by(storage_location_id=storage_location.id).paginate(
+            page=page, per_page=per_page, error_out=False
+        )
+
+    return pager
+
+
 @reporter.route("/aips/", methods=["GET"])
 def view_aips():
     """Overview of AIPs in given Storage Service and Location."""
@@ -85,10 +107,15 @@ def view_aips():
     except Exception as e:
         print(e)
 
-    aips = AIP.query.filter_by(storage_service_id=storage_service.id)
-    if storage_location:
-        aips = aips.filter_by(storage_location_id=storage_location_id)
-    aips = aips.all()
+    page = request.args.get(request_params.PAGE, default="1")
+    pager = get_aip_pager(page, 10, storage_service, storage_location)
+
+    first_item, last_item = calculate_paging_window(pager)
+
+    state_query_params = {
+        request_params.STORAGE_SERVICE_ID: storage_service_id,
+        request_params.STORAGE_LOCATION_ID: storage_location_id,
+    }
 
     return render_template(
         "aips.html",
@@ -98,7 +125,10 @@ def view_aips():
             storage_service.storage_locations
         ),
         storage_location=storage_location,
-        aips=aips,
+        pager=pager,
+        first_item=first_item,
+        last_item=last_item,
+        state_query_params=remove_dict_none_values(state_query_params),
     )
 
 
