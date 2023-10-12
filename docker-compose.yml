@@ -19,8 +19,8 @@ services:
       - 5672:5672
       - 15672:15672
     volumes:
-      - rabbitmq_data/:/var/lib/rabbitmq/
-      - rabbitmq_logs/:/var/log/rabbitmq/
+      - rabbitmq_data:/var/lib/rabbitmq
+      - rabbitmq_logs:/var/log/rabbitmq
     depends_on:
       - aipscan
 
