@@ -28,7 +28,7 @@ services:
     build: ./
     environment:
       - CELERY_BROKER_URL=amqp://guest@rabbitmq//
-    command: celery worker -A AIPscan.worker.celery --loglevel=info
+    command: celery -A AIPscan.worker.celery worker --loglevel=info
     volumes:
       - "./:/src:rw"
     depends_on:
