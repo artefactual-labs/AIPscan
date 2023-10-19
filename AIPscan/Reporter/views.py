@@ -95,6 +95,17 @@ def get_aip_pager(page, per_page, storage_service, storage_location):
     return pager
 
 
+def get_file_pager(page, per_page, aip):
+    try:
+        page = int(page)
+    except ValueError:
+        page = 1
+
+    return File.query.filter_by(aip_id=aip.id, file_type=FileType.original).paginate(
+        page=page, per_page=per_page, error_out=False
+    )
+
+
 @reporter.route("/aips/", methods=["GET"])
 def view_aips():
     """Overview of AIPs in given Storage Service and Location."""
@@ -143,12 +154,16 @@ def view_aip(aip_id):
     aips_count = AIP.query.filter_by(storage_service_id=storage_service.id).count()
     original_file_count = aip.original_file_count
     preservation_file_count = aip.preservation_file_count
-    originals = []
-    original_files = File.query.filter_by(
-        aip_id=aip.id, file_type=FileType.original
-    ).all()
     origin_pipeline = Pipeline.query.get(aip.origin_pipeline_id)
-    for file_ in original_files:
+
+    originals = []
+
+    page = request.args.get(request_params.PAGE, default="1")
+    pager = get_file_pager(page, 10, aip)
+
+    first_item, last_item = calculate_paging_window(pager)
+
+    for file_ in pager.items:
         original = {}
         original["id"] = file_.id
         original["name"] = file_.name
@@ -168,6 +183,9 @@ def view_aip(aip_id):
     return render_template(
         "aip.html",
         aip=aip,
+        first_item=first_item,
+        last_iten=last_item,
+        pager=pager,
         storage_service=storage_service,
         storage_location=storage_location,
         aips_count=aips_count,
