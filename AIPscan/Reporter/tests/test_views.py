@@ -58,3 +58,22 @@ def test_get_aip_pager(app_instance, mocker, page, pager_page):
     assert pager.per_page == 2
     assert pager.prev_num is None
     assert pager.next_num is None
+
+
+@pytest.mark.parametrize("page,pager_page", [(1, 1), ("bad", 1)])
+def test_get_file_pager(app_instance, mocker, page, pager_page):
+    paginate_mock = mocker.Mock()
+    filter_by_mock = mocker.Mock()
+    filter_by_mock.paginate.return_value = paginate_mock
+
+    query_mock = mocker.Mock()
+    query_mock.filter_by.return_value = filter_by_mock
+
+    aip = test_helpers.create_test_aip()
+    pager = views.get_file_pager(page, 2, aip)
+
+    assert pager.page == pager_page
+    assert pager.pages == 0
+    assert pager.per_page == 2
+    assert pager.prev_num is None
+    assert pager.next_num is None
