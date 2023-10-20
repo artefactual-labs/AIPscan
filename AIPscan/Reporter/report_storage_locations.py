@@ -119,7 +119,7 @@ def storage_location_usage_over_time():
                 tmp.name,
                 mimetype="text/csv",
                 as_attachment=True,
-                attachment_filename=filename,
+                download_name=filename,
             )
 
     return render_template(
