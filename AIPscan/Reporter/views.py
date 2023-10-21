@@ -39,6 +39,7 @@ from AIPscan.Reporter import (  # noqa: F401
     request_params,
     sort_puids,
 )
+from AIPscan.Reporter.database_helpers import get_possible_storage_locations
 from AIPscan.Reporter.helpers import (
     calculate_paging_window,
     get_premis_xml_lines,
@@ -83,7 +84,11 @@ def get_aip_pager(page, per_page, storage_service, storage_location):
     except ValueError:
         page = 1
 
-    pager = AIP.query.filter_by(storage_service_id=storage_service.id).paginate(
+    storage_service_id = None
+    if storage_service is not None:
+        storage_service_id = storage_service.id
+
+    pager = AIP.query.filter_by(storage_service_id=storage_service_id).paginate(
         page=page, per_page=per_page, error_out=False
     )
 
@@ -133,7 +138,7 @@ def view_aips():
         storage_services=StorageService.query.all(),
         storage_service=storage_service,
         storage_locations=storage_locations_with_aips(
-            storage_service.storage_locations
+            get_possible_storage_locations(storage_service)
         ),
         storage_location=storage_location,
         pager=pager,
@@ -300,7 +305,7 @@ def reports():
         storage_services=StorageService.query.all(),
         storage_location=storage_location,
         storage_locations=storage_locations_with_aips(
-            storage_service.storage_locations
+            get_possible_storage_locations(storage_service)
         ),
         original_file_formats=original_file_formats,
         preservation_file_formats=preservation_file_formats,
