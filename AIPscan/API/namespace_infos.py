@@ -9,6 +9,8 @@ from the application itself.
 
 from flask_restx import Namespace, Resource, fields
 
+import AIPscan
+
 api = Namespace(
     "infos", description="Additional metadata associated with the application"
 )
@@ -22,8 +24,7 @@ version = api.model(
     },
 )
 
-# TODO: Get this from the application wherever we decide to put it...
-APPVERSION = {"version": "0.1"}
+APPVERSION = {"version": AIPscan.__version__}
 
 
 @api.route("/version")
