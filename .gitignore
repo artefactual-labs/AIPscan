@@ -6,6 +6,7 @@ AIPscan/Aggregator/__pycache__/
 AIPscan/Reporter/__pycache__/
 AIPscan/API/__pycache__/
 AIPscan/__init__.pyc
+node_modules
 config.pyc
 aipscan.db
 celerytasks.db
