@@ -155,6 +155,29 @@ Shut down the AIPscan Docker containers and remove the rabbitmq volumes:
 docker-composer down --volumes
 ```
 
+## Tools
+
+The `tools` directory contains scripts that can be run by developers and system
+adminsitrators.
+
+#### Test data generator
+
+The test data generator, `tools/generate-test-data`, tool populates
+AIPscan's databse with randomly generated example data.
+
+### Running tools
+
+These should be run using the same system user and virtual environment that
+AIPscan is running under.
+
+Here's how you would run the `generate-test-data` tool, for example:
+
+    $ cd <path to AIPscan base directory>
+    $ sudo -u <AIPscan system user> /bin/bash
+    $ source <path to AIPscan virtual environment>/bin/activate
+    $ ./tools/generate-test-data.py
+
+
 # Usage
 
 * Ensure that the Flask Server, RabbitMQ server, and Celery worker queue are up and running.
