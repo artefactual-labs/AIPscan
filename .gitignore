@@ -12,3 +12,5 @@ celerytasks.db
 AIPscan/Aggregator/downloads/
 .tox/
 *.pyc
+node_modules/
+AIPscan/static/dist/

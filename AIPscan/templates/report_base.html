@@ -5,22 +5,14 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/jquery-ui.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/custom.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='vendor/fontawesome/css/all.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='dist/report_base/assets/report_base-Ko-pkvU3.css') }}">
 
     {% block extra_css %}
         <!-- Repeat this block in your template to include additional stylesheets.
             the content in this one will be replaced. -->
     {% endblock %}
 
-    <script type="text/javascript" language="javascript" src="{{ url_for('static', filename='js/jquery-3.3.1.js') }}"></script>
-    <script type="text/javascript" language="javascript" src="{{ url_for('static', filename='js/jquery-ui.js') }}"></script>
-    <script type="text/javascript" language="javascript" src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
-    <script type="text/javascript" language="javascript" src="{{ url_for('static', filename='js/report.js') }}"></script>
-
-    {% include "datatable.html" %}
+    <script type="text/javascript" language="javascript" src="{{ url_for('static', filename='dist/report_base/assets/report_base-9P0o2o4q.js') }}"></script>
 </head>
 
 <body data-url-root="{{ request.url_root }}">
