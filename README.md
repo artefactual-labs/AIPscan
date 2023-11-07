@@ -165,6 +165,49 @@ adminsitrators.
 The test data generator, `tools/generate-test-data`, tool populates
 AIPscan's databse with randomly generated example data.
 
+#### Fetch script
+
+The AIP fetch tool, `tools/fetch_aips`, allows all, or a subset, of a storage
+service's packages to be fetched by AIPscan. Any AIPs not yet fetched by
+AIPscan will be added but no duplicates will be added if an AIP has already
+been fetched. Any AIPs that have been newly marked as deleted will be removed
+from AIPscan.
+
+When using the script the storage service's list of packages can optionally be
+grouped into "pages" with each "page" containing a number of packages
+(specified by a command-line argument). So, for example, packages on a storage
+service with 150 packages on it could be fetched by fetching three pages of 50
+packages. Likewise if the storage service has anything from 101 to 149 packages
+on it it could also be fetched by fetching three pages of 50 packages.
+
+If using `cron`, or some other scheduler, to automatically fetch AIPs using
+this tool consider using the `flock` command to prevent overlapping executions
+of the tool.
+
+##### Cached package list
+
+A storage service's list of packages is downloaded by the script and is cached
+so paging, if used, will remain consistent between script runs. The cache of a
+particular cached list of packages is identified by a "session descriptor". A
+session descriptor is specified by whoever runs the script and can be any
+alphanumeric identifier without spaces or special characters. It's used to name
+the directory in which fetch-related files are created.
+
+Below is what the directory structure would end up looking like if the session
+identifier "somedescriptor" was used, showing where the `packages.json` file,
+containing the list of a storage service's packages, would be put.
+
+    AIPscan/Aggregator/downloads/somedescriptor
+    ├── mets
+    │   └── batch
+    └── packages
+        └── packages.json
+
+**NOTE:** Each run of the script will generate a new fetch job database entry.
+These individual fetch jobs shouldn't be deleted, via the AIPscan web UI,
+until all fetch jobs (for each "page") have run. Otherwise the cached list of
+packages will be deleted and the package list will have to be downloaded again.
+
 ### Running tools
 
 These should be run using the same system user and virtual environment that
@@ -175,7 +218,10 @@ Here's how you would run the `generate-test-data` tool, for example:
     $ cd <path to AIPscan base directory>
     $ sudo -u <AIPscan system user> /bin/bash
     $ source <path to AIPscan virtual environment>/bin/activate
-    $ ./tools/generate-test-data.py
+    $ ./tools/generate-test-data
+
+In order to display a tool's CLI arguments and options, enter `<path to tool>
+--help`.
 
 
 # Usage

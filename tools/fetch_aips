@@ -1,0 +1,149 @@
+#!/usr/bin/env python3
+import logging
+import os
+import sys
+from datetime import datetime
+
+import click
+from app import init
+from helpers import fetch
+
+from AIPscan import db
+from AIPscan.Aggregator import database_helpers
+from AIPscan.Aggregator.task_helpers import create_numbered_subdirs
+from AIPscan.models import StorageService
+from config import CONFIGS
+
+
+@click.command()
+@click.option("--ss-id", "-s", required=True, help="Storage service ID", type=int)
+@click.option("--session-id", "-i", required=True, help="Session descriptor", type=str)
+@click.option(
+    "--page", "-p", help="Page (if not set then all AIPs will be fetched)", type=int
+)
+@click.option(
+    "--packages-per-page",
+    "-n",
+    default=1000,
+    help="Packages per page (default 1000)",
+    type=int,
+)
+@click.option("--logfile", "-l", default=None, help="Filepath to log to", type=str)
+def main(ss_id, session_id, page, packages_per_page, logfile):
+    # Set up logging
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s:%(levelname)s:%(name)s:%(message)s",
+        filename=logfile,
+    )
+
+    logger_name = os.path.basename(sys.argv[0])
+    logger = logging.getLogger(logger_name)
+    logger.setLevel(logging.INFO)
+
+    root = logging.getLogger()
+    root.setLevel(logging.INFO)
+
+    # Initialize Flask app context
+    app = init.create_app_instance(CONFIGS[init.config_name], db)
+
+    package_list_no = "batch"
+    with app.app_context():
+
+        # Get storage service configuration
+        storage_service = StorageService.query.get(ss_id)
+
+        if storage_service is None:
+            message = f"Storage service ID {ss_id} not found."
+
+            logger.critical(message)
+
+            err = click.ClickException(message)
+            err.exit_code = 1
+            raise err
+
+        # Create a fetch_job record in the AIPscan database and take note of its ID
+        datetime_obj_start = datetime.now().replace(microsecond=0)
+
+        fetch_job = database_helpers.create_fetch_job(
+            datetime_obj_start, session_id, ss_id
+        )
+        fetch_job_id = fetch_job.id
+
+        logger.info(f"Created fetch job record {fetch_job_id}.")
+
+        # Create directories, if need be
+        packages_dir = fetch.create_packages_directory(session_id)
+        fetch.create_mets_directory(session_id)
+        create_numbered_subdirs(session_id, package_list_no)
+
+        # Get package data
+        packages = fetch.get_packages(storage_service, packages_dir)
+
+        # Determine start and end package
+        total_packages = len(packages["objects"])
+
+        if page is None:
+            start_item = 1
+            end_item = total_packages
+        else:
+            start_item = ((page - 1) * packages_per_page) + 1
+            end_item = start_item + packages_per_page - 1
+
+        # Describe start and end package
+        if total_packages < end_item:
+            end_item = total_packages
+
+        # Make sure paging window is valid and delete fetch job if not
+        if start_item > total_packages:
+            db.session.delete(fetch_job)
+            db.session.commit()
+
+            message = f"Fetch job deleted. Page {page} would start at package {start_item} but there are only {total_packages} packages."
+
+            logger.error(message)
+
+            err = click.ClickException(message)
+            err.exit_code = 1
+            raise err
+
+        logger.info(
+            f"Processing packages {start_item} to {end_item} of {total_packages}."
+        )
+
+        # Import packages
+        api_url = fetch.assemble_api_url_dict(storage_service)
+
+        processed_packages = fetch.import_packages(
+            packages,
+            start_item,
+            end_item,
+            api_url,
+            ss_id,
+            session_id,
+            package_list_no,
+            fetch_job_id,
+            packages_per_page,
+            logger,
+        )
+
+        fetch_job = database_helpers.update_fetch_job(
+            fetch_job_id, processed_packages, total_packages
+        )
+
+        summary = "aips: '{}'; sips: '{}'; dips: '{}'; deleted: '{}'; replicated: '{}'".format(
+            fetch_job.total_aips,
+            fetch_job.total_sips,
+            fetch_job.total_dips,
+            fetch_job.total_deleted_aips,
+            fetch_job.total_replicas,
+        )
+        logger.info("%s", summary)
+        logger.info(
+            f"Updated fetch job record {fetch_job_id} with package type counts."
+        )
+        logger.info("Processing complete.")
+
+
+if __name__ == "__main__":
+    main()
