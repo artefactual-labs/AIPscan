@@ -119,7 +119,7 @@ def create_fake_aip_files(min, max, aip_id):
             size=randint(1000, 1_000_000),
             date_created=date.today(),
             puid=fake.text(20)[:-1],
-            file_format=fake.text(20)[:-1],
+            file_format=fake.file_extension(),
             format_version=fake.text(20)[:-1],
             checksum_type=fake.text(20)[:-1],
             checksum_value=fake.text(20)[:-1],
