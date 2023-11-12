@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 import logging
-import os
+import pathlib
 import sys
 from datetime import datetime
 
 import click
-from app import init
+from app import cli
 from helpers import fetch
 
 from AIPscan import db
@@ -37,7 +37,8 @@ def main(ss_id, session_id, page, packages_per_page, logfile):
         filename=logfile,
     )
 
-    logger_name = os.path.basename(sys.argv[0])
+    logger_name = pathlib.PurePosixPath(sys.argv[0]).name
+
     logger = logging.getLogger(logger_name)
     logger.setLevel(logging.INFO)
 
@@ -45,7 +46,7 @@ def main(ss_id, session_id, page, packages_per_page, logfile):
     root.setLevel(logging.INFO)
 
     # Initialize Flask app context
-    app = init.create_app_instance(CONFIGS[init.config_name], db)
+    app = cli.create_app_instance(CONFIGS[cli.config_name], db)
 
     package_list_no = "batch"
     with app.app_context():
@@ -54,13 +55,9 @@ def main(ss_id, session_id, page, packages_per_page, logfile):
         storage_service = StorageService.query.get(ss_id)
 
         if storage_service is None:
-            message = f"Storage service ID {ss_id} not found."
-
-            logger.critical(message)
-
-            err = click.ClickException(message)
-            err.exit_code = 1
-            raise err
+            cli.log_and_raise_click_error(
+                logger, f"Storage service ID {ss_id} not found."
+            )
 
         # Create a fetch_job record in the AIPscan database and take note of its ID
         datetime_obj_start = datetime.now().replace(microsecond=0)
@@ -99,13 +96,8 @@ def main(ss_id, session_id, page, packages_per_page, logfile):
             db.session.delete(fetch_job)
             db.session.commit()
 
-            message = f"Fetch job deleted. Page {page} would start at package {start_item} but there are only {total_packages} packages."
-
-            logger.error(message)
-
-            err = click.ClickException(message)
-            err.exit_code = 1
-            raise err
+            message = f"Page {page} would start at package {start_item} but there are only {total_packages} packages. Fetch job deleted."
+            cli.log_and_raise_click_error(logger, message)
 
         logger.info(
             f"Processing packages {start_item} to {end_item} of {total_packages}."

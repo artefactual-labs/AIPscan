@@ -1,4 +1,4 @@
-import os
+import pathlib
 from datetime import date
 
 from faker import Faker
@@ -75,7 +75,7 @@ def create_fake_fetch_job(storage_service_id):
 
 
 def create_fake_location(storage_service_id):
-    current_location = os.path.join(os.path.dirname(fake.file_path(3)), fake.uuid4())
+    current_location = str(pathlib.Path(fake.file_path(3)).parent / fake.uuid4())
 
     location = StorageLocation(
         current_location=current_location,
