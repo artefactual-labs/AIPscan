@@ -1,0 +1,38 @@
+#!/bin/bash
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+TEMP_DIR="`dirname "$(mktemp --dry-run)"`/`basename $0`"
+OUTPUT_DIR="$SCRIPT_DIR/output/erd"
+
+# Create necessary directories
+mkdir $TEMP_DIR
+mkdir -p $OUTPUT_DIR
+
+# Download SchemaSpy and the Sqlite Xerial JDBC driver
+if [ ! -f "$TEMP_DIR/schemaspy-6.2.4.jar" ]; then
+    wget https://github.com/schemaspy/schemaspy/releases/download/v6.2.4/schemaspy-6.2.4.jar -O $TEMP_DIR/schemaspy-6.2.4.jar
+fi
+
+if [ ! -f "$TEMP_DIR/sqlite-jdbc-3.44.0.0.jar" ]; then
+    wget https://github.com/xerial/sqlite-jdbc/releases/download/3.44.0.0/sqlite-jdbc-3.44.0.0.jar -O $TEMP_DIR/sqlite-jdbc-3.44.0.0.jar
+fi
+
+# Generate database documentation
+java -jar $TEMP_DIR/schemaspy-6.2.4.jar \
+    -t sqlite-xerial \
+    -dp $TEMP_DIR/sqlite-jdbc-3.44.0.0.jar \
+    -db $SCRIPT_DIR/../aipscan.db \
+    -imageformat png \
+    -o $OUTPUT_DIR \
+    -u schemaspy.u \
+    -cat aipscan \
+    -s aipscan \
+    -debug
+
+# Display location of output and ER diagram
+OUTPUT_PNG="$OUTPUT_DIR/diagrams/summary/relationships.real.compact.png"
+
+if [ -f "$OUTPUT_PNG" ]; then
+    echo
+    echo "Output directory: $OUTPUT_DIR"
+    echo "Output diagram: $OUTPUT_PNG"
+fi

@@ -229,6 +229,17 @@ These individual fetch jobs shouldn't be deleted, via the AIPscan web UI,
 until all fetch jobs (for each "page") have run. Otherwise the cached list of
 packages will be deleted and the package list will have to be downloaded again.
 
+#### Database documentation generator
+
+The database documentation generator, `tools/generate_db_docs`, Bash script
+downloads SchemaSpy, a database documentation tool, and uses it to generate
+documentation of AIPscan's database, including a PNG formatted
+entity–relationship diagram.
+
+The script doesn't require any CLI arguments or options be specified and
+doesn't have to be run in a virtual environment. It requires that Graphviz,
+wget, and a Java Runtime Environment be installed.
+
 ### Running tools
 
 These should be run using the same system user and virtual environment that
