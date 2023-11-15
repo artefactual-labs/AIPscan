@@ -82,17 +82,27 @@
       </tr>
 
       <tr>
-          <td><strong>Largest AIPs</strong></td>
-          <td><span class="text-muted">Top twenty largest AIPs in the Storage Service.
-            <br>Filter by date range and storage location.</span></td>
+          <td>
+            <strong>Largest AIPs</strong>
+            <br><input id="largestAipsLimit" value="20">
+          </td>
+          <td>
+            <span class="text-muted">Top</span> <span class="text-muted font-italic">n</span> <span class="text-muted">largest AIPs in the Storage Service.
+            <br>Filter by date range and storage location.</span>
+          </td>
           <td><a href="#"><button type="button" id="largestAIPs" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a></td>
       </tr>
 
       <tr>
-          <td><strong>Largest files</strong></td>
-          <td><span class="text-muted">Top twenty largest files in the Storage Service.
+          <td>
+            <strong>Largest files</strong>
+            <br><input id="largestFilesLimit" value="20">
+          </td>
+          <td>
+            <span class="text-muted">Top</span> <span class="text-muted font-italic">n</span> <span class="text-muted">largest files in the Storage Service.
             <br>Filter by date range and storage location.
-            <br>Filter by originals or preservation copies (in report).</span></td>
+            <br>Filter by originals or preservation copies (in report).</span>
+          </td>
           <td><a href="#"><button type="button" id="largestFiles" class="btn btn-info" style="margin-left:5px; margin-bottom:5px;">Tabular</button></a></td>
       </tr>
 
@@ -235,6 +245,7 @@ $(document).ready(function() {
 
   const DATE_ALERT_START = 'The start date must be before the end date';
   const DATE_ALERT_END = 'The end date must be after the start date';
+  const LIMIT_ALERT = 'The limit must be numeric and larger than zero.';
 
   function reloadPage (ignoreLocation) {
     var storageServiceId = $('#ss').val();
@@ -405,45 +416,55 @@ $(document).ready(function() {
   $("#largestAIPs").on("click", function() {
     var startdate = $('#startdate').val();
     var enddate = $('#enddate').val();
+    var limit = $('#largestAipsLimit').val();
+
+    if (!$.isNumeric(limit) || limit < 1) {
+      alert(LIMIT_ALERT);
+
+      return false;
+    }
+
     if (enddate < startdate) {
       alert(DATE_ALERT_START);
     } else {
-      var url = (
-        window.location.origin +
-        '/reporter/largest_aips/' +
-        '?amss_id=' +
-        storageServiceId +
-        '&start_date=' +
-        startdate +
-        '&end_date=' +
-        enddate +
-        '&storage_location=' +
-        storageLocationId +
-        '&limit=20'
-      );
-      window.open(url);
+      var params = {
+        "amss_id": storageServiceId,
+        "start_date": startdate,
+        "end_date": enddate,
+        "storage_location": storageLocationId,
+        "limit": limit
+      }
+
+      const url = new URL("/reporter/largest_aips/", window.location.origin);
+      url.search = new URLSearchParams(params).toString();
+      window.open(url.href);
     }
   });
   $("#largestFiles").on("click", function() {
     var startdate = $('#startdate').val();
     var enddate = $('#enddate').val();
+    var limit = $('#largestFilesLimit').val();
+
+    if (!$.isNumeric(limit) || limit < 1) {
+      alert(LIMIT_ALERT);
+
+      return false;
+    }
+
     if (enddate < startdate) {
       alert(DATE_ALERT_START);
     } else {
-      var url = (
-        window.location.origin +
-        '/reporter/largest_files/' +
-        '?amss_id=' +
-        storageServiceId +
-        '&start_date=' +
-        startdate +
-        '&end_date=' +
-        enddate +
-        '&storage_location=' +
-        storageLocationId +
-        '&limit=20'
-      );
-      window.open(url);
+      var params = {
+        "amss_id": storageServiceId,
+        "start_date": startdate,
+        "end_date": enddate,
+        "storage_location": storageLocationId,
+        "limit": limit
+      }
+
+      const url = new URL("/reporter/largest_files/", window.location.origin);
+      url.search = new URLSearchParams(params).toString();
+      window.open(url.href);
     }
   });
   $("#aipsByOriginalFormat").on("click", function() {
