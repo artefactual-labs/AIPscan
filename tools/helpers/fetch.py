@@ -1,5 +1,5 @@
 import json
-import os
+import pathlib
 
 from AIPscan.Aggregator import database_helpers
 from AIPscan.Aggregator.task_helpers import (
@@ -36,22 +36,23 @@ def fetch_and_write_packages(storage_service, package_filename):
 
 def create_packages_directory(timestamp_str):
     packages_dir = get_packages_directory(timestamp_str)
-    if not os.path.isdir(packages_dir):
-        os.makedirs(packages_dir)
+    if not pathlib.Path(packages_dir).is_dir():
+        pathlib.Path(packages_dir).mkdir(parents=True, exist_ok=True)
 
     return packages_dir
 
 
 def create_mets_directory(timestamp_str):
-    mets_dir = os.path.join("AIPscan/Aggregator/downloads", timestamp_str, "mets")
-    if not os.path.isdir(mets_dir):
-        os.makedirs(mets_dir)
+    mets_dir = pathlib.Path("AIPscan/Aggregator/downloads") / timestamp_str / "mets"
+
+    if not pathlib.Path(mets_dir).is_dir():
+        pathlib.Path(mets_dir).mkdir(parents=True, exist_ok=True)
 
 
 def get_packages(storage_service, packages_dir):
-    package_filename = os.path.join(packages_dir, "packages.json")
+    package_filename = pathlib.Path(packages_dir) / "packages.json"
 
-    if os.path.isfile(package_filename):
+    if pathlib.Path(package_filename).is_file():
         with open(package_filename) as f:
             packages = json.load(f)
     else:

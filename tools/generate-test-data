@@ -2,7 +2,7 @@
 import sys
 
 import click
-from app import init
+from app import cli
 from helpers import data
 
 from AIPscan import db
@@ -28,7 +28,7 @@ def main(
     seed,
 ):
     # Initialize Flash app context
-    app = init.create_app_instance(CONFIGS[init.config_name], db)
+    app = cli.create_app_instance(CONFIGS[cli.config_name], db)
 
     # Change seed
     if seed > 0:
