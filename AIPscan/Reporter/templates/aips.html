@@ -114,15 +114,18 @@ $(document).ready(function(){
   function reloadPage (ignoreLocation) {
     var storageServiceId = $('#ss').val();
     var storageLocationId = $ ('#sl').val();
-    var url = (
-      window.location.origin +
-      '/reporter/aips/?amss_id=' +
-      storageServiceId
-    );
+
+    var url = new URL("/reporter/aips", $('body').data('url-root'));
+    var params = {
+      "amss_id": storageServiceId
+    };
+
     if (ignoreLocation !== true) {
-      url += '&storage_location=' + storageLocationId;
+      params["storage_location"] = storageLocationId;
     }
-    window.location.href = url;
+
+    url.search = new URLSearchParams(params).toString();
+    window.location.href = url.href;
   }
 
   $("#ss").on("change", function() {
