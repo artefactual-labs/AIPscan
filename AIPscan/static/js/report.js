@@ -13,22 +13,18 @@ $(document).ready(function() {
     var startDate = $('#startDate').text();
     var endDate = $('#endDate').text();
     var limit = $('#limit').text();
-    var url = (
-      window.location.origin +
-      '/reporter/largest_files?' +
-      'amss_id=' +
-      storageServiceId +
-      '&start_date=' +
-      startDate +
-      '&end_date=' +
-      endDate +
-      '&storage_location=' +
-      storageLocationId +
-      '&file_type=' +
-      fileType +
-      '&limit=' +
-      limit
-    );
+
+    var url = new URL("/reporter/largest_files", $('body').data('url-root'));
+    const params = {
+      "amss_id": storageServiceId,
+      "start_date": startDate,
+      "end_date": endDate,
+      "storage_location": storageLocationId,
+      "file_type": fileType,
+      "limit": limit
+    };
+
+    url.search = new URLSearchParams(params).toString();
     window.location.href = url;
   });
 
@@ -37,17 +33,16 @@ $(document).ready(function() {
     var aipUUID = $('#aipSelector').val();
     var storageServiceId = $('#storageServiceID').text();
     var storageLocationId = $('#storageLocationID').text();
-    var url = (
-      window.location.origin +
-      '/reporter/preservation_derivatives?' +
-      'amss_id=' +
-      storageServiceId +
-      '&storage_location=' +
-      storageLocationId +
-      '&aip_uuid=' +
-      aipUUID
-    );
-    window.location.href = url;
+
+    var url = new URL("/reporter/preservation_derivatives", $('body').data('url-root'));
+    const params = {
+      "amss_id": storageServiceId,
+      "storage_location": storageLocationId,
+      "aip_uuid": aipUUID
+    };
+
+    url.search = new URLSearchParams(params).toString();
+    window.location.href = url.href;
   });
 
   // Reload storage locations timeseries report on change to metrics or
@@ -58,20 +53,17 @@ $(document).ready(function() {
     var storageServiceId = $('#storageServiceID').text();
     var startDate = $('#startDate').text();
     var endDate = $('#endDate').text();
-    var url = (
-      window.location.origin +
-      '/reporter/storage_locations_usage_over_time?' +
-      'amss_id=' +
-      storageServiceId +
-      '&start_date=' +
-      startDate +
-      '&end_date=' +
-      endDate +
-      '&metric=' +
-      metric +
-      '&cumulative=' +
-      cumulative
-    );
+
+    var url = new URL("/reporter/storage_locations_usage_over_time", window.location.origin);
+    const params = {
+      "amss_id": storageServiceId,
+      "start_date": startDate,
+      "end_date": endDate,
+      "metric": metric,
+      "cumulative": cumulative
+    };
+
+    url.search = new URLSearchParams(params).toString();
     window.location.href = url;
   });
 
@@ -81,21 +73,18 @@ $(document).ready(function() {
     var storageServiceId = $('#storageServiceID').text();
     var startDate = $('#startDate').text();
     var endDate = $('#endDate').text();
-    var url = (
-      window.location.origin +
-      '/reporter/storage_locations_usage_over_time?' +
-      'amss_id=' +
-      storageServiceId +
-      '&start_date=' +
-      startDate +
-      '&end_date=' +
-      endDate +
-      '&metric=' +
-      metric +
-      '&cumulative=' +
-      cumulative
-    );
-    window.location.href = url;
+
+    var url = new URL("/reporter/storage_locations_usage_over_time", window.location.origin);
+    const params = {
+      "amss_id": storageServiceId,
+      "start_date": startDate,
+      "end_date": endDate,
+      "metric": metric,
+      "cumulative": cumulative
+    };
+
+    url.search = new URLSearchParams(params).toString();
+    window.location.href = url.href;
   });
 
 });

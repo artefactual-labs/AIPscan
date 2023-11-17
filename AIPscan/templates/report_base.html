@@ -23,7 +23,7 @@
     {% include "datatable.html" %}
 </head>
 
-<body>
+<body data-url-root="{{ request.url_root }}">
   <div class="container-fluid" style="margin: 20px 0;">
 
     {% block content %}

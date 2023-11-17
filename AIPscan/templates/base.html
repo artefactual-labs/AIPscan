@@ -20,7 +20,7 @@
     {% include "datatable.html" %}
 
 </head>
-<body>
+<body data-url-root="{{ request.url_root }}">
 {% include "partials/navbar.html" %}
 
 <div class="container-fluid" style="margin: 20px 0;">
