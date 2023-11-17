@@ -200,8 +200,8 @@ packages. Likewise if the storage service has anything from 101 to 149 packages
 on it it could also be fetched by fetching three pages of 50 packages.
 
 If using `cron`, or some other scheduler, to automatically fetch AIPs using
-this tool consider using the `flock` command to prevent overlapping executions
-of the tool.
+this tool consider using the `--lockfile` option to prevent overlapping
+executions of the tool.
 
 #### Cached package list
 

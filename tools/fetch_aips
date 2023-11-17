@@ -6,6 +6,7 @@ from datetime import datetime
 
 import click
 from app import cli
+from filelock import FileLock, Timeout
 from helpers import fetch
 
 from AIPscan import db
@@ -16,20 +17,29 @@ from config import CONFIGS
 
 
 @click.command()
-@click.option("--ss-id", "-s", required=True, help="Storage service ID", type=int)
-@click.option("--session-id", "-i", required=True, help="Session descriptor", type=str)
+@click.option("--ss-id", "-s", required=True, help="Storage service ID.", type=int)
+@click.option("--session-id", "-i", required=True, help="Session descriptor.", type=str)
 @click.option(
-    "--page", "-p", help="Page (if not set then all AIPs will be fetched)", type=int
+    "--page", "-p", help="Page (if not set then all AIPs will be fetched).", type=int
 )
 @click.option(
     "--packages-per-page",
     "-n",
     default=1000,
-    help="Packages per page (default 1000)",
+    help="Packages per page (default 1000).",
     type=int,
 )
-@click.option("--logfile", "-l", default=None, help="Filepath to log to", type=str)
-def main(ss_id, session_id, page, packages_per_page, logfile):
+@click.option("--logfile", "-l", default=None, help="Filepath to log to.", type=str)
+@click.option(
+    "--lockfile",
+    "-o",
+    is_flag=True,
+    show_default=True,
+    default=False,
+    help="Use lock file.",
+    type=bool,
+)
+def main(ss_id, session_id, page, packages_per_page, lockfile, logfile):
     # Set up logging
     logging.basicConfig(
         level=logging.INFO,
@@ -45,6 +55,27 @@ def main(ss_id, session_id, page, packages_per_page, logfile):
     root = logging.getLogger()
     root.setLevel(logging.INFO)
 
+    # Attempt to acquire lock, if requested
+    if lockfile:
+        lock_filepath = "/var/lock/aipscan_fetch.lock"
+        lock = FileLock(lock_filepath)
+        logger.info(f"Using lock file {lock_filepath}.")
+
+        try:
+            lock.acquire(timeout=0)
+        except Timeout:
+            cli.log_and_raise_click_error(logger, "Unable to acquire lock.")
+
+        try:
+            fetch_aips(logger, ss_id, session_id, page, packages_per_page, logfile)
+        finally:
+            lock.release()
+
+    else:
+        fetch_aips(logger, ss_id, session_id, page, packages_per_page, logfile)
+
+
+def fetch_aips(logger, ss_id, session_id, page, packages_per_page, logfile):
     # Initialize Flask app context
     app = cli.create_app_instance(CONFIGS[cli.config_name], db)
 
