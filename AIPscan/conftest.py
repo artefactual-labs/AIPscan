@@ -151,7 +151,9 @@ def app_with_populated_files(scope="package"):
         user_agent = test_helpers.create_test_agent()
 
         event = test_helpers.create_test_event(
-            type="ingestion", date=INGEST_EVENT_CREATION_TIME, file_id=original_file.id
+            event_type="ingestion",
+            date=INGEST_EVENT_CREATION_TIME,
+            file_id=original_file.id,
         )
 
         _ = test_helpers.create_test_event_agent(

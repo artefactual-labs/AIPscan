@@ -108,8 +108,8 @@ def create_fake_aip(pipeline_id, storage_service_id, storage_location_id, fetch_
     return aip
 
 
-def create_fake_aip_files(min, max, aip_id):
-    for _ in range(1, randint(min, max)):
+def create_fake_aip_files(min_files, max_files, aip_id):
+    for _ in range(1, randint(min_files, max_files)):
         aipfile = File(
             aip_id=aip_id,
             name=fake.text(20)[:-1],

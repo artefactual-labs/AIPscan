@@ -49,7 +49,7 @@ def _extract_event_detail(premis_event, file_id):
     if not isinstance(premis_event.event_outcome_detail_note, tuple):
         event_outcome_detail = premis_event.event_outcome_detail_note
     event = Event(
-        type=event_type,
+        event_type=event_type,
         uuid=event_uuid,
         date=event_date,
         detail=event_detail,

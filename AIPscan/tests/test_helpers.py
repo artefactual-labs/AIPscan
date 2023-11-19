@@ -4,7 +4,7 @@ from AIPscan.helpers import filesizeformat
 
 
 @pytest.mark.parametrize(
-    "bytes,binary,expected_result",
+    "byte_size,binary,expected_result",
     [
         # Test non-binary results.
         (100, False, "100 Bytes"),
@@ -25,5 +25,5 @@ from AIPscan.helpers import filesizeformat
         (125121042160, True, "116.5 GiB"),
     ],
 )
-def test_filesizeformat(bytes, binary, expected_result):
-    assert filesizeformat(bytes, binary=binary) == expected_result
+def test_filesizeformat(byte_size, binary, expected_result):
+    assert filesizeformat(byte_size, binary=binary) == expected_result

@@ -59,7 +59,7 @@ def filesizeformat(value, binary=False):
     Copyright 2007 Pallets
     BSD 3 license
     """
-    bytes = float(value)
+    byte_size = float(value)
     base = 1024 if binary else 1000
     prefixes = [
         ("KiB" if binary else "kB"),
@@ -72,18 +72,18 @@ def filesizeformat(value, binary=False):
         ("YiB" if binary else "YB"),
     ]
 
-    if bytes == 1:
+    if byte_size == 1:
         return "1 Byte"
-    elif bytes < base:
-        return f"{int(bytes)} Bytes"
+    elif byte_size < base:
+        return f"{int(byte_size)} Bytes"
     else:
         for i, prefix in enumerate(prefixes):
             unit = base ** (i + 2)
 
-            if bytes < unit:
-                return f"{base * bytes / unit:.1f} {prefix}"
+            if byte_size < unit:
+                return f"{base * byte_size / unit:.1f} {prefix}"
 
-        return f"{base * bytes / unit:.1f} {prefix}"
+        return f"{base * byte_size / unit:.1f} {prefix}"
 
 
 def _split_ms(date_string):

@@ -77,10 +77,12 @@ def ss_default():
     )
 
 
-@aggregator.route("/storage_service/<id>", methods=["GET"])
-def storage_service(id):
-    storage_service = StorageService.query.get(id)
-    mets_fetch_jobs = FetchJob.query.filter_by(storage_service_id=id).all()
+@aggregator.route("/storage_service/<storage_service_id>", methods=["GET"])
+def storage_service(storage_service_id):
+    storage_service = StorageService.query.get(storage_service_id)
+    mets_fetch_jobs = FetchJob.query.filter_by(
+        storage_service_id=storage_service_id
+    ).all()
     return render_template(
         "storage_service.html",
         storage_service=storage_service,
@@ -94,10 +96,10 @@ def storage_services():
     return render_template("storage_services.html", storage_services=storage_services)
 
 
-@aggregator.route("/edit_storage_service/<id>", methods=["GET", "POST"])
-def edit_storage_service(id):
+@aggregator.route("/edit_storage_service/<storage_service_id>", methods=["GET", "POST"])
+def edit_storage_service(storage_service_id):
     form = StorageServiceForm()
-    storage_service = StorageService.query.get(id)
+    storage_service = StorageService.query.get(storage_service_id)
     if request.method == "GET":
         form.name.data = storage_service.name
         form.url.data = storage_service.url
@@ -148,18 +150,18 @@ def new_storage_service():
     )
 
 
-@aggregator.route("/delete_storage_service/<id>", methods=["GET"])
-def delete_storage_service(id):
-    tasks.delete_storage_service.delay(id)
-    storage_service = StorageService.query.get(id)
+@aggregator.route("/delete_storage_service/<storage_service_id>", methods=["GET"])
+def delete_storage_service(storage_service_id):
+    tasks.delete_storage_service.delay(storage_service_id)
+    storage_service = StorageService.query.get(storage_service_id)
     flash("Storage service '{}' is being deleted".format(storage_service.name))
     return redirect(url_for("aggregator.storage_services"))
 
 
-@aggregator.route("/new_fetch_job/<id>", methods=["POST"])
-def new_fetch_job(id):
+@aggregator.route("/new_fetch_job/<fetch_job_id>", methods=["POST"])
+def new_fetch_job(fetch_job_id):
     """Fetch and process AIP METS files from Storage Service."""
-    storage_service = StorageService.query.get(id)
+    storage_service = StorageService.query.get(fetch_job_id)
     api_url = {
         "baseUrl": storage_service.url,
         "userName": storage_service.user_name,
@@ -224,13 +226,15 @@ def new_fetch_job(id):
     return jsonify(response)
 
 
-@aggregator.route("/delete_fetch_job/<id>", methods=["GET"])
-def delete_fetch_job(id):
-    tasks.delete_fetch_job.delay(id)
-    fetch_job = FetchJob.query.get(id)
+@aggregator.route("/delete_fetch_job/<fetch_job_id>", methods=["GET"])
+def delete_fetch_job(fetch_job_id):
+    tasks.delete_fetch_job.delay(fetch_job_id)
+    fetch_job = FetchJob.query.get(fetch_job_id)
     storage_service = StorageService.query.get(fetch_job.storage_service_id)
     flash("Fetch job {} is being deleted".format(fetch_job.download_start))
-    return redirect(url_for("aggregator.storage_service", id=storage_service.id))
+    return redirect(
+        url_for("aggregator.storage_service", storage_service_id=storage_service.id)
+    )
 
 
 @aggregator.route("/package_list_task_status/<taskid>")

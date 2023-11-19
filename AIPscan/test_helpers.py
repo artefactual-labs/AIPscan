@@ -132,7 +132,7 @@ def create_test_agent(**kwargs):
 def create_test_event(**kwargs):
     """Create and return a test Event with overridable defaults."""
     event = Event(
-        type=kwargs.get("type", "ingestion"),
+        event_type=kwargs.get("type", "ingestion"),
         uuid=kwargs.get("uuid", str(uuid.uuid4())),
         date=kwargs.get("date", datetime.now()),
         detail=kwargs.get("detail", "ingestion detail"),
