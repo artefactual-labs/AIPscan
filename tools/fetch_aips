@@ -33,6 +33,9 @@ def main(ss_id, session_id, page, packages_per_page, logfile):
     id = "goat"
     print(id)
 
+    id = "goat"
+    print(id)
+
     # Set up logging
     logging.basicConfig(
         level=logging.INFO,
