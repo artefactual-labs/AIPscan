@@ -3,6 +3,8 @@ import os
 from AIPscan import create_app
 
 if __name__ == "__main__":
+    id = 5
+    print(id)
     id = 4
     print(id)
     id = 3
