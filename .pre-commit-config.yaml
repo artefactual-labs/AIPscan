@@ -15,3 +15,8 @@ repos:
   hooks:
   - id: isort
     language_version: python3
+- repo: https://github.com/igorshubovych/markdownlint-cli
+  rev: v0.37.0
+  hooks:
+  - id: markdownlint
+    args: ["--config", ".markdownlint.jsonc"]

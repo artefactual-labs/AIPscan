@@ -8,7 +8,7 @@ code contributions are similarly welcome but should typically be
 submitted after filing an issue and discussing the proposed approach.
 
 In general, follow code style guidelines from the Archivematica
-project's [CONTRIBUTING](https://github.com/artefactual/archivematica/blob/118dd731d7f24606e0aa83d46acdafbd2fe88755/CONTRIBUTING.md)
+project's [CONTRIBUTING](https://github.com/artefactual/archivematica/blob/HEAD/CONTRIBUTING.md)
 to the greatest degree possible.
 
 ## Writing a new AIPscan report
@@ -149,7 +149,6 @@ database rely heavily on [pytest](https://docs.pytest.org) fixtures in
 AIPscan's
 [project-wide conftest module](https://github.com/artefactual-labs/AIPscan/blob/main/AIPscan/conftest.py).
 
-
 ### Creating a new API endpoint
 
 Each new Data endpoint should have a corresponding API endpoint. These
@@ -231,7 +230,7 @@ and a pie chart) will have a separate view function and template for
 each representation.
 
 Each report's views are contained within a separate module, which is
-subsequently imported into `AIPscan/Reporter/views.py`.  All views 
+subsequently imported into `AIPscan/Reporter/views.py`.  All views
 related to a report should be contained within the same module.
 Common request parameters are defined as constants in
 `AIPscan/Reporter/request_params.py`.
@@ -337,7 +336,7 @@ template defined in `AIPscan/templates/report_base.html`.
 
 For example:
 
-```
+```jinja
 {% extends "report_base.html" %}
 
 {% block content %}

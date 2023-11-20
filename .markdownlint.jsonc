@@ -1,0 +1,11 @@
+{
+  "default": true,
+  "MD010": { // Presence of hard tabs
+    "code_blocks": false // Don't check code blocks
+  },
+  "MD013": { // Limit line lengths
+    "code_blocks": false, // Don't check code blocks
+    "tables": false // Don't check table Markdown
+  },
+  "MD041": false // Disable: first line in a file should be a top-level heading
+}
