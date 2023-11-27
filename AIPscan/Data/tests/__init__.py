@@ -7,8 +7,8 @@ from AIPscan.models import AIP, StorageService
 class MockAIPsByFormatOrPUIDResult:
     """Fixture for mocking AIPs by format/PUID results with labels."""
 
-    def __init__(self, id, name, uuid, file_count, total_size):
-        self.id = id
+    def __init__(self, mock_id, name, uuid, file_count, total_size):
+        self.id = mock_id
         self.name = name
         self.uuid = uuid
         self.file_count = file_count
@@ -17,28 +17,28 @@ class MockAIPsByFormatOrPUIDResult:
 
 MOCK_AIPS_BY_FORMAT_OR_PUID_QUERY_RESULTS = [
     MockAIPsByFormatOrPUIDResult(
-        id=1,
+        mock_id=1,
         name="aip0",
         uuid="11111111-1111-1111-1111-111111111111",
         file_count=5,
         total_size=12345678,
     ),
     MockAIPsByFormatOrPUIDResult(
-        id=2,
+        mock_id=2,
         name="aip1",
         uuid="22222222-2222-2222-2222-222222222222",
         file_count=3,
         total_size=123456,
     ),
     MockAIPsByFormatOrPUIDResult(
-        id=5,
+        mock_id=5,
         name="aip2",
         uuid="33333333-3333-3333-3333-333333333333",
         file_count=2,
         total_size=12345,
     ),
     MockAIPsByFormatOrPUIDResult(
-        id=10,
+        mock_id=10,
         name="aip3",
         uuid="44444444-4444-4444-4444-444444444444",
         file_count=1,
