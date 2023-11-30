@@ -10,7 +10,7 @@ from AIPscan.Data import fields, report_data
 from AIPscan.helpers import parse_bool
 from AIPscan.Reporter import download_csv, reporter, request_params, translate_headers
 
-HEADERS = [
+TABLE_HEADERS = [
     fields.FIELD_AIP_NAME,
     fields.FIELD_ORIGINAL_FILE,
     fields.FIELD_ORIGINAL_FORMAT,
@@ -64,7 +64,7 @@ def preservation_derivatives():
     csv = parse_bool(request.args.get(request_params.CSV), default=False)
     aip_uuid = request.args.get(request_params.AIP_UUID)
 
-    headers = translate_headers(HEADERS)
+    headers = translate_headers(TABLE_HEADERS)
 
     derivative_data = report_data.preservation_derivatives(
         storage_service_id, storage_location_id, aip_uuid

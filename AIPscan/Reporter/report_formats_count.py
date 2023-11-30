@@ -27,7 +27,12 @@ from AIPscan.Reporter import (
     translate_headers,
 )
 
-HEADERS = [fields.FIELD_FORMAT, fields.FIELD_COUNT, fields.FIELD_SIZE]
+HEADERS = [
+    fields.FIELD_FORMAT,
+    fields.FIELD_COUNT,
+    fields.FIELD_SIZE,
+    fields.FIELD_SIZE_BYTES,
+]
 
 
 @reporter.route("/report_formats_count/", methods=["GET"])
@@ -51,12 +56,14 @@ def report_formats_count():
     )
     formats = formats_data.get(fields.FIELD_FORMATS)
 
-    headers = translate_headers(HEADERS)
-
     if csv:
+        headers = translate_headers(HEADERS)
+
         filename = "file_formats.csv"
         csv_data = format_size_for_csv(formats)
         return download_csv(headers, csv_data, filename)
+
+    headers = translate_headers(HEADERS, [fields.FIELD_SIZE_BYTES])
 
     return render_template(
         "report_formats_count.html",

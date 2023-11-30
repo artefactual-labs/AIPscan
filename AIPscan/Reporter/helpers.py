@@ -28,7 +28,7 @@ def sort_puids(puids):
     return natsorted(puids)
 
 
-def translate_headers(headers):
+def translate_headers(headers, remove_columns=[]):
     """Translate headers from something machine readable to something
     more user friendly and translatable.
     """
@@ -36,6 +36,7 @@ def translate_headers(headers):
         fields.FIELD_AIP_NAME: "AIP Name",
         fields.FIELD_AIPS: "AIPs",
         fields.FIELD_AIP_SIZE: "AIP Size",
+        fields.FIELD_AIP_SIZE_BYTES: "AIP Size Bytes",
         fields.FIELD_AIP_UUID: "AIP UUID",
         fields.FIELD_ALL_AIPS: "All AIPs",
         fields.FIELD_COUNT: "Count",
@@ -63,12 +64,22 @@ def translate_headers(headers):
         fields.FIELD_PUID: "PUID",
         fields.FIELD_RELATED_PAIRING: "Related Pairing",
         fields.FIELD_SIZE: "Size",
+        fields.FIELD_SIZE_BYTES: "Size Bytes",
         fields.FIELD_STORAGE_LOCATION: "Location",
         fields.FIELD_STORAGE_NAME: "Storage Service Name",
         fields.FIELD_TRANSFER_NAME: "Transfer Name",
         fields.FIELD_USER: "User",
         fields.FIELD_VERSION: "Version",
     }
+
+    # Remove columns
+    if len(remove_columns) > 0:
+        # Replace list argument with a copy and remove columns
+        headers=headers.copy()
+
+        for column in remove_columns:
+            headers.remove(column)
+
     return [field_lookup.get(header, header) for header in headers]
 
 

@@ -14,18 +14,10 @@ from AIPscan.Reporter import (
 )
 
 HEADERS = [
-    fields.FIELD_FILENAME,
-    fields.FIELD_SIZE,
-    fields.FIELD_FORMAT,
-    fields.FIELD_PUID,
-    fields.FIELD_FILE_TYPE,
-    fields.FIELD_AIP_NAME,
-]
-
-CSV_HEADERS = [
     fields.FIELD_UUID,
     fields.FIELD_FILENAME,
     fields.FIELD_SIZE,
+    fields.FIELD_SIZE_BYTES,
     fields.FIELD_FILE_TYPE,
     fields.FIELD_FORMAT,
     fields.FIELD_VERSION,
@@ -52,8 +44,6 @@ def largest_files():
         pass
     csv = parse_bool(request.args.get(request_params.CSV), default=False)
 
-    headers = translate_headers(HEADERS)
-
     file_data = report_data.largest_files(
         storage_service_id=storage_service_id,
         start_date=start_date,
@@ -65,9 +55,18 @@ def largest_files():
 
     if csv:
         filename = "largest_files.csv"
-        headers = translate_headers(CSV_HEADERS)
+        headers = translate_headers(HEADERS)
         csv_data = format_size_for_csv(file_data[fields.FIELD_FILES])
         return download_csv(headers, csv_data, filename)
+
+    remove_columns = [
+        fields.FIELD_UUID,
+        fields.FIELD_SIZE_BYTES,
+        fields.FIELD_VERSION,
+        fields.FIELD_AIP_UUID
+    ]
+
+    headers = translate_headers(HEADERS, remove_columns)
 
     return render_template(
         "report_largest_files.html",

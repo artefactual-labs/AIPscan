@@ -99,6 +99,7 @@ def formats_count(storage_service_id, start_date, end_date, storage_location_id=
         format_info[fields.FIELD_SIZE] = 0
         if format_.total_size is not None:
             format_info[fields.FIELD_SIZE] = format_.total_size
+            format_info[fields.FIELD_SIZE_BYTES] = format_info[fields.FIELD_SIZE]
 
         report[fields.FIELD_FORMATS].append(format_info)
 
@@ -186,8 +187,11 @@ def format_versions_count(
             pass
         version_info[fields.FIELD_COUNT] = version.file_count
         version_info[fields.FIELD_SIZE] = 0
+        version_info[fields.FIELD_SIZE_BYTES] = version_info[fields.FIELD_SIZE]
+
         if version.total_size is not None:
             version_info[fields.FIELD_SIZE] = version.total_size
+            version_info[fields.FIELD_SIZE_BYTES] = version_info[fields.FIELD_SIZE]
 
         report[fields.FIELD_FORMAT_VERSIONS].append(version_info)
 
@@ -260,8 +264,10 @@ def largest_files(
         file_info[fields.FIELD_NAME] = file_.name
         try:
             file_info[fields.FIELD_SIZE] = int(file_.size)
+            file_info[fields.FIELD_SIZE_BYTES] = file_info[fields.FIELD_SIZE]
         except TypeError:
             file_info[fields.FIELD_SIZE] = 0
+            file_info[fields.FIELD_SIZE_BYTES] = 0
         file_info[fields.FIELD_AIP_ID] = file_.aip_id
         file_info[fields.FIELD_FILE_TYPE] = file_.file_type.value
 
@@ -338,6 +344,7 @@ def largest_aips(
         aip_info[fields.FIELD_NAME] = aip.transfer_name
         aip_info[fields.FIELD_UUID] = aip.uuid
         aip_info[fields.FIELD_SIZE] = aip.size
+        aip_info[fields.FIELD_SIZE_BYTES] = aip_info[fields.FIELD_SIZE]
         aip_info[fields.FIELD_FILE_COUNT] = aip.original_file_count
 
         report[fields.FIELD_AIPS].append(aip_info)
@@ -445,6 +452,7 @@ def _aips_by_file_format_or_puid(
         aip_info[fields.FIELD_UUID] = result.uuid
         aip_info[fields.FIELD_COUNT] = result.file_count
         aip_info[fields.FIELD_SIZE] = result.total_size
+        aip_info[fields.FIELD_SIZE_BYTES] = aip_info[fields.FIELD_SIZE]
 
         report[fields.FIELD_AIPS].append(aip_info)
 
@@ -680,7 +688,6 @@ def storage_locations(storage_service_id, start_date, end_date):
     unsorted_results = []
 
     for location in locations:
-
         loc_info = {}
 
         loc_info[fields.FIELD_ID] = location.id
@@ -688,6 +695,7 @@ def storage_locations(storage_service_id, start_date, end_date):
         loc_info[fields.FIELD_STORAGE_LOCATION] = location.description
         loc_info[fields.FIELD_AIPS] = location.aip_count(start_date, end_date)
         loc_info[fields.FIELD_SIZE] = location.aip_total_size(start_date, end_date)
+        loc_info[fields.FIELD_SIZE_BYTES] = loc_info[fields.FIELD_SIZE]
         loc_info[fields.FIELD_FILE_COUNT] = location.file_count(start_date, end_date)
 
         unsorted_results.append(loc_info)

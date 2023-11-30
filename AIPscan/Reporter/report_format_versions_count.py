@@ -19,6 +19,7 @@ HEADERS = [
     fields.FIELD_VERSION,
     fields.FIELD_COUNT,
     fields.FIELD_SIZE,
+    fields.FIELD_SIZE_BYTES,
 ]
 
 
@@ -41,12 +42,14 @@ def report_format_versions_count():
     )
     versions = version_data.get(fields.FIELD_FORMAT_VERSIONS)
 
-    headers = translate_headers(HEADERS)
-
     if csv:
+        headers = translate_headers(HEADERS)
+
         filename = "format_versions.csv"
         csv_data = format_size_for_csv(versions)
         return download_csv(headers, csv_data, filename)
+
+    headers = translate_headers(HEADERS, [fields.FIELD_SIZE_BYTES])
 
     return render_template(
         "report_format_versions_count.html",

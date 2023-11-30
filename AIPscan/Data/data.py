@@ -78,7 +78,6 @@ def aip_file_format_overview(
     aips = aips.all()
 
     for aip in aips:
-
         if aip.create_date < start_date or aip.create_date >= end_date:
             continue
 
@@ -87,6 +86,7 @@ def aip_file_format_overview(
         aip_info[fields.FIELD_AIP_NAME] = aip.transfer_name
         aip_info[fields.FIELD_CREATED_DATE] = _simplify_datetime(aip.create_date, False)
         aip_info[fields.FIELD_SIZE] = 0
+        aip_info[fields.FIELD_SIZE_BYTES] = 0
         aip_info[fields.FIELD_FORMATS] = {}
 
         files = None
@@ -113,6 +113,7 @@ def aip_file_format_overview(
             size = aip_info[fields.FIELD_SIZE]
             try:
                 aip_info[fields.FIELD_SIZE] = size + file_.size
+                aip_info[fields.FIELD_SIZE_BYTES] = aip_info[fields.FIELD_SIZE]
             # TODO: Find out why size is sometimes None.
             except (AttributeError, TypeError):
                 pass

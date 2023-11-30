@@ -14,18 +14,12 @@ from AIPscan.Reporter import (
     translate_headers,
 )
 
-CSV_HEADERS = [
+HEADERS = [
     fields.FIELD_UUID,
     fields.FIELD_AIP_NAME,
     fields.FIELD_CREATED_DATE,
     fields.FIELD_SIZE,
-    fields.FIELD_FORMATS,
-]
-
-HEADERS = [
-    fields.FIELD_AIP_NAME,
-    fields.FIELD_CREATED_DATE,
-    fields.FIELD_SIZE,
+    fields.FIELD_SIZE_BYTES,
     fields.FIELD_FORMATS,
 ]
 
@@ -111,7 +105,7 @@ def aip_contents():
 
     if csv:
         filename = "aip_contents.csv"
-        headers = translate_headers(CSV_HEADERS)
+        headers = translate_headers(HEADERS)
         aips = _create_aip_formats_string_representation(
             aip_data.get(fields.FIELD_AIPS), separator="|"
         )
@@ -120,12 +114,18 @@ def aip_contents():
 
     aips = _create_aip_formats_string_representation(aip_data.get(fields.FIELD_AIPS))
 
+    remove_columns = [
+        fields.FIELD_UUID,
+        fields.FIELD_SIZE_BYTES
+    ]
+    headers = translate_headers(HEADERS, remove_columns)
+
     return render_template(
         "report_aip_contents.html",
         storage_service=storage_service_id,
         storage_service_name=aip_data.get(fields.FIELD_STORAGE_NAME),
         storage_location_description=aip_data.get(fields.FIELD_STORAGE_LOCATION),
-        columns=translate_headers(HEADERS),
+        columns=headers,
         aips=aip_data.get(fields.FIELD_AIPS),
         start_date=start_date,
         end_date=get_display_end_date(end_date),
