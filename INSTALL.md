@@ -7,17 +7,20 @@ server should be used to serve the AIPscan application. We recommend
 are for production deployment to an Ubuntu/Debian server. Other operating
 systems and servers have not been tested.
 
-### AIPScan Flask server
+## AIPScan Flask server
 
 * Move to project directory: `cd /usr/share/archivematica`
-* Clone files to directory: `git clone https://github.com/artefactual-labs/AIPscan /usr/share/archivematica/AIPscan`
-* Set up the AIPscan virtualenv directory in the Archivematica virtualenvs directory:  
-    * `cd /usr/share/archivematica/virtualenvs`  
-    * `python3 -m venv AIPscan`
-*  Activate virtualenv: `source AIPscan/bin/activate`
-*  Install requirements (this will include Flask, Celery, and Gunicorn): `pip install -r requirements.txt`
+* Clone files to directory: `git clone https://github.com/artefactual-labs/AIPscan
+  /usr/share/archivematica/AIPscan`
+* Set up the AIPscan virtualenv directory in the Archivematica virtualenvs
+  directory:
+  * `cd /usr/share/archivematica/virtualenvs`  
+  * `python3 -m venv AIPscan`
+* Activate virtualenv: `source AIPscan/bin/activate`
+* Install requirements (this will include Flask, Celery, and Gunicorn): `pip
+  install -r requirements.txt`
 
-### RabbitMQ
+## RabbitMQ
 
 * [Install][rabbit-MQ1] the RabbitMQ package:
 
@@ -25,7 +28,8 @@ systems and servers have not been tested.
   sudo apt-get update -y
   sudo apt-get install -y rabbitmq-server
   ```
- * Start the RabbitMQ service:
+
+* Start the RabbitMQ service:
 
    ```bash
    sudo service rabbitmq-server start
@@ -36,7 +40,7 @@ systems and servers have not been tested.
    ```bash
    sudo service rabbitmq-server status
    ```
-   
+
 * You should see output that looks like this:
 
    ```bash
@@ -54,14 +58,13 @@ systems and servers have not been tested.
            ├─3670 inet_gethost 4
            └─3671 inet_gethost 4
 
-   
 * If you need to stop it for any reason:
 
    ```bash
    sudo service rabbitmq-server stop
    ```
 
-### Gunicorn service
+## Gunicorn service
 
 * Create the following service file for Gunicorn:
 
@@ -102,6 +105,7 @@ sudo systemctl enable aipscan
 ```bash
 sudo systemctl status aipscan
 ```
+
 * You should see output that looks like:
 
 ```bash
@@ -117,7 +121,7 @@ sudo systemctl status aipscan
            └─26985 /usr/share/archivematica/virtualenvs/AIPscan/bin/python3 /usr/share/archivematica/virtualenvs/AIPscan/bin/gunicorn --workers 3 --bind unix:aipscan.sock -m 007 wsgi:app
 ```
 
-### Nginx web server
+## Nginx web server
 
 * Install Nginx.
 
@@ -126,7 +130,7 @@ sudo apt update
 sudo apt install nginx
 ```
 
-* Configure a Nginx server block for the AIPscan application. 
+* Configure a Nginx server block for the AIPscan application.
 
 ```bash
 sudo nano /etc/nginx/sites-available/aipscan
@@ -180,7 +184,7 @@ block:
 sudo systemctl restart nginx
 ```
 
-### Celery service
+## Celery service
 
 * AIPscan uses Celery workers, coordinated by RabbitMQ to run background jobs.
 To run Celery as a persistent service, create the following file:
@@ -213,7 +217,7 @@ WantedBy=multi-user.target
 
 * Start the Celery service:
 
-```bash 
+```bash
 sudo systemctl start celery
 sudo systemctl enable celery
 ```
@@ -238,12 +242,12 @@ sudo systemctl status celery
            └─26861 /usr/share/archivematica/virtualenvs/AIPscan/bin/python3 /usr/share/archivematica/virtualenvs/AIPscan/bin/celery -A AIPscan.worker.celery worker
 ```
 
-### Conclusion
+## Conclusion
+
 If all these steps were successful, you should now have a robust, production
 ready AIPscan service running at `your.aipscan.server.ip`.
 
 [rabbit-MQ1]: https://www.rabbitmq.com/install-debian.html
-[usage-1]: http://localhost:5000
 [fla-1]: https://flask.palletsprojects.com
 [gun-1]: https://gunicorn.org/
 [ngx-1]: https://www.nginx.com/

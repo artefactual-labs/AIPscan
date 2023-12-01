@@ -1,10 +1,13 @@
 [![GitHub CI](https://github.com/artefactual-labs/AIPscan/actions/workflows/test.yml/badge.svg)](https://github.com/artefactual-labs/AIPscan/actions/workflows/test.yml)
 [![codecov](https://codecov.io/gh/artefactual-labs/AIPscan/branch/main/graph/badge.svg?token=2RRFAM8P89)](https://codecov.io/gh/artefactual-labs/AIPscan)
 
-
 # About
 
-AIPscan was developed to provide a more in-depth reporting solution for Archivematica users. It crawls METS files from AIPs in the Archivematica Storage Service to generate tabular and visual reports about repository holdings. It is designed to run as a stand-alone add-on to Archivematica. It only needs a valid Storage Service API key to fetch source data.
+AIPscan was developed to provide a more in-depth reporting solution for
+Archivematica users. It crawls METS files from AIPs in the Archivematica
+Storage Service to generate tabular and visual reports about repository
+holdings. It is designed to run as a stand-alone add-on to Archivematica. It
+only needs a valid Storage Service API key to fetch source data.
 
 # License
 
@@ -12,6 +15,7 @@ AIPscan was developed to provide a more in-depth reporting solution for Archivem
 Copyright Artefactual Systems Inc (2021)
 
 # Contents
+
 * [Screenshots](#screenshots)
 * [Installation](#installation)
 * [Usage](#usage)
@@ -44,33 +48,43 @@ Copyright Artefactual Systems Inc (2021)
 
 # Installation
 
-AIPscan is a web-based application that is built using the Python [Flask](https://pypi.org/project/Flask/) micro-framework. Below are the developer quickstart instructions. See [INSTALL](INSTALL.md) for production deployment instructions. See [CONTRIBUTING](CONTRIBUTING.md) for guidelines on how to contribute to the project, including how to create a new AIPscan report.
+AIPscan is a web-based application that is built using the Python [Flask](https://pypi.org/project/Flask/)
+micro-framework. Below are the developer quickstart instructions. See [INSTALL](INSTALL.md)
+for production deployment instructions. See [CONTRIBUTING](CONTRIBUTING.md) for
+guidelines on how to contribute to the project, including how to create a new
+AIPscan report.
 
 ## AIPScan Flask server
 
-* Clone files and cd to directory:  `git clone https://github.com/artefactual-labs/AIPscan && cd AIPscan`
+* Clone files and cd to directory:
+  `git clone https://github.com/artefactual-labs/AIPscan && cd AIPscan`
 * Set up virtualenv in the project root directory: `virtualenv -p python3 venv`
 * Activate virtualenv: `source venv/bin/activate`
 * Install requirements (this includes Flask & Celery): `pip install -r requirements/base.txt`
 * Enable DEBUG mode if desired for development: `export FLASK_CONFIG=dev`
 * In a terminal window, start the Flask server: `python run.py`
-* Confirm that the Flask server and AIPscan application are up and running at [`localhost:5000`][usage-1] in your browser.. You should see a blank AIPscan page like this:
+* Confirm that the Flask server and AIPscan application are up and running at
+  [`localhost:5000`][usage-1] in your browser.. You should see a blank AIPscan
+  page like this:
 
 ![screencap5](screencaps/aipscan_hello_world.png)
 
-
 ## Background workers
-Crawling and parsing many Archivematica AIP METS xml files at a time is resource intensive. Therefore, AIPscan uses the [RabbitMQ][rabbit-MQ1] message broker and the [Celery][celery-1] task manager to coordinate this activity as background worker tasks. **Both RabbitMQ and Celery must be running properly before attempting a METS fetch job.**
 
+Crawling and parsing many Archivematica AIP METS xml files at a time is
+resource intensive. Therefore, AIPscan uses the [RabbitMQ][rabbit-MQ1] message
+broker and the [Celery][celery-1] task manager to coordinate this activity as
+background worker tasks. **Both RabbitMQ and Celery must be running properly
+before attempting a METS fetch job.**
 
 ## RabbitMQ
-You can downnload and install RabbitMQ server directly on your local or cloud machine or you can run it in either location from a Docker container.
 
+You can downnload and install RabbitMQ server directly on your local or cloud
+machine or you can run it in either location from a Docker container.
 
 ### Docker installation
 
-
-  ```
+  ```shell
   docker run --rm \
     -it \
     --hostname my-rabbit \
@@ -80,7 +94,7 @@ You can downnload and install RabbitMQ server directly on your local or cloud ma
 
 ### Download and install
 
-* [Download][rabbit-MQ3] RabbitMQ installer. 
+* [Download][rabbit-MQ3] RabbitMQ installer.
 * In another terminal window, start RabbitMQ queue manager:
 
   ```bash
@@ -89,22 +103,26 @@ You can downnload and install RabbitMQ server directly on your local or cloud ma
   ```
 
 ### RabbitMQ dashboard
+
 * The RabbitMQ dashboard is available at [`http://localhost:15672/`][rabbit-MQ2]
 * username: `guest` / password: `guest`
 * AIPScan connects to the RabbitMQ queue on port `:5672`.
 
-
 ## Celery
-Celery is installed as a Python module dependency during the initial AIPscan requirements import command: `pip install -r requirements.txt`
+
+Celery is installed as a Python module dependency during the initial AIPscan
+requirements import command: `pip install -r requirements.txt`
 
 To start up Celery workers that are ready to receive tasks from RabbitMQ:
+
 * Open a new terminal tab or window.
 * Navigate to the AIPscan root project directory.
-* Activate the Python virtualenv in the AIPscan project directory so that the Celery dependency gets automatically loaded: 
-  `source venv/bin/activate`
+* Activate the Python virtualenv in the AIPscan project directory so that the
+  Celery dependency gets automatically loaded: `source venv/bin/activate`
 * Enter the following command:  
   `celery worker -A AIPscan.worker.celery --loglevel=info`
-* You should see terminal output similar to this to indicate that the Celery task queu is ready:
+* You should see terminal output similar to this to indicate that the Celery
+  task queue is ready:
 
 ![screencap6](screencaps/aipscan_celery_hello_world.png)
 
@@ -114,44 +132,45 @@ Requires [Docker CE](https://www.docker.com/community-edition) and [Docker Compo
 
 Clone the repository and go to its directory:
 
-```
+```shell
 git clone https://github.com/artefactual-labs/AIPscan
 cd AIPscan
 ```
 
 Build images, initialize services, etc.:
 
-```
+```shell
 docker-compose up -d
 ```
 
 Optional: attach AIPscan to the Docker Archivematica container network directly:
 
-```
+```shell
 docker-compose -f docker-compose.yml -f docker-compose.am-network.yml up -d
 ```
 
-In this case, the AIPscan Storage Service record's URL field can be set with the Storage Service container name:
+In this case, the AIPscan Storage Service record's URL field can be set with the
+Storage Service container name:
 
-```
+```shell
 http://archivematica-storage-service:8000
 ```
 
 Access the logs:
 
-```
+```shell
 docker-compose logs -f aipscan rabbitmq celery-worker
 ```
 
 Shut down the AIPscan Docker containers:
 
-```
+```shell
 docker-compose down
 ```
 
 Shut down the AIPscan Docker containers and remove the rabbitmq volumes:
 
-```
+```shell
 docker-composer down --volumes
 ```
 
@@ -160,12 +179,12 @@ docker-composer down --volumes
 The `tools` directory contains scripts that can be run by developers and system
 adminsitrators.
 
-#### Test data generator
+### Test data generator
 
 The test data generator, `tools/generate-test-data`, tool populates
 AIPscan's databse with randomly generated example data.
 
-#### Fetch script
+### Fetch script
 
 The AIP fetch tool, `tools/fetch_aips`, allows all, or a subset, of a storage
 service's packages to be fetched by AIPscan. Any AIPs not yet fetched by
@@ -184,7 +203,7 @@ If using `cron`, or some other scheduler, to automatically fetch AIPs using
 this tool consider using the `flock` command to prevent overlapping executions
 of the tool.
 
-##### Cached package list
+#### Cached package list
 
 A storage service's list of packages is downloaded by the script and is cached
 so paging, if used, will remain consistent between script runs. The cache of a
@@ -197,11 +216,13 @@ Below is what the directory structure would end up looking like if the session
 identifier "somedescriptor" was used, showing where the `packages.json` file,
 containing the list of a storage service's packages, would be put.
 
-    AIPscan/Aggregator/downloads/somedescriptor
-    ├── mets
-    │   └── batch
-    └── packages
-        └── packages.json
+```text
+AIPscan/Aggregator/downloads/somedescriptor
+├── mets
+│   └── batch
+└── packages
+    └── packages.json
+```
 
 **NOTE:** Each run of the script will generate a new fetch job database entry.
 These individual fetch jobs shouldn't be deleted, via the AIPscan web UI,
@@ -215,28 +236,38 @@ AIPscan is running under.
 
 Here's how you would run the `generate-test-data` tool, for example:
 
-    $ cd <path to AIPscan base directory>
-    $ sudo -u <AIPscan system user> /bin/bash
-    $ source <path to AIPscan virtual environment>/bin/activate
-    $ ./tools/generate-test-data
+```shell
+cd <path to AIPscan base directory>
+sudo -u <AIPscan system user> /bin/bash
+source <path to AIPscan virtual environment>/bin/activate
+./tools/generate-test-data
+```
 
 In order to display a tool's CLI arguments and options, enter `<path to tool>
 --help`.
 
-
 # Usage
 
-* Ensure that the Flask Server, RabbitMQ server, and Celery worker queue are up and running.
+* Ensure that the Flask Server, RabbitMQ server, and Celery worker queue are up
+  and running.
 * Go to [`localhost:5000`][usage-1] in your browser.
 * Select "New Storage Service"
 * Add an Archivematica Storage Service record, including API Key, eg.
 `https://amdemo.artefactual.com:8000`
 * Select "New Fetch Job"
-* Check the black and green terminal to confirm that AIPscan successfully connected to the Archivematica Storage Service, that it received the lists of available packages from Archivematica, and that it has begun downloading and parsing the AIP METS files.
-* This could take a while (i.e. a few hours) depending on the total number of AIPs in your Storage Service and the size of your METS xml files. Therefore, if you have the option, it is recommended that you test AIPscan on a smaller subset of your full AIP holdings first. This should help you estimate the total time to run AIPscan against all packages in your Storage Service.
-* When the Fetch Job completes, select "View AIPs" button, "AIPs" menu, or "Reports" menu to view all the interesting information about your Archivematica content in a variety of layouts.
+* Check the black and green terminal to confirm that AIPscan successfully
+  connected to the Archivematica Storage Service, that it received the lists of
+  available packages from Archivematica, and that it has begun downloading and
+  parsing the AIP METS files.
+* This could take a while (i.e. a few hours) depending on the total number of
+  AIPs in your Storage Service and the size of your METS xml files. Therefore,
+  if you have the option, it is recommended that you test AIPscan on a smaller
+  subset of your full AIP holdings first. This should help you estimate the
+  total time to run AIPscan against all packages in your Storage Service.
+* When the Fetch Job completes, select "View AIPs" button, "AIPs" menu, or
+  "Reports" menu to view all the interesting information about your
+  Archivematica content in a variety of layouts.
 
-[am-1]: https://archivematica.org
 [rabbit-MQ1]: https://www.rabbitmq.com/
 [celery-1]: https://docs.celeryproject.org/en/stable/getting-started/introduction.html
 [rabbit-MQ2]: http://localhost:15672/
