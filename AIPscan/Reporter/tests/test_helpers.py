@@ -13,7 +13,8 @@ from AIPscan.Data.tests import MOCK_STORAGE_SERVICE as STORAGE_SERVICE
 from AIPscan.Data.tests import MOCK_STORAGE_SERVICE_ID as STORAGE_SERVICE_ID
 from AIPscan.models import File, FileType
 from AIPscan.Reporter import helpers
-from AIPscan.Reporter.report_aips_by_format import HEADERS
+from AIPscan.Reporter.report_aip_contents import CSV_HEADERS as AIP_CONTENTS_HEADERS
+from AIPscan.Reporter.report_aips_by_format import HEADERS as AIPS_BY_FORMAT_HEADERS
 
 ROWS_WITH_SIZE = [
     {
@@ -33,11 +34,13 @@ ROWS_WITH_SIZE_FORMATTED = [
         fields.FIELD_AIP_UUID: "test uuid",
         fields.FIELD_AIP_NAME: "test name",
         fields.FIELD_SIZE: "1.6 MB",
+        fields.FIELD_SIZE_BYTES: 1560321,
     },
     {
         fields.FIELD_AIP_UUID: "test uuid2",
         fields.FIELD_AIP_NAME: "test name2",
         fields.FIELD_SIZE: "123.4 kB",
+        fields.FIELD_SIZE_BYTES: 123423,
     },
 ]
 
@@ -62,7 +65,7 @@ def test_download_csv(app_instance, mocker):
     mock_get_ss_name = mocker.patch("AIPscan.Data._get_storage_service")
     mock_get_ss_name.return_value = STORAGE_SERVICE
 
-    headers = helpers.translate_headers(HEADERS)
+    headers = helpers.translate_headers(AIPS_BY_FORMAT_HEADERS)
 
     report_data = aips_by_file_format(STORAGE_SERVICE_ID, "test")
     response = helpers.download_csv(headers, report_data[fields.FIELD_AIPS], CSV_FILE)
@@ -91,6 +94,32 @@ def test_download_csv(app_instance, mocker):
             assert row[3] == "123456"
         line_count += 1
     assert line_count == len(query_results) + 1
+
+
+@pytest.mark.parametrize(
+    "data,expected_output",
+    [
+        # No adding of header for size in bytes
+        (
+            {"headers": AIPS_BY_FORMAT_HEADERS, "add_bytes_column": False},
+            ["AIP Name", "UUID", "Count", "Size"],
+        ),
+        # Adding of header for size in bytes at end of header list
+        (
+            {"headers": AIPS_BY_FORMAT_HEADERS, "add_bytes_column": True},
+            ["AIP Name", "UUID", "Count", "Size", "Size (bytes)"],
+        ),
+        # Adding of header for size in bytes not at end of header list
+        (
+            {"headers": AIP_CONTENTS_HEADERS, "add_bytes_column": True},
+            ["UUID", "AIP Name", "Created Date", "Size", "Size (bytes)", "Formats"],
+        ),
+    ],
+)
+def test_translate_headers(data, expected_output):
+    headers = helpers.translate_headers(data["headers"], data["add_bytes_column"])
+
+    assert headers == expected_output
 
 
 @pytest.mark.parametrize(

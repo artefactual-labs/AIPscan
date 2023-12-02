@@ -1,6 +1,6 @@
 from flask import current_app
 
-EXPECTED_CSV_CONTENTS = b"AIP Name,UUID,AIP Size,File Count\r\nTest AIP,111111111111-1111-1111-11111111,100 Bytes,1\r\nTest AIP,222222222222-2222-2222-22222222,100 Bytes,2\r\n"
+EXPECTED_CSV_CONTENTS = b"AIP Name,UUID,AIP Size,AIP Size (bytes),File Count\r\nTest AIP,111111111111-1111-1111-11111111,100 Bytes,100,1\r\nTest AIP,222222222222-2222-2222-22222222,100 Bytes,100,2\r\n"
 
 
 def test_largest_aips(app_with_populated_format_versions):

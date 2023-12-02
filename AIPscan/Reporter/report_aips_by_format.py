@@ -28,8 +28,6 @@ def aips_by_format():
     original_files = parse_bool(request.args.get(request_params.ORIGINAL_FILES, True))
     csv = parse_bool(request.args.get(request_params.CSV), default=False)
 
-    headers = translate_headers(HEADERS)
-
     aip_data = report_data.aips_by_file_format(
         storage_service_id=storage_service_id,
         file_format=file_format,
@@ -38,9 +36,13 @@ def aips_by_format():
     )
 
     if csv:
+        headers = translate_headers(HEADERS, True)
+
         filename = "aips_by_file_format_{}.csv".format(file_format)
         csv_data = format_size_for_csv(aip_data[fields.FIELD_AIPS])
         return download_csv(headers, csv_data, filename)
+
+    headers = translate_headers(HEADERS)
 
     return render_template(
         "report_aips_by_format.html",

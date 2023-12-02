@@ -38,17 +38,19 @@ def storage_locations():
     )
     csv = parse_bool(request.args.get(request_params.CSV), default=False)
 
-    headers = translate_headers(HEADERS)
-
     locations_data = report_data.storage_locations(
         storage_service_id=storage_service_id, start_date=start_date, end_date=end_date
     )
     locations = locations_data.get(fields.FIELD_LOCATIONS)
 
     if csv:
+        headers = translate_headers(HEADERS, True)
+
         filename = "storage_locations.csv"
         csv_data = format_size_for_csv(locations)
         return download_csv(headers, csv_data, filename)
+
+    headers = translate_headers(HEADERS)
 
     return render_template(
         "report_storage_locations.html",
