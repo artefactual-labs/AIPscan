@@ -7,6 +7,7 @@ from datetime import datetime
 
 import pytest
 
+from AIPscan import models
 from AIPscan.Aggregator import task_helpers
 from AIPscan.Aggregator.types import StorageServicePackage
 
@@ -26,8 +27,7 @@ LOCATION_UUID = "1b60c346-85a0-4a3c-a88b-0c1b3255e2ec"
     ],
 )
 def test_tz_neutral_dates(input_date, output_date, now_year):
-    """Ensure datetime values are handled sensibly across regions.
-    """
+    """Ensure datetime values are handled sensibly across regions."""
     result_date = task_helpers._tz_neutral_date(input_date)
     if now_year is True:
         year = datetime.now().strftime("%Y-%m-%d")
@@ -40,15 +40,17 @@ def test_tz_neutral_dates(input_date, output_date, now_year):
 
 
 @pytest.mark.parametrize(
-    "url_api_dict, base_url, url_without_api_key, url_with_api_key",
+    "ss_args, base_url, url_without_api_key, url_with_api_key",
     [
         (
             {
-                "baseUrl": "http://example.com:9000/",
-                "limit": "23",
-                "offset": "13",
-                "userName": "test",
-                "apiKey": "mykey",
+                "name": "Test",
+                "url": "http://example.com:9000/",
+                "user_name": "test",
+                "api_key": "mykey",
+                "download_limit": "23",
+                "download_offset": "13",
+                "default": False,
             },
             "http://example.com:9000",
             "http://example.com:9000/api/v2/file/?limit=23&offset=13",
@@ -56,11 +58,13 @@ def test_tz_neutral_dates(input_date, output_date, now_year):
         ),
         (
             {
-                "baseUrl": "http://subdomain.example.com:8000/",
-                "limit": "10",
-                "offset": "99",
-                "userName": "anothertest",
-                "apiKey": "myotherkey",
+                "name": "Test",
+                "url": "http://subdomain.example.com:8000/",
+                "user_name": "anothertest",
+                "api_key": "myotherkey",
+                "download_limit": "10",
+                "download_offset": "99",
+                "default": False,
             },
             "http://subdomain.example.com:8000",
             "http://subdomain.example.com:8000/api/v2/file/?limit=10&offset=99",
@@ -68,42 +72,67 @@ def test_tz_neutral_dates(input_date, output_date, now_year):
         ),
     ],
 )
-def test_format_api_url(url_api_dict, base_url, url_without_api_key, url_with_api_key):
-    res1, res2, res3 = task_helpers.format_api_url_with_limit_offset(url_api_dict)
+def test_format_api_url(ss_args, base_url, url_without_api_key, url_with_api_key):
+    storage_service = models.StorageService(**ss_args)
+    res1, res2, res3 = task_helpers.format_api_url_with_limit_offset(storage_service)
     assert res1 == base_url
     assert res2 == url_without_api_key
     assert res3 == url_with_api_key
 
 
 @pytest.mark.parametrize(
-    "api_url, package_uuid, path_to_mets, result",
+    "ss_args, package_uuid, path_to_mets, result",
     [
         (
-            {"baseUrl": "http://example.com", "userName": "1234", "apiKey": "1234"},
+            {
+                "name": "Test",
+                "url": "http://example.com",
+                "user_name": "1234",
+                "api_key": "1234",
+                "download_limit": 0,
+                "download_offset": 0,
+                "default": False,
+            },
             "1234",
             "1234",
             "http://example.com/api/v2/file/1234/extract_file/?relative_path_to_file=1234&username=1234&api_key=1234",
         ),
         (
-            {"baseUrl": "http://example.com/", "userName": "1234", "apiKey": "1234"},
+            {
+                "name": "Test",
+                "url": "http://example.com",
+                "user_name": "1234",
+                "api_key": "1234",
+                "download_limit": 0,
+                "download_offset": 0,
+                "default": False,
+            },
             "1234",
             "1234",
             "http://example.com/api/v2/file/1234/extract_file/?relative_path_to_file=1234&username=1234&api_key=1234",
         ),
     ],
 )
-def test_get_mets_url(api_url, package_uuid, path_to_mets, result):
-    """Ensure that the URL for retrieving METS is constructed properly.
-    """
-    mets_url = task_helpers.get_mets_url(api_url, package_uuid, path_to_mets)
+def test_get_mets_url(ss_args, package_uuid, path_to_mets, result):
+    """Ensure that the URL for retrieving METS is constructed properly."""
+    ss = models.StorageService(**ss_args)
+    mets_url = task_helpers.get_mets_url(ss, package_uuid, path_to_mets)
     assert mets_url == result
 
 
 @pytest.mark.parametrize(
-    "api_url, current_location, expected_url, expected_url_without_api_key",
+    "ss_args, current_location, expected_url, expected_url_without_api_key",
     [
         (
-            {"baseUrl": "http://example.com", "userName": "1234", "apiKey": "12345"},
+            {
+                "name": "Test",
+                "url": "http://example.com",
+                "user_name": "1234",
+                "api_key": "12345",
+                "download_limit": 0,
+                "download_offset": 0,
+                "default": False,
+            },
             "/api/v2/location/{}".format(LOCATION_UUID),
             "http://example.com/api/v2/location/1b60c346-85a0-4a3c-a88b-0c1b3255e2ec?username=1234&api_key=12345",
             "http://example.com/api/v2/location/1b60c346-85a0-4a3c-a88b-0c1b3255e2ec",
@@ -111,11 +140,13 @@ def test_get_mets_url(api_url, package_uuid, path_to_mets, result):
     ],
 )
 def test_get_storage_service_api_url(
-    api_url, current_location, expected_url, expected_url_without_api_key
+    ss_args, current_location, expected_url, expected_url_without_api_key
 ):
     """Ensure construction of URL to fetch Resource information."""
+    storage_service = models.StorageService(**ss_args)
+
     url, url_without_secrets = task_helpers.get_storage_service_api_url(
-        api_url, current_location
+        storage_service, current_location
     )
     assert url == expected_url
     assert url_without_secrets == expected_url_without_api_key

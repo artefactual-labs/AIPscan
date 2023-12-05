@@ -3,14 +3,7 @@ from flask import current_app
 
 from AIPscan.Aggregator.tasks import TaskError
 from AIPscan.Aggregator.views import _test_storage_service_connection
-
-API_URL = {
-    "baseUrl": "http://test-url",
-    "userName": "test",
-    "apiKey": "test",
-    "offset": "10",
-    "limit": "0",
-}
+from AIPscan.models import StorageService
 
 
 def test__test_storage_service_connection(mocker):
@@ -19,7 +12,10 @@ def test__test_storage_service_connection(mocker):
     make_request.side_effect = TaskError("Bad response from server")
 
     with pytest.raises(ConnectionError):
-        _test_storage_service_connection(API_URL)
+        storage_service = StorageService(
+            "Test", "http://test-url", "test", "test", "0", "10", ""
+        )
+        _test_storage_service_connection(storage_service)
 
 
 def test_new_fetch_job_bad_connection(app_with_populated_files, mocker):

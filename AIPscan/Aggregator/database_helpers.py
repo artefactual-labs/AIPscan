@@ -203,19 +203,20 @@ def create_storage_location_object(current_location, description, storage_servic
     return storage_location
 
 
-def create_or_update_storage_location(current_location, api_url, storage_service_id):
+def create_or_update_storage_location(current_location, storage_service):
     """Create or update Storage Location and return it."""
     storage_location = StorageLocation.query.filter_by(
         current_location=current_location
     ).first()
+
     request_url, request_url_without_api_key = get_storage_service_api_url(
-        api_url, current_location
+        storage_service, current_location
     )
     response = tasks.make_request(request_url, request_url_without_api_key)
     description = response.get("description")
     if not storage_location:
         return create_storage_location_object(
-            current_location, description, storage_service_id
+            current_location, description, storage_service.id
         )
 
     if storage_location.description != description:
@@ -233,11 +234,12 @@ def create_pipeline_object(origin_pipeline, dashboard_url):
     return pipeline
 
 
-def create_or_update_pipeline(origin_pipeline, api_url):
+def create_or_update_pipeline(origin_pipeline, storage_service):
     """Create or update Storage Location and return it."""
     pipeline = Pipeline.query.filter_by(origin_pipeline=origin_pipeline).first()
+
     request_url, request_url_without_api_key = get_storage_service_api_url(
-        api_url, origin_pipeline
+        storage_service, origin_pipeline
     )
     response = tasks.make_request(request_url, request_url_without_api_key)
     dashboard_url = response.get("remote_name")

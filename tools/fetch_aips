@@ -50,7 +50,6 @@ def main(ss_id, session_id, page, packages_per_page, logfile):
 
     package_list_no = "batch"
     with app.app_context():
-
         # Get storage service configuration
         storage_service = StorageService.query.get(ss_id)
 
@@ -77,19 +76,11 @@ def main(ss_id, session_id, page, packages_per_page, logfile):
         # Get package data
         packages = fetch.get_packages(storage_service, packages_dir)
 
-        # Determine start and end package
+        # Determine total packages and start and end package
         total_packages = len(packages["objects"])
-
-        if page is None:
-            start_item = 1
-            end_item = total_packages
-        else:
-            start_item = ((page - 1) * packages_per_page) + 1
-            end_item = start_item + packages_per_page - 1
-
-        # Describe start and end package
-        if total_packages < end_item:
-            end_item = total_packages
+        start_item, end_item = fetch.determine_start_and_end_item(
+            page, packages_per_page, total_packages
+        )
 
         # Make sure paging window is valid and delete fetch job if not
         if start_item > total_packages:
@@ -104,13 +95,10 @@ def main(ss_id, session_id, page, packages_per_page, logfile):
         )
 
         # Import packages
-        api_url = fetch.assemble_api_url_dict(storage_service)
-
         processed_packages = fetch.import_packages(
             packages,
             start_item,
             end_item,
-            api_url,
             ss_id,
             session_id,
             package_list_no,

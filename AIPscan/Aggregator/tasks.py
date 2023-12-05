@@ -17,6 +17,7 @@ from AIPscan.Aggregator.mets_parse_helpers import (
 )
 from AIPscan.Aggregator.task_helpers import (
     format_api_url_with_limit_offset,
+    parse_package_list_file,
     process_package_object,
 )
 from AIPscan.extensions import celery
@@ -52,51 +53,54 @@ def start_mets_task(
     relative_path_to_mets,
     current_location,
     origin_pipeline,
-    api_url,
     timestamp_str,
     package_list_no,
     storage_service_id,
     fetch_job_id,
+    run_as_task=True,
 ):
     """Initiate a get_mets task worker and record the event in the
     celery database.
     """
+    storage_service = StorageService.query.get(storage_service_id)
     storage_location = database_helpers.create_or_update_storage_location(
-        current_location, api_url, storage_service_id
+        current_location, storage_service
     )
 
-    pipeline = database_helpers.create_or_update_pipeline(origin_pipeline, api_url)
+    pipeline = database_helpers.create_or_update_pipeline(
+        origin_pipeline, storage_service
+    )
 
-    # Call worker to download and parse METS File.
-    get_mets_task = get_mets.delay(
+    args = [
         package_uuid,
         aip_size,
         relative_path_to_mets,
-        api_url,
         timestamp_str,
         package_list_no,
         storage_service_id,
         storage_location.id,
         pipeline.id,
         fetch_job_id,
-    )
-    mets_task = get_mets_tasks(
-        get_mets_task_id=get_mets_task.id,
-        workflow_coordinator_id=workflow_coordinator.request.id,
-        package_uuid=package_uuid,
-        status=None,
-    )
-    db.session.add(mets_task)
-    db.session.commit()
+    ]
+
+    if run_as_task:
+        # Call worker to download and parse METS File.
+        get_mets_task = get_mets.delay(*args)
+        mets_task = get_mets_tasks(
+            get_mets_task_id=get_mets_task.id,
+            workflow_coordinator_id=workflow_coordinator.request.id,
+            package_uuid=package_uuid,
+            status=None,
+        )
+        db.session.add(mets_task)
+        db.session.commit()
+    else:
+        # Execute immediately.
+        get_mets.apply(args=args)
 
 
 def parse_packages_and_load_mets(
-    json_file_path,
-    api_url,
-    timestamp,
-    package_list_no,
-    storage_service_id,
-    fetch_job_id,
+    package_list, timestamp, package_list_no, storage_service_id, fetch_job_id
 ):
     """Parse packages documents from the storage service and initiate
     the load mets functions of AIPscan. Results are written to the
@@ -104,37 +108,33 @@ def parse_packages_and_load_mets(
     """
     OBJECTS = "objects"
     packages = []
-    with open(json_file_path, "r") as packages_json:
-        package_list = json.load(packages_json)
-
-    try:
-        os.remove(json_file_path)
-    except OSError as err:
-        logger.warning("Unable to delete package JSON file: {}".format(err))
 
     for package_obj in package_list.get(OBJECTS, []):
         package = process_package_object(package_obj)
+
         packages.append(package)
+        handle_deletion(package)
 
-        if package.is_deleted():
-            delete_aip(package.uuid)
+        if not package.is_undeleted_aip():
             continue
 
-        if not package.is_aip():
-            continue
         start_mets_task(
             package.uuid,
             package.size,
             package.get_relative_path(),
             package.current_location,
             package.origin_pipeline,
-            api_url,
             timestamp,
             package_list_no,
             storage_service_id,
             fetch_job_id,
         )
     return packages
+
+
+def handle_deletion(package):
+    if package.is_deleted():
+        delete_aip(package.uuid)
 
 
 def delete_aip(uuid):
@@ -149,14 +149,13 @@ def delete_aip(uuid):
 
 @celery.task(bind=True)
 def workflow_coordinator(
-    self, api_url, timestamp, storage_service_id, fetch_job_id, packages_directory
+    self, timestamp, storage_service_id, fetch_job_id, packages_directory
 ):
-
     logger.info("Packages directory is: %s", packages_directory)
 
     # Send package list request to a worker.
     package_lists_task = package_lists_request.delay(
-        api_url, timestamp, packages_directory
+        storage_service_id, timestamp, packages_directory
     )
 
     write_celery_update(package_lists_task, workflow_coordinator)
@@ -181,13 +180,10 @@ def workflow_coordinator(
         )
         # Process packages and create a new worker to download and parse
         # each METS separately.
+        package_list = parse_package_list_file(json_file_path, logger, True)
+
         packages = parse_packages_and_load_mets(
-            json_file_path,
-            api_url,
-            timestamp,
-            package_list_no,
-            storage_service_id,
-            fetch_job_id,
+            package_list, timestamp, package_list_no, storage_service_id, fetch_job_id
         )
         all_packages = all_packages + packages
 
@@ -228,29 +224,34 @@ def make_request(request_url, request_url_without_api_key):
 
 
 @celery.task(bind=True)
-def package_lists_request(self, apiUrl, timestamp, packages_directory):
+def package_lists_request(self, storage_service_id, timestamp, packages_directory):
     """Request package lists from the storage service. Package lists
     will contain details of the AIPs that we want to download.
     """
     META = "meta"
     NEXT = "next"
-    LIMIT = "limit"
     COUNT = "total_count"
     IN_PROGRESS = "IN PROGRESS"
+
+    storage_service = StorageService.query.get(storage_service_id)
+
     (
         base_url,
         request_url_without_api_key,
         request_url,
-    ) = format_api_url_with_limit_offset(apiUrl)
+    ) = format_api_url_with_limit_offset(storage_service)
+
     # First packages request.
     packages = make_request(request_url, request_url_without_api_key)
     packages_count = 1
+
     # Calculate how many package list files will be downloaded based on
     # total number of packages and the download limit
     total_packages = int(packages.get(META, {}).get(COUNT, 0))
-    total_package_lists = int(total_packages / int(apiUrl.get(LIMIT))) + (
-        total_packages % int(apiUrl.get(LIMIT)) > 0
+    total_package_lists = int(total_packages / int(storage_service.download_limit)) + (
+        total_packages % int(storage_service.download_limit) > 0
     )
+
     # There may be more packages to download to let's access those here.
     # TODO: `request_url_without_api_key` at this point will not be as
     # accurate. If we have more time, modify `format_api_url_with_limit_offset(...)`
@@ -272,6 +273,7 @@ def package_lists_request(self, apiUrl, timestamp, packages_directory):
                 )
             },
         )
+
     return {
         "totalPackageLists": total_package_lists,
         "totalPackages": total_packages,
@@ -284,7 +286,6 @@ def get_mets(
     package_uuid,
     aip_size,
     relative_path_to_mets,
-    api_url,
     timestamp_str,
     package_list_no,
     storage_service_id,
@@ -313,8 +314,13 @@ def get_mets(
         tasklogger = customlogger
 
     # Download METS file
+    storage_service = StorageService.query.get(storage_service_id)
     download_file = download_mets(
-        api_url, package_uuid, relative_path_to_mets, timestamp_str, package_list_no
+        storage_service,
+        package_uuid,
+        relative_path_to_mets,
+        timestamp_str,
+        package_list_no,
     )
     mets_name = os.path.basename(download_file)
     mets_hash = file_sha256_hash(download_file)

@@ -58,7 +58,7 @@ def get_aip_original_name(mets):
     # ignore those.
     TRANSFER_DIR_PREFIX = "%transferDirectory%"
 
-    NAMESPACES = {u"premis": u"http://www.loc.gov/premis/v3"}
+    NAMESPACES = {"premis": "http://www.loc.gov/premis/v3"}
     ELEM_ORIGINAL_NAME_PATTERN = ".//premis:originalName"
 
     original_name = ""
@@ -85,13 +85,13 @@ def get_aip_original_name(mets):
 
 
 def download_mets(
-    api_url, package_uuid, relative_path_to_mets, timestamp, package_list_no
+    storage_service, package_uuid, relative_path_to_mets, timestamp, package_list_no
 ):
     """Download METS from the storage service."""
 
     # Request the METS file.
     mets_response = requests.get(
-        get_mets_url(api_url, package_uuid, relative_path_to_mets)
+        get_mets_url(storage_service, package_uuid, relative_path_to_mets)
     )
 
     # Create a directory to download the METS to.
