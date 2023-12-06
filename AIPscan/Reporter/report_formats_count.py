@@ -51,12 +51,14 @@ def report_formats_count():
     )
     formats = formats_data.get(fields.FIELD_FORMATS)
 
-    headers = translate_headers(HEADERS)
-
     if csv:
+        headers = translate_headers(HEADERS, True)
+
         filename = "file_formats.csv"
         csv_data = format_size_for_csv(formats)
         return download_csv(headers, csv_data, filename)
+
+    headers = translate_headers(HEADERS)
 
     return render_template(
         "report_formats_count.html",

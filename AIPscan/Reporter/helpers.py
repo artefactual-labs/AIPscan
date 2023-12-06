@@ -28,7 +28,7 @@ def sort_puids(puids):
     return natsorted(puids)
 
 
-def translate_headers(headers):
+def translate_headers(headers, add_bytes_column=False):
     """Translate headers from something machine readable to something
     more user friendly and translatable.
     """
@@ -69,6 +69,22 @@ def translate_headers(headers):
         fields.FIELD_USER: "User",
         fields.FIELD_VERSION: "Version",
     }
+
+    # Attempt to add an additional header representing a column containing size
+    # expressed as a number of bytes, rather than in human-readable form, so
+    # rows can more easily be sorted by size
+    if add_bytes_column:
+        headers = (
+            headers.copy()
+        )  # So we don't change the list object passed to this function
+
+        # Handle the two standard size columns
+        for header in [fields.FIELD_AIP_SIZE, fields.FIELD_SIZE]:
+            # If size header is found then insert another for the size in bytes afer it
+            if header in headers:
+                bytes_header = field_lookup[header] + " (bytes)"
+                headers.insert(headers.index(header) + 1, bytes_header)
+
     return [field_lookup.get(header, header) for header in headers]
 
 
@@ -89,12 +105,27 @@ def format_size_for_csv(rows):
 
     :returns: rows with formatted size field (list of dicts)
     """
+    edited_rows = []
+
     for row in rows:
-        try:
+        # Add size in bytes after original size column
+        row_key_list = list(row.keys())
+
+        if fields.FIELD_SIZE in row_key_list:
+            size_position = row_key_list.index(fields.FIELD_SIZE) + 1
+            row_items = list(row.items())
+
+            row_items.insert(
+                size_position, (fields.FIELD_SIZE_BYTES, row[fields.FIELD_SIZE])
+            )
+            row = dict(row_items)
+
+            # Format original size column
             row[fields.FIELD_SIZE] = filesizeformat(row[fields.FIELD_SIZE])
-        except KeyError:
-            pass
-    return rows
+
+        edited_rows.append(row)
+
+    return edited_rows
 
 
 def download_csv(headers, rows, filename="report.csv"):

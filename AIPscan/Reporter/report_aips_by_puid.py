@@ -53,8 +53,6 @@ def aips_by_puid():
     original_files = parse_bool(request.args.get(request_params.ORIGINAL_FILES, True))
     csv = parse_bool(request.args.get(request_params.CSV), default=False)
 
-    headers = translate_headers(HEADERS)
-
     aip_data = report_data.aips_by_puid(
         storage_service_id=storage_service_id,
         puid=puid,
@@ -63,9 +61,13 @@ def aips_by_puid():
     )
 
     if csv:
+        headers = translate_headers(HEADERS, True)
+
         filename = "aips_by_puid_{}.csv".format(puid)
         csv_data = format_size_for_csv(aip_data[fields.FIELD_AIPS])
         return download_csv(headers, csv_data, filename)
+
+    headers = translate_headers(HEADERS)
 
     return render_template(
         "report_aips_by_puid.html",

@@ -35,8 +35,6 @@ def largest_aips():
         pass
     csv = parse_bool(request.args.get(request_params.CSV), default=False)
 
-    headers = translate_headers(HEADERS)
-
     aip_data = report_data.largest_aips(
         storage_service_id=storage_service_id,
         start_date=start_date,
@@ -46,10 +44,13 @@ def largest_aips():
     )
 
     if csv:
+        headers = translate_headers(HEADERS, True)
+
         filename = "largest_aips.csv"
-        headers = translate_headers(HEADERS)
         csv_data = format_size_for_csv(aip_data[fields.FIELD_AIPS])
         return download_csv(headers, csv_data, filename)
+
+    headers = translate_headers(HEADERS)
 
     return render_template(
         "report_largest_aips.html",

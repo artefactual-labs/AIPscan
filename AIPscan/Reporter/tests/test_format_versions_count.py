@@ -1,6 +1,6 @@
 from flask import current_app
 
-EXPECTED_CSV_CONTENTS = b"PUID,Format,Version,Count,Size\r\nfmt/44,JPEG,1.02,1,2.0 kB\r\nfmt/43,JPEG,1.01,1,1.0 kB\r\nfmt/468,ISO Disk Image File,,1,0 Bytes\r\n"
+EXPECTED_CSV_CONTENTS = b"PUID,Format,Version,Count,Size,Size (bytes)\r\nfmt/44,JPEG,1.02,1,2.0 kB,2000\r\nfmt/43,JPEG,1.01,1,1.0 kB,1000\r\nfmt/468,ISO Disk Image File,,1,0 Bytes,0\r\n"
 
 
 def test_format_versions_count(app_with_populated_format_versions):

@@ -280,12 +280,18 @@ def report_format_versions_count():
     )
     versions = version_data.get(fields.FIELD_FORMAT_VERSIONS)
 
-    headers = translate_headers(HEADERS)
-
     if csv:
+        # Using the translate_headers function's "True" argument will
+        # have it automatically add an additional size column with the size
+        # data left as the number of bytes, rather than a more human readable
+        # description of the size, to make it easier to sort CSV rows by size
+        headers = translate_headers(HEADERS, True)
+
         filename = "format_versions.csv"
         csv_data = format_size_for_csv(versions)
         return download_csv(headers, csv_data, filename)
+
+    headers = translate_headers(HEADERS)
 
     return render_template(
         "report_format_versions_count.html",

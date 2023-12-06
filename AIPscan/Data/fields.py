@@ -53,6 +53,7 @@ FIELD_PUID = "PUID"
 FIELD_RELATED_PAIRING = "RelatedPairing"
 
 FIELD_SIZE = "Size"
+FIELD_SIZE_BYTES = "SizeBytes"
 FIELD_STORAGE_LOCATION = "StorageLocation"
 FIELD_STORAGE_NAME = "StorageName"
 

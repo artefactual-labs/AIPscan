@@ -6,7 +6,7 @@ from flask import current_app
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 FIXTURES_DIR = os.path.join(SCRIPT_DIR, "fixtures")
 
-EXPECTED_CSV_CONTENTS = b"UUID,Location,AIPs,Size,File Count\r\n2bbcea40-eb4d-4076-a81d-1ab046e34f6a,AIP Store Location 1,2,1.6 kB,3\r\ne69beb57-0e32-4c45-8db7-9b7723724a05,AIP Store Location 2,1,5.0 kB,2\r\n"
+EXPECTED_CSV_CONTENTS = b"UUID,Location,AIPs,Size,Size (bytes),File Count\r\n2bbcea40-eb4d-4076-a81d-1ab046e34f6a,AIP Store Location 1,2,1.6 kB,1600,3\r\ne69beb57-0e32-4c45-8db7-9b7723724a05,AIP Store Location 2,1,5.0 kB,5000,2\r\n"
 
 
 def test_storage_locations(storage_locations):
