@@ -24,8 +24,8 @@
   <tr><td width=20%><strong>Download offset</strong></td><td>{{ storage_service.download_offset}}</td></tr>
   <tr><td width=20%><strong>Default service</strong></td><td>{{ storage_service.default}}</td></tr>
 </table>
-<a href="{{ url_for('aggregator.edit_storage_service', id=storage_service.id) }}"><button type="button" class="btn btn-info">Edit</button></a>
-<a href="{{ url_for('aggregator.delete_storage_service', id=storage_service.id) }}"><button type="button" class="btn btn-danger">Delete</button></a>
+<a href="{{ url_for('aggregator.edit_storage_service', storage_service_id=storage_service.id) }}"><button type="button" class="btn btn-info">Edit</button></a>
+<a href="{{ url_for('aggregator.delete_storage_service', storage_service_id=storage_service.id) }}"><button type="button" class="btn btn-danger">Delete</button></a>
 {% if mets_fetch_jobs %}
 <a href="{{ url_for('reporter.view_aips', storage_service_id=storage_service.id) }}"><button type="button" class="btn btn-success">View AIPs</button></a>
 {% endif %}
@@ -73,7 +73,7 @@
         </td>
         <td>{{ mets_fetch_job.aips|length }}</td>
         <td>
-          <a href="{{ url_for('aggregator.delete_fetch_job', id= mets_fetch_job.id) }}"><button type="button" class="btn btn-danger">Delete</button></a>
+          <a href="{{ url_for('aggregator.delete_fetch_job', fetch_job_id=mets_fetch_job.id) }}"><button type="button" class="btn btn-danger">Delete</button></a>
         </td>
       </tr>
     {% endfor %}
