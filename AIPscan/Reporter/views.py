@@ -329,15 +329,9 @@ def download_mets(aip_id):
     aip = AIP.query.get(aip_id)
     storage_service = StorageService.query.get(aip.storage_service_id)
 
-    api_url = {
-        "baseUrl": storage_service.url,
-        "userName": storage_service.user_name,
-        "apiKey": storage_service.api_key,
-    }
-
     mets_response = requests.get(
         get_mets_url(
-            api_url,
+            storage_service,
             aip.uuid,
             f"{aip.transfer_name}-{aip.uuid}/data/METS.{aip.uuid}.xml",
         )

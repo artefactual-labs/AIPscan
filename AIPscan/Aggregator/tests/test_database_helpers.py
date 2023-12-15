@@ -16,6 +16,7 @@ from AIPscan.models import (
     FileType,
     Pipeline,
     StorageLocation,
+    StorageService,
 )
 
 FIXTURES_DIR = "fixtures"
@@ -289,14 +290,15 @@ def test_create_or_update_storage_location(
     """Test that Storage Locations are created or updated as expected."""
     make_request = mocker.patch("AIPscan.Aggregator.tasks.make_request")
     make_request.return_value = {"description": new_description}
+
     create_storage_location_object = mocker.patch(
         "AIPscan.Aggregator.database_helpers.create_storage_location_object"
     )
 
+    storage_service = StorageService.query.get(1)
+
     storage_location = database_helpers.create_or_update_storage_location(
-        current_location=current_location,
-        api_url={},
-        storage_service_id=storage_service_id,
+        current_location=current_location, storage_service=storage_service
     )
 
     if location_created:
@@ -320,12 +322,20 @@ def test_create_or_update_pipeline(
     """Test that Storage Locations are created or updated as expected."""
     make_request = mocker.patch("AIPscan.Aggregator.tasks.make_request")
     make_request.return_value = {"remote_name": new_url}
+
     create_pipeline_object = mocker.patch(
         "AIPscan.Aggregator.database_helpers.create_pipeline_object"
     )
 
+    get_storage_service_api_url = mocker.patch(
+        "AIPscan.Aggregator.database_helpers.get_storage_service_api_url"
+    )
+    get_storage_service_api_url.return_value = (None, None)
+
+    storage_service = StorageService.query.get(1)
+
     pipeline = database_helpers.create_or_update_pipeline(
-        origin_pipeline=origin_pipeline, api_url={}
+        origin_pipeline=origin_pipeline, storage_service=storage_service
     )
 
     if pipeline_created:

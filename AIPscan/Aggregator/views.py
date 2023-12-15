@@ -38,18 +38,15 @@ def _format_date(date_string):
     return formatted_date.strftime(DATE_FORMAT_PARTIAL)
 
 
-def _test_storage_service_connection(api_url):
+def _test_storage_service_connection(storage_service):
     """Test Storage Service credentials.
 
-    :param api_url: Storage Service credentials (dict)
+    :param storage_service: StorageService instance
 
     :raises ConnectionError: if credentials are invalid
     """
-    # Make a new dict instead of altering our actual credentials.
-    test_credentials = dict(api_url)
-    test_credentials["limit"] = 10
     _, request_url_without_api_key, request_url = format_api_url_with_limit_offset(
-        test_credentials
+        storage_service
     )
     try:
         _ = tasks.make_request(request_url, request_url_without_api_key)
@@ -162,24 +159,13 @@ def delete_storage_service(storage_service_id):
 def new_fetch_job(fetch_job_id):
     """Fetch and process AIP METS files from Storage Service."""
     storage_service = StorageService.query.get(fetch_job_id)
-    api_url = {
-        "baseUrl": storage_service.url,
-        "userName": storage_service.user_name,
-        "apiKey": storage_service.api_key,
-        "offset": str(storage_service.download_offset),
-        "limit": str(storage_service.download_limit),
-    }
 
     # Check Storage Service credentials and return 400 if invalid prior to
     # creating the Fetch Job and kicking off the Celery task.
     try:
-        _test_storage_service_connection(api_url)
+        _test_storage_service_connection(storage_service)
     except ConnectionError:
         return jsonify({}), 400
-
-    # create "downloads/" directory if it doesn't exist
-    if not os.path.exists("AIPscan/Aggregator/downloads/"):
-        os.makedirs("AIPscan/Aggregator/downloads/")
 
     # create a subdirectory for the download job using a timestamp as its name
     datetime_obj_start = datetime.now().replace(microsecond=0)
@@ -197,7 +183,7 @@ def new_fetch_job(fetch_job_id):
 
     # send the METS fetch job to a background job that will coordinate other workers
     task = tasks.workflow_coordinator.delay(
-        api_url, timestamp_str, storage_service.id, fetch_job.id, packages_directory
+        timestamp_str, storage_service.id, fetch_job.id, packages_directory
     )
 
     """

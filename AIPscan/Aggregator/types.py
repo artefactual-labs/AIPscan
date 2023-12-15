@@ -91,6 +91,12 @@ class StorageServicePackage(object):
             return True
         return False
 
+    def is_undeleted_aip(self):
+        if self.is_deleted():
+            return False
+
+        return self.is_aip()
+
     def is_dip(self):
         """Determine whether the package is a DIP"""
         if (

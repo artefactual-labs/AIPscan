@@ -1,34 +1,37 @@
 import json
 import pathlib
 
-from AIPscan.Aggregator import database_helpers
 from AIPscan.Aggregator.task_helpers import (
     format_api_url_with_limit_offset,
     get_packages_directory,
+    parse_package_list_file,
     process_package_object,
 )
-from AIPscan.Aggregator.tasks import delete_aip, get_mets, make_request
+from AIPscan.Aggregator.tasks import handle_deletion, make_request, start_mets_task
 
 
-def assemble_api_url_dict(storage_service, offset=0, limit=1_000_000):
-    return {
-        "baseUrl": storage_service.url,
-        "userName": storage_service.user_name,
-        "apiKey": storage_service.api_key,
-        "offset": offset,
-        "limit": limit,
-    }
+def determine_start_and_end_item(page, packages_per_page, total_packages):
+    if page is None:
+        start_item = 1
+        end_item = total_packages
+    else:
+        start_item = ((page - 1) * packages_per_page) + 1
+        end_item = start_item + packages_per_page - 1
+
+    # Describe start and end package
+    if total_packages < end_item:
+        end_item = total_packages
+
+    return start_item, end_item
 
 
-def fetch_and_write_packages(storage_service, package_filename):
-    api_url = assemble_api_url_dict(storage_service)
-
+def fetch_and_write_packages(storage_service, package_filepath):
     (_, request_url_without_api_key, request_url) = format_api_url_with_limit_offset(
-        api_url
+        storage_service
     )
 
     packages = make_request(request_url, request_url_without_api_key)
-    with open(package_filename, "w", encoding="utf-8") as f:
+    with open(package_filepath, "w", encoding="utf-8") as f:
         json.dump(packages, f)
 
     return packages
@@ -50,13 +53,12 @@ def create_mets_directory(timestamp_str):
 
 
 def get_packages(storage_service, packages_dir):
-    package_filename = pathlib.Path(packages_dir) / "packages.json"
+    package_filepath = pathlib.Path(packages_dir) / "packages.json"
 
-    if pathlib.Path(package_filename).is_file():
-        with open(package_filename) as f:
-            packages = json.load(f)
+    if pathlib.Path(package_filepath).is_file():
+        packages = parse_package_list_file(package_filepath, None, False)
     else:
-        packages = fetch_and_write_packages(storage_service, package_filename)
+        packages = fetch_and_write_packages(storage_service, package_filepath)
 
     return packages
 
@@ -65,7 +67,6 @@ def import_packages(
     packages,
     start_item,
     end_item,
-    api_url,
     storage_service_id,
     timestamp_str,
     package_list_no,
@@ -87,35 +88,22 @@ def import_packages(
             logger.info(f"Processing {package.uuid} ({current_item} of {end_item})")
 
             processed_packages.append(package)
+            handle_deletion(package)
 
-            if package.is_deleted():
-                delete_aip(package.uuid)
+            if not package.is_undeleted_aip():
                 continue
 
-            if not package.is_aip():
-                continue
-
-            storage_location = database_helpers.create_or_update_storage_location(
-                package.current_location, api_url, storage_service_id
-            )
-
-            pipeline = database_helpers.create_or_update_pipeline(
-                package.origin_pipeline, api_url
-            )
-
-            args = [
+            start_mets_task(
                 package.uuid,
                 package.size,
                 package.get_relative_path(),
-                api_url,
+                package.current_location,
+                package.origin_pipeline,
                 timestamp_str,
                 package_list_no,
                 storage_service_id,
-                storage_location.id,
-                pipeline.id,
                 fetch_job_id,
-                logger,
-            ]
-            get_mets.apply(args=args)
+                False,
+            )
 
     return processed_packages

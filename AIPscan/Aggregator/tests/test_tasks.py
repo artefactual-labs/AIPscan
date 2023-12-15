@@ -15,6 +15,7 @@ from AIPscan.Aggregator.tasks import (
     delete_storage_service,
     get_mets,
     make_request,
+    parse_package_list_file,
     parse_packages_and_load_mets,
 )
 from AIPscan.Aggregator.tests import (
@@ -56,7 +57,11 @@ def test_get_mets_task(app_instance, tmpdir, mocker, fixture_path, package_uuid)
     mets_file = os.path.join(FIXTURES_DIR, fixture_path)
 
     def mock_download_mets(
-        api_url, package_uuid, relative_path_to_mets, timestamp_str, package_list_no
+        storage_service,
+        package_uuid,
+        relative_path_to_mets,
+        timestamp_str,
+        package_list_no,
     ):
         return mets_file
 
@@ -78,8 +83,6 @@ def test_get_mets_task(app_instance, tmpdir, mocker, fixture_path, package_uuid)
     aips = _get_aips(storage_service.id)
     assert not aips
 
-    api_url = {"baseUrl": "http://test-url", "userName": "test", "apiKey": "test"}
-
     # Set up custom logger and add handler to capture output
     customlogger = logging.getLogger(__name__)
     customlogger.setLevel(logging.DEBUG)
@@ -96,7 +99,6 @@ def test_get_mets_task(app_instance, tmpdir, mocker, fixture_path, package_uuid)
         package_uuid=package_uuid,
         aip_size=1000,
         relative_path_to_mets="test",
-        api_url=api_url,
         timestamp_str=datetime.now()
         .replace(microsecond=0)
         .strftime("%Y-%m-%d-%H-%M-%S"),
@@ -121,7 +123,6 @@ def test_get_mets_task(app_instance, tmpdir, mocker, fixture_path, package_uuid)
         package_uuid=package_uuid,
         aip_size=1000,
         relative_path_to_mets="test",
-        api_url=api_url,
         timestamp_str=datetime.now()
         .replace(microsecond=0)
         .strftime("%Y-%m-%d-%H-%M-%S"),
@@ -147,7 +148,6 @@ def test_get_mets_task(app_instance, tmpdir, mocker, fixture_path, package_uuid)
         package_uuid=package_uuid,
         aip_size=1000,
         relative_path_to_mets="test",
-        api_url=api_url,
         timestamp_str=datetime.now()
         .replace(microsecond=0)
         .strftime("%Y-%m-%d-%H-%M-%S"),
@@ -236,6 +236,18 @@ def test_make_request(mocker, response, raises_task_error):
         assert return_dict["key"] == RESPONSE_DICT["key"]
 
 
+def test_parse_package_list_file(tmpdir):
+    """Test that JSON package list files are being parsed."""
+    json_file_path = tmpdir.join("packages.json")
+    json_file_path.write(json.dumps({"objects": []}))
+
+    package = parse_package_list_file(json_file_path, None, True)
+    assert "objects" in package
+
+    package_list = package["objects"]
+    assert len(package_list) == 0
+
+
 def test_parse_packages_and_load_mets(app_instance, tmpdir, mocker):
     """Test that JSON package lists are deleted after being parsed."""
     json_file_path = tmpdir.join("packages.json")
@@ -243,7 +255,9 @@ def test_parse_packages_and_load_mets(app_instance, tmpdir, mocker):
 
     delete_package_json = mocker.patch("AIPscan.Aggregator.tasks.os.remove")
 
-    parse_packages_and_load_mets(json_file_path, {}, str(datetime.now()), 1, 1, 1)
+    package_list = parse_package_list_file(json_file_path, None, True)
+
+    parse_packages_and_load_mets(package_list, str(datetime.now()), 1, 1, 1)
 
     delete_package_json.assert_called_with(json_file_path)
 

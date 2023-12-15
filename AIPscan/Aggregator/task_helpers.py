@@ -3,6 +3,7 @@
 """Collects a number of reusable components of tasks.py. Also ensures
 the module remains clean and easy to refactor over time.
 """
+import json
 import os
 from datetime import datetime
 
@@ -11,20 +12,17 @@ from dateutil.parser import ParserError, parse
 from AIPscan.Aggregator.types import StorageServicePackage
 
 
-def format_api_url_with_limit_offset(api_url):
+def format_api_url_with_limit_offset(storage_service):
     """Format the API URL here to make sure it is as correct as
     possible.
     """
-    base_url = api_url.get("baseUrl", "").rstrip("/")
-    limit = int(api_url.get("limit", ""))
-    offset = api_url.get("offset", "")
-    user_name = api_url.get("userName")
-    api_key = api_url.get("apiKey", "")
+    base_url = storage_service.url.rstrip("/")
+
     request_url_without_api_key = "{}/api/v2/file/?limit={}&offset={}".format(
-        base_url, limit, offset
+        base_url, storage_service.download_limit, storage_service.download_offset
     )
     request_url = "{}&username={}&api_key={}".format(
-        request_url_without_api_key, user_name, api_key
+        request_url_without_api_key, storage_service.user_name, storage_service.api_key
     )
     return base_url, request_url_without_api_key, request_url
 
@@ -34,6 +32,19 @@ def get_packages_directory(timestamp):
     the storage service plus other metadata.
     """
     return os.path.join("AIPscan", "Aggregator", "downloads", timestamp, "packages")
+
+
+def parse_package_list_file(filepath, logger=None, remove_after_parsing=False):
+    with open(filepath, "r") as packages_json:
+        package_list = json.load(packages_json)
+    try:
+        if remove_after_parsing:
+            os.remove(filepath)
+    except OSError as err:
+        if logger:
+            logger.warning("Unable to delete package JSON file: {}".format(err))
+
+    return package_list
 
 
 def process_package_object(package_obj):
@@ -95,32 +106,27 @@ def _tz_neutral_date(date):
     return date
 
 
-def get_mets_url(api_url, package_uuid, path_to_mets):
+def get_mets_url(storage_service, package_uuid, path_to_mets):
     """Construct a URL from which we can download the METS files that
     we are interested in.
     """
-    am_url = "baseUrl"
-    user_name = "userName"
-    api_key = "apiKey"
-
     mets_url = "{}/api/v2/file/{}/extract_file/?relative_path_to_file={}&username={}&api_key={}".format(
-        api_url[am_url].rstrip("/"),
+        storage_service.url.rstrip("/"),
         package_uuid,
         path_to_mets,
-        api_url[user_name],
-        api_url[api_key],
+        storage_service.user_name,
+        storage_service.api_key,
     )
     return mets_url
 
 
-def get_storage_service_api_url(api_url, api_path):
+def get_storage_service_api_url(storage_service, api_path):
     """Return URL to fetch location infofrom Storage Service."""
-    base_url = api_url.get("baseUrl", "").rstrip("/")
+    base_url = storage_service.url.rstrip("/")
     request_url_without_api_key = "{}{}".format(base_url, api_path).rstrip("/")
-    user_name = api_url.get("userName")
-    api_key = api_url.get("apiKey", "")
+
     request_url = "{}?username={}&api_key={}".format(
-        request_url_without_api_key, user_name, api_key
+        request_url_without_api_key, storage_service.user_name, storage_service.api_key
     )
     return request_url, request_url_without_api_key
 
