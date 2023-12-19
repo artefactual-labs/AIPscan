@@ -75,6 +75,7 @@ sudo nano /etc/systemd/system/aipscan.service
 * Add and save the following content to this file.
 
 ```bash
+[Unit]
 Description=Gunicorn instance to serve AIPscan
 After=network.target
 
