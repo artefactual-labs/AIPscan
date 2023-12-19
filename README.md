@@ -246,6 +246,18 @@ source <path to AIPscan virtual environment>/bin/activate
 In order to display a tool's CLI arguments and options, enter `<path to tool>
 --help`.
 
+#### Database documentation generator
+
+To generate database documentation, using Schemaspy run via Docker, enter the
+following:
+
+```shell
+sudo make schema-docs
+```
+
+Database documentation will be output to the `output` directory and viewable
+by a web browser by opening `index.html`.
+
 # Usage
 
 * Ensure that the Flask Server, RabbitMQ server, and Celery worker queue are up
