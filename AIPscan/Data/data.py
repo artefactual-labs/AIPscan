@@ -8,7 +8,21 @@ from AIPscan.Data import (
     get_storage_service_name,
 )
 from AIPscan.helpers import _simplify_datetime
-from AIPscan.models import AIP, File, FileType
+from AIPscan.models import AIP, File, FileType, StorageService
+
+
+def storage_services():
+    """Return a summary overview of storage services."""
+    report = {}
+
+    storage_services = []
+    for storage_service in StorageService.query.all():
+        storage_services.append(
+            {"id": storage_service.id, "name": storage_service.name}
+        )
+
+    report["storage_services"] = storage_services
+    return report
 
 
 def file_format_aip_overview(
@@ -78,7 +92,6 @@ def aip_file_format_overview(
     aips = aips.all()
 
     for aip in aips:
-
         if aip.create_date < start_date or aip.create_date >= end_date:
             continue
 

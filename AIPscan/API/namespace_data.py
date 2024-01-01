@@ -24,6 +24,13 @@ data = api.model('Data', {
 """
 
 
+@api.route("/storage-services")
+class StorageServices(Resource):
+    def get(self):
+        """Return data on storage services."""
+        return data.storage_services()
+
+
 @api.route("/aip-overview/<storage_service_id>")
 class AIPList(Resource):
     @api.doc(

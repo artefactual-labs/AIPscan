@@ -5,6 +5,7 @@ from AIPscan.conftest import (
     STORAGE_LOCATION_2_DESCRIPTION,
 )
 from AIPscan.Data import data, fields
+from AIPscan.Data.tests import MOCK_STORAGE_SERVICES
 from AIPscan.helpers import parse_datetime_bound
 
 DATE_BEFORE_AIP_1 = "2019-01-01"
@@ -172,3 +173,18 @@ def test_aip_contents_data(
         return
 
     assert aips[0] == expected_first_aip
+
+
+def test_storage_services(app_instance, mocker):
+    """Test response from report_data.storage_services endpoint."""
+    storage_services = mocker.patch("sqlalchemy.orm.query.Query.all")
+    storage_services.return_value = MOCK_STORAGE_SERVICES
+
+    report = data.storage_services()
+
+    assert report == {
+        "storage_services": [
+            {"id": 1, "name": "some name"},
+            {"id": 2, "name": "another name"},
+        ]
+    }
