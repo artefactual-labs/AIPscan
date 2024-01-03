@@ -17,6 +17,8 @@ from AIPscan.Aggregator.tasks import (
     make_request,
     parse_package_list_file,
     parse_packages_and_load_mets,
+    start_mets_task,
+    workflow_coordinator,
 )
 from AIPscan.Aggregator.tests import (
     INVALID_JSON,
@@ -26,7 +28,7 @@ from AIPscan.Aggregator.tests import (
     VALID_JSON,
     MockResponse,
 )
-from AIPscan.models import AIP, Agent, FetchJob, StorageService
+from AIPscan.models import AIP, Agent, FetchJob, FetchJobError, StorageService
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 FIXTURES_DIR = os.path.join(SCRIPT_DIR, "fixtures")
@@ -275,3 +277,174 @@ def test_delete_aip(app_instance):
 
     deleted_aip = AIP.query.filter_by(uuid=PACKAGE_UUID).first()
     assert deleted_aip is None
+
+
+def test_store_fetch_job_error_during_get_mets(app_instance, tmpdir):
+    """Test recording fetch job error during get_mets task."""
+    storage_service = test_helpers.create_test_storage_service()
+    pipeline = test_helpers.create_test_pipeline(storage_service_id=storage_service.id)
+
+    fetch_job = test_helpers.create_test_fetch_job(
+        storage_service_id=storage_service.id
+    )
+
+    # Make sure no fetch job errors exist for test fetch job
+    fetch_job_error = FetchJobError.query.filter_by(fetch_job_id=fetch_job.id).first()
+
+    assert fetch_job_error is None
+
+    package_uuid = str(uuid.uuid4())
+
+    get_mets(
+        package_uuid,
+        192643,
+        tmpdir,
+        "timestamp string",
+        "1",
+        storage_service.id,
+        None,
+        pipeline.id,
+        fetch_job.id,
+        None,
+    )
+
+    # Make sure we receive the expected results
+    fetch_job_error = FetchJobError.query.filter_by(fetch_job_id=fetch_job.id).first()
+
+    assert fetch_job_error is not None
+    assert fetch_job_error.message == "Non-200 HTTP code from METS download"
+    assert fetch_job_error.fetch_job_id == fetch_job.id
+
+
+def test_store_fetch_job_error_during_create_location(app_instance, tmpdir):
+    """Test recording fetch job error during create location."""
+    storage_service = test_helpers.create_test_storage_service()
+    pipeline = test_helpers.create_test_pipeline(storage_service_id=storage_service.id)
+
+    fetch_job = test_helpers.create_test_fetch_job(
+        storage_service_id=storage_service.id
+    )
+
+    # Make sure no fetch job errors exist for test fetch job
+    fetch_job_error = FetchJobError.query.filter_by(fetch_job_id=fetch_job.id).first()
+
+    assert fetch_job_error is None
+
+    package_uuid = str(uuid.uuid4())
+
+    start_mets_task(
+        package_uuid,
+        192643,
+        tmpdir,
+        None,
+        pipeline.id,
+        "timestamp src",
+        "1",
+        storage_service.id,
+        fetch_job.id,
+        False,
+    )
+
+    # Make sure we receive the expected results
+    fetch_job_error = FetchJobError.query.filter_by(fetch_job_id=fetch_job.id).first()
+
+    assert fetch_job_error is not None
+    assert "Max retries exceeded" in fetch_job_error.message
+    assert fetch_job_error.fetch_job_id == fetch_job.id
+
+
+def test_store_fetch_job_error_during_create_pipeline(app_instance, tmpdir, mocker):
+    """Test recording fetch job error during create pipeline."""
+    storage_service = test_helpers.create_test_storage_service()
+    storage_location = test_helpers.create_test_storage_location(
+        storage_service_id=storage_service.id
+    )
+    pipeline = test_helpers.create_test_pipeline(storage_service_id=storage_service.id)
+
+    fetch_job = test_helpers.create_test_fetch_job(
+        storage_service_id=storage_service.id
+    )
+
+    # Make sure no fetch job errors exist for test fetch job
+    fetch_job_error = FetchJobError.query.filter_by(fetch_job_id=fetch_job.id).first()
+
+    assert fetch_job_error is None
+
+    updater = mocker.patch(
+        "AIPscan.Aggregator.database_helpers.create_or_update_storage_location"
+    )
+    updater.return_value = storage_location
+
+    package_uuid = str(uuid.uuid4())
+
+    start_mets_task(
+        package_uuid,
+        1000,
+        tmpdir,
+        storage_location.current_location,
+        pipeline.id,
+        "timestamp src",
+        "1",
+        storage_service.id,
+        fetch_job.id,
+        False,
+    )
+
+    # Make sure we receive the expected results
+    fetch_job_error = FetchJobError.query.filter_by(fetch_job_id=fetch_job.id).first()
+
+    assert fetch_job_error is not None
+    assert "Name or service not known" in fetch_job_error.message
+    assert fetch_job_error.fetch_job_id == fetch_job.id
+
+
+def test_store_fetch_job_error_during_workflow_coordinator(
+    app_instance, tmpdir, mocker
+):
+    """Test recording fetch job error during workflow coordinator."""
+    storage_service = test_helpers.create_test_storage_service()
+
+    fetch_job = test_helpers.create_test_fetch_job(
+        storage_service_id=storage_service.id
+    )
+
+    # Make sure no fetch job errors exist for test fetch job
+    fetch_job_error = FetchJobError.query.filter_by(fetch_job_id=fetch_job.id).first()
+
+    assert fetch_job_error is None
+
+    # Mock result containing task error
+    class MockPackageListsRequestDelayResult:
+        id = None
+        info = TaskError("Task error")
+
+    mock_result = MockPackageListsRequestDelayResult()
+
+    delay = mocker.patch("AIPscan.Aggregator.tasks.package_lists_request.delay")
+    delay.return_value = mock_result
+
+    # Skip writing of Celery update
+    mocker.patch("AIPscan.Aggregator.tasks.write_celery_update")
+
+    # Mock result indicating failure
+    class MockPackageListsRequestAsyncResult:
+        state = "FAILURE"
+
+    mock_result = MockPackageListsRequestAsyncResult()
+
+    async_result = mocker.patch(
+        "AIPscan.Aggregator.tasks.package_lists_request.AsyncResult"
+    )
+    async_result.return_value = mock_result
+
+    # Initiate workflow coordinator logic
+    args = ["timestamp str", storage_service.id, fetch_job.id, tmpdir]
+
+    workflow_coordinator.apply(args=args)
+
+    # Make sure we receive the expected results
+    fetch_job_error = FetchJobError.query.filter_by(fetch_job_id=fetch_job.id).first()
+
+    assert fetch_job_error is not None
+    assert fetch_job_error.message == "Task error"
+    assert fetch_job_error.fetch_job_id == fetch_job.id
