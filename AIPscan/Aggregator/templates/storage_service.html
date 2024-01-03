@@ -82,7 +82,7 @@
 <button type="button" class="btn btn-success" style="margin-top: 20px;" id="newfetchjob">New fetch job</button>
 
 
-<script>
+<script type="module">
 $(document).ready(function(){
   $('#newfetchjob').on('click', function () {
     new_fetch_job({{ storage_service.id }});

@@ -1,0 +1,19 @@
+{
+  "name": "aipscan",
+  "version": "0.7.0b",
+  "description": "Crawl Archivematica AIPs to provide repository-wide reporting",
+  "scripts": {
+    "build": "make build"
+  },
+  "devDependencies": {
+    "@fortawesome/fontawesome-free": "^5.15.4",
+    "@rollup/plugin-inject": "^5.0.5",
+    "bootstrap": "^4.6.2",
+    "chart.js": "^4.4.1",
+    "jquery": "^3.7.1",
+    "jquery-ui-dist": "^1.13.2",
+    "plotly.js-dist": "^2.27.1",
+    "vite": "^5.0.10"
+  },
+  "type": "module"
+}

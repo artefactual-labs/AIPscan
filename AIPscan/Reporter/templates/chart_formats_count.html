@@ -2,9 +2,8 @@
 <html lang="en">
 <head>
   <title>{{ storage_service_name }}: file formats count</title>
-  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
-  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/custom.css') }}">
-  <script type="text/javascript" language="javascript" src="{{ url_for('static', filename='js/Chart.min.js') }}"></script>
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='dist/chart_formats_count/assets/chart_formats_count-6NOWmm_T.css') }}">
+  <script type="module" language="javascript" src="{{ url_for('static', filename='dist/chart_formats_count/assets/chart_formats_count-c9rhHfc8.js') }}"></script>
 
   <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
 
@@ -36,7 +35,7 @@
     </canvas>
 </div>
 
-<script>
+<script type="module">
   // draw format chart
 
   let randCols = []
