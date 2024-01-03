@@ -94,6 +94,9 @@ def download_mets(
         get_mets_url(storage_service, package_uuid, relative_path_to_mets)
     )
 
+    if mets_response.status_code != 200:
+        raise Exception("Non-200 HTTP code from METS download")
+
     # Create a directory to download the METS to.
     numbered_subdir = create_numbered_subdirs(timestamp, package_list_no)
 

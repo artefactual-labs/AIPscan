@@ -53,6 +53,7 @@
   <th><strong>Download duration</strong></th>
   <th><strong>Packages in SS</strong></th>
   <th><strong>New AIPs added</strong></th>
+  <th><strong>Errors</strong></th>
   <th><strong>Action</strong></th>
   </tr>
   </thead>
@@ -76,6 +77,7 @@
           </div>
         </td>
         <td>{{ mets_fetch_job.aips|length }}</td>
+        <td>{{ mets_fetch_job.errors|length }}</td>
         <td>
           <a href="{{ url_for('aggregator.delete_fetch_job', fetch_job_id=mets_fetch_job.id) }}"><button type="button" class="btn btn-danger">Delete</button></a>
         </td>

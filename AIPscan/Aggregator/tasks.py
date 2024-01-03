@@ -20,6 +20,7 @@ from AIPscan.Aggregator.task_helpers import (
     format_api_url_with_limit_offset,
     parse_package_list_file,
     process_package_object,
+    store_fetch_job_error_infomation,
 )
 from AIPscan.extensions import celery
 from AIPscan.helpers import file_sha256_hash
@@ -71,13 +72,24 @@ def start_mets_task(
     celery database.
     """
     storage_service = StorageService.query.get(storage_service_id)
-    storage_location = database_helpers.create_or_update_storage_location(
-        current_location, storage_service
-    )
 
-    pipeline = database_helpers.create_or_update_pipeline(
-        origin_pipeline, storage_service
-    )
+    try:
+        storage_location = database_helpers.create_or_update_storage_location(
+            current_location, storage_service
+        )
+    except Exception as err:
+        store_fetch_job_error_infomation(fetch_job_id, err)
+
+        return
+
+    try:
+        pipeline = database_helpers.create_or_update_pipeline(
+            origin_pipeline, storage_service
+        )
+    except Exception as err:
+        store_fetch_job_error_infomation(fetch_job_id, err)
+
+        return
 
     args = [
         package_uuid,
@@ -176,8 +188,10 @@ def workflow_coordinator(
             break
 
     if isinstance(package_lists_task.info, TaskError):
+        store_fetch_job_error_infomation(fetch_job_id, package_lists_task.info)
+
         # Re-raise.
-        raise (package_lists_task.info)
+        raise package_lists_task.info
 
     total_package_lists = package_lists_task.info["totalPackageLists"]
 
@@ -358,13 +372,20 @@ def get_mets(
 
     # Download METS file
     storage_service = StorageService.query.get(storage_service_id)
-    download_file = download_mets(
-        storage_service,
-        package_uuid,
-        relative_path_to_mets,
-        timestamp_str,
-        package_list_no,
-    )
+
+    try:
+        download_file = download_mets(
+            storage_service,
+            package_uuid,
+            relative_path_to_mets,
+            timestamp_str,
+            package_list_no,
+        )
+    except Exception as e:
+        store_fetch_job_error_infomation(fetch_job_id, e)
+
+        return
+
     mets_name = os.path.basename(download_file)
     mets_hash = file_sha256_hash(download_file)
 

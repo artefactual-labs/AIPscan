@@ -3,6 +3,8 @@ import enum
 import re
 from datetime import date, datetime
 
+from sqlalchemy.sql import func
+
 from AIPscan import db
 
 UUID_REGEX = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
@@ -271,6 +273,9 @@ class FetchJob(db.Model):
     index_tasks = db.relationship(
         "index_tasks", cascade="all,delete", backref="fetch_job", lazy=True
     )
+    errors = db.relationship(
+        "FetchJobError", cascade="all,delete", backref="fetch_job", lazy=True
+    )
 
     def __init__(
         self,
@@ -292,6 +297,16 @@ class FetchJob(db.Model):
 
     def __repr__(self):
         return "<Fetch Job '{}'>".format(self.download_start)
+
+
+class FetchJobError(db.Model):
+    __tablename__ = "fetch_job_error"
+    id = db.Column(db.Integer(), primary_key=True)
+    fetch_job_id = db.Column(
+        db.Integer(), db.ForeignKey("fetch_job.id"), nullable=False
+    )
+    message = db.Column(db.String(255), index=True, unique=True)
+    create_date = db.Column(db.DateTime, server_default=func.now())
 
 
 class Pipeline(db.Model):
