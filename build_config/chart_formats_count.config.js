@@ -9,6 +9,11 @@ export default defineConfig({
       input: {
         chart_formats_count: resolve(__dirname, 'entry/chart_formats_count.entry.js')
       },
+      output: {
+        entryFileNames: '[name].js',
+        chunkFileNames: '[name].js',
+        assetFileNames: '[name].[ext]'
+      }
     },
     outDir: "AIPscan/static/dist/chart_formats_count"
   },

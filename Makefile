@@ -26,7 +26,7 @@ build:
 	npx vite build -c build_config/base.config.js
 	npx vite build -c build_config/report_base.config.js
 	npx vite build -c build_config/chart_formats_count.config.js
+	npx vite build -c build_config/plot_formats_count.config.js
 
 	# Directly copy Javascript from packages not easily handled by Vite
-	mkdir -p AIPscan/static/dist/plot_formats_count/assets
-	cp node_modules/plotly.js-dist/plotly.js AIPscan/static/dist/plot_formats_count/assets
+	cp node_modules/plotly.js-dist/plotly.js AIPscan/static/dist/plot_formats_count

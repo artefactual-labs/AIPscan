@@ -1,5 +1,9 @@
 {% extends "base.html" %}
 
+{% block head_content %}
+  <script defer data-storage-service-id="{{ storage_service.id }}" data-storage-service-api-key="{{ storage_service.api_key }}" type="text/javascript" language="javascript" src="{{ url_for('static', filename='js/aggregator/storage_service.js') }}"></script>
+{% endblock %}
+
 {% block content %}
 
 <div class="row">
@@ -80,33 +84,5 @@
   {% endif %}
 </table>
 <button type="button" class="btn btn-success" style="margin-top: 20px;" id="newfetchjob">New fetch job</button>
-
-
-<script type="module">
-$(document).ready(function(){
-  $('#newfetchjob').on('click', function () {
-    new_fetch_job({{ storage_service.id }});
-  });
-  $('.stats').hide();
-  $('.fa-info-circle').click(function() {
-    if($('#stats-'+this.id).is(':visible'))
-        $('#stats-'+this.id).hide();
-    else
-        $('#stats-'+this.id).show();    
-  });
-
-  // Handle API key visibility
-  let apiKeyVisible = false;
-  let apiKeyHiddenText = '&bull;'.repeat(16)
-  $('#apikeyBtn').on('click', function () {
-    apiKeyVisible = !apiKeyVisible;
-    if (apiKeyVisible === true ) {
-      $('#apikey').text('{{ storage_service.api_key}}');
-    } else {
-      $('#apikey').html(apiKeyHiddenText);
-    }
-  });
-});
-</script>
 
 {% endblock %}

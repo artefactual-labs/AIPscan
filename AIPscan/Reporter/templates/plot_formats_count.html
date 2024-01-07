@@ -3,10 +3,10 @@
 <head>
   <title>{{ storage_service_name }}: file formats count</title>
   <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
-  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
-  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/custom.css') }}">
-  <script language="javascript" src="{{ url_for('static', filename='dist/plot_formats_count/assets/plotly.js') }}"></script>
-
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='dist/plot_formats_count/plot_formats_count.css') }}">
+  <script language="javascript" src="{{ url_for('static', filename='dist/plot_formats_count/plot_formats_count.js') }}"></script>
+  <script language="javascript" src="{{ url_for('static', filename='dist/plot_formats_count/plotly.js') }}"></script>
+  <script defer type="text/javascript" language="javascript" src="{{ url_for('static', filename='js/reporter/plot_formats_count.js') }}"></script>
 </head>
 <body>
 
@@ -27,31 +27,12 @@
   {{ differentFormats }} different formats totalling {{ totalHumanSize }}
 </div>
 
-<div id="scatterplot">
-  <script>
-  var data = [{
-    x: {{ x_axis | safe }},
-    y: {{ y_axis | safe }},
-    text: {{ format | safe }},
-    customdata: {{ humansize | safe }},
-    marker: {size: 7},
-    hovertemplate: '<b>%{text}</b><br />' +
-                   'count: %{y}<br />' +
-                   'size: %{customdata}<br />' +
-                   'size in bytes: %{x}' +
-                   '<extra></extra>',
-    type: 'scatter',
-    mode: 'markers',
-  }];
-  var layout = {
-    hovermode: 'closest', yaxis: {title:'format occurence count'}, xaxis: {title:'total size in bytes'},
-    showlegend: false
-  }
+<textarea class="d-none" id="plot_x_axis">{{ x_axis | tojson }}</textarea>
+<textarea class="d-none" id="plot_y_axis">{{ y_axis | tojson }}</textarea>
+<textarea class="d-none" id="plot_format">{{ format | tojson }}</textarea>
+<textarea class="d-none" id="plot_humansize">{{ humansize | tojson }}</textarea>
 
-  Plotly.newPlot('scatterplot', data, layout, {displayModeBar: false});
-  </script>
-</div>
+<div id="scatterplot"></div>
 
-</div>
 </body>
 </html>

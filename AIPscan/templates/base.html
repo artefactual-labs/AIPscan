@@ -7,10 +7,14 @@
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='dist/base/assets/base-IX5jm5vp.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='dist/base/base.css') }}">
 
-    <script type="module" language="javascript" src="{{ url_for('static', filename='dist/base/assets/base-TJFVkvVe.js') }}"></script>
+    <script type="module" language="javascript" src="{{ url_for('static', filename='dist/base/base.js') }}"></script>
 
+    {% block head_content %}
+        <!-- Repeat this block in your template to include additional stylesheets.
+            the content in this one will be replaced. -->
+    {% endblock %}
 </head>
 <body data-url-root="{{ request.url_root }}">
 {% include "partials/navbar.html" %}
