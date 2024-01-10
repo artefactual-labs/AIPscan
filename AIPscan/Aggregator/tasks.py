@@ -410,3 +410,8 @@ def delete_storage_service(storage_service_id):
 
     db.session.delete(storage_service)
     db.session.commit()
+
+
+@celery.task()
+def generate_report(parameters):
+
