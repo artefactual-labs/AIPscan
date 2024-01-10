@@ -78,3 +78,31 @@ function get_mets_task_status(coordinatorId, totalAIPs, fetchJobId){
       }
   });
 }
+
+var scriptElement = document.currentScript;
+
+$(document).ready(function () {
+  var storageServiceId = $(scriptElement).data("storage-service-id");
+  var storageServiceApiKey = $(scriptElement).data("storage-service-api-key");
+
+  $("#newfetchjob").on("click", function () {
+    new_fetch_job(storageServiceId);
+  });
+  $(".stats").hide();
+  $(".fa-info-circle").click(function () {
+    if ($("#stats-" + this.id).is(":visible")) $("#stats-" + this.id).hide();
+    else $("#stats-" + this.id).show();
+  });
+
+  // Handle API key visibility
+  let apiKeyVisible = false;
+  let apiKeyHiddenText = "&bull;".repeat(16);
+  $("#apikeyBtn").on("click", function () {
+    apiKeyVisible = !apiKeyVisible;
+    if (apiKeyVisible === true) {
+      $("#apikey").text(storageServiceApiKey);
+    } else {
+      $("#apikey").html(apiKeyHiddenText);
+    }
+  });
+});

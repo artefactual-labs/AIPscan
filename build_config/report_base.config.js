@@ -8,6 +8,11 @@ export default defineConfig({
     rollupOptions: {
       input: {
         report_base: resolve(__dirname, 'entry/report_base.entry.js')
+      },
+      output: {
+        entryFileNames: '[name].js',
+        chunkFileNames: '[name].js',
+        assetFileNames: '[name].[ext]'
       }
     },
     outDir: "AIPscan/static/dist/report_base"

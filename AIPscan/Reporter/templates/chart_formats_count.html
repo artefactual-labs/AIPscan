@@ -2,12 +2,10 @@
 <html lang="en">
 <head>
   <title>{{ storage_service_name }}: file formats count</title>
-  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='dist/chart_formats_count/assets/chart_formats_count-6NOWmm_T.css') }}">
-  <script type="module" language="javascript" src="{{ url_for('static', filename='dist/chart_formats_count/assets/chart_formats_count-c9rhHfc8.js') }}"></script>
-
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='dist/chart_formats_count/chart_formats_count.css') }}">
+  <script type="module" language="javascript" src="{{ url_for('static', filename='dist/chart_formats_count/chart_formats_count.js') }}"></script>
+  <script defer type="text/javascript" language="javascript" src="{{ url_for('static', filename='js/reporter/chart_formats_count.js') }}"></script>
   <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
-
-
 </head>
 <body>
 
@@ -35,38 +33,8 @@
     </canvas>
 </div>
 
-<script type="module">
-  // draw format chart
-
-  let randCols = []
-  let jsonLabels = {{ labels|tojson }}
-  let jsonValues = {{ values|tojson }}
-
-  let makeColor = function() {
-    var r = Math.floor(Math.random() * 255)
-    var g = Math.floor(Math.random() * 255)
-    var b = Math.floor(Math.random() * 255)
-    return "rgb(" + r + "," + g + "," + b + ")"
-  }
-  for (let x=0;x<jsonValues.length;x++){randCols.push(makeColor())}
-
-  let canvas = document.getElementById("chart")
-  let ctx = canvas.getContext("2d")
-
-  let config = {
-      type: 'pie',
-      data: {
-        labels: jsonLabels,
-        datasets: [{
-          data: jsonValues,
-          label: "Formats chart",
-          backgroundColor: randCols,
-        }],
-      },
-      options: {responsive: true},
-    }
-   let myPie = new Chart(ctx, config)
-</script>
+<textarea class="d-none" id="chart_labels">{{ labels | tojson }}</textarea>
+<textarea class="d-none" id="chart_values">{{ values | tojson }}</textarea>
 
 </div>
 </body>
