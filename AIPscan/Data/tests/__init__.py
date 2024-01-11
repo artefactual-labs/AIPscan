@@ -57,6 +57,21 @@ MOCK_STORAGE_SERVICE = StorageService(
     download_offset=10,
     default=False,
 )
+MOCK_STORAGE_SERVICE.id = MOCK_STORAGE_SERVICE_ID
+
+MOCK_STORAGE_SERVICE_ID_2 = 2
+MOCK_STORAGE_SERVICE_2 = StorageService(
+    name="another name",
+    url="http://anotherexample.com",
+    user_name="test2",
+    api_key="test_api_2",
+    download_limit=30,
+    download_offset=40,
+    default=False,
+)
+MOCK_STORAGE_SERVICE_2.id = MOCK_STORAGE_SERVICE_ID_2
+
+MOCK_STORAGE_SERVICES = [MOCK_STORAGE_SERVICE, MOCK_STORAGE_SERVICE_2]
 
 MOCK_STORAGE_LOCATION_ID = 1
 
