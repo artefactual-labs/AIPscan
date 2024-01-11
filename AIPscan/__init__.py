@@ -1,4 +1,8 @@
 # -*- coding: utf-8 -*-
+__version__ = "0.7.0b"
+__version_info__ = tuple(int(i) for i in __version__.split(".") if i.isdigit())
+
+__all__ = ["__version__", "__version_info__"]
 
 from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
@@ -17,7 +21,6 @@ def create_app(config_name="default"):
     app.config.from_object(CONFIGS[config_name])
 
     with app.app_context():
-
         from AIPscan.Aggregator.views import aggregator
         from AIPscan.API.views import api
         from AIPscan.Home.views import home
