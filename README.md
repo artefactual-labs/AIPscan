@@ -175,6 +175,20 @@ Shut down the AIPscan Docker containers and remove the rabbitmq volumes:
 docker-composer down --volumes
 ```
 
+## Production deployments
+
+For production deployments, it's recommended to use MySQL instead of sqlite.
+This can be achieved by exporting an environment variable named
+```SQLALCHEMY_DATABASE_URI```  for celery and AIPscan services, that points to
+ mysql using format ```mysql+pymysql://user:pass@host/db```.
+
+Sqlite databases can be migrated using ```sqlite3mysql```:
+
+```shell
+/usr/share/archivematica/virtualenvs/AIPscan/bin/pip install sqlite3-to-mysql
+/usr/share/archivematica/virtualenvs/AIPscan/bin/sqlite3mysql -f aipscan.db -d <mysql database name> -u<mysql database user> ----mysql-password <mysql database password>
+```
+
 ## Tools
 
 The `tools` directory contains scripts that can be run by developers and system
