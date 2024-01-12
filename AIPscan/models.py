@@ -309,7 +309,7 @@ class AIP(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
     uuid = db.Column(db.String(255), index=True)
     transfer_name = db.Column(db.String(255))
-    create_date = db.Column(db.DateTime())
+    create_date = db.Column(db.DateTime(), index=True)
     mets_sha256 = db.Column(db.String(64))
     size = db.Column(db.Integer())
     storage_service_id = db.Column(
@@ -378,7 +378,7 @@ class File(db.Model):
     # Date created maps to PREMIS dateCreatedByApplication for original
     # files, which in practice is almost always date last modified, and
     # to normalization date for preservation files.
-    date_created = db.Column(db.DateTime())
+    date_created = db.Column(db.DateTime(), index=True)
     puid = db.Column(db.String(255), index=True)
     file_format = db.Column(db.String(255))
     format_version = db.Column(db.String(255))
