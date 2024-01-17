@@ -39,9 +39,9 @@
     <tbody>
     {% for format in formats %}
       <tr>
-        <td>{{ format["Format"] }}</td>
-        <td>{{ format["Count"] }}</td>
-        <td>{{ format["Size"] | filesizeformat }}</td>
+        <td>{{ format }}</td>
+        <td>{{ formats[format]["Count"] }}</td>
+        <td>{{ formats[format]["Size"] | filesizeformat }}</td>
       </tr>
     {% endfor %}
     </tbody>
