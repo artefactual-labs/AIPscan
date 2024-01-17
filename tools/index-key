@@ -1,0 +1,29 @@
+#!/usr/bin/env python3
+import sys
+
+from app import cli
+
+from AIPscan import db, typesense_helpers
+from config import CONFIGS
+
+
+def main():
+    # Initialize Flash app context
+    app = cli.create_app_instance(CONFIGS[cli.config_name], db)
+
+    with app.app_context():
+        client = typesense_helpers.client()
+
+        results = client.keys.create(
+            {
+                "description": "Search-only key.",
+                "actions": ["documents:search"],
+                "collections": ["*"],
+            }
+        )
+
+        print(results)
+
+
+if __name__ == "__main__":
+    sys.exit(main())

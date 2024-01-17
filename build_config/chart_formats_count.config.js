@@ -25,6 +25,8 @@ export default defineConfig({
       include: "**/*.js",
       $: "jquery",
       jQuery: "jquery",
+      Typesense: "typesense",
+      TypesenseHelpers: "TypesenseHelpers",
     }),
   ],
 });

@@ -15,5 +15,9 @@
     "plotly.js-dist": "^2.27.1",
     "vite": "^5.0.12"
   },
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "@babel/runtime": "^7.23.9",
+    "typesense": "^1.7.2"
+  }
 }

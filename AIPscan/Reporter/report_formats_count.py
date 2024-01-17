@@ -5,10 +5,9 @@ chart which describe the file formats present across the AIPs in a
 storage service with AIPs filtered by date range.
 """
 
-from collections import Counter
 from datetime import datetime, timedelta
 
-from flask import render_template, request
+from flask import current_app, render_template, request
 
 from AIPscan.Data import (
     fields,
@@ -81,11 +80,6 @@ def chart_formats_count():
     on disk across all AIPs in the storage service."""
     start_date = request.args.get(request_params.START_DATE)
     end_date = request.args.get(request_params.END_DATE)
-    # make date range inclusive
-    start = datetime.strptime(start_date, "%Y-%m-%d")
-    end = datetime.strptime(end_date, "%Y-%m-%d")
-    day_before = start - timedelta(days=1)
-    day_after = end + timedelta(days=1)
 
     storage_service_id = request.args.get(request_params.STORAGE_SERVICE_ID)
     storage_location_id = request.args.get(request_params.STORAGE_LOCATION_ID)
@@ -95,41 +89,15 @@ def chart_formats_count():
         aips = aips.filter_by(storage_location_id=storage_location_id)
     aips = aips.all()
 
-    format_labels = []
-    format_counts = []
-    originals_count = 0
-
-    for aip in aips:
-        original_files = File.query.filter_by(
-            aip_id=aip.id, file_type=FileType.original
-        )
-        for original in original_files:
-            if aip.create_date < day_before:
-                continue
-            elif aip.create_date > day_after:
-                continue
-            else:
-                originals_count += 1
-                format_labels.append(original.file_format)
-
-    format_counts = Counter(format_labels)
-    labels = list(format_counts.keys())
-    values = list(format_counts.values())
-
-    different_formats = len(format_counts.keys())
-
     return render_template(
         "chart_formats_count.html",
+        search_api_key=current_app.config["TYPESENSE_SEARCH_API_KEY"],
         startdate=start_date,
         enddate=end_date,
         storage_service_name=get_storage_service_name(storage_service_id),
         storage_location_description=get_storage_location_description(
             storage_location_id
         ),
-        labels=labels,
-        values=values,
-        originalsCount=originals_count,
-        differentFormats=different_formats,
     )
 
 
