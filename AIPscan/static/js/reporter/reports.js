@@ -7,7 +7,7 @@ $(document).ready(function () {
   const LIMIT_ALERT = "The limit must be numeric and larger than zero.";
 
   function reloadPage(ignoreLocation) {
-    var url = new URL("/reporter/reports", $("body").data("url-root"));
+    var url = new URL("reporter/reports", $("body").data("url-root"));
     var params = { amss_id: $("#ss").val() };
 
     if (ignoreLocation !== true) {
@@ -34,7 +34,7 @@ $(document).ready(function () {
         alert(DATE_ALERT_START);
       }
 
-      const url = new URL("/reporter/update_dates", $("body").data("url-root"));
+      const url = new URL("reporter/update_dates", $("body").data("url-root"));
 
       fetch(url.href, {
         method: "POST",
@@ -52,7 +52,7 @@ $(document).ready(function () {
         alert(DATE_ALERT_START);
       }
 
-      const url = new URL("/reporter/update_dates", $("body").data("url-root"));
+      const url = new URL("reporter/update_dates", $("body").data("url-root"));
 
       fetch(url.href, {
         method: "POST",
@@ -69,7 +69,7 @@ $(document).ready(function () {
       alert(DATE_ALERT_START);
     } else {
       var url = new URL(
-        "/reporter/report_formats_count",
+        "reporter/report_formats_count",
         $("body").data("url-root"),
       );
       const params = {
@@ -91,7 +91,7 @@ $(document).ready(function () {
       alert(DATE_ALERT_START);
     } else {
       var url = new URL(
-        "/reporter/chart_formats_count",
+        "reporter/chart_formats_count",
         $("body").data("url-root"),
       );
       const params = {
@@ -113,7 +113,7 @@ $(document).ready(function () {
       alert(DATE_ALERT_START);
     } else {
       var url = new URL(
-        "/reporter/plot_formats_count",
+        "reporter/plot_formats_count",
         $("body").data("url-root"),
       );
       const params = {
@@ -134,7 +134,7 @@ $(document).ready(function () {
     if (enddate < startdate) {
       alert(DATE_ALERT_START);
     } else {
-      var url = new URL("/reporter/aip_contents", $("body").data("url-root"));
+      var url = new URL("reporter/aip_contents", $("body").data("url-root"));
       const params = {
         amss_id: storageServiceId,
         storage_location: storageLocationId,
@@ -154,7 +154,7 @@ $(document).ready(function () {
       alert(DATE_ALERT_START);
     } else {
       var url = new URL(
-        "/reporter/report_format_versions_count",
+        "reporter/report_format_versions_count",
         $("body").data("url-root"),
       );
       const params = {
@@ -171,7 +171,7 @@ $(document).ready(function () {
 
   $("#preservationDerivatives").on("click", function () {
     var url = new URL(
-      "/reporter/preservation_derivatives",
+      "reporter/preservation_derivatives",
       $("body").data("url-root"),
     );
     const params = {
@@ -205,7 +205,7 @@ $(document).ready(function () {
         limit: limit,
       };
 
-      var url = new URL("/reporter/largest_aips", $("body").data("url-root"));
+      var url = new URL("reporter/largest_aips", $("body").data("url-root"));
       url.search = new URLSearchParams(params).toString();
       window.open(url.href);
     }
@@ -233,7 +233,7 @@ $(document).ready(function () {
         limit: limit,
       };
 
-      var url = new URL("/reporter/largest_files", $("body").data("url-root"));
+      var url = new URL("reporter/largest_files", $("body").data("url-root"));
       url.search = new URLSearchParams(params).toString();
       window.open(url.href);
     }
@@ -243,7 +243,7 @@ $(document).ready(function () {
     var fileFormat = $("#originalFormatSelect").val();
 
     var url = new URL(
-      "/reporter/aips_by_file_format",
+      "reporter/aips_by_file_format",
       $("body").data("url-root"),
     );
     const params = {
@@ -261,7 +261,7 @@ $(document).ready(function () {
     var fileFormat = $("#preservationFormatSelect").val();
 
     var url = new URL(
-      "/reporter/aips_by_file_format",
+      "reporter/aips_by_file_format",
       $("body").data("url-root"),
     );
     const params = {
@@ -278,7 +278,7 @@ $(document).ready(function () {
   $("#aipsByOriginalPUID").on("click", function () {
     var puid = $("#originalPUIDSelect").val();
 
-    var url = new URL("/reporter/aips_by_puid", $("body").data("url-root"));
+    var url = new URL("reporter/aips_by_puid", $("body").data("url-root"));
     const params = {
       amss_id: storageServiceId,
       storage_location: storageLocationId,
@@ -293,7 +293,7 @@ $(document).ready(function () {
   $("#aipsByPreservationPUID").on("click", function () {
     var puid = $("#preservationPUIDSelect").val();
 
-    var url = new URL("/reporter/aips_by_puid", $("body").data("url-root"));
+    var url = new URL("reporter/aips_by_puid", $("body").data("url-root"));
     const params = {
       amss_id: storageServiceId,
       storage_location: storageLocationId,
@@ -310,7 +310,7 @@ $(document).ready(function () {
     var enddate = $("#enddate").val();
 
     var url = new URL(
-      "/reporter/ingest_log_tabular",
+      "reporter/ingest_log_tabular",
       $("body").data("url-root"),
     );
     const params = {
@@ -328,7 +328,7 @@ $(document).ready(function () {
     var startdate = $("#startdate").val();
     var enddate = $("#enddate").val();
 
-    var url = new URL("/reporter/ingest_log_gantt", $("body").data("url-root"));
+    var url = new URL("reporter/ingest_log_gantt", $("body").data("url-root"));
     const params = {
       amss_id: storageServiceId,
       storage_location: storageLocationId,
@@ -347,7 +347,7 @@ $(document).ready(function () {
       alert(DATE_ALERT_START);
     } else {
       var url = new URL(
-        "/reporter/storage_locations",
+        "reporter/storage_locations",
         $("body").data("url-root"),
       );
       const params = {
@@ -368,7 +368,7 @@ $(document).ready(function () {
       alert(DATE_ALERT_START);
     } else {
       var url = new URL(
-        "/reporter/storage_locations_usage_over_time",
+        "reporter/storage_locations_usage_over_time",
         $("body").data("url-root"),
       );
       const params = {
