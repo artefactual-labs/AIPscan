@@ -1,27 +1,30 @@
-import { resolve } from 'path'
-import { defineConfig } from 'vite'
-import inject from '@rollup/plugin-inject'
+import { resolve } from "path";
+import { defineConfig } from "vite";
+import inject from "@rollup/plugin-inject";
 
 export default defineConfig({
-  base: '/static/dist/chart_formats_count',
+  base: "/static/dist/chart_formats_count",
   build: {
     rollupOptions: {
       input: {
-        chart_formats_count: resolve(__dirname, 'entry/chart_formats_count.entry.js')
+        chart_formats_count: resolve(
+          __dirname,
+          "entry/chart_formats_count.entry.js",
+        ),
       },
       output: {
-        entryFileNames: '[name].js',
-        chunkFileNames: '[name].js',
-        assetFileNames: '[name].[ext]'
-      }
+        entryFileNames: "[name].js",
+        chunkFileNames: "[name].js",
+        assetFileNames: "[name].[ext]",
+      },
     },
-    outDir: "AIPscan/static/dist/chart_formats_count"
+    outDir: "AIPscan/static/dist/chart_formats_count",
   },
   plugins: [
     inject({
-      include: '**/*.js',
-      $: 'jquery',
-      'jQuery': 'jquery'
+      include: "**/*.js",
+      $: "jquery",
+      jQuery: "jquery",
     }),
-  ]
-})
+  ],
+});

@@ -1,1 +1,1 @@
-import "./shared/base_shared.js"
+import "./shared/base_shared.js";

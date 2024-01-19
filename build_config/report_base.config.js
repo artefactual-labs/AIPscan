@@ -1,27 +1,27 @@
-import { resolve } from 'path'
-import { defineConfig } from 'vite'
-import inject from '@rollup/plugin-inject'
+import { resolve } from "path";
+import { defineConfig } from "vite";
+import inject from "@rollup/plugin-inject";
 
 export default defineConfig({
-  base: '/static/dist/report_base',
+  base: "/static/dist/report_base",
   build: {
     rollupOptions: {
       input: {
-        report_base: resolve(__dirname, 'entry/report_base.entry.js')
+        report_base: resolve(__dirname, "entry/report_base.entry.js"),
       },
       output: {
-        entryFileNames: '[name].js',
-        chunkFileNames: '[name].js',
-        assetFileNames: '[name].[ext]'
-      }
+        entryFileNames: "[name].js",
+        chunkFileNames: "[name].js",
+        assetFileNames: "[name].[ext]",
+      },
     },
-    outDir: "AIPscan/static/dist/report_base"
+    outDir: "AIPscan/static/dist/report_base",
   },
   plugins: [
     inject({
-      include: '**/*.js',
-      $: 'jquery',
-      'jQuery': 'jquery'
-    })
-  ]
-})
+      include: "**/*.js",
+      $: "jquery",
+      jQuery: "jquery",
+    }),
+  ],
+});
