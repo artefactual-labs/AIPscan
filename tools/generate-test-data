@@ -11,12 +11,48 @@ from config import CONFIGS
 
 
 @click.command()
-@click.option("--storage-services-to-create", default=2)
-@click.option("--locations-per-storage-service", default=2)
-@click.option("--locations-min-aip-count", default=10)
-@click.option("--locations-max-aip-count", default=30)
-@click.option("--aip-min-file-count", default=10)
-@click.option("--aip-max-file-count", default=30)
+@click.option(
+    "--storage-services-to-create",
+    "-s",
+    default=2,
+    help="Number of storage services to create (default 2).",
+    type=int,
+)
+@click.option(
+    "--locations-per-storage-service",
+    "-l",
+    default=2,
+    help="Number of locations, per storage service, to create (default 2).",
+    type=int,
+)
+@click.option(
+    "--locations-min-aip-count",
+    "-a",
+    default=10,
+    help="Minimum number of AIPs to create in each location (default 10).",
+    type=int,
+)
+@click.option(
+    "--locations-max-aip-count",
+    "-b",
+    default=30,
+    help="Maximum number of AIPs to create in each location (default 30).",
+    type=int,
+)
+@click.option(
+    "--aip-min-file-count",
+    "-c",
+    default=10,
+    help="Minimum number of files to create per AIP (default 10).",
+    type=int,
+)
+@click.option(
+    "--aip-max-file-count",
+    "-d",
+    default=30,
+    help="Maximum number of files to create per AIP (default 30).",
+    type=int,
+)
 @click.option("--seed", default=0)
 def main(
     storage_services_to_create,
@@ -65,26 +101,37 @@ def main(
         aip_batches_created = 0
         total_aip_batches = len(ss_ids) * locations_per_storage_service
         for ss_id in ss_ids:
+            print(f"Creating locations for storage service {ss_id}:")
+
             for _ in range(locations_per_storage_service):
                 # Add location
                 sl = data.create_fake_location(ss_id)
 
+                # Add agents
+                agents = data.create_fake_agents_for_storage_service(ss_id)
+
                 # Add AIPs and AIP files
                 aip_batches_created += 1
 
-                print(f"Creating AIPs ({aip_batches_created}/{total_aip_batches})...")
+                print(
+                    f"  * Creating location AIPs (location {aip_batches_created}/{total_aip_batches}):"
+                )
 
                 aipcount = 0
-                for _ in range(
-                    1, data.randint(locations_min_aip_count, locations_max_aip_count)
-                ):
+                aips_to_create = data.randint(
+                    locations_min_aip_count, locations_max_aip_count
+                )
+
+                for _ in range(0, aips_to_create):
                     aip = data.create_fake_aip(
                         pipeline.id, ss_id, sl.id, fetch_jobs[ss.id]
                     )
                     data.create_fake_aip_files(
-                        aip_min_file_count, aip_max_file_count, aip.id
+                        aip_min_file_count, aip_max_file_count, agents, aip
                     )
                     aipcount += 1
+
+                    print(f"    * Created AIP {aipcount}/{aips_to_create}")
 
                 # Update package/AIP counts in fetch job
                 fetch_job = FetchJob.query.get(fetch_jobs[ss_id])

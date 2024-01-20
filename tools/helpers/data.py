@@ -1,11 +1,15 @@
 import pathlib
-from datetime import date
+import random
+from datetime import datetime, timedelta
 
 from faker import Faker
 
 from AIPscan import db
 from AIPscan.models import (
     AIP,
+    Agent,
+    Event,
+    EventAgent,
     FetchJob,
     File,
     Pipeline,
@@ -59,8 +63,8 @@ def create_fake_fetch_job(storage_service_id):
         total_packages=0,
         total_aips=0,
         total_deleted_aips=0,
-        download_start=date.today(),
-        download_end=date.today(),
+        download_start=datetime.today(),
+        download_end=datetime.today(),
         download_directory=fake.file_path(),
         storage_service_id=storage_service_id,
     )
@@ -93,7 +97,7 @@ def create_fake_aip(pipeline_id, storage_service_id, storage_location_id, fetch_
     aip = AIP(
         uuid=fake.uuid4(),
         transfer_name=fake.text(20)[:-1],
-        create_date=date.today(),
+        create_date=fake.date_time_between(start_date="-5y"),
         mets_sha256=fake.sha256(),
         size=randint(10000, 100_000_000),
         storage_service_id=storage_service_id,
@@ -108,17 +112,19 @@ def create_fake_aip(pipeline_id, storage_service_id, storage_location_id, fetch_
     return aip
 
 
-def create_fake_aip_files(min_files, max_files, aip_id):
+def create_fake_aip_files(min_files, max_files, agents, aip):
     for _ in range(1, randint(min_files, max_files)):
+        fake_puid = "fmt/" + str(randint(1, 21))
+
         aipfile = File(
-            aip_id=aip_id,
+            aip_id=aip.id,
             name=fake.text(20)[:-1],
             filepath=fake.file_path(),
             uuid=fake.uuid4(),
             file_type="original",
             size=randint(1000, 1_000_000),
-            date_created=date.today(),
-            puid=fake.text(20)[:-1],
+            date_created=aip.create_date,
+            puid=fake_puid,
             file_format=fake.file_extension(),
             format_version=fake.text(20)[:-1],
             checksum_type=fake.text(20)[:-1],
@@ -127,4 +133,79 @@ def create_fake_aip_files(min_files, max_files, aip_id):
         )
 
         db.session.add(aipfile)
+        db.session.commit()
+
+        create_fake_ingestion_events_for_file(aipfile.id, aip.create_date, agents)
+
+
+def create_fake_agents_for_storage_service(storage_service_id):
+    software_agent = Agent(
+        linking_type_value="preservation system-Archivematica-1.15.1",
+        agent_type="software",
+        agent_value="Archivematica",
+        storage_service_id=storage_service_id,
+    )
+
+    db.session.add(software_agent)
+
+    organization_agent = Agent(
+        linking_type_value="repository code-test id",
+        agent_type="organization",
+        agent_value="Test Org",
+        storage_service_id=storage_service_id,
+    )
+
+    db.session.add(organization_agent)
+
+    fake_archivematica_usernames = ["admin", "alice", "bob"]
+    user_agents = []
+
+    for fake_username in fake_archivematica_usernames:
+        user_agent = Agent(
+            linking_type_value="Archivematica user pk-1",
+            agent_type="Archivematica user",
+            agent_value=f'username="{fake_username}", first_name="", last_name=""',
+            storage_service_id=storage_service_id,
+        )
+        user_agents.append(user_agent)
+
+        db.session.add(user_agent)
+        db.session.commit()
+
+    return {
+        "software": software_agent,
+        "organization": organization_agent,
+        "agent": user_agents,
+    }
+
+
+def create_fake_ingestion_events_for_file(file_id, aip_start_date, agents):
+    start_datetime = aip_start_date - timedelta(minutes=30)
+    event_datetime = fake.date_time_between(
+        start_date=start_datetime, end_date=aip_start_date
+    )
+
+    event = Event(
+        event_type="ingestion",
+        uuid=fake.uuid4(),
+        date=event_datetime,
+        detail="",
+        outcome="",
+        outcome_detail="",
+        file_id=file_id,
+    )
+
+    db.session.add(event)
+    db.session.commit()
+
+    for agent_type in agents.keys():
+        if type(agents[agent_type]) is list:
+            # Pick random agent if type has multiple agents
+            agent = random.choice(agents[agent_type])
+        else:
+            agent = agents[agent_type]
+
+        event_agent = EventAgent.insert().values(event_id=event.id, agent_id=agent.id)
+
+        db.session.execute(event_agent)
         db.session.commit()
