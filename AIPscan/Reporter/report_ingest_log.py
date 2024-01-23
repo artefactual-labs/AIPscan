@@ -3,6 +3,8 @@
 """Report on who ingested AIPs and when. An indication is also provided
 about how long they took to process.
 """
+from datetime import datetime, timedelta
+
 import pandas as pd
 import plotly.express as px
 from flask import render_template, request
@@ -93,11 +95,21 @@ def get_figure_html(ingests):
     transfer_count = 0
     for ingest in ingests[fields.FIELD_INGESTS]:
         transfer_count = transfer_count + 1
+
+        # Remove time from date
+        start_date = ingest[fields.FIELD_DATE_START][0:10]
+
+        # Add day to end date, with time removed, to make it visible in chart
+        end_datetime = datetime.strptime(
+            ingest[fields.FIELD_DATE_END][0:10], "%Y-%m-%d"
+        ) + timedelta(days=1)
+        end_date = end_datetime.strftime("%Y-%m-%d")
+
         pd_list.append(
             dict(
                 User=ingest[fields.FIELD_USER],
-                Start=ingest[fields.FIELD_DATE_START],
-                Finish=ingest[fields.FIELD_DATE_END],
+                Start=start_date,
+                Finish=end_date,
             )
         )
     if not pd_list:
