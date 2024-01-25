@@ -4,7 +4,16 @@ import os
 from datetime import datetime
 
 from celery.result import AsyncResult
-from flask import Blueprint, flash, jsonify, redirect, render_template, request, url_for
+from flask import (
+    Blueprint,
+    abort,
+    flash,
+    jsonify,
+    redirect,
+    render_template,
+    request,
+    url_for,
+)
 
 from AIPscan import db
 from AIPscan.Aggregator import database_helpers, tasks
@@ -77,6 +86,10 @@ def ss_default():
 @aggregator.route("/storage_service/<storage_service_id>", methods=["GET"])
 def storage_service(storage_service_id):
     storage_service = StorageService.query.get(storage_service_id)
+
+    if storage_service is None:
+        abort(404)
+
     mets_fetch_jobs = FetchJob.query.filter_by(
         storage_service_id=storage_service_id
     ).all()
@@ -97,6 +110,10 @@ def storage_services():
 def edit_storage_service(storage_service_id):
     form = StorageServiceForm()
     storage_service = StorageService.query.get(storage_service_id)
+
+    if storage_service is None:
+        abort(404)
+
     if request.method == "GET":
         form.name.data = storage_service.name
         form.url.data = storage_service.url
@@ -149,8 +166,13 @@ def new_storage_service():
 
 @aggregator.route("/delete_storage_service/<storage_service_id>", methods=["GET"])
 def delete_storage_service(storage_service_id):
-    tasks.delete_storage_service.delay(storage_service_id)
     storage_service = StorageService.query.get(storage_service_id)
+
+    if storage_service is None:
+        abort(404)
+
+    tasks.delete_storage_service.delay(storage_service_id)
+
     flash("Storage service '{}' is being deleted".format(storage_service.name))
     return redirect(url_for("aggregator.storage_services"))
 
@@ -214,9 +236,14 @@ def new_fetch_job(fetch_job_id):
 
 @aggregator.route("/delete_fetch_job/<fetch_job_id>", methods=["GET"])
 def delete_fetch_job(fetch_job_id):
-    tasks.delete_fetch_job.delay(fetch_job_id)
     fetch_job = FetchJob.query.get(fetch_job_id)
+
+    if fetch_job is None:
+        abort(404)
+
     storage_service = StorageService.query.get(fetch_job.storage_service_id)
+    tasks.delete_fetch_job.delay(fetch_job_id)
+
     flash("Fetch job {} is being deleted".format(fetch_job.download_start))
     return redirect(
         url_for("aggregator.storage_service", storage_service_id=storage_service.id)

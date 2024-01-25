@@ -77,3 +77,21 @@ def test_get_file_pager(app_instance, mocker, page, pager_page):
     assert pager.per_page == 2
     assert pager.prev_num is None
     assert pager.next_num is None
+
+
+def test_view_aip(app_with_populated_files):
+    with current_app.test_client() as test_client:
+        response = test_client.get("/reporter/aip/1")
+        assert response.status_code == 200
+
+        response = test_client.get("/reporter/aip/0")
+        assert response.status_code == 404
+
+
+def test_view_file(app_with_populated_files):
+    with current_app.test_client() as test_client:
+        response = test_client.get("/reporter/file/1")
+        assert response.status_code == 200
+
+        response = test_client.get("/reporter/file/0")
+        assert response.status_code == 404
