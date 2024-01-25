@@ -6,7 +6,7 @@ $(document).ready(function () {
     var storageServiceId = $("#ss").val();
     var storageLocationId = $("#sl").val();
 
-    var url = new URL("/reporter/aips", $("body").data("url-root"));
+    var url = new URL("reporter/aips", $("body").data("url-root"));
     var params = {
       amss_id: storageServiceId,
     };

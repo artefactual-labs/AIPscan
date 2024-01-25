@@ -1,7 +1,12 @@
 function new_fetch_job(storageServiceId) {
+  var url = new URL(
+    "aggregator/new_fetch_job/" + storageServiceId,
+    $("body").data("url-root"),
+  );
+
   $.ajax({
     type: "POST",
-    url: "/aggregator/new_fetch_job/" + storageServiceId,
+    url: url,
     datatype: "json",
     success: function (data) {
       $("#console").css("background-color", "#000");
@@ -21,9 +26,15 @@ function new_fetch_job(storageServiceId) {
 function package_list_task_status(taskId, showcount, fetchJobId) {
   const status_pending = "PENDING";
   const status_progress = "IN PROGRESS";
+
+  var url = new URL(
+    "aggregator/package_list_task_status/" + taskId,
+    $("body").data("url-root"),
+  );
+
   $.ajax({
     type: "GET",
-    url: "/aggregator/package_list_task_status/" + taskId,
+    url: url,
     datatype: "json",
     success: function (data) {
       let state = data["state"];
@@ -56,9 +67,14 @@ function package_list_task_status(taskId, showcount, fetchJobId) {
 }
 
 function get_mets_task_status(coordinatorId, totalAIPs, fetchJobId) {
+  var url = new URL(
+    "aggregator/get_mets_task_status/" + coordinatorId,
+    $("body").data("url-root"),
+  );
+
   $.ajax({
     type: "GET",
-    url: "/aggregator/get_mets_task_status/" + coordinatorId,
+    url: url,
     data: { totalAIPs: totalAIPs, fetchJobId: fetchJobId },
     datatype: "json",
     success: function (data) {

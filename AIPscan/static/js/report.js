@@ -13,7 +13,7 @@ $(document).ready(function () {
     var endDate = $("#endDate").text();
     var limit = $("#limit").text();
 
-    var url = new URL("/reporter/largest_files", $("body").data("url-root"));
+    var url = new URL("reporter/largest_files", $("body").data("url-root"));
     const params = {
       amss_id: storageServiceId,
       start_date: startDate,
@@ -34,7 +34,7 @@ $(document).ready(function () {
     var storageLocationId = $("#storageLocationID").text();
 
     var url = new URL(
-      "/reporter/preservation_derivatives",
+      "reporter/preservation_derivatives",
       $("body").data("url-root"),
     );
     const params = {
@@ -57,8 +57,8 @@ $(document).ready(function () {
     var endDate = $("#endDate").text();
 
     var url = new URL(
-      "/reporter/storage_locations_usage_over_time",
-      window.location.origin,
+      "reporter/storage_locations_usage_over_time",
+      $("body").data("url-root"),
     );
     const params = {
       amss_id: storageServiceId,
@@ -80,8 +80,8 @@ $(document).ready(function () {
     var endDate = $("#endDate").text();
 
     var url = new URL(
-      "/reporter/storage_locations_usage_over_time",
-      window.location.origin,
+      "reporter/storage_locations_usage_over_time",
+      $("body").data("url-root"),
     );
     const params = {
       amss_id: storageServiceId,
