@@ -8,7 +8,15 @@ files with singular responsibility for a report.
 from datetime import datetime
 
 import requests
-from flask import Response, jsonify, make_response, render_template, request, session
+from flask import (
+    Response,
+    abort,
+    jsonify,
+    make_response,
+    render_template,
+    request,
+    session,
+)
 
 from AIPscan.Aggregator.task_helpers import get_mets_url
 from AIPscan.models import (
@@ -153,6 +161,10 @@ def view_aips():
 def view_aip(aip_id):
     """Detailed view of specific AIP."""
     aip = AIP.query.get(aip_id)
+
+    if aip is None:
+        abort(404)
+
     fetch_job = FetchJob.query.get(aip.fetch_job_id)
     storage_service = StorageService.query.get(fetch_job.storage_service_id)
     storage_location = StorageLocation.query.get(aip.storage_location_id)
@@ -205,6 +217,10 @@ def view_aip(aip_id):
 def view_file(file_id):
     """File page displays Object and Event metadata for file"""
     file_ = File.query.get(file_id)
+
+    if file_ is None:
+        abort(404)
+
     aip = AIP.query.get(file_.aip_id)
     events = Event.query.filter_by(file_id=file_id).all()
     preservation_file = File.query.filter_by(

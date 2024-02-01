@@ -29,3 +29,43 @@ def test_new_fetch_job_bad_connection(app_with_populated_files, mocker):
         response = test_client.post("/aggregator/new_fetch_job/1")
         task.assert_not_called()
         assert response.status_code == 400
+
+
+def test_view_storage_service(app_with_populated_files):
+    with current_app.test_client() as test_client:
+        response = test_client.get("/aggregator/storage_service/1")
+        assert response.status_code == 200
+
+        response = test_client.get("/aggregator/storage_service/0")
+        assert response.status_code == 404
+
+
+def test_edit_storage_service(app_with_populated_files):
+    with current_app.test_client() as test_client:
+        response = test_client.post("/aggregator/edit_storage_service/1")
+        assert response.status_code == 200
+
+        response = test_client.post("/aggregator/edit_storage_service/0")
+        assert response.status_code == 404
+
+
+def test_delete_storage_service(app_with_populated_files, mocker):
+    with current_app.test_client() as test_client:
+        response = test_client.get("/aggregator/delete_storage_service/0")
+        assert response.status_code == 404
+
+        mocker.patch("AIPscan.Aggregator.tasks.delete_storage_service.delay")
+
+        response = test_client.get("/aggregator/delete_storage_service/1")
+        assert response.status_code == 302
+
+
+def test_delete_fetch_job(app_with_populated_files, mocker):
+    with current_app.test_client() as test_client:
+        response = test_client.get("/aggregator/delete_fetch_job/0")
+        assert response.status_code == 404
+
+        mocker.patch("AIPscan.Aggregator.tasks.delete_fetch_job.delay")
+
+        response = test_client.get("/aggregator/delete_fetch_job/1")
+        assert response.status_code == 302
