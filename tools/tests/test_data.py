@@ -40,10 +40,10 @@ def test_create_fake_fetch_job(mock_db_add):
     fetch_job = data.create_fake_fetch_job(ss.id)
 
     assert fetch_job.download_start
-    assert type(fetch_job.download_start) is datetime.date
+    assert type(fetch_job.download_start) is datetime.datetime
 
     assert fetch_job.download_end
-    assert type(fetch_job.download_end) is datetime.date
+    assert type(fetch_job.download_end) is datetime.datetime
 
     assert fetch_job.download_directory
     assert type(fetch_job.download_directory) is str
@@ -73,7 +73,7 @@ def test_create_fake_aip(mock_db_add):
     assert type(aip.transfer_name) is str
 
     assert aip.create_date
-    assert type(aip.create_date) is datetime.date
+    assert type(aip.create_date) is datetime.datetime
 
     assert aip.mets_sha256
     assert type(aip.mets_sha256) is str
