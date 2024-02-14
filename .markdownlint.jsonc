@@ -5,6 +5,7 @@
   },
   "MD013": { // Limit line lengths
     "code_blocks": false, // Don't check code blocks
+    "headings": false, // Don't check headings
     "tables": false // Don't check table Markdown
   },
   "MD041": false // Disable: first line in a file should be a top-level heading
