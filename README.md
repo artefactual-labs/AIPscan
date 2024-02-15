@@ -70,6 +70,13 @@ AIPscan report.
 
 ![screencap5](screencaps/aipscan_hello_world.png)
 
+### Typesense integration
+
+* Install/run Typesense
+* `TYPESENSE_API_KEY="xOxOxOxO" ./tools/index-update  # Index AIPscan data`
+* `TYPESENSE_API_KEY="xOxOxOxO" ./tools/index-summary  # Show index summary`
+* `TYPESENSE_API_KEY="xOxOxOxO" python run.py  # Sepecify Typesense API key`
+
 ## Background workers
 
 Crawling and parsing many Archivematica AIP METS xml files at a time is
