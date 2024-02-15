@@ -80,11 +80,12 @@ def _formats_data(storage_service_id, storage_location_id, start_date, end_date)
     # Summarize file format sizes
     format_size_sums = {}
     for results in searches["results"]:
-        file_format = results["hits"][0]["document"]["file_format"]
+        if "hits" in results:
+            file_format = results["hits"][0]["document"]["file_format"]
 
-        for count in results["facet_counts"]:
-            if count["field_name"] == "file_format":
-                format_size_sums[file_format] = count["counts"][0]["count"]
+            for count in results["facet_counts"]:
+                if count["field_name"] == "file_format":
+                    format_size_sums[file_format] = count["counts"][0]["count"]
 
     # Amalgamate data
     format_data = {}
