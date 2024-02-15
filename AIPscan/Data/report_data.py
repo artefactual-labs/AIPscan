@@ -7,11 +7,7 @@ from operator import itemgetter
 from dateutil.rrule import DAILY, rrule
 
 from AIPscan import db
-from AIPscan.Data import (
-    fields,
-    get_storage_location_description,
-    get_storage_service_name,
-)
+from AIPscan.Data import fields, get_storage_service_name, report_dict
 from AIPscan.models import AIP, Event, File, FileType, StorageLocation, StorageService
 
 VALID_FILE_TYPES = set(item.value for item in FileType)
@@ -80,12 +76,8 @@ def formats_count(storage_service_id, start_date, end_date, storage_location_id=
         report["StorageName"]: Name of Storage Service queried
         report["Formats"]: List of results ordered desc by count and size
     """
-    report = {}
+    report = report_dict(storage_service_id, storage_location_id)
     report[fields.FIELD_FORMATS] = []
-    report[fields.FIELD_STORAGE_NAME] = get_storage_service_name(storage_service_id)
-    report[fields.FIELD_STORAGE_LOCATION] = get_storage_location_description(
-        storage_location_id
-    )
 
     formats = _formats_count_query(
         storage_service_id, start_date, end_date, storage_location_id
@@ -164,12 +156,8 @@ def format_versions_count(
         report["StorageName"]: Name of Storage Service queried
         report["FormatVersions"]: List of result files ordered desc by size
     """
-    report = {}
+    report = report_dict(storage_service_id, storage_location_id)
     report[fields.FIELD_FORMAT_VERSIONS] = []
-    report[fields.FIELD_STORAGE_NAME] = get_storage_service_name(storage_service_id)
-    report[fields.FIELD_STORAGE_LOCATION] = get_storage_location_description(
-        storage_location_id
-    )
 
     versions = _format_versions_count_query(
         storage_service_id, start_date, end_date, storage_location_id
@@ -241,12 +229,8 @@ def largest_files(
         report["StorageName"]: Name of Storage Service queried
         report["Files"]: List of result files ordered desc by size
     """
-    report = {}
+    report = report_dict(storage_service_id, storage_location_id)
     report[fields.FIELD_FILES] = []
-    report[fields.FIELD_STORAGE_NAME] = get_storage_service_name(storage_service_id)
-    report[fields.FIELD_STORAGE_LOCATION] = get_storage_location_description(
-        storage_location_id
-    )
 
     files = _largest_files_query(
         storage_service_id, start_date, end_date, storage_location_id, file_type, limit
@@ -321,12 +305,8 @@ def largest_aips(
         report["StorageName"]: Name of Storage Service queried
         report["AIPs"]: List of result AIPs ordered desc by size
     """
-    report = {}
+    report = report_dict(storage_service_id, storage_location_id)
     report[fields.FIELD_AIPS] = []
-    report[fields.FIELD_STORAGE_NAME] = get_storage_service_name(storage_service_id)
-    report[fields.FIELD_STORAGE_LOCATION] = get_storage_location_description(
-        storage_location_id
-    )
 
     aips = _largest_aips_query(
         storage_service_id, start_date, end_date, storage_location_id, limit
@@ -417,12 +397,7 @@ def _aips_by_file_format_or_puid(
         report["StorageName"]: Name of Storage Service queried
         report["AIPs"]: List of result AIPs ordered desc by count
     """
-    report = {}
-
-    report[fields.FIELD_STORAGE_NAME] = get_storage_service_name(storage_service_id)
-    report[fields.FIELD_STORAGE_LOCATION] = get_storage_location_description(
-        storage_location_id
-    )
+    report = report_dict(storage_service_id, storage_location_id)
 
     if file_format:
         report[fields.FIELD_FORMAT] = search_string
@@ -513,22 +488,15 @@ def agents_transfers(
         report["StorageLocation"]: Name of storage location, if applicable
         report["Ingest"]: List of ingest event dictionaries
     """
-    report = {}
+    report = report_dict(storage_service_id, storage_location_id)
+
     ingests = []
 
-    storage_service_name = get_storage_service_name(storage_service_id)
-    if not storage_service_name:
+    if not report[fields.FIELD_STORAGE_NAME]:
         # No storage service has been returned and so we have nothing
         # to return.
-        report[fields.FIELD_STORAGE_NAME] = None
-        report[fields.FIELD_STORAGE_LOCATION] = None
         report[fields.FIELD_INGESTS] = ingests
         return report
-
-    report[fields.FIELD_STORAGE_NAME] = get_storage_service_name(storage_service_id)
-    report[fields.FIELD_STORAGE_LOCATION] = get_storage_location_description(
-        storage_location_id
-    )
 
     aips = (
         AIP.query.filter_by(storage_service_id=storage_service_id)
@@ -606,12 +574,8 @@ def preservation_derivatives(
         report["StorageName"]: Name of Storage Service queried
         report["Files"]: List of result files ordered desc by size
     """
-    report = {}
+    report = report_dict(storage_service_id, storage_location_id)
     report[fields.FIELD_FILES] = []
-    report[fields.FIELD_STORAGE_NAME] = get_storage_service_name(storage_service_id)
-    report[fields.FIELD_STORAGE_LOCATION] = get_storage_location_description(
-        storage_location_id
-    )
 
     files = _preservation_derivatives_query(
         storage_service_id, storage_location_id, aip_uuid

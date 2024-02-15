@@ -2,11 +2,12 @@
 import json
 import os
 import shutil
+from datetime import datetime
 
 import requests
 from celery.utils.log import get_task_logger
 
-from AIPscan import db
+from AIPscan import db, typesense_helpers
 from AIPscan.Aggregator import database_helpers
 from AIPscan.Aggregator.celery_helpers import write_celery_update
 from AIPscan.Aggregator.mets_parse_helpers import (
@@ -22,7 +23,14 @@ from AIPscan.Aggregator.task_helpers import (
 )
 from AIPscan.extensions import celery
 from AIPscan.helpers import file_sha256_hash
-from AIPscan.models import AIP, Agent, FetchJob, StorageService, get_mets_tasks
+from AIPscan.models import (
+    AIP,
+    Agent,
+    FetchJob,
+    StorageService,
+    get_mets_tasks,
+    index_tasks,
+)
 
 logger = get_task_logger(__name__)
 
@@ -283,6 +291,43 @@ def package_lists_request(self, storage_service_id, timestamp, packages_director
     }
 
 
+def start_index_task(fetch_job_id):
+    task = index_task.delay(fetch_job_id)
+
+    index_task_obj = index_tasks(
+        index_task_id=task.id, fetch_job_id=fetch_job_id, indexing_start=datetime.now()
+    )
+    db.session.add(index_task_obj)
+    db.session.commit()
+
+
+@celery.task()
+def index_task(fetch_job_id):
+    # Update Typesense index
+    typesense_helpers.initialize_index()
+
+    completed_percent = None
+    for status in typesense_helpers.populate_index():
+        if completed_percent != status["percent"]:
+            index_task_obj = index_tasks.query.filter_by(
+                fetch_job_id=fetch_job_id
+            ).first()
+
+            index_task_obj.indexing_progress = (
+                f"Indexing {status['type']} data ({status['percent']}%)"
+            )
+
+            db.session.add(index_task_obj)
+            db.session.commit()
+
+    # Record indexing end time
+    index_task_obj = index_tasks.query.filter_by(fetch_job_id=fetch_job_id).first()
+    index_task_obj.indexing_end = datetime.now()
+
+    db.session.add(index_task_obj)
+    db.session.commit()
+
+
 @celery.task()
 def get_mets(
     package_uuid,
@@ -391,6 +436,12 @@ def delete_fetch_job(fetch_job_id):
     if os.path.exists(fetch_job.download_directory):
         shutil.rmtree(fetch_job.download_directory)
     db.session.delete(fetch_job)
+
+    index_task_objects = index_tasks.query.filter_by(fetch_job_id=fetch_job_id).all()
+
+    for index_task_obj in index_task_objects:
+        db.session.delete(index_task_obj)
+
     db.session.commit()
 
 

@@ -2,11 +2,7 @@
 
 """Data endpoints optimized for providing general overviews of AIPs."""
 
-from AIPscan.Data import (
-    fields,
-    get_storage_location_description,
-    get_storage_service_name,
-)
+from AIPscan.Data import fields, report_dict
 from AIPscan.helpers import _simplify_datetime
 from AIPscan.models import AIP, File, FileType, StorageService
 
@@ -29,7 +25,7 @@ def file_format_aip_overview(
     storage_service_id, original_files=True, storage_location_id=None
 ):
     """Return summary overview of file formats and the AIPs they're in."""
-    report = {}
+    report = report_dict(storage_service_id, storage_location_id)
     formats = {}
     aips = AIP.query.filter_by(storage_service_id=storage_service_id)
     if storage_location_id:
@@ -67,10 +63,7 @@ def file_format_aip_overview(
                 formats[format_key][fields.FIELD_AIPS].append(aip.uuid)
 
     report[fields.FIELD_FORMATS] = formats
-    report[fields.FIELD_STORAGE_NAME] = get_storage_service_name(storage_service_id)
-    report[fields.FIELD_STORAGE_LOCATION] = get_storage_location_description(
-        storage_location_id
-    )
+
     return report
 
 
@@ -82,7 +75,7 @@ def aip_file_format_overview(
     storage_location_id=None,
 ):
     """Return summary overview of AIPs and their file formats."""
-    report = {}
+    report = report_dict(storage_service_id, storage_location_id)
     report[fields.FIELD_AIPS] = []
     formats = {}
 
@@ -150,10 +143,7 @@ def aip_file_format_overview(
         report[fields.FIELD_AIPS].append(aip_info)
 
     report[fields.FIELD_FORMATS] = formats
-    report[fields.FIELD_STORAGE_NAME] = get_storage_service_name(storage_service_id)
-    report[fields.FIELD_STORAGE_LOCATION] = get_storage_location_description(
-        storage_location_id
-    )
+
     return report
 
 
@@ -161,7 +151,8 @@ def derivative_overview(storage_service_id, storage_location_id=None):
     """Return a summary of derivatives across AIPs with a mapping
     created between the original format and the preservation copy.
     """
-    report = {}
+    report = report_dict(storage_service_id, storage_location_id)
+
     aips = AIP.query.filter_by(storage_service_id=storage_service_id)
     if storage_location_id:
         aips = aips.filter_by(storage_location_id=storage_location_id)
@@ -208,8 +199,5 @@ def derivative_overview(storage_service_id, storage_location_id=None):
         all_aips.append(aip_report)
 
     report[fields.FIELD_ALL_AIPS] = all_aips
-    report[fields.FIELD_STORAGE_NAME] = get_storage_service_name(storage_service_id)
-    report[fields.FIELD_STORAGE_LOCATION] = get_storage_location_description(
-        storage_location_id
-    )
+
     return report

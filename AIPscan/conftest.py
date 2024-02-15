@@ -5,6 +5,7 @@ import uuid
 from datetime import datetime
 
 import pytest
+from flask import current_app
 
 from AIPscan import create_app, db, test_helpers
 from AIPscan.models import FileType
@@ -604,3 +605,8 @@ def storage_locations(scope="package"):
         yield app
 
         db.drop_all()
+
+
+@pytest.fixture
+def enable_typesense(scope="session"):
+    current_app.config["TYPESENSE_API_KEY"] = "x0x0x0x0x0"
