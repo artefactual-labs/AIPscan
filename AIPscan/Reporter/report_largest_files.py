@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-
 from flask import render_template, request
 
-from AIPscan.Data import fields, report_data
+from AIPscan import typesense_helpers as ts_helpers
+from AIPscan.Data import fields, report_data, report_data_typesense
 from AIPscan.helpers import parse_bool, parse_datetime_bound
 from AIPscan.Reporter import (
     download_csv,
@@ -52,14 +52,24 @@ def largest_files():
         pass
     csv = parse_bool(request.args.get(request_params.CSV), default=False)
 
-    file_data = report_data.largest_files(
-        storage_service_id=storage_service_id,
-        start_date=start_date,
-        end_date=end_date,
-        storage_location_id=storage_location_id,
-        file_type=file_type,
-        limit=limit,
-    )
+    if ts_helpers.typesense_enabled():
+        file_data = report_data_typesense.largest_files(
+            storage_service_id,
+            start_date,
+            end_date,
+            storage_location_id,
+            file_type,
+            limit,
+        )
+    else:
+        file_data = report_data.largest_files(
+            storage_service_id=storage_service_id,
+            start_date=start_date,
+            end_date=end_date,
+            storage_location_id=storage_location_id,
+            file_type=file_type,
+            limit=limit,
+        )
 
     if csv:
         headers = translate_headers(CSV_HEADERS, True)

@@ -4,7 +4,8 @@ import uuid
 
 import pytest
 
-from AIPscan.Data import fields, report_data
+from AIPscan import typesense_helpers, typesense_test_helpers
+from AIPscan.Data import fields, report_data, report_data_typesense
 from AIPscan.Data.tests import (
     MOCK_AIP,
     MOCK_AIP_NAME,
@@ -142,3 +143,40 @@ def test_largest_files_elements(
     # AIP information
     assert report_file.get(fields.FIELD_AIP_NAME) == MOCK_AIP_NAME
     assert report_file.get(fields.FIELD_AIP_UUID) == MOCK_AIP_UUID
+
+
+def test_largest_files_typesense(app_with_populated_files, enable_typesense, mocker):
+    doc = typesense_helpers.model_instance_to_document(File, File.query.get(1))
+    doc["transfer_name"] = "Test AIP"
+    doc["aip_uuid"] = "111111111111-1111-1111-11111111"
+
+    fake_results = {"hits": [{"document": doc}]}
+
+    typesense_test_helpers.fake_collection(mocker, fake_results)
+
+    expected_result = {
+        "Files": [
+            {
+                "AIPName": "Test AIP",
+                "AIPUUID": "111111111111-1111-1111-11111111",
+                "ID": "1",
+                "UUID": "222222222222-2222-2222-22222222",
+                "Name": "file_name.ext",
+                "Size": 1000,
+                "FileType": "original",
+                "Format": "Tagged Image File Format",
+                "Version": "0.0.0",
+                "PUID": "fmt/353",
+            }
+        ],
+        "StorageName": "test storage service",
+        "StorageLocation": "test storage location",
+    }
+
+    report = report_data_typesense.largest_files(
+        storage_service_id=1,
+        start_date=parse_datetime_bound("2019-01-01"),
+        end_date=parse_datetime_bound("2019-10-10"),
+        storage_location_id=1,
+    )
+    assert report == expected_result

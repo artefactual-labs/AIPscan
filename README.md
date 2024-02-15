@@ -70,6 +70,44 @@ AIPscan report.
 
 ![screencap5](screencaps/aipscan_hello_world.png)
 
+### Typesense integration
+
+AIPscan can optionally be run using Typesense as a report data source,
+potentially reducing the time to generate reports. If Typesense is installed
+and enabled then AIPscan data will be automatically indexed after each fetch
+job and report queries will pull data from Typesense rather than the
+application's database.
+
+Typesense can be installed a variety of ways
+[detailed on their website](https://typesense.org/docs/guide/install-typesense.html).
+
+#### Configuration
+
+Typesense configuration is done using the following environment variables:
+
+* Typesense API key (required): `TYPESENSE_API_KEY`
+* Typesense host: `TYPESENSE_HOST` (default "localhost")
+* Typesense port: `TYPESENSE_PORT` (default "8108")
+* Typesense URL protocol: `TYPESENSE_PROTOCOL` (default "http")
+* Typesense timeout (in seconds): `TYPESENSE_TIMEOUT_SECONDS` (default "30")
+* Typesense collection prefix: `TYPESENSE_COLLECTION_PREFIX` (default "aipscan_")
+
+Typesense support is enabled by the setting of `TYPESENSE_API_KEY`.
+
+Here's an example:
+
+  ```bash
+  TYPESENSE_API_KEY="xOxOxOxO" python run.py
+  ```
+
+#### Related CLI tools
+
+Two CLI tools exist to manually indexed AIPscan's database and to see a
+summary of the Typesense index.
+
+* Index AIPscan data: `tools/index-refresh`
+* Display a summary of the Typesense index: `tools/index-summary`
+
 ## Background workers
 
 Crawling and parsing many Archivematica AIP METS xml files at a time is

@@ -1,0 +1,32 @@
+#!/usr/bin/env python3
+import sys
+
+from app import cli
+
+from AIPscan import db, typesense_helpers
+from config import CONFIGS
+
+
+def main():
+    # Initialize Flask app context
+    app = cli.create_app_instance(CONFIGS[cli.config_name], db)
+
+    with app.app_context():
+        if not typesense_helpers.typesense_enabled():
+            sys.exit("Error: Typesense not enabled in AIPscan.")
+
+        print("Initializing index...")
+        typesense_helpers.initialize_index()
+
+        print("Caching AIP data...")
+
+        completed_percent = None
+        for status in typesense_helpers.populate_index():
+            # Print update when percentage indexed (to nearest integer) has changed
+            if completed_percent != status["percent"]:
+                print(f"Indexing {status['type']} data ({status['percent']}%)")
+                completed_percent = status["percent"]
+
+
+if __name__ == "__main__":
+    sys.exit(main())

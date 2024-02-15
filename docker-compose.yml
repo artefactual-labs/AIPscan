@@ -1,12 +1,15 @@
 volumes:
   rabbitmq_data:
   rabbitmq_logs:
+  typesense_data:
 
 services:
   aipscan:
     build: ./
     environment:
       - CELERY_BROKER_URL=amqp://guest@rabbitmq//
+      - TYPESENSE_HOST=typesense
+      - TYPESENSE_API_KEY=xyz
     ports:
       - 5000:5000
     volumes:
@@ -28,9 +31,21 @@ services:
     build: ./
     environment:
       - CELERY_BROKER_URL=amqp://guest@rabbitmq//
-    command: celery worker -A AIPscan.worker.celery --loglevel=info
+      - TYPESENSE_HOST=typesense
+      - TYPESENSE_API_KEY=xyz
+    command: celery -A AIPscan.worker.celery worker --loglevel=info
     volumes:
       - "./:/src:rw"
     depends_on:
       - rabbitmq
       - aipscan
+
+  typesense:
+    image: typesense/typesense:0.26.0.rc23
+    environment:
+      TYPESENSE_DATA_DIR: /data
+      TYPESENSE_API_KEY: xyz
+    volumes:
+      - typesense_data:/data
+    ports:
+      - 8108:8108

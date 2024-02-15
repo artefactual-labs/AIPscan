@@ -1,5 +1,9 @@
+import os
+import time
 import uuid
 from datetime import datetime
+
+import tzlocal
 
 from AIPscan import db
 from AIPscan.models import (
@@ -13,6 +17,7 @@ from AIPscan.models import (
     Pipeline,
     StorageLocation,
     StorageService,
+    index_tasks,
 )
 
 TEST_SHA_256 = "79c16fa9573ec46c5f60fd54b34f314159e0623ca53d8d2f00c5875dbb4e0dfd"
@@ -99,7 +104,7 @@ def create_test_file(**kwargs):
     file_ = File(
         name=kwargs.get("name", "file_name.ext"),
         filepath=kwargs.get("filepath", "/path/to/file_name.ext"),
-        uuid=kwargs.get("uuid", str(uuid.uuid4())),
+        uuid=kwargs.get("uuid", "222222222222-2222-2222-22222222"),
         file_type=kwargs.get("file_type", FileType.original),
         size=kwargs.get("size", 0),
         date_created=kwargs.get("date_created", datetime.now()),
@@ -152,3 +157,23 @@ def create_test_event_agent(**kwargs):
     db.session.execute(event_relationship)
     db.session.commit()
     return event_relationship
+
+
+def create_test_index_tasks(fetch_job_id, task_id):
+    index_task_obj = index_tasks(
+        index_task_id=task_id, fetch_job_id=fetch_job_id, indexing_start=datetime.now()
+    )
+    db.session.add(index_task_obj)
+    db.session.commit()
+
+
+def set_timezone(new_tz):
+    os.environ["TZ"] = new_tz
+    time.tzset()
+
+
+def set_timezone_and_return_current_timezone(new_tz):
+    local_timezone = tzlocal.get_localzone_name()
+    set_timezone(new_tz)
+
+    return local_timezone

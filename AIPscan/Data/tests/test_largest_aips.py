@@ -1,7 +1,9 @@
 import pytest
 
-from AIPscan.Data import fields, report_data
+from AIPscan import typesense_helpers, typesense_test_helpers
+from AIPscan.Data import fields, report_data, report_data_typesense
 from AIPscan.helpers import parse_datetime_bound
+from AIPscan.models import AIP
 
 
 @pytest.mark.parametrize(
@@ -40,3 +42,32 @@ def test_largest_aips(
     assert len(report_aips) == aip_count
     assert report_aips[0][fields.FIELD_SIZE] == largest_aip_size
     assert report_aips[1][fields.FIELD_SIZE] == second_largest_aip_size
+
+
+def test_largest_aips_typesense(app_with_populated_files, enable_typesense, mocker):
+    doc = typesense_helpers.model_instance_to_document(AIP, AIP.query.get(1))
+    fake_results = {"hits": [{"document": doc}]}
+
+    typesense_test_helpers.fake_collection(mocker, fake_results)
+
+    expected_result = {
+        "AIPs": [
+            {
+                "UUID": "111111111111-1111-1111-11111111",
+                "Name": "Test AIP",
+                "Size": 100,
+                "FileCount": 1,
+            }
+        ],
+        "StorageName": "test storage service",
+        "StorageLocation": "test storage location",
+    }
+
+    report = report_data_typesense.largest_aips(
+        storage_service_id=1,
+        start_date=parse_datetime_bound("2019-01-01"),
+        end_date=parse_datetime_bound("2019-10-10"),
+        storage_location_id=1,
+    )
+
+    assert report == expected_result

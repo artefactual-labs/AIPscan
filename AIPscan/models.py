@@ -22,6 +22,17 @@ class get_mets_tasks(db.Model):
     status = db.Column(db.String())
 
 
+class index_tasks(db.Model):
+    __bind_key__ = "celery"
+    index_task_id = db.Column(db.String(36), primary_key=True)
+    fetch_job_id = db.Column(
+        db.String(36), db.ForeignKey("fetch_job.id"), nullable=False
+    )
+    indexing_start = db.Column(db.DateTime())
+    indexing_progress = db.Column(db.String(255))
+    indexing_end = db.Column(db.DateTime())
+
+
 class StorageService(db.Model):
     __tablename__ = "storage_service"
     id = db.Column(db.Integer(), primary_key=True)
@@ -257,6 +268,9 @@ class FetchJob(db.Model):
         db.Integer(), db.ForeignKey("storage_service.id"), nullable=False
     )
     aips = db.relationship("AIP", cascade="all,delete", backref="fetch_job", lazy=True)
+    index_tasks = db.relationship(
+        "index_tasks", cascade="all,delete", backref="fetch_job", lazy=True
+    )
 
     def __init__(
         self,
