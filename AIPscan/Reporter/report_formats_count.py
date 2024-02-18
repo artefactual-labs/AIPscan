@@ -61,7 +61,7 @@ def _formats_data(storage_service_id, storage_location_id, start_date, end_date)
     search_requests = {"searches": []}
     for file_format in value_counts.keys():
         format_filters = filters.copy()
-        format_filters.append(("file_format", "=", f"'{file_format}'"))
+        format_filters.append(("file_format", "=", f"`{file_format}`"))
 
         format_filter_by = ts_helpers.assemble_filter_by(format_filters)
 
