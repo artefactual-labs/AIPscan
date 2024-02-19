@@ -69,6 +69,7 @@ def _formats_data(storage_service_id, storage_location_id, start_date, end_date)
             {
                 "collection": "aipscan_file",
                 "q": "*",
+                "include_fields": "file_format",
                 "filter_by": format_filter_by,
                 "facet_by": ",".join(ts_helpers.FACET_FIELDS["file"]),
                 "max_facet_values": 10000,
@@ -84,8 +85,8 @@ def _formats_data(storage_service_id, storage_location_id, start_date, end_date)
             file_format = results["hits"][0]["document"]["file_format"]
 
             for count in results["facet_counts"]:
-                if count["field_name"] == "file_format":
-                    format_size_sums[file_format] = count["counts"][0]["count"]
+                if count["field_name"] == "size":
+                    format_size_sums[file_format] = count["stats"]["sum"]
 
     # Amalgamate data
     format_data = {}
