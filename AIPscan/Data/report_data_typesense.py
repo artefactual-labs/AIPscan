@@ -6,7 +6,6 @@ from AIPscan.Data import (
     get_storage_location_description,
     get_storage_service_name,
 )
-from AIPscan.models import AIP
 
 
 def formats_count(storage_service_id, storage_location_id, start_date, end_date):
