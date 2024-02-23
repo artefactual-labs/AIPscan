@@ -98,59 +98,6 @@ def formats_count(storage_service_id, storage_location_id, start_date, end_date)
     return report
 
 
-def largest_aips(storage_service_id, start_date, end_date, storage_location_id, limit):
-    report = {}
-
-    report[fields.FIELD_AIPS] = []
-    report[fields.FIELD_STORAGE_NAME] = get_storage_service_name(storage_service_id)
-    report[fields.FIELD_STORAGE_LOCATION] = get_storage_location_description(
-        storage_location_id
-    )
-
-    # Assemble filter_by
-    if type(start_date) is datetime:
-        start_timestamp = ts_helpers.datetime_to_timestamp_int(start_date)
-        end_timestamp = ts_helpers.datetime_to_timestamp_int(end_date) - 1
-    else:
-        start_timestamp = ts_helpers.date_string_to_timestamp_int(start_date)
-        end_timestamp = ts_helpers.date_string_to_timestamp_int(end_date) - 1
-
-    filters = [
-        ("create_date", ">", start_timestamp),
-        ("create_date", "<", end_timestamp),
-        ("storage_service_id", "=", storage_service_id),
-    ]
-
-    if storage_location_id is not None and storage_location_id != "":
-        filters.append(("storage_location_id", "=", storage_location_id))
-
-    filter_by = ts_helpers.assemble_filter_by(filters)
-
-    # Get format counts via facet data
-    results = ts_helpers.search(
-        "aip",
-        {
-            "q": "*",
-            "filter_by": filter_by,
-            "include_fields": "",
-            "per_page": limit,
-            "sort_by": "size:desc",
-        },
-    )
-
-    for hit in results["hits"]:
-        report[fields.FIELD_AIPS].append(
-            {
-                "UUID": hit["document"]["uuid"],
-                "Name": hit["document"]["transfer_name"],
-                "Size": hit["document"]["size"],
-                "FileCount": hit["document"]["original_file_count"],
-            }
-        )
-
-    return report
-
-
 def largest_files(
     storage_service_id, start_date, end_date, storage_location_id, file_type, limit
 ):

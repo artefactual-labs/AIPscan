@@ -1,7 +1,6 @@
 from flask import render_template, request
 
-from AIPscan import typesense_helpers as ts_helpers
-from AIPscan.Data import fields, report_data, report_data_typesense
+from AIPscan.Data import fields, report_data
 from AIPscan.helpers import parse_bool, parse_datetime_bound
 from AIPscan.Reporter import (
     download_csv,
@@ -36,18 +35,13 @@ def largest_aips():
         pass
     csv = parse_bool(request.args.get(request_params.CSV), default=False)
 
-    if ts_helpers.typesense_enabled():
-        aip_data = report_data_typesense.largest_aips(
-            storage_service_id, start_date, end_date, storage_location_id, limit
-        )
-    else:
-        aip_data = report_data.largest_aips(
-            storage_service_id=storage_service_id,
-            start_date=start_date,
-            end_date=end_date,
-            storage_location_id=storage_location_id,
-            limit=limit,
-        )
+    aip_data = report_data.largest_aips(
+        storage_service_id=storage_service_id,
+        start_date=start_date,
+        end_date=end_date,
+        storage_location_id=storage_location_id,
+        limit=limit,
+    )
 
     if csv:
         headers = translate_headers(HEADERS, True)
