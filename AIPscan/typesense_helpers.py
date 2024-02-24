@@ -57,12 +57,19 @@ def collection_prefix(table):
 
 
 def date_string_to_timestamp_int(date_string):
+    # Round date string to date if time is included
+    if len(date_string) > 10:
+        date_string = date_string[0:10]
+
     return int(
         time.mktime(datetime.datetime.strptime(date_string, "%Y-%m-%d").timetuple())
     )
 
 
 def datetime_to_timestamp_int(datetime_obj):
+    # Round datetime to date in case time is included
+    datetime_obj = datetime_obj.replace(hour=0, minute=0, second=0)
+
     return int(time.mktime(datetime_obj.timetuple()))
 
 
@@ -95,48 +102,6 @@ def facet_value_counts(result, field_name=None):
     return facet_value_counts
 
 
-def facet_values(result, field_name=None):
-    facet_values = {}
-
-    for facet_count in result["facet_counts"]:
-        facet_values[facet_count["field_name"]] = []
-
-        for count in facet_count["counts"]:
-            facet_values[facet_count["field_name"]].append(count["value"])
-
-    if field_name:
-        return facet_values[field_name]
-
-    return facet_values
-
-
-def facet_counts(result, field_name=None):
-    facet_values = {}
-
-    for facet_count in result["facet_counts"]:
-        facet_values[facet_count["field_name"]] = []
-
-        for count in facet_count["counts"]:
-            facet_values[facet_count["field_name"]].append(count["count"])
-
-    if field_name:
-        return facet_values[field_name]
-
-    return facet_values
-
-
-def facet_totals(result, field_name=None):
-    total_values = {}
-
-    for facet_count in result["facet_counts"]:
-        total_values[facet_count["field_name"]] = facet_count["stats"]["total_values"]
-
-    if field_name:
-        return total_values[field_name]
-
-    return total_values
-
-
 def app_models():
     models = []
 
@@ -153,7 +118,7 @@ def get_model_table(model):
     return str(inst.tables[0])
 
 
-def fields_from_model(model):
+def collection_fields_from_model(model):
     # Reference model definition
     inst = inspect(model)
     table = str(inst.tables[0])
@@ -210,7 +175,7 @@ def get_model_fields():
     models = app_models()
 
     for model in models:
-        fields = fields_from_model(model)
+        fields = collection_fields_from_model(model)
         model_fields[model] = fields
 
     return model_fields
@@ -220,13 +185,8 @@ def initialize_index():
     ts_client = client()
 
     # Create Typesense collections containing data for each model
-    model_fields = {}
-
     for model in app_models():
         table = get_model_table(model)
-
-        fields = fields_from_model(model)
-        model_fields[model] = fields
 
         # Delete collection if it exists
         try:
@@ -235,6 +195,8 @@ def initialize_index():
             pass
 
         # Create collection
+        fields = collection_fields_from_model(model)
+
         ts_client.collections.create(
             {"name": collection_prefix(table), "fields": fields}
         )
