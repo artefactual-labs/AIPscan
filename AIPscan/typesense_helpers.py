@@ -6,8 +6,9 @@ import typesense
 from flask import current_app
 from sqlalchemy import inspect
 
-from AIPscan import db
-from AIPscan.models import AIP, FileType
+from AIPscan.models import AIP, File, FileType
+
+APP_MODELS = [AIP, File]
 
 COLLECTION_PREFIX = "aipscan_"
 
@@ -102,17 +103,6 @@ def facet_value_counts(result, field_name=None):
     return facet_value_counts
 
 
-def app_models():
-    models = []
-
-    for model in db.Model.__subclasses__():
-        # Omit models used only by Celery
-        if not hasattr(model, "__bind_key__") or model.__bind_key__ != "celery":
-            models.append(model)
-
-    return models
-
-
 def get_model_table(model):
     inst = inspect(model)
     return str(inst.tables[0])
@@ -169,23 +159,11 @@ def collection_fields_from_model(model):
     return fields
 
 
-def get_model_fields():
-    model_fields = {}
-
-    models = app_models()
-
-    for model in models:
-        fields = collection_fields_from_model(model)
-        model_fields[model] = fields
-
-    return model_fields
-
-
 def initialize_index():
     ts_client = client()
 
     # Create Typesense collections containing data for each model
-    for model in app_models():
+    for model in APP_MODELS:
         table = get_model_table(model)
 
         # Delete collection if it exists
@@ -205,9 +183,6 @@ def initialize_index():
 def populate_index():
     ts_client = client()
 
-    models = app_models()
-    model_fields = get_model_fields()
-
     # Cache AIP storage services/locations
     aip_storage_service_ids = {}
     aip_storage_location_ids = {}
@@ -223,8 +198,9 @@ def populate_index():
         aip_original_file_counts[result.id] = result.original_file_count
 
     # Add documents to collections
-    for model in models:
+    for model in APP_MODELS:
         table = get_model_table(model)
+        model_fields = collection_fields_from_model(model)
 
         results = model.query.all()
 
@@ -233,7 +209,7 @@ def populate_index():
         for result in results:
             document = {}
 
-            for field in model_fields[model]:
+            for field in model_fields:
                 if hasattr(result, field["name"]):
                     value = getattr(result, field["name"])
 
