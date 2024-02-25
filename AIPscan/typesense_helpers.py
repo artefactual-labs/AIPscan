@@ -86,6 +86,27 @@ def assemble_filter_by(filters):
     return filter_by
 
 
+def file_filters(storage_service_id, storage_location_id, start_date, end_date):
+    if type(start_date) is datetime.datetime:
+        start_timestamp = datetime_to_timestamp_int(start_date)
+        end_timestamp = datetime_to_timestamp_int(end_date) - 1
+    else:
+        start_timestamp = date_string_to_timestamp_int(start_date)
+        end_timestamp = date_string_to_timestamp_int(end_date) - 1
+
+    filters = [
+        ("date_created", ">", start_timestamp),
+        ("date_created", "<", end_timestamp),
+        ("storage_service_id", "=", storage_service_id),
+        ("file_type", "=", "'original'"),
+    ]
+
+    if storage_location_id is not None and storage_location_id != "":
+        filters.append(("storage_location_id", "=", storage_location_id))
+
+    return filters
+
+
 def facet_value_counts(result, field_name=None):
     facet_value_counts = {}
 

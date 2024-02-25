@@ -2,6 +2,7 @@ import os
 import time
 from datetime import datetime
 
+import tzlocal
 from pytz import timezone
 
 from AIPscan import typesense_helpers as ts_helpers
@@ -17,7 +18,8 @@ def test_collection_prefix():
 
 
 def test_date_string_to_timestamp_int():
-    # Set time zone
+    # Get local time zone then set time zone for testing
+    local_timezone = tzlocal.get_localzone_name()
     os.environ["TZ"] = "Europe/London"
     time.tzset()
 
@@ -29,10 +31,15 @@ def test_date_string_to_timestamp_int():
     date_text = "2019-01-30 02:30:50"
     assert ts_helpers.date_string_to_timestamp_int(date_text) == 1548806400
 
+    # Reset time zone
+    os.environ["TZ"] = local_timezone
+    time.tzset()
+
 
 def test_datetime_to_timestamp_int():
-    # Set time zone
-    os.environ["TZ"] = "US/Pacific"
+    # Get local time zone then set time zone for testing
+    local_timezone = tzlocal.get_localzone_name()
+    os.environ["TZ"] = "America/Vancouver"
     time.tzset()
 
     # Create time zone object to create datetime objects from
@@ -46,12 +53,39 @@ def test_datetime_to_timestamp_int():
     datetime_object = datetime(2019, 1, 30, 2, 30, 50).astimezone(pst_tz)
     assert ts_helpers.datetime_to_timestamp_int(datetime_object) == 1548835200
 
+    # Reset time zone
+    os.environ["TZ"] = local_timezone
+    time.tzset()
+
 
 def test_assemble_filter_by():
     filters = [("storage_service_id", "=", 1), ("file_type", "=", "'original'")]
     filter_string = "storage_service_id:=1 && file_type:='original'"
 
     assert ts_helpers.assemble_filter_by(filters) == filter_string
+
+
+def test_file_filters(app_with_populated_files):
+    # Get local time zone then set time zone for testing
+    local_timezone = tzlocal.get_localzone_name()
+    os.environ["TZ"] = "America/Vancouver"
+    time.tzset()
+
+    file_filters = ts_helpers.file_filters(1, 1, "2019-01-01", "2019-01-31")
+
+    desired_filters = [
+        ("date_created", ">", 1546329600),
+        ("date_created", "<", 1548921599),
+        ("storage_service_id", "=", 1),
+        ("file_type", "=", "'original'"),
+        ("storage_location_id", "=", 1),
+    ]
+
+    assert file_filters == desired_filters
+
+    # Reset time zone
+    os.environ["TZ"] = local_timezone
+    time.tzset()
 
 
 def test_facet_value_counts():
