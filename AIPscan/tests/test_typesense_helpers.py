@@ -2,11 +2,22 @@ import os
 import time
 from datetime import datetime
 
+import typesense
 import tzlocal
 from pytz import timezone
 
 from AIPscan import typesense_helpers as ts_helpers
 from AIPscan.models import File, Pipeline
+
+
+def test_client(app_with_populated_files):
+    client = ts_helpers.client()
+
+    assert type(client) is typesense.Client
+    assert client.config.nodes[0].host == "localhost"
+    assert client.config.nodes[0].port == "8108"
+    assert client.config.nodes[0].protocol == "http"
+    assert client.config.api_key == "x0x0x0x0x0"
 
 
 def test_collection_prefix():
