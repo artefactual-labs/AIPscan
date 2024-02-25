@@ -1,10 +1,6 @@
-from datetime import datetime
-
 from AIPscan import typesense_helpers as ts_helpers
 from AIPscan.Data import (
     fields,
-    get_storage_location_description,
-    get_storage_service_name,
     report_dict,
 )
 
