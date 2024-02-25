@@ -1,8 +1,5 @@
 from AIPscan import typesense_helpers as ts_helpers
-from AIPscan.Data import (
-    fields,
-    report_dict,
-)
+from AIPscan.Data import fields, report_dict
 
 
 def formats_count(storage_service_id, storage_location_id, start_date, end_date):
