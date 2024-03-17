@@ -13,6 +13,7 @@ from AIPscan.Aggregator.tasks import (
     delete_aip,
     delete_fetch_job,
     delete_storage_service,
+    fetch_job_file_cleanup,
     get_mets,
     make_request,
     parse_package_list_file,
@@ -210,6 +211,22 @@ def test_delete_storage_service_task(app_instance, tmpdir, mocker):
     deleted_ss = StorageService.query.filter_by(id=storage_service.id).first()
     assert deleted_ss is None
     assert Agent.query.filter_by(storage_service_id=storage_service.id).count() == 0
+
+
+def test_fetch_job_file_cleanup_task(app_instance, tmpdir, mocker):
+    test_downloads_dir = os.path.join(tmpdir, "downloads")
+    os.mkdir(test_downloads_dir)
+
+    # Mock download directory should be created
+    assert os.path.isdir(test_downloads_dir)
+
+    fetch_job1 = test_helpers.create_test_fetch_job(
+        download_directory=test_downloads_dir
+    )
+    fetch_job_file_cleanup(fetch_job1.id)
+
+    # Mock download directory should be removed
+    assert not os.path.isdir(test_downloads_dir)
 
 
 @pytest.mark.parametrize(
