@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import sys
+from pathlib import Path
 
 import click
 from app import cli
@@ -53,6 +54,13 @@ from config import CONFIGS
     help="Maximum number of files to create per AIP (default 30).",
     type=int,
 )
+@click.option(
+    "--number-of-format-types",
+    "-e",
+    default=50,
+    help="Maximum number of possible format types to assign to files (default 50).",
+    type=int,
+)
 @click.option("--seed", default=0)
 def main(
     storage_services_to_create,
@@ -61,6 +69,7 @@ def main(
     locations_max_aip_count,
     aip_min_file_count,
     aip_max_file_count,
+    number_of_format_types,
     seed,
 ):
     # Initialize Flash app context
@@ -88,6 +97,18 @@ def main(
 
             fetch_job = data.create_fake_fetch_job(ss.id)
             fetch_jobs[ss.id] = fetch_job.id
+
+        # Determine format types to use
+        path_to_format_type_csv_obj = (
+            Path(__file__).parent / "data/generate-test-data/format_types.csv"
+        )
+
+        format_types = data.format_types_from_csv(str(path_to_format_type_csv_obj))
+
+        if number_of_format_types >= len(format_types):
+            number_of_format_types = len(format_types)
+
+        format_types = format_types[0:number_of_format_types]
 
         # Populate storage service locations
         ss_locations_to_create = (
@@ -127,7 +148,11 @@ def main(
                         pipeline.id, ss_id, sl.id, fetch_jobs[ss.id]
                     )
                     data.create_fake_aip_files(
-                        aip_min_file_count, aip_max_file_count, agents, aip
+                        aip_min_file_count,
+                        aip_max_file_count,
+                        agents,
+                        aip,
+                        format_types,
                     )
                     aipcount += 1
 
