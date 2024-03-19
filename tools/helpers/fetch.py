@@ -5,9 +5,8 @@ from AIPscan.Aggregator.task_helpers import (
     format_api_url_with_limit_offset,
     get_packages_directory,
     parse_package_list_file,
-    process_package_object,
 )
-from AIPscan.Aggregator.tasks import handle_deletion, make_request, start_mets_task
+from AIPscan.Aggregator.tasks import make_request
 
 
 def determine_start_and_end_item(page, packages_per_page, total_packages):
@@ -61,49 +60,3 @@ def get_packages(storage_service, packages_dir):
         packages = fetch_and_write_packages(storage_service, package_filepath)
 
     return packages
-
-
-def import_packages(
-    packages,
-    start_item,
-    end_item,
-    storage_service_id,
-    timestamp_str,
-    package_list_no,
-    fetch_job_id,
-    packages_per_page,
-    logger,
-):
-    processed_packages = []
-
-    package_count = 0
-    for package_obj in packages["objects"]:
-        package_count += 1
-
-        package = process_package_object(package_obj)
-
-        if package_count >= start_item and package_count <= end_item:
-            # Calculate current item being processed
-            current_item = start_item + len(processed_packages)
-            logger.info(f"Processing {package.uuid} ({current_item} of {end_item})")
-
-            processed_packages.append(package)
-            handle_deletion(package)
-
-            if not package.is_undeleted_aip():
-                continue
-
-            start_mets_task(
-                package.uuid,
-                package.size,
-                package.get_relative_path(),
-                package.current_location,
-                package.origin_pipeline,
-                timestamp_str,
-                package_list_no,
-                storage_service_id,
-                fetch_job_id,
-                False,
-            )
-
-    return processed_packages
