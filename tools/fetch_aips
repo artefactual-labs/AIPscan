@@ -11,7 +11,11 @@ from helpers import fetch
 
 from AIPscan import db
 from AIPscan.Aggregator import database_helpers
-from AIPscan.Aggregator.task_helpers import create_numbered_subdirs
+from AIPscan.Aggregator.task_helpers import (
+    create_numbered_subdirs,
+    process_packages,
+    summarize_fetch_job_results,
+)
 from AIPscan.models import StorageService
 from config import CONFIGS
 
@@ -126,33 +130,27 @@ def fetch_aips(logger, ss_id, session_id, page, packages_per_page, logfile):
         )
 
         # Import packages
-        processed_packages = fetch.import_packages(
+        processed_packages = process_packages(
             packages,
-            start_item,
-            end_item,
             ss_id,
             session_id,
             package_list_no,
             fetch_job_id,
-            packages_per_page,
+            False,
             logger,
+            start_item,
+            end_item,
         )
 
         fetch_job = database_helpers.update_fetch_job(
             fetch_job_id, processed_packages, total_packages
         )
 
-        summary = "aips: '{}'; sips: '{}'; dips: '{}'; deleted: '{}'; replicated: '{}'".format(
-            fetch_job.total_aips,
-            fetch_job.total_sips,
-            fetch_job.total_dips,
-            fetch_job.total_deleted_aips,
-            fetch_job.total_replicas,
-        )
-        logger.info("%s", summary)
         logger.info(
             f"Updated fetch job record {fetch_job_id} with package type counts."
         )
+
+        logger.info("%s", summarize_fetch_job_results(fetch_job))
         logger.info("Processing complete.")
 
 

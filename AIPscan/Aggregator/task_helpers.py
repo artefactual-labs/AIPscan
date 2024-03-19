@@ -158,3 +158,13 @@ def write_mets(http_response, package_uuid, subdir):
     with open(download_file, "wb") as file:
         file.write(http_response.content)
     return download_file
+
+
+def summarize_fetch_job_results(fetch_job):
+    return "aips: '{}'; sips: '{}'; dips: '{}'; deleted: '{}'; replicated: '{}'".format(
+        fetch_job.total_aips,
+        fetch_job.total_sips,
+        fetch_job.total_dips,
+        fetch_job.total_deleted_aips,
+        fetch_job.total_replicas,
+    )
