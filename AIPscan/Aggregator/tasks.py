@@ -193,12 +193,14 @@ def workflow_coordinator(
         fetch_job_id, all_packages, total_packages_count
     )
 
-    summary = "aips: '{}'; sips: '{}'; dips: '{}'; deleted: '{}'; replicated: '{}'".format(
-        obj.total_aips,
-        obj.total_sips,
-        obj.total_dips,
-        obj.total_deleted_aips,
-        obj.total_replicas,
+    summary = (
+        "aips: '{}'; sips: '{}'; dips: '{}'; deleted: '{}'; replicated: '{}'".format(
+            obj.total_aips,
+            obj.total_sips,
+            obj.total_dips,
+            obj.total_deleted_aips,
+            obj.total_replicas,
+        )
     )
     logger.info("%s", summary)
 

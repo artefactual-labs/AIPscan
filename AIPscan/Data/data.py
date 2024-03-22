@@ -190,9 +190,9 @@ def derivative_overview(storage_service_id, storage_location_id=None):
                 continue
 
             file_derivative_pair = {}
-            file_derivative_pair[
-                fields.FIELD_DERIVATIVE_UUID
-            ] = preservation_derivative.uuid
+            file_derivative_pair[fields.FIELD_DERIVATIVE_UUID] = (
+                preservation_derivative.uuid
+            )
             file_derivative_pair[fields.FIELD_ORIGINAL_UUID] = original_file.uuid
             original_format_version = original_file.format_version
             if original_format_version is None:
