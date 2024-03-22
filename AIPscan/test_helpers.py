@@ -1,5 +1,7 @@
+import logging
 import uuid
 from datetime import datetime
+from io import StringIO
 
 from AIPscan import db
 from AIPscan.models import (
@@ -152,3 +154,14 @@ def create_test_event_agent(**kwargs):
     db.session.execute(event_relationship)
     db.session.commit()
     return event_relationship
+
+
+def add_logger_streamer(logger):
+    """Add stream handler to logger and return it."""
+    logger.setLevel(logging.DEBUG)
+
+    log_streamer = StringIO()
+    handler = logging.StreamHandler(log_streamer)
+    logger.addHandler(handler)
+
+    return log_streamer
