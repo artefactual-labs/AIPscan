@@ -26,3 +26,8 @@ repos:
   hooks:
    - id: prettier
      types_or: [css, javascript]
+- repo: https://github.com/djlint/djLint
+  rev: v1.34.1
+  hooks:
+   - id: djlint
+   - id: djlint-reformat
