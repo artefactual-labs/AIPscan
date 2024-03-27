@@ -70,7 +70,7 @@ def start_mets_task(
             current_location, storage_service
         )
     except Exception as err:
-        store_fetch_job_error_infomation(fetch_job_id, str(err))
+        store_fetch_job_error_infomation(fetch_job_id, err)
 
         return
 
@@ -79,7 +79,7 @@ def start_mets_task(
             origin_pipeline, storage_service
         )
     except Exception as err:
-        store_fetch_job_error_infomation(fetch_job_id, str(err))
+        store_fetch_job_error_infomation(fetch_job_id, err)
 
         return
 
@@ -180,10 +180,10 @@ def workflow_coordinator(
             break
 
     if isinstance(package_lists_task.info, TaskError):
-        store_fetch_job_error_infomation(fetch_job_id, str(package_lists_task.info))
+        store_fetch_job_error_infomation(fetch_job_id, package_lists_task.info)
 
         # Re-raise.
-        raise (package_lists_task.info)
+        raise package_lists_task.info
 
     total_package_lists = package_lists_task.info["totalPackageLists"]
 
@@ -341,7 +341,7 @@ def get_mets(
             package_list_no,
         )
     except Exception as e:
-        store_fetch_job_error_infomation(fetch_job_id, str(e))
+        store_fetch_job_error_infomation(fetch_job_id, e)
 
         return
 

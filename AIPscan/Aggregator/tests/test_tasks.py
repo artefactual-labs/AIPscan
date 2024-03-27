@@ -312,7 +312,7 @@ def test_store_fetch_job_error_during_get_mets(app_instance, tmpdir):
     fetch_job_error = FetchJobError.query.filter_by(fetch_job_id=fetch_job.id).first()
 
     assert fetch_job_error is not None
-    assert fetch_job_error.message == "Non-200 HTTP code from METS download"
+    assert fetch_job_error.message == "get_mets: Non-200 HTTP code from METS download"
     assert fetch_job_error.fetch_job_id == fetch_job.id
 
 
@@ -446,5 +446,5 @@ def test_store_fetch_job_error_during_workflow_coordinator(
     fetch_job_error = FetchJobError.query.filter_by(fetch_job_id=fetch_job.id).first()
 
     assert fetch_job_error is not None
-    assert fetch_job_error.message == "Task error"
+    assert fetch_job_error.message == "workflow_coordinator: Task error"
     assert fetch_job_error.fetch_job_id == fetch_job.id
