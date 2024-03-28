@@ -306,9 +306,8 @@ def index_task(fetch_job_id):
     # Update Typesense index
     typesense_helpers.initialize_index()
 
-    completed_percent = None
     for status in typesense_helpers.populate_index():
-        if completed_percent != status["percent"]:
+        if status["percent"] is not None:
             index_task_obj = index_tasks.query.filter_by(
                 fetch_job_id=fetch_job_id
             ).first()
