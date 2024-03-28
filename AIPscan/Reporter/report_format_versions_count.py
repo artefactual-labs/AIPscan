@@ -2,7 +2,8 @@
 
 from flask import render_template, request
 
-from AIPscan.Data import fields, report_data
+from AIPscan import typesense_helpers as ts_helpers
+from AIPscan.Data import fields, report_data, report_data_typesense
 from AIPscan.helpers import parse_bool, parse_datetime_bound
 from AIPscan.Reporter import (
     download_csv,
@@ -33,12 +34,21 @@ def report_format_versions_count():
     )
     csv = parse_bool(request.args.get(request_params.CSV), default=False)
 
-    version_data = report_data.format_versions_count(
-        storage_service_id=storage_service_id,
-        start_date=start_date,
-        end_date=end_date,
-        storage_location_id=storage_location_id,
-    )
+    if ts_helpers.typesense_enabled():
+        version_data = report_data_typesense.format_versions_count(
+            storage_service_id=storage_service_id,
+            start_date=start_date,
+            end_date=end_date,
+            storage_location_id=storage_location_id,
+        )
+    else:
+        version_data = report_data.format_versions_count(
+            storage_service_id=storage_service_id,
+            start_date=start_date,
+            end_date=end_date,
+            storage_location_id=storage_location_id,
+        )
+
     versions = version_data.get(fields.FIELD_FORMAT_VERSIONS)
 
     if csv:

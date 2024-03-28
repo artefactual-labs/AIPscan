@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+from AIPscan.Data import fields
 from AIPscan.models import StorageLocation, StorageService
 
 
@@ -40,3 +40,14 @@ def get_storage_location_description(storage_location_id):
         if storage_location:
             description = storage_location.description
     return description
+
+
+def report_dict(storage_service_id, storage_location_id):
+    report = {}
+
+    report[fields.FIELD_STORAGE_NAME] = get_storage_service_name(storage_service_id)
+    report[fields.FIELD_STORAGE_LOCATION] = get_storage_location_description(
+        storage_location_id
+    )
+
+    return report

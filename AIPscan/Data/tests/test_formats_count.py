@@ -4,10 +4,11 @@ from datetime import datetime
 
 import pytest
 
+from AIPscan import typesense_test_helpers
 from AIPscan.conftest import AIP_1_CREATION_DATE, AIP_2_CREATION_DATE
 from AIPscan.conftest import ORIGINAL_FILE_SIZE as JPEG_1_01_FILE_SIZE
 from AIPscan.conftest import PRESERVATION_FILE_SIZE as JPEG_1_02_FILE_SIZE
-from AIPscan.Data import fields, report_data
+from AIPscan.Data import fields, report_data, report_data_typesense
 from AIPscan.Data.tests import (
     MOCK_STORAGE_SERVICE,
     MOCK_STORAGE_SERVICE_ID,
@@ -75,6 +76,31 @@ def test_formats_count(app_instance, mocker, query_results, results_count):
     assert report[fields.FIELD_STORAGE_NAME] == MOCK_STORAGE_SERVICE_NAME
     assert report[fields.FIELD_STORAGE_LOCATION] == test_location.description
     assert len(report[fields.FIELD_FORMATS]) == results_count
+
+
+def test_formats_count_typesense(app_with_populated_files, enable_typesense, mocker):
+    typesense_test_helpers.fake_collection_format_counts(mocker)
+
+    expected_result = {
+        "StorageName": "test storage service",
+        "StorageLocation": "test storage location",
+        "Formats": [{"Format": "wav", "Count": 10, "Size": 999}],
+    }
+
+    start_date = "2019-01-01"
+    end_date = "2019-10-01"
+    report = report_data_typesense.formats_count(
+        1,
+        1,
+        datetime.strptime(start_date, "%Y-%m-%d"),
+        datetime.strptime(end_date, "%Y-%m-%d"),
+    )
+    assert report == expected_result
+
+    report = report_data_typesense.formats_count(
+        1, 1, parse_datetime_bound(start_date), parse_datetime_bound(end_date)
+    )
+    assert report == expected_result
 
 
 @pytest.mark.parametrize(
