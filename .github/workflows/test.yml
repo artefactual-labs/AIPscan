@@ -52,7 +52,9 @@ jobs:
           tox -- --cov AIPscan --cov-config .coveragerc --cov-report xml:coverage.xml
       - name: "Upload coverage report"
         if: github.repository == 'artefactual-labs/AIPscan'
-        uses: "codecov/codecov-action@v1"
+        uses: "codecov/codecov-action@v4"
+        env:
+          CODECOV_TOKEN: "${{ secrets.CODECOV_TOKEN }}"
         with:
           files: ./coverage.xml
           fail_ci_if_error: true
