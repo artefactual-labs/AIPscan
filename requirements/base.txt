@@ -6,7 +6,7 @@ chardet==3.0.4
 click==8.1.7
 python-dateutil==2.8.1
 faker==14.2.1
-filelock==3.13.1
+filelock==3.13.4
 Flask==2.2.5
 Flask-SQLAlchemy==2.5.1
 Flask-WTF==1.2.1
