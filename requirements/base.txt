@@ -11,7 +11,7 @@ Flask==2.2.5
 Flask-SQLAlchemy==2.5.1
 Flask-WTF==1.2.1
 flask-restx==1.1.0
-future==0.18.3
+future==1.0.0
 gunicorn==22.0.0
 idna==3.7
 importlib-metadata==3.6.0
