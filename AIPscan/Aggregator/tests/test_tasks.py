@@ -5,6 +5,7 @@ import uuid
 from datetime import datetime
 from io import StringIO
 
+import celery
 import pytest
 
 from AIPscan import test_helpers
@@ -14,9 +15,11 @@ from AIPscan.Aggregator.tasks import (
     delete_fetch_job,
     delete_storage_service,
     get_mets,
+    index_task,
     make_request,
     parse_package_list_file,
     parse_packages_and_load_mets,
+    start_index_task,
 )
 from AIPscan.Aggregator.tests import (
     INVALID_JSON,
@@ -26,7 +29,7 @@ from AIPscan.Aggregator.tests import (
     VALID_JSON,
     MockResponse,
 )
-from AIPscan.models import AIP, Agent, FetchJob, StorageService
+from AIPscan.models import AIP, Agent, FetchJob, StorageService, index_tasks
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 FIXTURES_DIR = os.path.join(SCRIPT_DIR, "fixtures")
@@ -186,13 +189,22 @@ def test_delete_fetch_job_task(app_instance, tmpdir, mocker):
     fetch_job1 = test_helpers.create_test_fetch_job(
         storage_service_id=storage_service.id
     )
-
     assert fetch_job1.id == 1
+
+    # Create index_tasks instance and confirm expected ID
+    task_id = celery.uuid()
+    test_helpers.create_test_index_tasks(fetch_job1.id, task_id)
+
+    index_tasks_obj = index_tasks.query.filter_by(fetch_job_id=fetch_job1.id).first()
+    assert index_tasks_obj.index_task_id == task_id
 
     # Delete fetch job and confirm it no longer exists
     delete_fetch_job(fetch_job1.id)
 
     assert FetchJob.query.filter_by(id=fetch_job1.id).first() is None
+
+    index_tasks_obj = index_tasks.query.filter_by(fetch_job_id=fetch_job1.id).first()
+    assert index_tasks_obj is None
 
 
 def test_delete_storage_service_task(app_instance, tmpdir, mocker):
@@ -275,3 +287,62 @@ def test_delete_aip(app_instance):
 
     deleted_aip = AIP.query.filter_by(uuid=PACKAGE_UUID).first()
     assert deleted_aip is None
+
+
+def test_start_index_task(app_instance, mocker):
+    """Test that index_tasks record gets create by start index job function logic."""
+    # Mock creation of index task
+    mock_index_task = mocker.patch("AIPscan.Aggregator.tasks.index_task.delay")
+
+    class MockTask:
+        id = 1
+
+    mock_index_task.return_value = MockTask()
+
+    # Create test fetch job
+    storage_service = test_helpers.create_test_storage_service()
+
+    fetch_job = test_helpers.create_test_fetch_job(
+        storage_service_id=storage_service.id
+    )
+
+    # At this point no index_tasks should exist for the fetch job
+    index_task_obj = index_tasks.query.filter_by(fetch_job_id=fetch_job.id).first()
+    assert index_task_obj is None
+
+    # Start mock index task, making sure it got started with the right value
+    start_index_task(fetch_job.id)
+
+    mock_index_task.assert_called_with(fetch_job.id)
+
+    # At this point an index_tasks should exist for the fetch job
+    index_task_obj = index_tasks.query.filter_by(fetch_job_id=fetch_job.id).first()
+    assert type(index_task_obj) is index_tasks
+
+
+def test_index_task(app_instance, enable_typesense, mocker):
+    """Test index task."""
+    # Create test fetch job
+    storage_service = test_helpers.create_test_storage_service()
+
+    fetch_job = test_helpers.create_test_fetch_job(
+        storage_service_id=storage_service.id
+    )
+
+    # Mock call to index initialize function
+    mocker.patch("AIPscan.typesense_helpers.initialize_index")
+
+    # Create test index tasks object and test index task with fake Celery task ID
+    task_id = celery.uuid()
+    test_helpers.create_test_index_tasks(fetch_job.id, task_id)
+
+    # Mock call to finish bulk document creation function
+    mock_finish_bulk_doc = mocker.patch(
+        "AIPscan.typesense_helpers.finish_bulk_document_creation"
+    )
+
+    # Start index task
+    index_task.apply((fetch_job.id,), task_id=task_id)
+
+    # Make sure finish bulk document creation function got called
+    mock_finish_bulk_doc.assert_called()

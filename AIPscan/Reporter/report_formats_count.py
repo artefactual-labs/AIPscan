@@ -10,11 +10,13 @@ from datetime import datetime, timedelta
 
 from flask import render_template, request
 
+from AIPscan import typesense_helpers as ts_helpers
 from AIPscan.Data import (
     fields,
     get_storage_location_description,
     get_storage_service_name,
     report_data,
+    report_data_typesense,
 )
 from AIPscan.helpers import filesizeformat, parse_bool, parse_datetime_bound
 from AIPscan.models import AIP, File, FileType
@@ -43,12 +45,18 @@ def report_formats_count():
     )
     csv = parse_bool(request.args.get(request_params.CSV), default=False)
 
-    formats_data = report_data.formats_count(
-        storage_service_id=storage_service_id,
-        start_date=start_date,
-        end_date=end_date,
-        storage_location_id=storage_location_id,
-    )
+    if ts_helpers.typesense_enabled():
+        formats_data = report_data_typesense.formats_count(
+            storage_service_id, storage_location_id, start_date, end_date
+        )
+    else:
+        formats_data = report_data.formats_count(
+            storage_service_id=storage_service_id,
+            start_date=start_date,
+            end_date=end_date,
+            storage_location_id=storage_location_id,
+        )
+
     formats = formats_data.get(fields.FIELD_FORMATS)
 
     if csv:
@@ -90,32 +98,45 @@ def chart_formats_count():
     storage_service_id = request.args.get(request_params.STORAGE_SERVICE_ID)
     storage_location_id = request.args.get(request_params.STORAGE_LOCATION_ID)
 
-    aips = AIP.query.filter_by(storage_service_id=storage_service_id)
-    if storage_location_id:
-        aips = aips.filter_by(storage_location_id=storage_location_id)
-    aips = aips.all()
-
-    format_labels = []
-    format_counts = []
-    originals_count = 0
-
-    for aip in aips:
-        original_files = File.query.filter_by(
-            aip_id=aip.id, file_type=FileType.original
+    if ts_helpers.typesense_enabled():
+        report = report_data_typesense.formats_count(
+            storage_service_id, storage_location_id, day_before, day_after, False
         )
-        for original in original_files:
-            if aip.create_date < day_before:
-                continue
-            elif aip.create_date > day_after:
-                continue
-            else:
-                originals_count += 1
-                format_labels.append(original.file_format)
 
-    format_counts = Counter(format_labels)
+        format_counts = dict(
+            zip(
+                [item["Format"] for item in report[fields.FIELD_FORMATS]],
+                [item["Count"] for item in report[fields.FIELD_FORMATS]],
+            )
+        )
+    else:
+        aips = AIP.query.filter_by(storage_service_id=storage_service_id)
+        if storage_location_id:
+            aips = aips.filter_by(storage_location_id=storage_location_id)
+        aips = aips.all()
+
+        format_labels = []
+        format_counts = []
+
+        for aip in aips:
+            original_files = File.query.filter_by(
+                aip_id=aip.id, file_type=FileType.original
+            )
+            for original in original_files:
+                if aip.create_date < day_before:
+                    continue
+                elif aip.create_date > day_after:
+                    continue
+                else:
+                    format_labels.append(original.file_format)
+
+        format_counts = Counter(format_labels)
+
     labels = list(format_counts.keys())
+    labels.sort()
     values = list(format_counts.values())
 
+    originals_count = sum(values)
     different_formats = len(format_counts.keys())
 
     return render_template(
@@ -149,33 +170,49 @@ def plot_formats_count():
     storage_service_id = request.args.get(request_params.STORAGE_SERVICE_ID)
     storage_location_id = request.args.get(request_params.STORAGE_LOCATION_ID)
 
-    aips = AIP.query.filter_by(storage_service_id=storage_service_id)
-    if storage_location_id:
-        aips = aips.filter_by(storage_location_id=storage_location_id)
-    aips = aips.all()
-
-    format_count = {}
-    originals_count = 0
-
-    for aip in aips:
-        original_files = File.query.filter_by(
-            aip_id=aip.id, file_type=FileType.original
+    if ts_helpers.typesense_enabled():
+        report = report_data_typesense.formats_count(
+            storage_service_id, storage_location_id, day_before, day_after
         )
-        for original in original_files:
-            if aip.create_date < day_before:
-                continue
-            elif aip.create_date > day_after:
-                continue
-            else:
-                originals_count += 1
-                file_format = original.file_format
-                size = original.size
 
-                if file_format in format_count:
-                    format_count[file_format]["count"] += 1
-                    format_count[file_format]["size"] += size
+        format_count = {}
+        originals_count = 0
+
+        for file_format in report[fields.FIELD_FORMATS]:
+            format_count[file_format["Format"]] = {
+                "count": file_format["Count"],
+                "size": file_format["Size"],
+            }
+
+            originals_count += file_format["Count"]
+    else:
+        aips = AIP.query.filter_by(storage_service_id=storage_service_id)
+        if storage_location_id:
+            aips = aips.filter_by(storage_location_id=storage_location_id)
+        aips = aips.all()
+
+        format_count = {}
+        originals_count = 0
+
+        for aip in aips:
+            original_files = File.query.filter_by(
+                aip_id=aip.id, file_type=FileType.original
+            )
+            for original in original_files:
+                if aip.create_date < day_before:
+                    continue
+                elif aip.create_date > day_after:
+                    continue
                 else:
-                    format_count.update({file_format: {"count": 1, "size": size}})
+                    originals_count += 1
+                    file_format = original.file_format
+                    size = original.size
+
+                    if file_format in format_count:
+                        format_count[file_format]["count"] += 1
+                        format_count[file_format]["size"] += size
+                    else:
+                        format_count.update({file_format: {"count": 1, "size": size}})
 
     total_size = 0
     x_axis = []

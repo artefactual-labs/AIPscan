@@ -1,0 +1,31 @@
+#!/usr/bin/env python3
+import sys
+
+from app import cli
+
+from AIPscan import db, typesense_helpers
+from config import CONFIGS
+
+
+def main():
+    # Initialize Flask app context
+    app = cli.create_app_instance(CONFIGS[cli.config_name], db)
+
+    with app.app_context():
+        if not typesense_helpers.typesense_enabled():
+            sys.exit("Error: Typesense not enabled in AIPscan.")
+
+        client = typesense_helpers.client()
+
+        for model in typesense_helpers.APP_MODELS:
+            table = typesense_helpers.get_model_table(model)
+            collection = typesense_helpers.collection_prefix(table)
+            result = client.collections[collection].retrieve()
+
+            print(f"Name: {result['name']}")
+            print(f"* Fields: {len(result['fields'])}")
+            print(f"* Documents: {result['num_documents']}\n")
+
+
+if __name__ == "__main__":
+    sys.exit(main())

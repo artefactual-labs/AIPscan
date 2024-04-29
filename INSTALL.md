@@ -64,6 +64,21 @@ systems and servers have not been tested.
    sudo service rabbitmq-server stop
    ```
 
+## Typesense (optional)
+
+Typesense doesn't yet exist in major Linux distribution package repositories and
+has to be installed manually.
+
+Official installation instructions are available for [Ubuntu][1] and [Centos/RHEL][2].
+
+[1]: https://typesense.org/docs/guide/install-typesense.html#deb-package-on-ubuntu-debian
+
+[2]: https://typesense.org/docs/guide/install-typesense.html#rpm-package-on-centos-rhel
+
+After installing Typesense the API key, needed to enable Typesense
+functionality in AIPscan, can be found in the
+`/etc/typesense/typesense-server.ini` file.
+
 ## Gunicorn service
 
 * Create the following service file for Gunicorn:
@@ -92,6 +107,13 @@ RestartSec=30
 
 [Install]
 WantedBy=multi-user.target
+```
+
+If you wish to use Typesense with AIPscan, you'll need to define an environment variable
+in the `[Service]` section of this file. For example:
+
+```bash
+Environment="TYPESENSE_API_KEY=1234"
 ```
 
 * Start the new AIPscan Gunicorn service:
@@ -214,6 +236,13 @@ RestartSec=30
 
 [Install]
 WantedBy=multi-user.target
+```
+
+If you wish to use Typesense with AIPscan, you'll need to define an environment variable
+in the `[Service]` section of this file. For example:
+
+```bash
+Environment="TYPESENSE_API_KEY=1234"
 ```
 
 * Start the Celery service:

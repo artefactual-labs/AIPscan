@@ -15,7 +15,7 @@ from flask import (
     url_for,
 )
 
-from AIPscan import db
+from AIPscan import db, typesense_helpers
 from AIPscan.Aggregator import database_helpers, tasks
 from AIPscan.Aggregator.forms import StorageServiceForm
 from AIPscan.Aggregator.task_helpers import (
@@ -26,7 +26,13 @@ from AIPscan.Aggregator.tasks import TaskError
 from AIPscan.extensions import celery
 
 # Custom celery Models.
-from AIPscan.models import FetchJob, StorageService, get_mets_tasks, package_tasks
+from AIPscan.models import (
+    FetchJob,
+    StorageService,
+    get_mets_tasks,
+    index_tasks,
+    package_tasks,
+)
 
 aggregator = Blueprint("aggregator", __name__, template_folder="templates")
 
@@ -316,4 +322,34 @@ def get_mets_task_status(coordinatorid):
     db.session.commit()
     response = {"state": "COMPLETED"}
     flash("Fetch Job {} completed".format(downloadStart))
+    return jsonify(response)
+
+
+@aggregator.route("/index_refresh/<fetch_job_id>")
+def index_refresh(fetch_job_id):
+    if not typesense_helpers.typesense_enabled():
+        abort(422)
+
+    tasks.start_index_task(fetch_job_id)
+
+    response = {"state": "ACCEPTED"}
+    return jsonify(response)
+
+
+@aggregator.route("/indexing_status/<fetch_job_id>")
+def index_status(fetch_job_id):
+    if not typesense_helpers.typesense_enabled():
+        abort(422)
+
+    # Get status from DB
+    obj = index_tasks.query.filter_by(fetch_job_id=fetch_job_id).first()
+
+    response = {}
+
+    if obj.indexing_end is None:
+        response["progress"] = obj.indexing_progress
+        response["state"] = "PENDING"
+    else:
+        response = {"state": "COMPLETED"}
+
     return jsonify(response)

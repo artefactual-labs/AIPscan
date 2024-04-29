@@ -1,6 +1,15 @@
-function new_fetch_job(storageServiceId) {
+function consolePrepend(message) {
+  $("#console").prepend(`<div class="log">${message}</div>`);
+}
+
+function consoleAppend(message) {
+  $("#console").append(`<div class="log">${message}</div>`);
+  $("#console").scrollTop($("#console")[0].scrollHeight);
+}
+
+function newFetchJob(storageServiceId) {
   var url = new URL(
-    "aggregator/new_fetch_job/" + storageServiceId,
+    `aggregator/new_fetch_job/${storageServiceId}`,
     $("body").data("url-root"),
   );
 
@@ -8,27 +17,28 @@ function new_fetch_job(storageServiceId) {
     type: "POST",
     url: url,
     datatype: "json",
+
     success: function (data) {
       $("#console").css("background-color", "#000");
-      $("#console").prepend(
-        '<div class="log">Fetch job started ' + data["timestamp"] + "</div>",
-      );
-      $("#console").append('<div class="log">Downloading package lists</div>');
-      var showcount = false;
-      package_list_task_status(data["taskId"], showcount, data["fetchJobId"]);
+
+      consolePrepend(`Fetch job started ${data["timestamp"]}`);
+      consoleAppend("Downloading package lists");
+
+      packageListTaskStatus(data["taskId"], false, data["fetchJobId"]);
     },
+
     error: function () {
       alert("Storage Service connection error. Check URL and credentials.");
     },
   });
 }
 
-function package_list_task_status(taskId, showcount, fetchJobId) {
-  const status_pending = "PENDING";
-  const status_progress = "IN PROGRESS";
+function packageListTaskStatus(taskId, showcount, fetchJobId) {
+  const statusPending = "PENDING";
+  const statusProgress = "IN PROGRESS";
 
   var url = new URL(
-    "aggregator/package_list_task_status/" + taskId,
+    `aggregator/package_list_task_status/${taskId}`,
     $("body").data("url-root"),
   );
 
@@ -36,39 +46,37 @@ function package_list_task_status(taskId, showcount, fetchJobId) {
     type: "GET",
     url: url,
     datatype: "json",
+
     success: function (data) {
       let state = data["state"];
-      if (state != status_pending && state != status_progress) {
-        $("#console").append('<div class="log">' + state + "</div>");
-        $("#console").append(
-          '<div class="log">Downloading AIP METS files</div>',
-        );
-        get_mets_task_status(data["coordinatorId"], 0, fetchJobId);
+      if (state != statusPending && state != statusProgress) {
+        consoleAppend("Downloading AIP METS files");
+
+        getMetsTaskStatus(data["coordinatorId"], 0, fetchJobId);
       } else {
         if (showcount == false) {
           if ("message" in data) {
-            $("#console").append(
-              '<div class="log">' + data["message"] + "</div>",
-            );
+            consoleAppend(data["message"]);
             showcount = true;
           }
         }
-        $("#console").append('<div class="log">' + state + "</div>");
-        // rerun in 1 seconds
+
+        // Re-run in 1 seconds
         setTimeout(function () {
-          package_list_task_status(taskId, showcount, fetchJobId);
+          packageListTaskStatus(taskId, showcount, fetchJobId);
         }, 1000);
       }
     },
+
     error: function () {
       alert("Unexpected error");
     },
   });
 }
 
-function get_mets_task_status(coordinatorId, totalAIPs, fetchJobId) {
+function getMetsTaskStatus(coordinatorId, totalAIPs, fetchJobId) {
   var url = new URL(
-    "aggregator/get_mets_task_status/" + coordinatorId,
+    `aggregator/get_mets_task_status/${coordinatorId}`,
     $("body").data("url-root"),
   );
 
@@ -77,36 +85,98 @@ function get_mets_task_status(coordinatorId, totalAIPs, fetchJobId) {
     url: url,
     data: { totalAIPs: totalAIPs, fetchJobId: fetchJobId },
     datatype: "json",
+
     success: function (data) {
       if (data["state"] == "PENDING") {
         setTimeout(function () {
-          get_mets_task_status(coordinatorId, totalAIPs, fetchJobId);
+          getMetsTaskStatus(coordinatorId, totalAIPs, fetchJobId);
         }, 1000);
       } else if (data["state"] == "COMPLETED") {
-        $("#console").append('<div class="log">METS download completed</div>');
+        consoleAppend("METS download completed");
         setTimeout(function () {
-          location.reload(true);
+          indexStart(fetchJobId);
         }, 3000);
       } else {
         for (var i = 0; i < data.length; i++) {
-          $("#console").append(
-            '<div class="log">' +
-              data[i]["state"] +
-              " parsing " +
-              data[i]["totalAIPs"] +
-              ". " +
-              data[i]["package"] +
-              "</div>",
+          var item = data[i];
+          consoleAppend(
+            `${item["state"]} parsing ${item["totalAIPs"]}. ${item["package"]}`,
           );
+
           if (i == data.length - 1) {
             totalAIPs = data[i]["totalAIPs"];
           }
         }
         setTimeout(function () {
-          get_mets_task_status(coordinatorId, totalAIPs, fetchJobId);
+          getMetsTaskStatus(coordinatorId, totalAIPs, fetchJobId);
         }, 1000);
       }
     },
+
+    error: function () {
+      alert("Unexpected error");
+    },
+  });
+}
+
+function indexStart(fetchJobId) {
+  var url = new URL(
+    `aggregator/index_refresh/${fetchJobId}`,
+    $("body").data("url-root"),
+  );
+
+  $.ajax({
+    type: "GET",
+    url: url,
+    data: { fetchJobId: fetchJobId },
+    datatype: "json",
+
+    success: function (data) {
+      indexRefreshStatus(fetchJobId);
+    },
+
+    error: function (data) {
+      if (data.status == 422) {
+        // Fetching is complete and indexing isn't needed
+        setTimeout(function () {
+          location.reload(true);
+        }, 3000);
+      } else {
+        alert("Unexpected error");
+      }
+    },
+  });
+}
+
+function indexRefreshStatus(fetchJobId) {
+  var url = new URL(
+    `aggregator/indexing_status/${fetchJobId}`,
+    $("body").data("url-root"),
+  );
+
+  $.ajax({
+    type: "GET",
+    url: url,
+    data: { fetchJobId: fetchJobId },
+    datatype: "json",
+
+    success: function (data) {
+      if (data["state"] == "PENDING") {
+        if (data["progress"] !== null) {
+          consoleAppend(data["progress"]);
+        }
+
+        setTimeout(function () {
+          indexRefreshStatus(fetchJobId);
+        }, 1000);
+      } else if (data["state"] == "COMPLETED") {
+        consoleAppend("Indexing completed");
+        setTimeout(function () {
+          location.reload(true);
+        }, 3000);
+      }
+    },
+
     error: function () {
       alert("Unexpected error");
     },
@@ -120,17 +190,19 @@ $(document).ready(function () {
   var storageServiceApiKey = $(scriptElement).data("storage-service-api-key");
 
   $("#newfetchjob").on("click", function () {
-    new_fetch_job(storageServiceId);
+    newFetchJob(storageServiceId);
   });
+
   $(".stats").hide();
+
   $(".fa-info-circle").click(function () {
-    if ($("#stats-" + this.id).is(":visible")) $("#stats-" + this.id).hide();
-    else $("#stats-" + this.id).show();
+    $(`#stats-${this.id}`).toggle();
   });
 
   // Handle API key visibility
   let apiKeyVisible = false;
   let apiKeyHiddenText = "&bull;".repeat(16);
+
   $("#apikeyBtn").on("click", function () {
     apiKeyVisible = !apiKeyVisible;
     if (apiKeyVisible === true) {

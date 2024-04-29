@@ -2,11 +2,12 @@
 import json
 import os
 import shutil
+from datetime import datetime
 
 import requests
 from celery.utils.log import get_task_logger
 
-from AIPscan import db
+from AIPscan import db, typesense_helpers
 from AIPscan.Aggregator import database_helpers
 from AIPscan.Aggregator.celery_helpers import write_celery_update
 from AIPscan.Aggregator.mets_parse_helpers import (
@@ -22,7 +23,14 @@ from AIPscan.Aggregator.task_helpers import (
 )
 from AIPscan.extensions import celery
 from AIPscan.helpers import file_sha256_hash
-from AIPscan.models import AIP, Agent, FetchJob, StorageService, get_mets_tasks
+from AIPscan.models import (
+    AIP,
+    Agent,
+    FetchJob,
+    StorageService,
+    get_mets_tasks,
+    index_tasks,
+)
 
 logger = get_task_logger(__name__)
 
@@ -281,6 +289,39 @@ def package_lists_request(self, storage_service_id, timestamp, packages_director
         "totalPackages": total_packages,
         "timestampStr": timestamp,
     }
+
+
+def start_index_task(fetch_job_id):
+    task = index_task.delay(fetch_job_id)
+
+    index_task_obj = index_tasks(
+        index_task_id=task.id, fetch_job_id=fetch_job_id, indexing_start=datetime.now()
+    )
+    db.session.add(index_task_obj)
+    db.session.commit()
+
+
+@celery.task()
+def index_task(fetch_job_id):
+    # Update Typesense index
+    typesense_helpers.initialize_index()
+
+    index_task_obj = index_tasks.query.filter_by(fetch_job_id=fetch_job_id).first()
+
+    for status in typesense_helpers.populate_index():
+        if status["percent"] is not None:
+            index_task_obj.indexing_progress = (
+                f"Indexing {status['type']} data ({status['percent']}%)"
+            )
+
+            db.session.add(index_task_obj)
+            db.session.commit()
+
+    # Record indexing end time
+    index_task_obj.indexing_end = datetime.now()
+
+    db.session.add(index_task_obj)
+    db.session.commit()
 
 
 @celery.task()
