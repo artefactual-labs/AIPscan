@@ -1,7 +1,7 @@
 -r base.txt
 
 faker==14.2.1
-flake8==5.0.4
+flake8==7.0.0
 flake8-builtins==2.2.0
 pytest==6.2.5
 pytest_cov==2.11.1
