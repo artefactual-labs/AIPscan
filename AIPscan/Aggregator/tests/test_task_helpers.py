@@ -7,7 +7,7 @@ from datetime import datetime
 
 import pytest
 
-from AIPscan import models
+from AIPscan import models, test_helpers
 from AIPscan.Aggregator import task_helpers
 from AIPscan.Aggregator.types import StorageServicePackage
 
@@ -305,3 +305,27 @@ def test_process_package_object(packages, idx, storage_service_package):
     """
     package_obj = task_helpers.process_package_object(packages[idx])
     assert package_obj == storage_service_package, idx
+
+
+def test_store_fetch_job_error_info(app_instance):
+    """Test task helper for recording fetch job errors."""
+    fetch_job = test_helpers.create_test_fetch_job()
+
+    # Make sure no fetch job errors exist for test fetch job
+    fetch_job_error = models.FetchJobError.query.filter_by(
+        fetch_job_id=fetch_job.id
+    ).first()
+
+    assert fetch_job_error is None
+
+    # Attempt to store fetch job error and make sure it ends up in the database
+    test_exception = Exception("Test exception")
+    task_helpers.store_fetch_job_error_infomation(fetch_job.id, test_exception)
+
+    fetch_job_error = models.FetchJobError.query.filter_by(
+        fetch_job_id=fetch_job.id
+    ).first()
+
+    assert fetch_job_error is not None
+    assert fetch_job_error.fetch_job_id == fetch_job.id
+    assert fetch_job_error.message == "test_store_fetch_job_error_info: Test exception"

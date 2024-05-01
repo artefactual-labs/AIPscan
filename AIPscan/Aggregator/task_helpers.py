@@ -3,13 +3,16 @@
 """Collects a number of reusable components of tasks.py. Also ensures
 the module remains clean and easy to refactor over time.
 """
+import inspect
 import json
 import os
 from datetime import datetime
 
 from dateutil.parser import ParserError, parse
 
+from AIPscan import db
 from AIPscan.Aggregator.types import StorageServicePackage
+from AIPscan.models import FetchJobError
 
 
 def format_api_url_with_limit_offset(storage_service):
@@ -158,3 +161,14 @@ def write_mets(http_response, package_uuid, subdir):
     with open(download_file, "wb") as file:
         file.write(http_response.content)
     return download_file
+
+
+def store_fetch_job_error_infomation(fetch_job_id, err):
+    calling_function_name = inspect.currentframe().f_back.f_code.co_name
+
+    fetch_error = FetchJobError()
+    fetch_error.fetch_job_id = fetch_job_id
+    fetch_error.message = f"{calling_function_name}: {err}"
+
+    db.session.add(fetch_error)
+    db.session.commit()
