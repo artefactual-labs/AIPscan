@@ -20,6 +20,7 @@ from AIPscan.Aggregator.task_helpers import (
     format_api_url_with_limit_offset,
     parse_package_list_file,
     process_package_object,
+    summarize_fetch_job_results,
 )
 from AIPscan.extensions import celery
 from AIPscan.helpers import file_sha256_hash
@@ -107,44 +108,6 @@ def start_mets_task(
         get_mets.apply(args=args)
 
 
-def parse_packages_and_load_mets(
-    package_list, timestamp, package_list_no, storage_service_id, fetch_job_id
-):
-    """Parse packages documents from the storage service and initiate
-    the load mets functions of AIPscan. Results are written to the
-    database.
-    """
-    OBJECTS = "objects"
-    packages = []
-
-    for package_obj in package_list.get(OBJECTS, []):
-        package = process_package_object(package_obj)
-
-        packages.append(package)
-        handle_deletion(package)
-
-        if not package.is_undeleted_aip():
-            continue
-
-        start_mets_task(
-            package.uuid,
-            package.size,
-            package.get_relative_path(),
-            package.current_location,
-            package.origin_pipeline,
-            timestamp,
-            package_list_no,
-            storage_service_id,
-            fetch_job_id,
-        )
-    return packages
-
-
-def handle_deletion(package):
-    if package.is_deleted():
-        delete_aip(package.uuid)
-
-
 def delete_aip(uuid):
     logger.warning("Package deleted from SS: '%s'", uuid)
 
@@ -188,11 +151,12 @@ def workflow_coordinator(
         )
         # Process packages and create a new worker to download and parse
         # each METS separately.
-        package_list = parse_package_list_file(json_file_path, logger, True)
+        packages = parse_package_list_file(json_file_path, logger, True)
 
-        packages = parse_packages_and_load_mets(
-            package_list, timestamp, package_list_no, storage_service_id, fetch_job_id
+        packages = process_packages(
+            packages, storage_service_id, timestamp, package_list_no, fetch_job_id, True
         )
+
         all_packages = all_packages + packages
 
     total_packages_count = package_lists_task.info["totalPackages"]
@@ -201,16 +165,7 @@ def workflow_coordinator(
         fetch_job_id, all_packages, total_packages_count
     )
 
-    summary = (
-        "aips: '{}'; sips: '{}'; dips: '{}'; deleted: '{}'; replicated: '{}'".format(
-            obj.total_aips,
-            obj.total_sips,
-            obj.total_dips,
-            obj.total_deleted_aips,
-            obj.total_replicas,
-        )
-    )
-    logger.info("%s", summary)
+    logger.info("%s", summarize_fetch_job_results(obj))
 
 
 def make_request(request_url, request_url_without_api_key):
@@ -453,3 +408,66 @@ def delete_storage_service(storage_service_id):
 
     db.session.delete(storage_service)
     db.session.commit()
+
+
+def handle_deletion(package):
+    if package.is_deleted():
+        delete_aip(package.uuid)
+
+
+def process_packages(
+    packages,
+    storage_service_id,
+    timestamp_str,
+    package_list_no,
+    fetch_job_id,
+    run_as_task=False,
+    logger=None,
+    start_item=None,
+    end_item=None,
+):
+    """Parse packages documents from the storage service and initiate
+    the load mets functions of AIPscan. Results are written to the
+    database.
+    """
+    processed_packages = []
+
+    package_count = 0
+    for package_obj in packages.get("objects", []):
+        package_count += 1
+
+        package = process_package_object(package_obj)
+
+        # Only process packages within paging window, if specified
+        if start_item is None or (
+            package_count >= start_item and package_count <= end_item
+        ):
+            # Calculate current item being processed
+            if start_item is not None:
+                current_item = start_item + len(processed_packages)
+
+                if logger:
+                    logger.info(
+                        f"Processing {package.uuid} ({current_item} of {end_item})"
+                    )
+
+            processed_packages.append(package)
+            handle_deletion(package)
+
+            if not package.is_undeleted_aip():
+                continue
+
+            start_mets_task(
+                package.uuid,
+                package.size,
+                package.get_relative_path(),
+                package.current_location,
+                package.origin_pipeline,
+                timestamp_str,
+                package_list_no,
+                storage_service_id,
+                fetch_job_id,
+                run_as_task,
+            )
+
+    return processed_packages

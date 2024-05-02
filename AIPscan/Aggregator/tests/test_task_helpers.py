@@ -305,3 +305,23 @@ def test_process_package_object(packages, idx, storage_service_package):
     """
     package_obj = task_helpers.process_package_object(packages[idx])
     assert package_obj == storage_service_package, idx
+
+
+def test_summarize_fetch_job_results():
+    fetch_job = models.FetchJob(
+        total_packages=15,
+        total_aips=1,
+        total_deleted_aips=4,
+        download_start=None,
+        download_end=None,
+        download_directory=None,
+        storage_service_id=None,
+    )
+    fetch_job.total_sips = 2
+    fetch_job.total_dips = 3
+    fetch_job.total_replicas = 5
+
+    assert (
+        "aips: '1'; sips: '2'; dips: '3'; deleted: '4'; replicated: '5'"
+        == task_helpers.summarize_fetch_job_results(fetch_job)
+    )

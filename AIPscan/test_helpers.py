@@ -1,7 +1,9 @@
+import logging
 import os
 import time
 import uuid
 from datetime import datetime
+from io import StringIO
 
 import tzlocal
 
@@ -177,3 +179,14 @@ def set_timezone_and_return_current_timezone(new_tz):
     set_timezone(new_tz)
 
     return local_timezone
+
+
+def add_logger_streamer(logger):
+    """Add stream handler to logger and return it."""
+    logger.setLevel(logging.DEBUG)
+
+    log_streamer = StringIO()
+    handler = logging.StreamHandler(log_streamer)
+    logger.addHandler(handler)
+
+    return log_streamer

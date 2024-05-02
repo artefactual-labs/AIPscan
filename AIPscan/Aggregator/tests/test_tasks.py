@@ -3,7 +3,6 @@ import logging
 import os
 import uuid
 from datetime import datetime
-from io import StringIO
 
 import celery
 import pytest
@@ -15,10 +14,11 @@ from AIPscan.Aggregator.tasks import (
     delete_fetch_job,
     delete_storage_service,
     get_mets,
+    handle_deletion,
     index_task,
     make_request,
     parse_package_list_file,
-    parse_packages_and_load_mets,
+    process_packages,
     start_index_task,
 )
 from AIPscan.Aggregator.tests import (
@@ -29,6 +29,7 @@ from AIPscan.Aggregator.tests import (
     VALID_JSON,
     MockResponse,
 )
+from AIPscan.Aggregator.types import StorageServicePackage
 from AIPscan.models import AIP, Agent, FetchJob, StorageService, index_tasks
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -88,11 +89,7 @@ def test_get_mets_task(app_instance, tmpdir, mocker, fixture_path, package_uuid)
 
     # Set up custom logger and add handler to capture output
     customlogger = logging.getLogger(__name__)
-    customlogger.setLevel(logging.DEBUG)
-
-    log_string = StringIO()
-    handler = logging.StreamHandler(log_string)
-    customlogger.addHandler(handler)
+    log_stream = test_helpers.add_logger_streamer(customlogger)
 
     # Create AIP and verify record.
     fetch_job1 = test_helpers.create_test_fetch_job(
@@ -176,7 +173,7 @@ def test_get_mets_task(app_instance, tmpdir, mocker, fixture_path, package_uuid)
 
     # Test that custom logger was used
     assert (
-        log_string.getvalue()
+        log_stream.getvalue()
         == f"Processing METS file {os.path.basename(fixture_path)}\n"
     )
 
@@ -260,7 +257,7 @@ def test_parse_package_list_file(tmpdir):
     assert len(package_list) == 0
 
 
-def test_parse_packages_and_load_mets(app_instance, tmpdir, mocker):
+def test_process_packages_json_file_deletion(app_instance, tmpdir, mocker):
     """Test that JSON package lists are deleted after being parsed."""
     json_file_path = tmpdir.join("packages.json")
     json_file_path.write(json.dumps({"objects": []}))
@@ -269,9 +266,78 @@ def test_parse_packages_and_load_mets(app_instance, tmpdir, mocker):
 
     package_list = parse_package_list_file(json_file_path, None, True)
 
-    parse_packages_and_load_mets(package_list, str(datetime.now()), 1, 1, 1)
+    process_packages(package_list, 1, str(datetime.now()), 1, 1, True)
 
     delete_package_json.assert_called_with(json_file_path)
+
+
+def test_process_packages(app_instance, tmpdir, mocker):
+    """Test that JSON package lists are deleted after being parsed."""
+    aip_package_uuid = str(uuid.uuid4())
+    aip_package_data = {
+        "uuid": aip_package_uuid,
+        "package_type": "AIP",
+        "current_path": str(tmpdir),
+    }
+
+    deleted_sip_package_uuid = str(uuid.uuid4())
+    deleted_sip_package_data = {
+        "uuid": deleted_sip_package_uuid,
+        "package_type": "SIP",
+        "current_path": str(tmpdir),
+        "deleted": True,
+    }
+
+    # Write test AIP to JSON file (from which to general a list of packages)
+    json_file_path = tmpdir.join("packages.json")
+    json_file_path.write(
+        json.dumps({"objects": [aip_package_data, deleted_sip_package_data]})
+    )
+
+    # Get test package list
+    package_list = parse_package_list_file(json_file_path, None, True)
+
+    # Process test package list
+    mocker.patch(
+        "AIPscan.Aggregator.database_helpers.create_or_update_storage_location"
+    )
+    mocker.patch("AIPscan.Aggregator.database_helpers.create_or_update_pipeline")
+
+    # Set up custom logger and add handler to capture output
+    customlogger = logging.getLogger(__name__)
+    log_stream = test_helpers.add_logger_streamer(customlogger)
+
+    processed_packages = process_packages(
+        package_list, 1, str(datetime.now()), 1, 1, False, customlogger, 1, 1
+    )
+
+    # Test that custom logger was used
+    assert log_stream.getvalue() == f"Processing {aip_package_uuid} (1 of 1)\n"
+
+    # Make sure only one package was processed and that is was the non-deleted AIP
+    assert len(processed_packages) == 1
+    assert processed_packages[0].aip is True
+
+
+def test_handle_deletion(app_instance, mocker):
+    """Test that delete handler handles deletion correctly."""
+    PACKAGE_UUID = str(uuid.uuid4())
+
+    # Make sure package deleted on storage service gets deleted locally
+    package = StorageServicePackage(uuid=PACKAGE_UUID, deleted=True)
+    mock_delete_aip = mocker.patch("AIPscan.Aggregator.tasks.delete_aip")
+
+    handle_deletion(package)
+
+    mock_delete_aip.assert_called_with(PACKAGE_UUID)
+
+    # Make sure package not deleted on storage service doesn't get deleted
+    package = StorageServicePackage(uuid=PACKAGE_UUID, deleted=False)
+    mock_delete_aip = mocker.patch("AIPscan.Aggregator.tasks.delete_aip")
+
+    handle_deletion(package)
+
+    mock_delete_aip.assert_not_called()
 
 
 def test_delete_aip(app_instance):
@@ -280,11 +346,13 @@ def test_delete_aip(app_instance):
 
     test_helpers.create_test_aip(uuid=PACKAGE_UUID)
 
+    # Make sure test AIP exists before deletion
     deleted_aip = AIP.query.filter_by(uuid=PACKAGE_UUID).first()
     assert deleted_aip is not None
 
     delete_aip(PACKAGE_UUID)
 
+    # Make sure test AIP doesn't exist after deletion
     deleted_aip = AIP.query.filter_by(uuid=PACKAGE_UUID).first()
     assert deleted_aip is None
 
