@@ -2,6 +2,7 @@ import pathlib
 import random
 from datetime import datetime, timedelta
 
+import pandas as pd
 from faker import Faker
 
 from AIPscan import db
@@ -27,6 +28,11 @@ def seed(seed):
 
 def randint(start, end):
     return fake.random.randint(start, end)
+
+
+def format_types_from_csv(filepath):
+    df = pd.read_csv(filepath)
+    return df.to_dict(orient="records")
 
 
 def create_or_fetch_fake_pipeline():
@@ -112,21 +118,28 @@ def create_fake_aip(pipeline_id, storage_service_id, storage_location_id, fetch_
     return aip
 
 
-def create_fake_aip_files(min_files, max_files, agents, aip):
+def create_fake_aip_files(min_files, max_files, agents, aip, format_types):
     for _ in range(1, randint(min_files, max_files)):
-        fake_puid = "fmt/" + str(randint(1, 21))
+        # Pick a format type and use it to create a fake filepath
+        format_type = random.choice(format_types)
+        filepath = fake.file_path()
+        filepath_obj = pathlib.Path(fake.file_path())
+
+        extension = str(format_type["extensions"]).split(",")[0]
+        filepath = str(filepath_obj.with_suffix("." + extension))
+        filename = filepath_obj.name
 
         aipfile = File(
             aip_id=aip.id,
-            name=fake.text(20)[:-1],
-            filepath=fake.file_path(),
+            name=filename,
+            filepath=filepath,
             uuid=fake.uuid4(),
             file_type="original",
             size=randint(1000, 1_000_000),
             date_created=aip.create_date,
-            puid=fake_puid,
-            file_format=fake.file_extension(),
-            format_version=fake.text(20)[:-1],
+            puid=format_type["puid"],
+            file_format=format_type["name"],
+            format_version=format_type["version"],
             checksum_type=fake.text(20)[:-1],
             checksum_value=fake.text(20)[:-1],
             premis_object="",
