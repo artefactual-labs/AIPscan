@@ -280,6 +280,16 @@ def index_task(fetch_job_id):
 
 
 @celery.task()
+def fetch_job_file_cleanup(fetch_job_id):
+    obj = FetchJob.query.filter_by(id=fetch_job_id).first()
+
+    if os.path.isdir(obj.download_directory):
+        shutil.rmtree(obj.download_directory)
+
+    logger.info("Cleaned up after fetch job {}".format(fetch_job_id))
+
+
+@celery.task()
 def get_mets(
     package_uuid,
     aip_size,
