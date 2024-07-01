@@ -86,24 +86,35 @@ def storage_locations_with_aips(storage_locations):
     return [loc for loc in storage_locations if loc.aips]
 
 
-def get_aip_pager(page, per_page, storage_service, storage_location):
-    try:
-        page = int(page)
-    except ValueError:
-        page = 1
-
+def get_aip_pager(page, per_page, storage_service, **kwargs):
     storage_service_id = None
     if storage_service is not None:
         storage_service_id = storage_service.id
 
-    pager = AIP.query.filter_by(storage_service_id=storage_service_id).paginate(
-        page=page, per_page=per_page, error_out=False
-    )
+    storage_location_id = None
+    if kwargs.get("storage_location", None):
+        storage_location_id = kwargs["storage_location"].id
 
-    if storage_location:
-        pager = pager.query.filter_by(storage_location_id=storage_location.id).paginate(
-            page=page, per_page=per_page, error_out=False
+    query = kwargs.get("query", None)
+
+    aips = AIP.query
+
+    # Filter by storage service
+    aips = aips.filter_by(storage_service_id=storage_service_id)
+
+    # Optionally filter by storage location
+    if storage_location_id:
+        aips = aips.filter_by(storage_location_id=storage_location_id)
+
+    # Optionally filter by text search
+    if query is not None:
+        aips = aips.filter(
+            AIP.uuid.like(f"%{query}%")
+            | AIP.transfer_name.like(f"%{query}%")
+            | AIP.create_date.like(f"%{query}%")
         )
+
+    pager = aips.paginate(page=page, per_page=per_page, error_out=False)
 
     return pager
 
@@ -131,8 +142,16 @@ def view_aips():
     except Exception as e:
         print(e)
 
-    page = request.args.get(request_params.PAGE, default="1")
-    pager = get_aip_pager(page, 10, storage_service, storage_location)
+    query = request.args.get("query", "")
+
+    try:
+        page = int(request.args.get(request_params.PAGE, default=1))
+    except ValueError:
+        page = 1
+
+    pager = get_aip_pager(
+        page, 10, storage_service, storage_location=storage_location, query=query
+    )
 
     first_item, last_item = calculate_paging_window(pager)
 

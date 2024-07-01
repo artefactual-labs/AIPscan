@@ -10,6 +10,12 @@
 
 {% if storage_services %}
 
+  <div class="float-right">
+    <form action="{{ url_for('reporter.view_aips') }}" method="GET" class="pr-3" id="queryform">
+      <i class="fas fa-search"></i> Search <input name="query" id="query"/><input type="submit" hidden/>
+    </form>
+  </div>
+
   <div class="report-opts" style="margin-bottom: 0.2em;">
     <div>
       <span class="fixed-width-menu-span-left">

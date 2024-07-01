@@ -5,6 +5,7 @@ $(document).ready(function () {
   function reloadPage(ignoreLocation) {
     var storageServiceId = $("#ss").val();
     var storageLocationId = $("#sl").val();
+    var query = $("#query").val();
 
     var url = new URL("reporter/aips", $("body").data("url-root"));
     var params = {
@@ -13,6 +14,10 @@ $(document).ready(function () {
 
     if (ignoreLocation !== true) {
       params["storage_location"] = storageLocationId;
+    }
+
+    if (query !== "") {
+      params["query"] = query;
     }
 
     url.search = new URLSearchParams(params).toString();
@@ -25,5 +30,11 @@ $(document).ready(function () {
 
   $("#sl").on("change", function () {
     reloadPage(false);
+  });
+
+  $("#queryform").on("submit", function () {
+    reloadPage(false);
+
+    return false;
   });
 });
