@@ -38,26 +38,73 @@ def test_download_mets(app_with_populated_files, mocker):
         assert response.status_code == return_response.status_code
 
 
-@pytest.mark.parametrize("page,pager_page", [(1, 1), ("bad", 1)])
-def test_get_aip_pager(app_instance, mocker, page, pager_page):
-    paginate_mock = mocker.Mock()
-    filter_by_mock = mocker.Mock()
-    filter_by_mock.paginate.return_value = paginate_mock
-
-    query_mock = mocker.Mock()
-    query_mock.filter_by.return_value = filter_by_mock
-
+@pytest.mark.parametrize(
+    "query,page,pages,total,prev_num,next_num,set_location",
+    [
+        (None, 1, 2, 3, None, 2, False),  # No search query
+        ("Another Test AIP", 1, 1, 1, None, None, False),  # Search matches one AIP
+        (None, 1, 1, 1, None, None, True),  # Use non-default storage location
+        ("Does Not Exist", 1, 0, 0, None, None, False),  # Search doesn't match any AIP
+        ("Test AIP", 1, 2, 3, None, 2, False),  # Search matches all AIPs, page 1
+        ("Test AIP", 2, 2, 3, 1, None, False),  # Search matches all AIPs, page 2
+    ],
+)
+def test_get_aip_pager(
+    app_instance,
+    mocker,
+    query,
+    page,
+    pages,
+    total,
+    prev_num,
+    next_num,
+    set_location,
+):
     storage_service = test_helpers.create_test_storage_service()
-    storage_location = test_helpers.create_test_storage_location(
-        storage_service_id=storage_service.id
+    default_storage_location = test_helpers.create_test_storage_location(
+        default_storage_service_id=storage_service.id
     )
-    pager = views.get_aip_pager(page, 2, storage_service, storage_location)
+    other_storage_location = test_helpers.create_test_storage_location(
+        storage_service_id=storage_service.id,
+        current_location="/other/location",
+    )
 
-    assert pager.page == pager_page
-    assert pager.pages == 0
-    assert pager.per_page == 2
-    assert pager.prev_num is None
-    assert pager.next_num is None
+    test_helpers.create_test_aip(
+        transfer_name="Test AIP",
+        storage_service_id=storage_service.id,
+        storage_location_id=default_storage_location.id,
+    )
+    test_helpers.create_test_aip(
+        transfer_name="Another Test AIP",
+        storage_service_id=storage_service.id,
+        storage_location_id=default_storage_location.id,
+    )
+    test_helpers.create_test_aip(
+        transfer_name="This Is Also A Test AIP",
+        storage_service_id=storage_service.id,
+        storage_location_id=other_storage_location.id,
+    )
+
+    location = None
+    if set_location:
+        location = other_storage_location
+
+    pager = views.get_aip_pager(
+        page, 2, storage_service, storage_location=location, query=query
+    )
+
+    assert pager.pages == pages
+    assert pager.total == total
+
+    if prev_num is None:
+        assert pager.prev_num is None
+    else:
+        assert pager.prev_num == prev_num
+
+    if next_num is None:
+        assert pager.next_num is None
+    else:
+        assert pager.next_num == next_num
 
 
 @pytest.mark.parametrize("page,pager_page", [(1, 1), ("bad", 1)])
