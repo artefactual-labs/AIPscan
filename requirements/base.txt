@@ -1,7 +1,7 @@
 amqp==5.0.9
 billiard==3.6.4
 celery==5.2.2
-certifi==2023.7.22
+certifi==2024.7.4
 chardet==3.0.4
 click==8.1.7
 python-dateutil==2.8.1
