@@ -34,5 +34,5 @@ urllib3==1.26.19
 vine==5.0.0
 Werkzeug== 3.0.3
 WTForms==2.3.3
-zipp==3.18.1
+zipp==3.19.1
 typesense==0.19.0
