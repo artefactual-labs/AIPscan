@@ -30,3 +30,6 @@ build:
 
 	# Directly copy Javascript from packages not easily handled by Vite
 	cp node_modules/plotly.js-dist/plotly.js AIPscan/static/dist/plot_formats_count
+
+test:
+	python3 -m pytest
