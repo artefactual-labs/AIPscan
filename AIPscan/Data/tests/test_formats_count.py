@@ -78,6 +78,31 @@ def test_formats_count(app_instance, mocker, query_results, results_count):
     assert len(report[fields.FIELD_FORMATS]) == results_count
 
 
+def test_formats_count_no_results_typesense(
+    app_with_populated_files, enable_typesense, mocker
+):
+    mocker.patch("typesense.collections.Collections.__getitem__")
+    mocker.patch("typesense.multi_search.MultiSearch.perform")
+    mocker.patch("AIPscan.typesense_helpers.facet_value_counts")
+
+    expected_result = {
+        "StorageName": "test storage service",
+        "StorageLocation": "test storage location",
+        "Formats": [],
+    }
+
+    start_date = "2019-01-01"
+    end_date = "2019-10-01"
+
+    report = report_data_typesense.formats_count(
+        1,
+        1,
+        datetime.strptime(start_date, "%Y-%m-%d"),
+        datetime.strptime(end_date, "%Y-%m-%d"),
+    )
+    assert report == expected_result
+
+
 def test_formats_count_typesense(app_with_populated_files, enable_typesense, mocker):
     typesense_test_helpers.fake_collection_format_counts(mocker)
 

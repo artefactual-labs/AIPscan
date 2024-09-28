@@ -44,6 +44,10 @@ def formats_count(
 
     value_counts = ts_helpers.facet_value_counts(results, "file_format")
 
+    # If no formats were found then don't proceed to get counts
+    if len(value_counts) == 0:
+        return report
+
     format_size_sums = {}
     if include_size_data:
         # Request total size of files for each file format
@@ -216,9 +220,14 @@ def format_versions_count(
     )
 
     puid_counts = ts_helpers.facet_value_counts(results, "puid")
-    puids = list(puid_counts.keys())
+
+    # If no format versions were found then don't proceed to get counts
+    if len(puid_counts) == 0:
+        return report
 
     # Request total size of files for each PUID
+    puids = list(puid_counts.keys())
+
     search_requests = {"searches": []}
     for puid in puids:
         format_filters = file_filters.copy()

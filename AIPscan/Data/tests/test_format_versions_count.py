@@ -7,7 +7,7 @@ import pytest
 from AIPscan.conftest import AIP_1_CREATION_DATE, AIP_2_CREATION_DATE
 from AIPscan.conftest import ORIGINAL_FILE_SIZE as JPEG_1_01_FILE_SIZE
 from AIPscan.conftest import PRESERVATION_FILE_SIZE as JPEG_1_02_FILE_SIZE
-from AIPscan.Data import fields, report_data
+from AIPscan.Data import fields, report_data, report_data_typesense
 from AIPscan.Data.tests import (
     MOCK_STORAGE_SERVICE,
     MOCK_STORAGE_SERVICE_ID,
@@ -185,3 +185,29 @@ def test_format_versions_count_contents(
         sum(version.get(fields.FIELD_SIZE, 0) for version in versions)
         == total_file_size
     )
+
+
+def test_format_versions_count_no_results_typesense(
+    app_with_populated_files, enable_typesense, mocker
+):
+
+    mocker.patch("typesense.collections.Collections.__getitem__")
+    mocker.patch("typesense.multi_search.MultiSearch.perform")
+    mocker.patch("AIPscan.typesense_helpers.facet_value_counts")
+
+    expected_result = {
+        "StorageName": "test storage service",
+        "StorageLocation": "test storage location",
+        "FormatVersions": [],
+    }
+
+    start_date = "2019-01-01"
+    end_date = "2019-10-01"
+
+    report = report_data_typesense.format_versions_count(
+        1,
+        datetime.strptime(start_date, "%Y-%m-%d"),
+        datetime.strptime(end_date, "%Y-%m-%d"),
+        1,
+    )
+    assert report == expected_result
