@@ -64,7 +64,7 @@ def test_create_fake_location(mock_db_add):
 
 
 def test_create_fake_aip(mock_db_add):
-    aip = data.create_fake_aip(1, 2, 3, 4)
+    aip = data.create_fake_aip(1, 2, 3, 4, 100, 100)
 
     assert aip.uuid
     assert type(aip.uuid) is str
@@ -86,3 +86,4 @@ def test_create_fake_aip(mock_db_add):
     assert aip.storage_location_id == 3
     assert aip.fetch_job_id == 4
     assert aip.origin_pipeline_id == 1
+    assert aip.size == 100
