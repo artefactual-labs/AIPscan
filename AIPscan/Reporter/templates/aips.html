@@ -59,6 +59,7 @@
       <tr>
       <th><strong>Transfer name</strong></th>
       <th><strong>AIP UUID</strong></th>
+      <th><strong>Size</strong></th>
       <th><strong>Creation date</strong></th>
       <th><strong>Originals</strong></th>
       <th><strong>Preservation copies</strong></th>
@@ -69,6 +70,7 @@
         <tr>
           <td>{{ aip.transfer_name }}</td>
           <td>{{ aip.uuid }}</td>
+          <td>{{ aip.size | filesizeformat }}</td>
           <td>{{ aip.create_date }}</td>
           <td>{{ aip.original_file_count }}</td>
           <td>{{ aip.preservation_file_count }}</td>
