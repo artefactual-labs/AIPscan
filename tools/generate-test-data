@@ -61,6 +61,20 @@ from config import CONFIGS
     help="Maximum number of possible format types to assign to files (default 50).",
     type=int,
 )
+@click.option(
+    "--minimum-aip-file-size",
+    "-f",
+    default=5000000,
+    help="Minimum size of AIP (in bytes: default 5000000).",
+    type=int,
+)
+@click.option(
+    "--maximum-aip-file-size",
+    "-g",
+    default=5000000000,
+    help="Maximum size of AIP (in bytes: default 5000000000).",
+    type=int,
+)
 @click.option("--seed", default=0)
 def main(
     storage_services_to_create,
@@ -70,6 +84,8 @@ def main(
     aip_min_file_count,
     aip_max_file_count,
     number_of_format_types,
+    minimum_aip_file_size,
+    maximum_aip_file_size,
     seed,
 ):
     # Initialize Flash app context
@@ -145,8 +161,14 @@ def main(
 
                 for _ in range(0, aips_to_create):
                     aip = data.create_fake_aip(
-                        pipeline.id, ss_id, sl.id, fetch_jobs[ss.id]
+                        pipeline.id,
+                        ss_id,
+                        sl.id,
+                        fetch_jobs[ss.id],
+                        minimum_aip_file_size,
+                        maximum_aip_file_size,
                     )
+
                     data.create_fake_aip_files(
                         aip_min_file_count,
                         aip_max_file_count,
