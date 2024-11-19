@@ -99,13 +99,20 @@ def create_fake_location(storage_service_id):
     return location
 
 
-def create_fake_aip(pipeline_id, storage_service_id, storage_location_id, fetch_job_id):
+def create_fake_aip(
+    pipeline_id,
+    storage_service_id,
+    storage_location_id,
+    fetch_job_id,
+    min_size,
+    max_size,
+):
     aip = AIP(
         uuid=fake.uuid4(),
         transfer_name=fake.text(20)[:-1],
         create_date=fake.date_time_between(start_date="-5y"),
         mets_sha256=fake.sha256(),
-        size=randint(10000, 100_000_000),
+        size=randint(min_size, max_size),
         storage_service_id=storage_service_id,
         storage_location_id=storage_location_id,
         fetch_job_id=fetch_job_id,
