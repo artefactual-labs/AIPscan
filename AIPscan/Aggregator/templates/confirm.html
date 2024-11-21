@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="text-center align-middle" style="margin-top: 15%">
+  <p>{{ prompt }}</p>
+
+  <form method="GET" action="{{ request.url }}">
+    <input type="hidden" name="confirm" value="1" />
+    <input type="submit" value="{{ action }}" class="btn btn-danger" />
+    <a href="{{ url_for(cancel_route) }}" class="btn btn-default">Cancel</a>
+  </form>
+</div>
+{% endblock %}

@@ -51,21 +51,32 @@ def test_edit_storage_service(app_with_populated_files):
 
 def test_delete_storage_service(app_with_populated_files, mocker):
     with current_app.test_client() as test_client:
+        # The delete confirmation page should not show up for a non-existent storage service
         response = test_client.get("/aggregator/delete_storage_service/0")
         assert response.status_code == 404
 
+        # Deletion should not be attempted for a non-existent storage service
+        response = test_client.get("/aggregator/delete_storage_service/0?confirm=1")
+        assert response.status_code == 404
+
+        # Don't actually instantiate Celery job
         mocker.patch("AIPscan.Aggregator.tasks.delete_storage_service.delay")
 
+        # The delete confirmation page should show up for an existing storage service
         response = test_client.get("/aggregator/delete_storage_service/1")
+        assert response.status_code == 200
+
+        # Deletion should be attempted if the storage service exists
+        response = test_client.get("/aggregator/delete_storage_service/1?confirm=1")
         assert response.status_code == 302
 
 
 def test_delete_fetch_job(app_with_populated_files, mocker):
     with current_app.test_client() as test_client:
-        response = test_client.get("/aggregator/delete_fetch_job/0")
+        response = test_client.get("/aggregator/delete_fetch_job/0?confirm=1")
         assert response.status_code == 404
 
         mocker.patch("AIPscan.Aggregator.tasks.delete_fetch_job.delay")
 
-        response = test_client.get("/aggregator/delete_fetch_job/1")
+        response = test_client.get("/aggregator/delete_fetch_job/1?confirm=1")
         assert response.status_code == 302
