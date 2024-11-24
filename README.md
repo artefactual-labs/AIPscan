@@ -18,6 +18,7 @@ Copyright Artefactual Systems Inc (2021)
 
 * [Screenshots](#screenshots)
 * [Installation](#installation)
+* [Tools](#tools)
 * [Usage](#usage)
 
 ## Screenshots
@@ -284,6 +285,18 @@ AIPscan/Aggregator/downloads/somedescriptor
 These individual fetch jobs shouldn't be deleted, via the AIPscan web UI,
 until all fetch jobs (for each "page") have run. Otherwise the cached list of
 packages will be deleted and the package list will have to be downloaded again.
+
+### METS import
+
+The METS import tool, `tools/mets-import`, allows a METS file from an AIP to
+be used to import data representing an AIP and its contents.
+
+The AIP UUID will be parsed from the METS file username, if present. Otherwise
+it can be specified using the `--aip-uuid` CLI option.
+
+The size of the AIP must be specified using the `--aip-size` CLI option. The
+UUID of the pipeline it originated from must be specified using the
+`--origin-pipeline-uuid` CLI option.
 
 ### Running tools
 
