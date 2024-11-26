@@ -15,7 +15,7 @@ from flask import (
     url_for,
 )
 
-from AIPscan import db, typesense_helpers
+from AIPscan import db, decorators, typesense_helpers
 from AIPscan.Aggregator import database_helpers, tasks
 from AIPscan.Aggregator.forms import StorageServiceForm
 from AIPscan.Aggregator.task_helpers import (
@@ -171,6 +171,13 @@ def new_storage_service():
 
 
 @aggregator.route("/delete_storage_service/<storage_service_id>", methods=["GET"])
+@decorators.confirm_required(
+    StorageService,
+    "storage_service_id",
+    "Are you sure you'd like to delete this storage service?",
+    "Delete",
+    "aggregator.ss_default",
+)
 def delete_storage_service(storage_service_id):
     storage_service = StorageService.query.get(storage_service_id)
 
@@ -241,6 +248,13 @@ def new_fetch_job(fetch_job_id):
 
 
 @aggregator.route("/delete_fetch_job/<fetch_job_id>", methods=["GET"])
+@decorators.confirm_required(
+    FetchJob,
+    "fetch_job_id",
+    "Are you sure you'd like to delete this fetch job?",
+    "Delete",
+    "aggregator.ss_default",
+)
 def delete_fetch_job(fetch_job_id):
     fetch_job = FetchJob.query.get(fetch_job_id)
 
