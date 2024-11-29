@@ -8,7 +8,7 @@
   "devDependencies": {
     "@fortawesome/fontawesome-free": "^5.15.4",
     "@rollup/plugin-inject": "^5.0.5",
-    "bootstrap": "^4.6.2",
+    "bootstrap": "^5.0.0",
     "chart.js": "^4.4.1",
     "jquery": "^3.7.1",
     "jquery-ui-dist": "^1.13.2",
