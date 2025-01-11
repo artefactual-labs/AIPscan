@@ -1,0 +1,90 @@
+#!/usr/bin/env python3
+import logging
+import os
+import pathlib
+import sys
+import uuid
+from datetime import datetime
+
+import click
+from app import cli
+
+from AIPscan import db
+from AIPscan.Aggregator import database_helpers
+from AIPscan.Aggregator.mets_parse_helpers import import_from_mets
+from config import CONFIGS
+
+
+@click.command()
+@click.option("--ss-id", "-s", required=True, help="Storage service ID.", type=int)
+@click.option(
+    "--location-id", "-l", required=True, help="Storage location ID.", type=int
+)
+@click.option("--aip-size", "-a", required=True, help="AIP size.", type=int)
+@click.option(
+    "--origin-pipeline-uuid",
+    "-o",
+    required=True,
+    help="Origin pipeline UUID.",
+    type=str,
+)
+@click.option("--aip-uuid", "-u", help="Package UUID.", type=str)
+@click.option("--verbose", "-v", is_flag=True, help="Show debug messages.", type=bool)
+@click.argument("filename")
+def main(
+    ss_id, location_id, aip_size, origin_pipeline_uuid, aip_uuid, verbose, filename
+):
+    # Check if METS file exists
+    if not pathlib.Path(filename).exists():
+        cli.raise_click_error("METS file does not exist.")
+
+    # Log to screen
+    logger_name = pathlib.PurePosixPath(sys.argv[0]).name
+    logger = logging.getLogger(logger_name)
+
+    if verbose:
+        logging.basicConfig(level=logging.DEBUG)
+    else:
+        logging.basicConfig(level=logging.INFO)
+
+    # Try to parse AIP UUID from METS filename, if not specified
+    if not aip_uuid:
+        try:
+            aip_uuid = str(uuid.UUID(os.path.basename(filename)[5:41]))
+            logger.info(f"Parsed AIP UUID {aip_uuid} from filename")
+        except ValueError:
+            cli.raise_click_error("No AIP UUID found in METS filename.")
+
+    # Initialize Flask app context
+    app = cli.create_app_instance(CONFIGS[cli.config_name], db)
+
+    with app.app_context():
+        # Create a fetch_job and take note of its ID
+        datetime_obj_start = datetime.now().replace(microsecond=0)
+        session_id = str(uuid.uuid4())
+
+        fetch_job = database_helpers.create_fetch_job(
+            datetime_obj_start, session_id, ss_id
+        )
+        fetch_job_id = fetch_job.id
+
+        # Import METS file
+        logger.info("Importing...")
+
+        import_from_mets(
+            filename,
+            aip_size,
+            aip_uuid,
+            ss_id,
+            location_id,
+            fetch_job_id,
+            origin_pipeline_uuid,
+            logger,
+            delete_file=False,
+        )
+
+        logger.info("Done.")
+
+
+if __name__ == "__main__":
+    main()
