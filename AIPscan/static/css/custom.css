@@ -56,3 +56,10 @@ body {
 .table-header {
   background-color: #ccc !important;
 }
+
+/* Use Bootstrap 4 look of button */
+.btn-info {
+  color: #fff;
+  background-color: #17a2b8;
+  border-color: #17a2b8;
+}
