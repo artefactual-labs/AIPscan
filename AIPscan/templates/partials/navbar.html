@@ -1,18 +1,20 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-  <a class="navbar-brand" href="/">AIPscan</a>
-  <div class="navbar-collapse" id="navbarNavDropdown">
-    <ul class="navbar-nav">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="/">AIPscan</a>
+    <div class="navbar-collapse" id="navbarNavDropdown">
+      <ul class="navbar-nav">
 
-      {% for section in navbar.sections %}
+        {% for section in navbar.sections %}
+          <li class="nav-item">
+            <a class="nav-link {{ 'active fw-bold' if section.is_active(request) else '' }}" href="{{ section.get_url() }}">{{ section.label }}</a>
+          </li>
+        {% endfor %}
+
         <li class="nav-item">
-          <a class="nav-link {{ 'active fw-bold' if section.is_active(request) else '' }}" href="{{ section.get_url() }}">{{ section.label }}</a>
+          <a class="nav-link" href="{{ url_for('api.doc') }}" target="apiframe">API</a>
         </li>
-      {% endfor %}
-
-      <li class="nav-item">
-        <a class="nav-link" href="{{ url_for('api.doc') }}" target="apiframe">API</a>
-      </li>
-    </ul>
+      </ul>
+    </div>
+    <span style="font-style: italic" class="navbar-text">Crawl Archivematica AIPs to provide repository-wide reporting</span>
   </div>
-  <span style="font-style: italic" class="navbar-text">Crawl Archivematica AIPs to provide repository-wide reporting</span>
 </nav>

@@ -8,6 +8,5 @@ import "jquery-ui-dist/jquery-ui.min.js";
 window.$ = window.jQuery = $;
 
 import bootstrap from "bootstrap";
-window.bootstrap = bootstrap;
 
 import "/AIPscan/static/css/custom.css";
