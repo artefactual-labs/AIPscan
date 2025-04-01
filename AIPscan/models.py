@@ -459,7 +459,7 @@ class Event(db.Model):
     date = db.Column(db.DateTime())
     detail = db.Column(db.String(255))
     outcome = db.Column(db.String(255))
-    outcome_detail = db.Column(db.String(255))
+    outcome_detail = db.Text()
     file_id = db.Column(db.Integer(), db.ForeignKey("file.id"), nullable=False)
     event_agents = db.relationship(
         "Agent", secondary=EventAgent, backref=db.backref("Event", lazy="dynamic")
