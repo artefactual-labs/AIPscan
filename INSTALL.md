@@ -98,6 +98,7 @@ After=network.target
 User=archivematica
 Group=archivematica
 WorkingDirectory=/usr/share/archivematica/AIPscan
+Environment="PYTHONUNBUFFERED=1"
 ExecStart=/usr/share/archivematica/virtualenvs/AIPscan/bin/gunicorn --workers 3 --bind unix:aipscan.sock "AIPscan:create_app()"
 ExecReload=/bin/kill -s HUP $MAINPID
 ExecStop=/bin/kill -s TERM $MAINPID
