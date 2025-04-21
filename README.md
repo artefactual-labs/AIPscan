@@ -215,12 +215,15 @@ docker-composer down --volumes
 
 ## Production deployments
 
-For production deployments, it's recommended to use MySQL instead of sqlite.
+For production deployments, it's recommended to use MySQL instead of SQLite.
 This can be achieved by exporting an environment variable named
 ```SQLALCHEMY_DATABASE_URI```  for celery and AIPscan services, that points to
- mysql using format ```mysql+pymysql://user:pass@host/db```.
+MySQL using the format ```mysql+pymysql://user:pass@host/db```.
 
-Sqlite databases can be migrated using ```sqlite3mysql```:
+When the `SQLALCHEMY_DATABASE_URI` environment variable is set the value of it
+will be output during startup of both AIPscan and Celery workers.
+
+SQLite databases can be migrated using ```sqlite3mysql```:
 
 ```shell
 /usr/share/archivematica/virtualenvs/AIPscan/bin/pip install sqlite3-to-mysql

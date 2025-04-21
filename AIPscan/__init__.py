@@ -4,6 +4,8 @@ __version_info__ = tuple(int(i) for i in __version__.split(".") if i.isdigit())
 
 __all__ = ["__version__", "__version_info__"]
 
+import os
+
 from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 
@@ -19,6 +21,10 @@ def create_app(config_name="default"):
     app = Flask(__name__)
 
     app.config.from_object(CONFIGS[config_name])
+
+    # Display DB settings
+    if "SQLALCHEMY_DATABASE_URI" in os.environ:
+        print(f"SQLALCHEMY_DATABASE_URI set to {os.environ['SQLALCHEMY_DATABASE_URI']}")
 
     with app.app_context():
         from AIPscan.Aggregator.views import aggregator
