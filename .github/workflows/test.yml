@@ -65,7 +65,7 @@ jobs:
             const skip = commitMessage.includes("[skip codecov]") || commitMessage.includes("[skip-codecov]");
             core.setOutput("skip", skip);
       - name: "Upload coverage report"
-        if: github.repository == 'artefactual-labs/AIPscan' && ${{ steps.skip-codecov.outputs.skip != 'true' }}
+        if: ${{ github.repository == 'artefactual-labs/AIPscan' && steps.skip-codecov.outputs.skip != 'true' }}
         uses: "codecov/codecov-action@v4"
         env:
           CODECOV_TOKEN: "${{ secrets.CODECOV_TOKEN }}"
