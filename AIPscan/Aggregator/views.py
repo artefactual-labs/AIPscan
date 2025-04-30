@@ -209,8 +209,12 @@ def new_fetch_job(fetch_job_id):
     datetime_obj_start = datetime.now().replace(microsecond=0)
     timestamp_str = datetime_obj_start.strftime("%Y-%m-%d-%H-%M-%S")
     timestamp = datetime_obj_start.strftime("%Y-%m-%d %H:%M:%S")
-    os.makedirs("AIPscan/Aggregator/downloads/" + timestamp_str + "/packages/")
-    os.makedirs("AIPscan/Aggregator/downloads/" + timestamp_str + "/mets/")
+
+    try:
+        os.makedirs(f"AIPscan/Aggregator/downloads/{timestamp_str}/packages/")
+        os.makedirs(f"AIPscan/Aggregator/downloads/{timestamp_str}/mets/")
+    except PermissionError:
+        return jsonify({"message": "Permissions error"}), 500
 
     # create a fetch_job record in the aipscan database
     fetch_job = database_helpers.create_fetch_job(
