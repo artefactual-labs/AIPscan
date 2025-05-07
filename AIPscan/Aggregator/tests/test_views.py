@@ -68,7 +68,7 @@ def test_delete_storage_service(app_with_populated_files, mocker):
 
         # Deletion should be attempted if the storage service exists
         response = test_client.get("/aggregator/delete_storage_service/1?confirm=1")
-        assert response.status_code == 302
+        assert response.status_code == 200
 
 
 def test_delete_fetch_job(app_with_populated_files, mocker):

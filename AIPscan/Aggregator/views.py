@@ -186,8 +186,11 @@ def delete_storage_service(storage_service_id):
 
     tasks.delete_storage_service.delay(storage_service_id)
 
-    flash("Storage service '{}' is being deleted".format(storage_service.name))
-    return redirect(url_for("aggregator.storage_services"))
+    return render_template(
+        "result_message.html",
+        title="Storage Service",
+        message="Storage service '{}' is being deleted".format(storage_service.name),
+    )
 
 
 @aggregator.route("/new_fetch_job/<fetch_job_id>", methods=["POST"])
