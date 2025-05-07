@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
 import hashlib
 from datetime import datetime, timedelta
-from distutils.util import strtobool
 
 
-def parse_bool(val, default=True):
-    try:
-        return bool(strtobool(val))
-    except (ValueError, AttributeError):
-        return default
+def parse_bool(value, default=True):
+    if value is not None:
+        value = value.lower()
+
+        if value in ("y", "yes", "on", "1", "true", "t"):
+            return True
+
+    return False
 
 
 def parse_datetime_bound(date_string, upper=False):
