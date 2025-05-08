@@ -307,12 +307,14 @@ def get_mets_task_status(coordinatorid):
         workflow_coordinator_id=coordinatorid, status=None
     ).all()
     response = []
+    incomplete = 0
     for row in mets_tasks:
         task_id = row.get_mets_task_id
         package_uuid = row.package_uuid
         task_result = AsyncResult(id=task_id, app=celery)
         mets_task_status = task_result.state
         if mets_task_status is None:
+            incomplete = incomplete + 1
             continue
         if (mets_task_status == "SUCCESS") or (mets_task_status[0] == "FAILURE"):
             totalAIPs += 1
@@ -328,7 +330,7 @@ def get_mets_task_status(coordinatorid):
             db.session.commit()
     if len(mets_tasks) != 0:
         return jsonify(response)
-    if totalAIPs == 0:
+    if incomplete > 0 and totalAIPs == 0:
         response = {"state": "PENDING"}
         return jsonify(response)
     downloadEnd = datetime.now().replace(microsecond=0)
