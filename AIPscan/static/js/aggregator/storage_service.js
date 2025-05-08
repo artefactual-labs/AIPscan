@@ -27,8 +27,12 @@ function newFetchJob(storageServiceId) {
       packageListTaskStatus(data["taskId"], false, data["fetchJobId"]);
     },
 
-    error: function () {
-      alert("Storage Service connection error. Check URL and credentials.");
+    error: function (response) {
+      if (response.hasOwnProperty("responseJSON")) {
+        alert(response.responseJSON["message"]);
+      } else {
+        alert("Storage Service connection error. Check URL and credentials.");
+      }
     },
   });
 }
