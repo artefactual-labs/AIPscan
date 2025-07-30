@@ -2,6 +2,7 @@
 import enum
 import re
 from datetime import date, datetime
+from sqlalchemy.dialects.mysql import LONGTEXT
 
 from AIPscan import db
 
@@ -19,14 +20,14 @@ class get_mets_tasks(db.Model):
     get_mets_task_id = db.Column(db.String(36), primary_key=True)
     workflow_coordinator_id = db.Column(db.String(36))
     package_uuid = db.Column(db.String(36))
-    status = db.Column(db.String())
+    status = db.Column(db.String(36))
 
 
 class index_tasks(db.Model):
     __bind_key__ = "celery"
     index_task_id = db.Column(db.String(36), primary_key=True)
     fetch_job_id = db.Column(
-        db.String(36), db.ForeignKey("fetch_job.id"), nullable=False
+        db.Integer(), db.ForeignKey("fetch_job.id"), nullable=False
     )
     indexing_start = db.Column(db.DateTime())
     indexing_progress = db.Column(db.String(255))
@@ -398,7 +399,7 @@ class File(db.Model):
     format_version = db.Column(db.String(255))
     checksum_type = db.Column(db.String(255))
     checksum_value = db.Column(db.String(255), index=True)
-    premis_object = db.Column(db.Text())
+    premis_object = db.Column(LONGTEXT)
 
     original_file_id = db.Column(db.Integer(), db.ForeignKey("file.id"))
     original_file = db.relationship(
@@ -459,7 +460,7 @@ class Event(db.Model):
     date = db.Column(db.DateTime())
     detail = db.Column(db.String(255))
     outcome = db.Column(db.String(255))
-    outcome_detail = db.Text()
+    outcome_detail = db.Column(db.Text())
     file_id = db.Column(db.Integer(), db.ForeignKey("file.id"), nullable=False)
     event_agents = db.relationship(
         "Agent", secondary=EventAgent, backref=db.backref("Event", lazy="dynamic")
