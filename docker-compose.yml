@@ -2,19 +2,56 @@ volumes:
   rabbitmq_data:
   rabbitmq_logs:
   typesense_data:
+  mysql_data:
 
 services:
+  mysql:
+    image: "percona:8.0"
+    platform: "linux/amd64"
+    command: "--character-set-server=utf8mb4 --collation-server=utf8mb4_0900_ai_ci"
+    environment:
+      MYSQL_ROOT_PASSWORD: "12345"
+      MYSQL_USER: "aipscan"
+      MYSQL_PASSWORD: "demo"
+    volumes:
+      #- "./.etc/mysql/tuning.cnf:/etc/my.cnf.d/tuning.cnf:ro"
+      - "mysql_data:/var/lib/mysql"
+      - "./.init-scripts/:/docker-entrypoint-initdb.d/:ro"
+    ports:
+      - "127.0.0.1:62001:3306"
+    cap_add:
+      - "SYS_NICE"
+    healthcheck:
+       test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+       timeout: 10s
+       retries: 10
+
   aipscan:
     build: ./
     environment:
       - CELERY_BROKER_URL=amqp://guest@rabbitmq//
       - TYPESENSE_HOST=typesense
+      - SQLALCHEMY_DATABASE_URI=mysql+pymysql://aipscan:demo@mysql:3306/aipscan
+      - SQLALCHEMY_CELERY_BACKEND=mysql+pymysql://aipscan:demo@mysql:3306/aipscan
       - TYPESENSE_API_KEY=xyz
     ports:
       - 5000:5000
+    command: gunicorn -t 300 --workers 3 --bind 0.0.0.0:5000 "AIPscan:create_app()"
     volumes:
       - "./:/src:rw"
+        #- "/tmp/data:/src/AIPscan/Aggregator/downloads/"
+    deploy:
+      restart_policy:
+        condition: on-failure
+    healthcheck:
+      test: "curl --fail http://localhost:5000 || exit 1"
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
+    depends_on:
+      mysql:
+         condition: service_healthy
   rabbitmq:
     image: rabbitmq:3-management
     container_name: 'rabbitmq'
@@ -26,6 +63,11 @@ services:
       - rabbitmq_logs:/var/log/rabbitmq
     depends_on:
       - aipscan
+    healthcheck:
+       test: rabbitmq-diagnostics -q ping
+       interval: 30s
+       timeout: 30s
+       retries: 3
 
   celery-worker:
     build: ./
@@ -33,12 +75,19 @@ services:
       - CELERY_BROKER_URL=amqp://guest@rabbitmq//
       - TYPESENSE_HOST=typesense
       - TYPESENSE_API_KEY=xyz
+      - SQLALCHEMY_DATABASE_URI=mysql+pymysql://aipscan:demo@mysql:3306/aipscan
+      - SQLALCHEMY_CELERY_BACKEND=mysql+pymysql://aipscan:demo@mysql:3306/aipscan
+      - CELERY_RESULT_BACKEND=db+mysql+pymysql://aipscan:demo@mysql:3306/celery
     command: celery -A AIPscan.worker.celery worker --loglevel=info
     volumes:
       - "./:/src:rw"
     depends_on:
-      - rabbitmq
-      - aipscan
+      mysql:
+         condition: service_healthy
+      rabbitmq:
+         condition: service_healthy
+      aipscan:
+         condition: service_healthy
 
   typesense:
     image: typesense/typesense:0.26.0.rc23
