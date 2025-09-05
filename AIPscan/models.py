@@ -2,6 +2,7 @@
 import enum
 import re
 from datetime import date, datetime
+
 from sqlalchemy.dialects.mysql import LONGTEXT
 
 from AIPscan import db
