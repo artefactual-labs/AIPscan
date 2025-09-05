@@ -121,7 +121,7 @@ class StorageService(db.Model):
 
 
 class StorageLocation(db.Model):
-    __tablename_ = "storage_location"
+    __tablename__ = "storage_location"
     id = db.Column(db.Integer(), primary_key=True)
     current_location = db.Column(db.String(255), unique=True, index=True)
     description = db.Column(db.String(255))
