@@ -5,7 +5,7 @@ volumes:
   mysql_data:
 
 services:
-  mysql:
+  aipscan-mysql:
     image: "percona/percona-server:8.0.43-34"
     command: "--character-set-server=utf8mb4 --collation-server=utf8mb4_0900_ai_ci"
     environment:
@@ -29,9 +29,9 @@ services:
     environment:
       - CELERY_BROKER_URL=amqp://guest@rabbitmq//
       - TYPESENSE_HOST=typesense
-      - SQLALCHEMY_DATABASE_URI=mysql+pymysql://aipscan:demo@mysql:3306/aipscan
-      - SQLALCHEMY_CELERY_BACKEND=mysql+pymysql://aipscan:demo@mysql:3306/aipscan
-      - CELERY_RESULT_BACKEND=db+mysql+pymysql://aipscan:demo@mysql:3306/celery
+      - SQLALCHEMY_DATABASE_URI=mysql+pymysql://aipscan:demo@aipscan-mysql:3306/aipscan
+      - SQLALCHEMY_CELERY_BACKEND=mysql+pymysql://aipscan:demo@aipscan-mysql:3306/aipscan
+      - CELERY_RESULT_BACKEND=db+mysql+pymysql://aipscan:demo@aipscan-mysql:3306/celery
       - TYPESENSE_API_KEY=xyz
       - CREATE_DB=true
     ports:
@@ -50,7 +50,7 @@ services:
       retries: 5
 
     depends_on:
-      mysql:
+      aipscan-mysql:
          condition: service_healthy
 
   rabbitmq:
@@ -76,14 +76,14 @@ services:
       - CELERY_BROKER_URL=amqp://guest@rabbitmq//
       - TYPESENSE_HOST=typesense
       - TYPESENSE_API_KEY=xyz
-      - SQLALCHEMY_DATABASE_URI=mysql+pymysql://aipscan:demo@mysql:3306/aipscan
-      - SQLALCHEMY_CELERY_BACKEND=mysql+pymysql://aipscan:demo@mysql:3306/aipscan
-      - CELERY_RESULT_BACKEND=db+mysql+pymysql://aipscan:demo@mysql:3306/celery
+      - SQLALCHEMY_DATABASE_URI=mysql+pymysql://aipscan:demo@aipscan-mysql:3306/aipscan
+      - SQLALCHEMY_CELERY_BACKEND=mysql+pymysql://aipscan:demo@aipscan-mysql:3306/aipscan
+      - CELERY_RESULT_BACKEND=db+mysql+pymysql://aipscan:demo@aipscan-mysql:3306/celery
     command: celery -A AIPscan.worker.celery worker --loglevel=info
     volumes:
       - "./:/src:rw"
     depends_on:
-      mysql:
+      aipscan-mysql:
          condition: service_healthy
       rabbitmq:
          condition: service_healthy
