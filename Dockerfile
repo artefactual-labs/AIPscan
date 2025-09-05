@@ -1,5 +1,4 @@
-FROM ubuntu:20.04 as base
-FROM base AS python3
+FROM ubuntu:22.04
 
 ENV FLASK_CONFIG dev
 
