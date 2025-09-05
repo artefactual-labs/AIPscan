@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import time
 from datetime import datetime
 
 from celery.result import AsyncResult
@@ -228,29 +229,21 @@ def new_fetch_job(fetch_job_id):
         timestamp_str, storage_service.id, fetch_job.id, packages_directory
     )
 
-    """
-    # this only works on the first try, after that Flask is not able to get task info from Celery
-    # the compromise is to write the task ID from the Celery worker to its SQLite backend
-
-    coordinator_task = tasks.workflow_coordinator.AsyncResult(task.id, app=celery)
-    taskId = coordinator_task.info.get("package_lists_taskId")
-    response = {"timestamp": timestamp, "taskId": taskId}
-    """
-
-    # Run a while loop in case the workflow coordinator task hasn't
-    # finished writing to database yet
-    while True:
-        obj = package_tasks.query.filter_by(workflow_coordinator_id=task.id).first()
-        try:
-            task_id = obj.package_task_id
-            if task_id is not None:
-                break
-        except AttributeError:
-            continue
+    fetch_job_id = fetch_job.id
+    task_id = _wait_for_package_list_task_id(task.id)
+    if task_id is None:
+        return (
+            jsonify(
+                {
+                    "message": "The background task failed to start in a timely manner. Please check the system logs or try again later."
+                }
+            ),
+            500,
+        )
 
     # Send response back to JavaScript function that was triggered by
     # the 'New Fetch Job' button.
-    response = {"timestamp": timestamp, "taskId": task_id, "fetchJobId": fetch_job.id}
+    response = {"timestamp": timestamp, "taskId": task_id, "fetchJobId": fetch_job_id}
     return jsonify(response)
 
 
@@ -376,3 +369,33 @@ def index_status(fetch_job_id):
         response = {"state": "COMPLETED"}
 
     return jsonify(response)
+
+
+def _wait_for_package_list_task_id(
+    coordinator_task_id, timeout_seconds=60, sleep_seconds=0.2
+):
+    """Wait briefly for the child package-list task id created by the coordinator.
+
+    The coordinator worker enqueues a child task and writes a mapping row
+    (workflow_coordinator_id -> package_task_id). Due to DB transaction
+    isolation (e.g. MySQL REPEATABLE READ) the current session may not see
+    that worker's commit, so we remove the session between polls to get fresh
+    reads.
+
+    This spin-wait is a pragmatic shortcut. Long-term, avoid server-side
+    polling: return immediately with the coordinator id and have the client
+    poll a dedicated endpoint until the child id appears.
+
+    Returns the child task id string or None if not observed within timeout.
+    """
+    start_time = time.monotonic()
+    while time.monotonic() - start_time < timeout_seconds:
+        # End current transaction to avoid repeatable-read snapshot issues.
+        db.session.remove()
+        obj = package_tasks.query.filter_by(
+            workflow_coordinator_id=coordinator_task_id
+        ).first()
+        if obj and obj.package_task_id:
+            return obj.package_task_id
+        time.sleep(sleep_seconds)
+    return None
