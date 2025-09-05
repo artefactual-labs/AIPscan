@@ -11,6 +11,10 @@ services:
     networks:
       - am_default
 
+  aipscan-mysql:
+    networks:
+      - am_default
+
 networks:
   am_default:
     external: true
