@@ -31,6 +31,7 @@ services:
       - TYPESENSE_HOST=typesense
       - SQLALCHEMY_DATABASE_URI=mysql+pymysql://aipscan:demo@mysql:3306/aipscan
       - SQLALCHEMY_CELERY_BACKEND=mysql+pymysql://aipscan:demo@mysql:3306/aipscan
+      - CELERY_RESULT_BACKEND=db+mysql+pymysql://aipscan:demo@mysql:3306/celery
       - TYPESENSE_API_KEY=xyz
       - CREATE_DB=true
     ports:
