@@ -42,7 +42,10 @@ def create_app(config_name="default"):
         db.init_app(app)
         configure_celery(app)
 
-        db.create_all()
+        # Avoid schema creation races under Gunicorn/Celery.
+        # Set this only for one process.
+        if app.config.get("CREATE_DB"):
+            db.create_all()
 
         # Define navigation bar sections and route-to-section mapping (needed
         # given that the "AIPs" and "Reports" sections are in the same Blueprint)

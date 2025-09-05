@@ -15,6 +15,14 @@ DEFAULT_TYPESENSE_TIMEOUT_SECONDS = "30"
 DEFAULT_TYPESENSE_COLLECTION_PREFIX = "aipscan_"
 
 
+def _env_bool(name, default="false"):
+    """Return a boolean from an environment variable.
+
+    Accepts common truthy strings: 1, true, yes, on (case-insensitive).
+    """
+    return os.getenv(name, default).strip().lower() in ("1", "true", "yes", "on")
+
+
 class Config:
     # Be sure to set a secure secret key for production.
     SECRET_KEY = os.getenv("SECRET_KEY", "you-will-never-guess")
@@ -29,6 +37,9 @@ class Config:
     SQLALCHEMY_BINDS = {"celery": SQLALCHEMY_CELERY_BACKEND}
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ECHO = False
+
+    # Control whether to create DB schema at startup (e.g., single process).
+    CREATE_DB = _env_bool("CREATE_DB")
 
     TYPESENSE_HOST = os.getenv("TYPESENSE_HOST", DEFAULT_TYPESENSE_HOST)
     TYPESENSE_PORT = os.getenv("TYPESENSE_PORT", DEFAULT_TYPESENSE_PORT)

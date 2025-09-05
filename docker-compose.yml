@@ -32,9 +32,10 @@ services:
       - SQLALCHEMY_DATABASE_URI=mysql+pymysql://aipscan:demo@mysql:3306/aipscan
       - SQLALCHEMY_CELERY_BACKEND=mysql+pymysql://aipscan:demo@mysql:3306/aipscan
       - TYPESENSE_API_KEY=xyz
+      - CREATE_DB=true
     ports:
       - 5000:5000
-    command: gunicorn -t 300 --workers 3 --bind 0.0.0.0:5000 "AIPscan:create_app()"
+    command: gunicorn --preload -t 300 --workers 3 --bind 0.0.0.0:5000 "AIPscan:create_app()"
     volumes:
       - "./:/src:rw"
         #- "/tmp/data:/src/AIPscan/Aggregator/downloads/"
