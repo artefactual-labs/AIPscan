@@ -1,6 +1,5 @@
 import datetime
 import math
-import time
 
 import typesense
 from flask import current_app
@@ -57,11 +56,29 @@ def collection_prefix(collection):
     return current_app.config["TYPESENSE_COLLECTION_PREFIX"] + collection
 
 
-def datetime_to_timestamp_int(datetime_obj):
-    # Round datetime to date in case time is included
-    datetime_obj = datetime_obj.replace(hour=0, minute=0, second=0)
+EPOCH_UTC = datetime.datetime(1970, 1, 1, tzinfo=datetime.timezone.utc)
 
-    return int(time.mktime(datetime_obj.timetuple()))
+
+def datetime_to_timestamp_int(datetime_obj):
+    """Convert a date or datetime to a Unix timestamp (seconds).
+
+    This function normalizes to midnight and computes seconds since the Unix
+    epoch in UTC. Naive datetimes are treated as UTC. `time.mktime` was used in
+    the past but avoided now because its behavior is inconsistent across
+    platforms and timezones.
+    """
+    # Floor to midnight.
+    base = datetime_obj.replace(hour=0, minute=0, second=0, microsecond=0)
+
+    # Normalize to UTC.
+    if base.tzinfo is None:
+        # Naive datetime: assume it's in UTC by attaching UTC tzinfo.
+        base = base.replace(tzinfo=datetime.timezone.utc)
+    else:
+        # Aware datetime: convert the timestamp to the equivalent UTC time.
+        base = base.astimezone(datetime.timezone.utc)
+
+    return int((base - EPOCH_UTC).total_seconds())
 
 
 def assemble_filter_by(filters):
