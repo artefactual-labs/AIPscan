@@ -127,7 +127,12 @@ def collection_fields_from_model(model):
         field = {"name": c.name}
 
         # Use Python type as basis of Typesense type
-        if c.type.python_type == FileType:
+        try:
+            py_type = c.type.python_type
+        except NotImplementedError:
+            py_type = str
+
+        if py_type == FileType:
             field["type"] = "string"
         else:
             ts_types = {
@@ -141,10 +146,11 @@ def collection_fields_from_model(model):
             if c.name == "size":
                 ts_types[int] = "int64"
 
-            if c.type.python_type not in ts_types:
-                raise ValueError("Unhandled model column type")
+            if py_type not in ts_types:
+                # Fallback to string for any remaining unmapped types
+                field["type"] = "string"
             else:
-                field["type"] = ts_types[c.type.python_type]
+                field["type"] = ts_types[py_type]
 
         # Mark certain fields as facets
         if table in FACET_FIELDS and field["name"] in FACET_FIELDS[table]:

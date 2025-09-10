@@ -3,7 +3,8 @@ import enum
 import re
 from datetime import date, datetime
 
-from sqlalchemy.dialects.mysql import LONGTEXT
+import sqlalchemy as sa
+from sqlalchemy.dialects import mysql
 
 from AIPscan import db
 
@@ -400,7 +401,7 @@ class File(db.Model):
     format_version = db.Column(db.String(255))
     checksum_type = db.Column(db.String(255))
     checksum_value = db.Column(db.String(255), index=True)
-    premis_object = db.Column(LONGTEXT)
+    premis_object = db.Column(sa.Text().with_variant(mysql.LONGTEXT, "mysql"))
 
     original_file_id = db.Column(db.Integer(), db.ForeignKey("file.id"))
     original_file = db.relationship(
@@ -444,6 +445,38 @@ class File(db.Model):
 
     def __repr__(self):
         return "<File '{}' - '{}'".format(self.id, self.name)
+
+    # Safe accessors for PREMIS object XML, normalizing backend-specific types.
+    def get_premis_object_text(self):
+        """Return PREMIS object XML as a text string or None.
+
+        Some backends/dialects may return variant-backed values such as
+        bytes, bytearray, or memoryview for long text columns. This getter
+        normalizes to a UTF-8 string (with replacement on decode errors)
+        so callers can safely consume the value without worrying about
+        the underlying SQLAlchemy variant type.
+        """
+        value = self.premis_object
+        if value is None:
+            return None
+        # Normalize variant-backed binary-like values
+        if isinstance(value, memoryview):
+            try:
+                return value.tobytes().decode("utf-8", errors="replace")
+            except Exception:
+                return str(value.tobytes())
+        if isinstance(value, (bytes, bytearray)):
+            try:
+                return value.decode("utf-8", errors="replace")
+            except Exception:
+                return str(bytes(value))
+        # Fallback to string representation
+        return str(value)
+
+    def get_premis_xml_lines(self):
+        """Return PREMIS object XML split into lines (list of str)."""
+        text = self.get_premis_object_text()
+        return text.splitlines() if text else []
 
 
 EventAgent = db.Table(
