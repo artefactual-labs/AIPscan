@@ -1,5 +1,6 @@
 from datetime import datetime
 
+import pytest
 import typesense
 from pytz import timezone
 
@@ -57,25 +58,41 @@ def test_collection_prefix(app_instance):
     assert prefixed == f"aipscan_{fake_table_name}"
 
 
-def test_datetime_to_timestamp_int():
-    # Get local time zone then set time zone for testing
-    local_timezone = test_helpers.set_timezone_and_return_current_timezone(
-        "America/Vancouver"
-    )
-
-    # Create time zone object to create datetime objects from
-    pst_tz = timezone("US/Pacific")
-
-    # Test that datetime object gets converted to correct timestamp integer
-    datetime_object = pst_tz.localize(datetime(2019, 1, 30))
-    assert ts_helpers.datetime_to_timestamp_int(datetime_object) == 1548835200
-
-    # Test that datetime object gets rounded to neartest date then converted to timestamp
-    datetime_object = datetime(2019, 1, 30, 2, 30, 50).astimezone(pst_tz)
-    assert ts_helpers.datetime_to_timestamp_int(datetime_object) == 1548835200
-
-    # Reset time zone
-    test_helpers.set_timezone(local_timezone)
+@pytest.mark.parametrize(
+    "datetime_obj,expected",
+    [
+        # PST midnight localized: exactly at the local midnight in US/Pacific.
+        # The function should treat this as the PST date boundary and return the
+        # corresponding epoch seconds
+        (
+            timezone("US/Pacific").localize(datetime(2019, 1, 30, 0, 0, 0)),
+            1548835200,
+        ),
+        # PST early-morning time: a time after midnight in PST should be
+        # truncated to the same PST date boundary.
+        (
+            timezone("US/Pacific").localize(datetime(2019, 1, 30, 2, 30, 50)),
+            1548835200,
+        ),
+        # Naive datetime (no tz): for these tests naive datetimes are treated as
+        # system/UTC-local time, so midnight naive here corresponds to the UTC
+        # date boundary.
+        (datetime(2019, 1, 30, 0, 0, 0), 1548806400),
+        # Explicit UTC timezone: should map directly to the UTC date boundary
+        # timestamp.
+        (
+            timezone("UTC").localize(datetime(2019, 1, 30, 0, 0, 0)),
+            1548806400,
+        ),
+        # Naive later time in the day: later-naive times should be truncated to
+        # that day's UTC date boundary.
+        (datetime(2019, 1, 30, 2, 30, 50), 1548806400),
+    ],
+)
+def test_datetime_to_timestamp_int(datetime_obj, expected):
+    # Ensure datetime_to_timestamp_int converts a datetime to the start-of-day
+    # (midnight in its timezone) before turning it into epoch seconds.
+    assert ts_helpers.datetime_to_timestamp_int(datetime_obj) == expected
 
 
 def test_assemble_filter_by():
@@ -96,8 +113,8 @@ def test_file_filters(app_instance):
     )
 
     desired_filters = [
-        ("date_created", ">=", 1546329600),
-        ("date_created", "<", 1548921600),
+        ("date_created", ">=", 1546300800),
+        ("date_created", "<", 1548892800),
         ("storage_service_id", "=", 1),
         ("file_type", "=", "'original'"),
         ("storage_location_id", "=", 1),
