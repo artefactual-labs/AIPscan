@@ -155,7 +155,7 @@ def test_get_premis_xml_lines():
         premis_object=premis_xml,
     )
 
-    lines = helpers.get_premis_xml_lines(file_)
+    lines = file_.get_premis_xml_lines()
 
     assert len(lines) == 2
 

@@ -48,11 +48,7 @@ from AIPscan.Reporter import (  # noqa: F401
     sort_puids,
 )
 from AIPscan.Reporter.database_helpers import get_possible_storage_locations
-from AIPscan.Reporter.helpers import (
-    calculate_paging_window,
-    get_premis_xml_lines,
-    remove_dict_none_values,
-)
+from AIPscan.Reporter.helpers import calculate_paging_window, remove_dict_none_values
 
 
 def _get_storage_service(storage_service_id):
@@ -254,7 +250,7 @@ def view_file(file_id):
     return render_template(
         "file.html",
         file_=file_,
-        premisxml=get_premis_xml_lines(file_),
+        premisxml=file_.get_premis_xml_lines(),
         aip=aip,
         events=events,
         preservation_file=preservation_file,
