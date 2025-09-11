@@ -7,7 +7,7 @@ volumes:
 services:
   aipscan-mysql:
     image: "percona/percona-server:8.0.43-34"
-    command: "--character-set-server=utf8mb4 --collation-server=utf8mb4_0900_ai_ci"
+    command: "--character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci"
     environment:
       MYSQL_ROOT_PASSWORD: "12345"
       MYSQL_USER: "aipscan"
