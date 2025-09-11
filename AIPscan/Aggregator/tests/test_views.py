@@ -1,9 +1,69 @@
 import pytest
 from flask import current_app
 
+from AIPscan import test_helpers
 from AIPscan.Aggregator.tasks import TaskError
 from AIPscan.Aggregator.views import _test_storage_service_connection
 from AIPscan.models import StorageService
+
+
+def test_new_fetch_job_success_returns_task_id(app_instance, mocker):
+    ss = test_helpers.create_test_storage_service()
+
+    mocker.patch("AIPscan.Aggregator.views._test_storage_service_connection")
+    mocker.patch("AIPscan.Aggregator.views.os.makedirs")
+
+    class _FakeTask:
+        id = "coordinator-123"
+
+    mocker.patch(
+        "AIPscan.Aggregator.views.tasks.workflow_coordinator.delay",
+        return_value=_FakeTask(),
+    )
+
+    mocker.patch(
+        "AIPscan.Aggregator.views._wait_for_package_list_task_id",
+        return_value="child-456",
+    )
+
+    with current_app.test_client() as test_client:
+        response = test_client.post(f"/aggregator/new_fetch_job/{ss.id}")
+        assert response.status_code == 200
+
+        data = response.get_json()
+        assert set(["timestamp", "taskId", "fetchJobId"]).issubset(data.keys())
+        assert data["taskId"] == "child-456"
+        assert isinstance(data["fetchJobId"], int)
+
+
+def test_new_fetch_job_timeout_returns_500(app_instance, mocker):
+    """If no child id appears, the view responds with 500 JSON error."""
+    ss = test_helpers.create_test_storage_service()
+
+    mocker.patch("AIPscan.Aggregator.views._test_storage_service_connection")
+    mocker.patch("AIPscan.Aggregator.views.os.makedirs")
+
+    class _FakeTask:
+        id = "coordinator-xyz"
+
+    mocker.patch(
+        "AIPscan.Aggregator.views.tasks.workflow_coordinator.delay",
+        return_value=_FakeTask(),
+    )
+
+    # Simulate helper timing out.
+    mocker.patch(
+        "AIPscan.Aggregator.views._wait_for_package_list_task_id",
+        return_value=None,
+    )
+
+    with current_app.test_client() as test_client:
+        response = test_client.post(f"/aggregator/new_fetch_job/{ss.id}")
+        assert response.status_code == 500
+
+        data = response.get_json()
+        assert "message" in data
+        assert "failed to start" in data["message"].lower()
 
 
 def test__test_storage_service_connection(mocker):
