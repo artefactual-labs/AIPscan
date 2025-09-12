@@ -5,7 +5,7 @@ import $ from "jquery";
 window.$ = $;
 window.jQuery = $;
 
-import bootstrap from "bootstrap";
+import "bootstrap";
 
 import Chart from "chart.js/auto";
 window.Chart = Chart;
