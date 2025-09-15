@@ -1,6 +1,6 @@
 FROM ubuntu:22.04
 
-ENV FLASK_CONFIG dev
+ENV FLASK_CONFIG=dev
 
 RUN set -ex \
     && apt-get update \
