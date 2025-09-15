@@ -1,0 +1,11 @@
+# Ignore everything
+**
+
+# Include
+!/AIPscan/**
+!/celery_config.py
+!/config.py
+!/pyproject.toml
+!/requirements/base.txt
+!/run.py
+!/uv.lock
