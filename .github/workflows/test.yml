@@ -30,12 +30,11 @@ jobs:
       - name: "Install OS packages"
         run: |
           sudo apt-get --quiet update
-          sudo apt-get install --quiet --yes build-essential libxml2-dev \
-            libxslt1-dev
+          sudo apt-get install --quiet --yes build-essential libxml2-dev libxslt1-dev
       - name: "Get pip cache dir"
         id: "pip-cache"
         run: |
-          echo "::set-output name=dir::$(pip cache dir)"
+          echo "dir=$(pip cache dir)" >> "$GITHUB_OUTPUT"
       - name: "Cache pip packages"
         uses: "actions/cache@v4"
         with:
@@ -52,22 +51,8 @@ jobs:
           TOXENV: ${{ matrix.toxenv }}
         run: |
           tox -- --cov AIPscan --cov-config .coveragerc --cov-report xml:coverage.xml
-      - name: Determine skip-codecov
-        uses: actions/github-script@v7
-        id: skip-codecov
-        with:
-          script: |
-            // Sets `ref` to the SHA of the current pull request's head commit,
-            // or, if not present, to the SHA of the commit that triggered the
-            // event.
-            const ref = '${{ github.event.pull_request.head.sha || github.event.after }}';
-            const { repo, owner } = context.repo;
-            const { data: commit } = await github.rest.repos.getCommit({ owner, repo, ref });
-            const commitMessage = commit.commit.message;
-            const skip = commitMessage.includes("[skip codecov]") || commitMessage.includes("[skip-codecov]");
-            core.setOutput("skip", skip);
       - name: "Upload coverage report"
-        if: ${{ github.repository == 'artefactual-labs/AIPscan' && steps.skip-codecov.outputs.skip != 'true' }}
+        if: ${{ github.repository == 'artefactual-labs/AIPscan' && !contains(github.event.head_commit.message, '[skip codecov]') && !contains(github.event.head_commit.message, '[skip-codecov]') }}
         uses: "codecov/codecov-action@v4"
         env:
           CODECOV_TOKEN: "${{ secrets.CODECOV_TOKEN }}"
