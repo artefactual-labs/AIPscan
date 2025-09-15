@@ -33,3 +33,11 @@ build:
 
 test:
 	python3 -m pytest
+
+requirements:
+	# Fail if the lockfile is missing or needs to be updated.
+	uv lock --locked
+	uv export --frozen --format requirements.txt --no-header --no-hashes --no-dev --output-file $(CURDIR)/requirements/base.txt
+	uv export --frozen --format requirements.txt --no-header --no-hashes --dev --output-file $(CURDIR)/requirements/test.txt
+
+.PHONY: schema-docs build test requirements

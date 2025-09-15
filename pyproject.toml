@@ -1,0 +1,39 @@
+[project]
+name = "aipscan"
+version = "0.9.0"
+description = "A reporting system for Archivematica using data from AIPs."
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "click",
+    "celery",
+    "faker",
+    "filelock",
+    "flask",
+    "flask-restx",
+    "flask-sqlalchemy",
+    "flask-wtf",
+    "gunicorn",
+    "typesense",
+    "wtforms",
+    "lxml",
+    "metsrw",
+    "natsort",
+    "pandas",
+    "plotly-express",
+    "pymysql[rsa]",
+    "python-dateutil",
+    "requests",
+    "sqlalchemy",
+]
+
+[dependency-groups]
+dev = [
+    "faker",
+    "flake8",
+    "flake8-builtins",
+    "pytest",
+    "pytest-cov",
+    "pytest-mock",
+    "tzlocal",
+]
