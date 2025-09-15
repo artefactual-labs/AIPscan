@@ -37,3 +37,6 @@ dev = [
     "pytest-mock",
     "tzlocal",
 ]
+linting = [
+    "pre-commit-uv"
+]
