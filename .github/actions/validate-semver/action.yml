@@ -1,0 +1,25 @@
+name: Validate Semantic Version
+description: Validates a semantic version string (e.g., 1.2.3) without a leading 'v', using the semver.org regex specification.
+
+# https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
+
+inputs:
+  version:
+    description: Semantic version to validate (e.g., 1.2.3 or 1.2.3-rc.1)
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Validate semantic version
+      shell: python
+      env:
+        VERSION: ${{ inputs.version }}
+      run: |
+        import os, re, sys
+        version = os.environ.get("VERSION", "").strip()
+        pattern = r'^(?P<major>0|[1-9]\d*)\.(?P<minor>0|[1-9]\d*)\.(?P<patch>0|[1-9]\d*)(?:-(?P<prerelease>(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+(?P<buildmetadata>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$'
+        if not version or version.startswith("v") or not re.fullmatch(pattern, version):
+            print(f"Error: '{version}' is not a valid SemVer (without leading 'v').", file=sys.stderr)
+            sys.exit(1)
+        print(f"Valid SemVer: {version}")

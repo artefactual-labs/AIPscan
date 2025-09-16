@@ -1,0 +1,63 @@
+name: Release
+
+# This workflow is an interim release process that currently only builds and
+# publishes container images, but should be expanded into a full release
+# pipeline with additional steps such as running automated tests, building and
+# packaging artifacts, publishing to PyPI and performing other necessary checks
+# to ensure reliable and automated releases.
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Semantic version to release (e.g., 1.2.3 or 1.2.3-rc.1)"
+        required: true
+        type: string
+
+env:
+  REGISTRY_IMAGE: artefactual/aipscan
+
+jobs:
+  validate-version:
+    name: Validate semantic version
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v5
+        with:
+          sparse-checkout: .github/actions/validate-semver
+      - name: Validate semantic version
+        uses: ./.github/actions/validate-semver
+        with:
+          version: ${{ github.event.inputs.version }}
+
+  publish:
+    needs: validate-version
+    name: Publish Docker image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v5
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY_IMAGE }}
+          tags: |
+            ${{ github.event.inputs.version }}
+            latest
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          platforms: linux/amd64
