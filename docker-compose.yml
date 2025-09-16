@@ -43,7 +43,7 @@ services:
       restart_policy:
         condition: on-failure
     healthcheck:
-      test: "curl --fail http://localhost:5000 || exit 1"
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:5000', timeout=3).raise_for_status()"]
       interval: 10s
       timeout: 5s
       retries: 5

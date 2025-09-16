@@ -2,10 +2,20 @@
 **
 
 # Include
+!/.init-scripts/**
 !/AIPscan/**
+!/build_config/**
+!/.python-version
 !/celery_config.py
 !/config.py
 !/pyproject.toml
-!/requirements/base.txt
 !/run.py
 !/uv.lock
+!/package-lock.json
+!/package.json
+
+# Exclude
+/AIPscan/Aggregator/downloads
+**/dist
+**/__pycache__
+**/*.pyc
