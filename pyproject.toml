@@ -40,6 +40,12 @@ linting = [
     "pre-commit-uv"
 ]
 
+[tool.pytest.ini_options]
+testpaths = [
+    "AIPscan",
+    "tools",
+]
+
 [tool.ruff]
 target-version = "py39"
 
