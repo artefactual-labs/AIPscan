@@ -36,31 +36,16 @@ dev = [
     "ruff>=0.13.0",
     "tzlocal",
 ]
-linting = [
-    "pre-commit-uv"
-]
+linting = ["pre-commit-uv"]
 
 [tool.pytest.ini_options]
-testpaths = [
-    "AIPscan",
-    "tools",
-]
+testpaths = ["AIPscan", "tools"]
 
 [tool.ruff]
 target-version = "py39"
 
 [tool.ruff.lint]
-select = [
-    "A",
-    "B",
-    "C",
-    "E",
-    "F",
-    "I",
-    "T",
-    "UP",
-    "W",
-]
+select = ["A", "B", "C", "E", "F", "I", "T", "UP", "W"]
 ignore = [
     "E501", # lines-too-long
     "C416", # unnecessary-comprehension
@@ -78,3 +63,27 @@ force-single-line = true
 [tool.ruff.lint.mccabe]
 # We have a couple of instances where complexity > 10.
 max-complexity = 12
+
+[tool.tox]
+requires = ["tox>=4", "tox-uv>=1"]
+env_list = ["py39", "py310", "py311", "py312", "linting"]
+
+[tool.tox.env_run_base]
+runner = "uv-venv-lock-runner"
+dependency_groups = ["dev"]
+commands = [["pytest", { replace = "posargs", default = [], extend = true }]]
+
+[tool.tox.env.linting]
+runner = "uv-venv-lock-runner"
+skip_install = true
+dependency_groups = ["linting"]
+commands = [
+    [
+        "pre-commit",
+        "run",
+        "--all-files",
+        "--show-diff-on-failure",
+        { replace = "posargs", default = [
+        ], extend = true },
+    ],
+]
