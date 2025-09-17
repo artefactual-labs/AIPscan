@@ -1,14 +1,17 @@
-# -*- coding: utf-8 -*-
-
 """Report on original copies that have a preservation derivative and
 the different file formats associated with both.
 """
 
-from flask import render_template, request
+from flask import render_template
+from flask import request
 
-from AIPscan.Data import fields, report_data
+from AIPscan.Data import fields
+from AIPscan.Data import report_data
 from AIPscan.helpers import parse_bool
-from AIPscan.Reporter import download_csv, reporter, request_params, translate_headers
+from AIPscan.Reporter import download_csv
+from AIPscan.Reporter import reporter
+from AIPscan.Reporter import request_params
+from AIPscan.Reporter import translate_headers
 
 HEADERS = [
     fields.FIELD_AIP_NAME,

@@ -1,25 +1,24 @@
-from AIPscan.conftest import (
-    AIP_1_NAME,
-    AIP_1_UUID,
-    AIP_2_NAME,
-    AIP_2_UUID,
-    JPEG_1_01_FORMAT_VERSION,
-    JPEG_1_01_PUID,
-    JPEG_1_02_FORMAT_VERSION,
-    JPEG_1_02_PUID,
-    JPEG_FILE_FORMAT,
-    ORIGINAL_FILE_1_NAME,
-    ORIGINAL_FILE_1_UUID,
-    ORIGINAL_FILE_2_NAME,
-    ORIGINAL_FILE_2_UUID,
-    PRESERVATION_FILE_1_NAME,
-    PRESERVATION_FILE_1_UUID,
-    PRESERVATION_FILE_2_NAME,
-    PRESERVATION_FILE_2_UUID,
-    STORAGE_SERVICE_NAME,
-    TIFF_FILE_FORMAT,
-)
-from AIPscan.Data import fields, report_data
+from AIPscan.conftest import AIP_1_NAME
+from AIPscan.conftest import AIP_1_UUID
+from AIPscan.conftest import AIP_2_NAME
+from AIPscan.conftest import AIP_2_UUID
+from AIPscan.conftest import JPEG_1_01_FORMAT_VERSION
+from AIPscan.conftest import JPEG_1_01_PUID
+from AIPscan.conftest import JPEG_1_02_FORMAT_VERSION
+from AIPscan.conftest import JPEG_1_02_PUID
+from AIPscan.conftest import JPEG_FILE_FORMAT
+from AIPscan.conftest import ORIGINAL_FILE_1_NAME
+from AIPscan.conftest import ORIGINAL_FILE_1_UUID
+from AIPscan.conftest import ORIGINAL_FILE_2_NAME
+from AIPscan.conftest import ORIGINAL_FILE_2_UUID
+from AIPscan.conftest import PRESERVATION_FILE_1_NAME
+from AIPscan.conftest import PRESERVATION_FILE_1_UUID
+from AIPscan.conftest import PRESERVATION_FILE_2_NAME
+from AIPscan.conftest import PRESERVATION_FILE_2_UUID
+from AIPscan.conftest import STORAGE_SERVICE_NAME
+from AIPscan.conftest import TIFF_FILE_FORMAT
+from AIPscan.Data import fields
+from AIPscan.Data import report_data
 
 # Two preservation files are created in fixture.
 EXPECTED_RESULTS_COUNT = 2

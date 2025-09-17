@@ -11,7 +11,8 @@ from AIPscan.Data.tests import (
 )
 from AIPscan.Data.tests import MOCK_STORAGE_SERVICE as STORAGE_SERVICE
 from AIPscan.Data.tests import MOCK_STORAGE_SERVICE_ID as STORAGE_SERVICE_ID
-from AIPscan.models import File, FileType
+from AIPscan.models import File
+from AIPscan.models import FileType
 from AIPscan.Reporter import helpers
 from AIPscan.Reporter.report_aip_contents import CSV_HEADERS as AIP_CONTENTS_HEADERS
 from AIPscan.Reporter.report_aips_by_format import HEADERS as AIPS_BY_FORMAT_HEADERS
@@ -53,7 +54,7 @@ ROWS_WITHOUT_SIZE = [
 def test_download_csv(app_instance, mocker):
     """Test downloading report data as CSV."""
     CSV_FILE = "test.csv"
-    CONTENT_DISPOSITION = "attachment; filename={}".format(CSV_FILE)
+    CONTENT_DISPOSITION = f"attachment; filename={CSV_FILE}"
     CSV_MIMETYPE = "text/csv"
 
     query_results = QUERY_RESULTS[:2]
@@ -174,7 +175,7 @@ def test_get_premis_xml_lines():
     ],
 )
 def test_calculate_paging_window(paging):
-    class MockPagination(object):
+    class MockPagination:
         pass
 
     pagination = MockPagination()

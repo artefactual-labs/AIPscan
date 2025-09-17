@@ -3,7 +3,8 @@ import sys
 
 from app import cli
 
-from AIPscan import db, typesense_helpers
+from AIPscan import db
+from AIPscan import typesense_helpers
 from config import CONFIGS
 
 

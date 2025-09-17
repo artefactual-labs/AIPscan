@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import os
 
 CELERY_RESULT_BACKEND = os.getenv(

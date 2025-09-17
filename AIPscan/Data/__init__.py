@@ -1,6 +1,6 @@
-# -*- coding: utf-8 -*-
 from AIPscan.Data import fields
-from AIPscan.models import StorageLocation, StorageService
+from AIPscan.models import StorageLocation
+from AIPscan.models import StorageService
 
 
 def _get_storage_service(storage_service_id):

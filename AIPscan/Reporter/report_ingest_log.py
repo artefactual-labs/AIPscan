@@ -1,21 +1,22 @@
-# -*- coding: utf-8 -*-
-
 """Report on who ingested AIPs and when. An indication is also provided
 about how long they took to process.
 """
+
 import pandas as pd
 import plotly.express as px
-from flask import render_template, request
+from flask import render_template
+from flask import request
 
-from AIPscan.Data import fields, report_data
-from AIPscan.helpers import _simplify_datetime, parse_bool, parse_datetime_bound
-from AIPscan.Reporter import (
-    download_csv,
-    get_display_end_date,
-    reporter,
-    request_params,
-    translate_headers,
-)
+from AIPscan.Data import fields
+from AIPscan.Data import report_data
+from AIPscan.helpers import _simplify_datetime
+from AIPscan.helpers import parse_bool
+from AIPscan.helpers import parse_datetime_bound
+from AIPscan.Reporter import download_csv
+from AIPscan.Reporter import get_display_end_date
+from AIPscan.Reporter import reporter
+from AIPscan.Reporter import request_params
+from AIPscan.Reporter import translate_headers
 
 # Response fields.
 TRANSFER_COUNT = "transfer_count"

@@ -1,5 +1,6 @@
 import pytest
-from flask import current_app, url_for
+from flask import current_app
+from flask import url_for
 
 from AIPscan import typesense_test_helpers
 

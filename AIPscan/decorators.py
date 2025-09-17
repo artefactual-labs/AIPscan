@@ -1,6 +1,8 @@
 from functools import wraps
 
-from flask import abort, render_template, request
+from flask import abort
+from flask import render_template
+from flask import request
 
 
 def confirm_required(model, id_argument, prompt, action, cancel_route):

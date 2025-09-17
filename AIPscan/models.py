@@ -1,7 +1,7 @@
-# -*- coding: utf-8 -*-
 import enum
 import re
-from datetime import date, datetime
+from datetime import date
+from datetime import datetime
 
 import sqlalchemy as sa
 from sqlalchemy.dialects import mysql
@@ -65,7 +65,7 @@ class StorageService(db.Model):
         self.default = default
 
     def __repr__(self):
-        return "<Storage Service '{}'>".format(self.name)
+        return f"<Storage Service '{self.name}'>"
 
     @property
     def earliest_aip_created(self):
@@ -140,7 +140,7 @@ class StorageLocation(db.Model):
         self.storage_service_id = storage_service_id
 
     def __repr__(self):
-        return "<StorageLocation '{}'>".format(self.current_location)
+        return f"<StorageLocation '{self.current_location}'>"
 
     @property
     def uuid(self):
@@ -294,7 +294,7 @@ class FetchJob(db.Model):
         self.storage_service_id = storage_service_id
 
     def __repr__(self):
-        return "<Fetch Job '{}'>".format(self.download_start)
+        return f"<Fetch Job '{self.download_start}'>"
 
 
 class Pipeline(db.Model):
@@ -311,7 +311,7 @@ class Pipeline(db.Model):
         self.dashboard_url = dashboard_url
 
     def __repr__(self):
-        return "<Pipeline '{}'>".format(self.origin_pipeline)
+        return f"<Pipeline '{self.origin_pipeline}'>"
 
     @property
     def uuid(self):
@@ -366,7 +366,7 @@ class AIP(db.Model):
         self.origin_pipeline_id = origin_pipeline_id
 
     def __repr__(self):
-        return "<AIP '{}'>".format(self.transfer_name)
+        return f"<AIP '{self.transfer_name}'>"
 
     @property
     def original_file_count(self):
@@ -444,7 +444,7 @@ class File(db.Model):
         self.aip_id = aip_id
 
     def __repr__(self):
-        return "<File '{}' - '{}'".format(self.id, self.name)
+        return f"<File '{self.id}' - '{self.name}'"
 
     # Safe accessors for PREMIS object XML, normalizing backend-specific types.
     def get_premis_object_text(self):
@@ -512,7 +512,7 @@ class Event(db.Model):
         self.file_id = file_id
 
     def __repr__(self):
-        return "<Event '{}'>".format(self.type)
+        return f"<Event '{self.type}'>"
 
 
 class Agent(db.Model):
@@ -532,4 +532,4 @@ class Agent(db.Model):
         self.storage_service_id = storage_service_id
 
     def __repr__(self):
-        return "<Agent '{}: {}'>".format(self.agent_type, self.agent_value)
+        return f"<Agent '{self.agent_type}: {self.agent_value}'>"

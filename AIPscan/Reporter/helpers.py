@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """Code shared across reporting modules but not outside of reporting."""
 
 import csv
@@ -142,7 +140,7 @@ def download_csv(headers, rows, filename="report.csv"):
         _remove_primary_keys(row)
         writer.writerow(row.values())
     response = make_response(string_io.getvalue())
-    response.headers["Content-Disposition"] = "attachment; filename={}".format(filename)
+    response.headers["Content-Disposition"] = f"attachment; filename={filename}"
     response.mimetype = "text/csv"
     return response
 

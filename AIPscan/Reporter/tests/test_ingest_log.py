@@ -1,11 +1,11 @@
-# -*- coding: utf-8 -*-
-
 """Tests for the agents transfer log."""
+
 import pytest
 from flask import current_app
 
 from AIPscan.Data import fields
-from AIPscan.Reporter.report_ingest_log import get_figure_html, get_table_data
+from AIPscan.Reporter.report_ingest_log import get_figure_html
+from AIPscan.Reporter.report_ingest_log import get_table_data
 
 EXPECTED_CSV_CONTENTS = b"AIP UUID,AIP Name,Start Date,End Date,User,Duration\r\n111111111111-1111-1111-11111111,Test AIP,2020-12-02 10:00:00,2020-12-02 10:30:32,user one,0:30:32\r\n"
 

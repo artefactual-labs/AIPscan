@@ -1,17 +1,14 @@
-# -*- coding: utf-8 -*-
-
 """Collects a number of functions that aid in the retrieval of
 information from an AIP METS file.
 """
+
 import lxml
 import metsrw
 import requests
 
-from AIPscan.Aggregator.task_helpers import (
-    create_numbered_subdirs,
-    get_mets_url,
-    write_mets,
-)
+from AIPscan.Aggregator.task_helpers import create_numbered_subdirs
+from AIPscan.Aggregator.task_helpers import get_mets_url
+from AIPscan.Aggregator.task_helpers import write_mets
 
 
 class METSError(Exception):
@@ -31,14 +28,13 @@ def parse_mets_with_metsrw(mets_file):
     except AttributeError as err:
         # See archivematica/issues#1129 where METSRW expects a certain
         # METS structure but Archivematica has written it incorrectly.
-        err = "{}: {}".format(err, mets_file)
-        raise METSError("Error parsing METS: Cannot return a METSDocument")
+        raise METSError("Error parsing METS: Cannot return a METSDocument") from err
     except lxml.etree.Error as err:
         # We have another undetermined storage service error, e.g. the
         # package no longer exists on the server, or another download
         # error.
-        err = "Error parsing METS: {}: {}".format(err, mets_file)
-        raise METSError(err)
+        msg = f"Error parsing METS: {err}: {mets_file}"
+        raise METSError(msg) from err
     return mets
 
 

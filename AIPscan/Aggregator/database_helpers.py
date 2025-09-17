@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """Functions to help us tease apart a METS file and write to the
 database.
 """
@@ -11,21 +9,17 @@ from lxml import etree
 
 from AIPscan import db
 from AIPscan.Aggregator import tasks
-from AIPscan.Aggregator.task_helpers import (
-    _tz_neutral_date,
-    get_storage_service_api_url,
-)
-from AIPscan.models import (
-    AIP,
-    Agent,
-    Event,
-    EventAgent,
-    FetchJob,
-    File,
-    FileType,
-    Pipeline,
-    StorageLocation,
-)
+from AIPscan.Aggregator.task_helpers import _tz_neutral_date
+from AIPscan.Aggregator.task_helpers import get_storage_service_api_url
+from AIPscan.models import AIP
+from AIPscan.models import Agent
+from AIPscan.models import Event
+from AIPscan.models import EventAgent
+from AIPscan.models import FetchJob
+from AIPscan.models import File
+from AIPscan.models import FileType
+from AIPscan.models import Pipeline
+from AIPscan.models import StorageLocation
 
 logger = get_task_logger(__name__)
 
@@ -62,7 +56,7 @@ def _extract_event_detail(premis_event, file_id):
 
 def _create_agent_type_id(identifier_type, identifier_value):
     """Create a key-pair string for the linking_type_value in the db."""
-    return "{}-{}".format(identifier_type, identifier_value)
+    return f"{identifier_type}-{identifier_value}"
 
 
 def _create_event_agent_relationship(event_id, agent_identifier):

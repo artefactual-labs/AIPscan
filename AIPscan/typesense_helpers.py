@@ -5,7 +5,9 @@ import typesense
 from flask import current_app
 from sqlalchemy import inspect
 
-from AIPscan.models import AIP, File, FileType
+from AIPscan.models import AIP
+from AIPscan.models import File
+from AIPscan.models import FileType
 
 APP_MODELS = [AIP, File]
 

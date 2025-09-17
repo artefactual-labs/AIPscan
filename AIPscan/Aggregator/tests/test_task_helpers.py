@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import json
 import os
 import uuid
@@ -31,7 +29,7 @@ def test_tz_neutral_dates(input_date, output_date, now_year):
     result_date = task_helpers._tz_neutral_date(input_date)
     if now_year is True:
         year = datetime.now().strftime("%Y-%m-%d")
-        output_date = "{}{}".format(year, input_date)
+        output_date = f"{year}{input_date}"
         output_date = datetime.strptime(output_date, "%Y-%m-%dT%H:%M:%S")
         assert result_date == output_date
     else:
@@ -133,7 +131,7 @@ def test_get_mets_url(ss_args, package_uuid, path_to_mets, result):
                 "download_offset": 0,
                 "default": False,
             },
-            "/api/v2/location/{}".format(LOCATION_UUID),
+            f"/api/v2/location/{LOCATION_UUID}",
             "http://example.com/api/v2/location/1b60c346-85a0-4a3c-a88b-0c1b3255e2ec?username=1234&api_key=12345",
             "http://example.com/api/v2/location/1b60c346-85a0-4a3c-a88b-0c1b3255e2ec",
         )
@@ -179,11 +177,11 @@ def test_create_numbered_subdirs(timestamp, package_list_number, result, mocker)
 
 def test_write_mets(mocker, tmpdir):
     """Ensure that METS is written to expected location."""
-    CONTENT = "test content".encode("utf-8")
+    CONTENT = b"test content"
     http_response = mocker.MagicMock()
     http_response.content = CONTENT
     package_uuid = str(uuid.uuid4())
-    expected_path = os.path.join(tmpdir, "METS.{}.xml".format(package_uuid))
+    expected_path = os.path.join(tmpdir, f"METS.{package_uuid}.xml")
 
     actual_path = task_helpers.write_mets(http_response, package_uuid, tmpdir)
     assert expected_path == actual_path
@@ -196,7 +194,7 @@ def packages():
     fixtures_path = os.path.join("package_json", "packages.json")
     script_dir = os.path.dirname(os.path.realpath(__file__))
     packages_file = os.path.join(script_dir, FIXTURES_DIR, fixtures_path)
-    with open(packages_file, "r") as package_json:
+    with open(packages_file) as package_json:
         packages = json.load(package_json)
         return packages.get("objects")
 

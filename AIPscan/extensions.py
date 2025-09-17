@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """This module contains code related to Flask extensions.
 
 The Celery instance that is initialized here is lacking application
@@ -9,7 +7,8 @@ function.
 
 from celery import Celery
 
-from celery_config import CELERY_BROKER_URL, CELERY_RESULT_BACKEND
+from celery_config import CELERY_BROKER_URL
+from celery_config import CELERY_RESULT_BACKEND
 
 celery = Celery(
     "tasks",

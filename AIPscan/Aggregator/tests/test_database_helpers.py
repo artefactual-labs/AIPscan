@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import os
 import uuid
 from datetime import datetime
@@ -6,18 +5,18 @@ from datetime import datetime
 import metsrw
 import pytest
 
-from AIPscan.Aggregator import database_helpers, types
-from AIPscan.conftest import ORIGIN_PIPELINE, STORAGE_LOCATION_1_CURRENT_LOCATION
-from AIPscan.models import (
-    AIP,
-    Agent,
-    FetchJob,
-    File,
-    FileType,
-    Pipeline,
-    StorageLocation,
-    StorageService,
-)
+from AIPscan.Aggregator import database_helpers
+from AIPscan.Aggregator import types
+from AIPscan.conftest import ORIGIN_PIPELINE
+from AIPscan.conftest import STORAGE_LOCATION_1_CURRENT_LOCATION
+from AIPscan.models import AIP
+from AIPscan.models import Agent
+from AIPscan.models import FetchJob
+from AIPscan.models import File
+from AIPscan.models import FileType
+from AIPscan.models import Pipeline
+from AIPscan.models import StorageLocation
+from AIPscan.models import StorageService
 
 FIXTURES_DIR = "fixtures"
 
@@ -46,7 +45,7 @@ PRESERVATION_FILE_DICT["related_uuid"] = str(uuid.uuid4())
 
 def test_create_storage_location_object(app_instance):
     LOCATION_UUID = str(uuid.uuid4())
-    CURRENT_LOCATION = "/api/v2/location/{}".format(LOCATION_UUID)
+    CURRENT_LOCATION = f"/api/v2/location/{LOCATION_UUID}"
     DESCRIPTION = "My test AIP Store location"
     STORAGE_SERVICE_ID = 1
 
@@ -68,7 +67,7 @@ def test_create_storage_location_object(app_instance):
 
 def test_create_pipeline_object(app_instance):
     LOCATION_UUID = str(uuid.uuid4())
-    ORIGIN_PIPELINE = "/api/v2/pipeline/{}".format(LOCATION_UUID)
+    ORIGIN_PIPELINE = f"/api/v2/pipeline/{LOCATION_UUID}"
     DASHBOARD_URL = "http://tessas-am-dashboard.example.com"
 
     database_helpers.create_pipeline_object(

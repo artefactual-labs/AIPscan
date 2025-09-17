@@ -8,29 +8,29 @@ import celery
 import pytest
 
 from AIPscan import test_helpers
-from AIPscan.Aggregator.tasks import (
-    TaskError,
-    delete_aip,
-    delete_fetch_job,
-    delete_storage_service,
-    get_mets,
-    handle_deletion,
-    index_task,
-    make_request,
-    parse_package_list_file,
-    process_packages,
-    start_index_task,
-)
-from AIPscan.Aggregator.tests import (
-    INVALID_JSON,
-    REQUEST_URL,
-    REQUEST_URL_WITHOUT_API_KEY,
-    RESPONSE_DICT,
-    VALID_JSON,
-    MockResponse,
-)
+from AIPscan.Aggregator.tasks import TaskError
+from AIPscan.Aggregator.tasks import delete_aip
+from AIPscan.Aggregator.tasks import delete_fetch_job
+from AIPscan.Aggregator.tasks import delete_storage_service
+from AIPscan.Aggregator.tasks import get_mets
+from AIPscan.Aggregator.tasks import handle_deletion
+from AIPscan.Aggregator.tasks import index_task
+from AIPscan.Aggregator.tasks import make_request
+from AIPscan.Aggregator.tasks import parse_package_list_file
+from AIPscan.Aggregator.tasks import process_packages
+from AIPscan.Aggregator.tasks import start_index_task
+from AIPscan.Aggregator.tests import INVALID_JSON
+from AIPscan.Aggregator.tests import REQUEST_URL
+from AIPscan.Aggregator.tests import REQUEST_URL_WITHOUT_API_KEY
+from AIPscan.Aggregator.tests import RESPONSE_DICT
+from AIPscan.Aggregator.tests import VALID_JSON
+from AIPscan.Aggregator.tests import MockResponse
 from AIPscan.Aggregator.types import StorageServicePackage
-from AIPscan.models import AIP, Agent, FetchJob, StorageService, index_tasks
+from AIPscan.models import AIP
+from AIPscan.models import Agent
+from AIPscan.models import FetchJob
+from AIPscan.models import StorageService
+from AIPscan.models import index_tasks
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 FIXTURES_DIR = os.path.join(SCRIPT_DIR, "fixtures")
@@ -169,7 +169,7 @@ def test_get_mets_task(app_instance, tmpdir, mocker, fixture_path, package_uuid)
         mocker.call(mets_file),
     ]
     delete_mets_file.assert_has_calls(delete_calls, any_order=True)
-    delete_mets_file.call_count == 3
+    assert delete_mets_file.call_count == 3
 
     # Test that custom logger was used
     assert (

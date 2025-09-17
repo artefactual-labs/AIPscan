@@ -1,11 +1,9 @@
 import json
 import pathlib
 
-from AIPscan.Aggregator.task_helpers import (
-    format_api_url_with_limit_offset,
-    get_packages_directory,
-    parse_package_list_file,
-)
+from AIPscan.Aggregator.task_helpers import format_api_url_with_limit_offset
+from AIPscan.Aggregator.task_helpers import get_packages_directory
+from AIPscan.Aggregator.task_helpers import parse_package_list_file
 from AIPscan.Aggregator.tasks import make_request
 
 

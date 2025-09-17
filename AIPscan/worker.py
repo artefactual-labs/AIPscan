@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """This module defines and initalizes a Celery worker.
 
 Since Celery workers are run separately from the Flask application (for

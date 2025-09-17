@@ -1,13 +1,13 @@
-# -*- coding: utf-8 -*-
-
 """Test the efficacy of the agents_transfers function which supplies
 the ingest log report and agents-transfers API endpoint.
 """
 
 import pytest
 
-from AIPscan.conftest import AIP_CREATION_TIME, INGEST_EVENT_CREATION_TIME
-from AIPscan.Data import fields, report_data
+from AIPscan.conftest import AIP_CREATION_TIME
+from AIPscan.conftest import INGEST_EVENT_CREATION_TIME
+from AIPscan.Data import fields
+from AIPscan.Data import report_data
 from AIPscan.helpers import parse_datetime_bound
 
 DAY_BEFORE_AIP_CREATION = parse_datetime_bound("2020-12-01")

@@ -1,19 +1,18 @@
-# -*- coding: utf-8 -*-
-
 from datetime import datetime
 
 import pytest
 
 from AIPscan import typesense_test_helpers
-from AIPscan.conftest import AIP_1_CREATION_DATE, AIP_2_CREATION_DATE
+from AIPscan.conftest import AIP_1_CREATION_DATE
+from AIPscan.conftest import AIP_2_CREATION_DATE
 from AIPscan.conftest import ORIGINAL_FILE_SIZE as JPEG_1_01_FILE_SIZE
 from AIPscan.conftest import PRESERVATION_FILE_SIZE as JPEG_1_02_FILE_SIZE
-from AIPscan.Data import fields, report_data, report_data_typesense
-from AIPscan.Data.tests import (
-    MOCK_STORAGE_SERVICE,
-    MOCK_STORAGE_SERVICE_ID,
-    MOCK_STORAGE_SERVICE_NAME,
-)
+from AIPscan.Data import fields
+from AIPscan.Data import report_data
+from AIPscan.Data import report_data_typesense
+from AIPscan.Data.tests import MOCK_STORAGE_SERVICE
+from AIPscan.Data.tests import MOCK_STORAGE_SERVICE_ID
+from AIPscan.Data.tests import MOCK_STORAGE_SERVICE_NAME
 from AIPscan.helpers import parse_datetime_bound
 from AIPscan.test_helpers import create_test_storage_location
 

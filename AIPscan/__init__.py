@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 __version__ = "0.7.0b"
 __version_info__ = tuple(int(i) for i in __version__.split(".") if i.isdigit())
 
@@ -6,7 +5,8 @@ __all__ = ["__version__", "__version_info__"]
 
 import os
 
-from flask import Flask, render_template
+from flask import Flask
+from flask import render_template
 from flask_sqlalchemy import SQLAlchemy
 
 from AIPscan.celery import configure_celery
@@ -24,7 +24,9 @@ def create_app(config_name="default"):
 
     # Display DB settings
     if "SQLALCHEMY_DATABASE_URI" in os.environ:
-        print(f"SQLALCHEMY_DATABASE_URI set to {os.environ['SQLALCHEMY_DATABASE_URI']}")
+        app.logger.info(
+            f"SQLALCHEMY_DATABASE_URI set to {os.environ['SQLALCHEMY_DATABASE_URI']}"
+        )
 
     with app.app_context():
         from AIPscan.Aggregator.views import aggregator

@@ -8,19 +8,17 @@ from io import StringIO
 import tzlocal
 
 from AIPscan import db
-from AIPscan.models import (
-    AIP,
-    Agent,
-    Event,
-    EventAgent,
-    FetchJob,
-    File,
-    FileType,
-    Pipeline,
-    StorageLocation,
-    StorageService,
-    index_tasks,
-)
+from AIPscan.models import AIP
+from AIPscan.models import Agent
+from AIPscan.models import Event
+from AIPscan.models import EventAgent
+from AIPscan.models import FetchJob
+from AIPscan.models import File
+from AIPscan.models import FileType
+from AIPscan.models import Pipeline
+from AIPscan.models import StorageLocation
+from AIPscan.models import StorageService
+from AIPscan.models import index_tasks
 
 TEST_SHA_256 = "79c16fa9573ec46c5f60fd54b34f314159e0623ca53d8d2f00c5875dbb4e0dfd"
 

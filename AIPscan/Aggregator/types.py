@@ -1,13 +1,10 @@
-# -*- coding: utf-8 -*-
-
-
 class PackageError(Exception):
     """There are things we cannot do with the package type unless it
     is completed properly. Let the user know.
     """
 
 
-class StorageServicePackage(object):
+class StorageServicePackage:
     """Type that can record information about a storage service package
     and provide helpers as to whether or not we should process it.
     """
@@ -51,9 +48,7 @@ class StorageServicePackage(object):
             self.origin_pipeline = kwargs.get(ORIGIN_PIPELINE, self.origin_pipeline)
 
     def __repr__(self):
-        ret = "aip: '{}'; dip: '{}'; sip: '{}'; deleted: '{}'; replica: '{}';".format(
-            self.aip, self.dip, self.sip, self.deleted, self.replica
-        )
+        ret = f"aip: '{self.aip}'; dip: '{self.dip}'; sip: '{self.sip}'; deleted: '{self.deleted}'; replica: '{self.replica}';"
         return ret
 
     def __eq__(self, other):
@@ -157,6 +152,6 @@ class StorageServicePackage(object):
                 rel = self.current_path[left_offset:right_offset]
             else:
                 rel = self.current_path[left_offset:]
-        except AttributeError:
-            raise PackageError("Current path doesn't exist for the package")
-        return "{}/data/METS.{}.xml".format(rel, self.uuid)
+        except AttributeError as err:
+            raise PackageError("Current path doesn't exist for the package") from err
+        return f"{rel}/data/METS.{self.uuid}.xml"

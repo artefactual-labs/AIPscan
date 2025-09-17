@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from AIPscan import db
 from AIPscan.models import package_tasks
 

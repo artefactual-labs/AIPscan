@@ -30,13 +30,45 @@ dependencies = [
 [dependency-groups]
 dev = [
     "faker",
-    "flake8",
-    "flake8-builtins",
     "pytest",
     "pytest-cov",
     "pytest-mock",
+    "ruff>=0.13.0",
     "tzlocal",
 ]
 linting = [
     "pre-commit-uv"
 ]
+
+[tool.ruff]
+target-version = "py39"
+
+[tool.ruff.lint]
+select = [
+    "A",
+    "B",
+    "C",
+    "E",
+    "F",
+    "I",
+    "T",
+    "UP",
+    "W",
+]
+ignore = [
+    "E501", # lines-too-long
+    "C416", # unnecessary-comprehension
+    "C408", # unnecessary-collection-call
+    "C401", # unnecessary-generator-set
+    "C405", # unnecessary-literal-set
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tools/**/*" = ["T201"]
+
+[tool.ruff.lint.isort]
+force-single-line = true
+
+[tool.ruff.lint.mccabe]
+# We have a couple of instances where complexity > 10.
+max-complexity = 12

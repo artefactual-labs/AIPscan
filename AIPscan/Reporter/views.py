@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """Views contains the primary routes for navigation around AIPscan's
 Reporter module. Reports themselves as siphoned off into separate module
 files with singular responsibility for a report.
@@ -8,47 +6,43 @@ files with singular responsibility for a report.
 from datetime import datetime
 
 import requests
-from flask import (
-    Response,
-    abort,
-    jsonify,
-    make_response,
-    render_template,
-    request,
-    session,
-)
+from flask import Response
+from flask import abort
+from flask import current_app
+from flask import jsonify
+from flask import make_response
+from flask import render_template
+from flask import request
+from flask import session
 
 from AIPscan.Aggregator.task_helpers import get_mets_url
-from AIPscan.models import (
-    AIP,
-    Event,
-    FetchJob,
-    File,
-    FileType,
-    Pipeline,
-    StorageLocation,
-    StorageService,
-)
+from AIPscan.models import AIP
+from AIPscan.models import Event
+from AIPscan.models import FetchJob
+from AIPscan.models import File
+from AIPscan.models import FileType
+from AIPscan.models import Pipeline
+from AIPscan.models import StorageLocation
+from AIPscan.models import StorageService
 
 # Flask's idiom requires code using routing decorators to be imported
 # up-front. But that means it might not be called directly by a module.
-from AIPscan.Reporter import (  # noqa: F401
-    report_aip_contents,
-    report_aips_by_format,
-    report_aips_by_puid,
-    report_format_versions_count,
-    report_formats_count,
-    report_ingest_log,
-    report_largest_aips,
-    report_largest_files,
-    report_preservation_derivatives,
-    report_storage_locations,
-    reporter,
-    request_params,
-    sort_puids,
-)
+from AIPscan.Reporter import report_aip_contents  # noqa: F401
+from AIPscan.Reporter import report_aips_by_format  # noqa: F401
+from AIPscan.Reporter import report_aips_by_puid  # noqa: F401
+from AIPscan.Reporter import report_format_versions_count  # noqa: F401
+from AIPscan.Reporter import report_formats_count  # noqa: F401
+from AIPscan.Reporter import report_ingest_log  # noqa: F401
+from AIPscan.Reporter import report_largest_aips  # noqa: F401
+from AIPscan.Reporter import report_largest_files  # noqa: F401
+from AIPscan.Reporter import report_preservation_derivatives  # noqa: F401
+from AIPscan.Reporter import report_storage_locations  # noqa: F401
+from AIPscan.Reporter import reporter  # noqa: F401
+from AIPscan.Reporter import request_params  # noqa: F401
+from AIPscan.Reporter import sort_puids  # noqa: F401
 from AIPscan.Reporter.database_helpers import get_possible_storage_locations
-from AIPscan.Reporter.helpers import calculate_paging_window, remove_dict_none_values
+from AIPscan.Reporter.helpers import calculate_paging_window
+from AIPscan.Reporter.helpers import remove_dict_none_values
 
 
 def _get_storage_service(storage_service_id):
@@ -135,8 +129,10 @@ def view_aips():
     storage_location_id = request.args.get(request_params.STORAGE_LOCATION_ID)
     try:
         storage_location = _get_storage_location(storage_location_id)
-    except Exception as e:
-        print(e)
+    except Exception:
+        current_app.logger.exception(
+            f"Failed to get storage location id={storage_location_id}"
+        )
 
     query = request.args.get("query", "")
 

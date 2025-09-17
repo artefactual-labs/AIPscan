@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """AIPscan API entry point
 
 Provides metadata to the swagger endpoint as well as importing the

@@ -1,20 +1,21 @@
-# -*- coding: utf-8 -*-
 import tempfile
 
 import pandas as pd
 import plotly.express as px
-from flask import render_template, request, send_file
+from flask import render_template
+from flask import request
+from flask import send_file
 
-from AIPscan.Data import fields, report_data
-from AIPscan.helpers import parse_bool, parse_datetime_bound
-from AIPscan.Reporter import (
-    download_csv,
-    format_size_for_csv,
-    get_display_end_date,
-    reporter,
-    request_params,
-    translate_headers,
-)
+from AIPscan.Data import fields
+from AIPscan.Data import report_data
+from AIPscan.helpers import parse_bool
+from AIPscan.helpers import parse_datetime_bound
+from AIPscan.Reporter import download_csv
+from AIPscan.Reporter import format_size_for_csv
+from AIPscan.Reporter import get_display_end_date
+from AIPscan.Reporter import reporter
+from AIPscan.Reporter import request_params
+from AIPscan.Reporter import translate_headers
 
 FIGURE_HTML = "figure"
 ERR_HTML = "<div>There is no data for this chart, please check you are looking at a valid storage service.</div>"
