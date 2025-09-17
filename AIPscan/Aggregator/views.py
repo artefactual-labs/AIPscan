@@ -1,39 +1,34 @@
-# -*- coding: utf-8 -*-
-
 import os
 import time
 from datetime import datetime
 
 from celery.result import AsyncResult
-from flask import (
-    Blueprint,
-    abort,
-    flash,
-    jsonify,
-    redirect,
-    render_template,
-    request,
-    url_for,
-)
+from flask import Blueprint
+from flask import abort
+from flask import flash
+from flask import jsonify
+from flask import redirect
+from flask import render_template
+from flask import request
+from flask import url_for
 
-from AIPscan import db, decorators, typesense_helpers
-from AIPscan.Aggregator import database_helpers, tasks
+from AIPscan import db
+from AIPscan import decorators
+from AIPscan import typesense_helpers
+from AIPscan.Aggregator import database_helpers
+from AIPscan.Aggregator import tasks
 from AIPscan.Aggregator.forms import StorageServiceForm
-from AIPscan.Aggregator.task_helpers import (
-    format_api_url_with_limit_offset,
-    get_packages_directory,
-)
+from AIPscan.Aggregator.task_helpers import format_api_url_with_limit_offset
+from AIPscan.Aggregator.task_helpers import get_packages_directory
 from AIPscan.Aggregator.tasks import TaskError
 from AIPscan.extensions import celery
 
 # Custom celery Models.
-from AIPscan.models import (
-    FetchJob,
-    StorageService,
-    get_mets_tasks,
-    index_tasks,
-    package_tasks,
-)
+from AIPscan.models import FetchJob
+from AIPscan.models import StorageService
+from AIPscan.models import get_mets_tasks
+from AIPscan.models import index_tasks
+from AIPscan.models import package_tasks
 
 aggregator = Blueprint("aggregator", __name__, template_folder="templates")
 
@@ -67,7 +62,7 @@ def _test_storage_service_connection(storage_service):
     try:
         _ = tasks.make_request(request_url, request_url_without_api_key)
     except TaskError as err:
-        raise ConnectionError(str(err))
+        raise ConnectionError(str(err)) from err
 
 
 @aggregator.route("/", methods=["GET"])
@@ -142,7 +137,7 @@ def edit_storage_service(storage_service_id):
                 ss.default = False
         storage_service.default = form.default.data
         db.session.commit()
-        flash("Storage service {} updated".format(form.name.data))
+        flash(f"Storage service {form.name.data} updated")
         return redirect(url_for("aggregator.storage_services"))
     return render_template(
         "edit_storage_service.html", title="Storage Service", form=form
@@ -164,7 +159,7 @@ def new_storage_service():
         )
         db.session.add(ss)
         db.session.commit()
-        flash("New storage service {} created".format(form.name.data))
+        flash(f"New storage service {form.name.data} created")
         return redirect(url_for("aggregator.storage_services"))
     return render_template(
         "edit_storage_service.html", title="Storage Service", form=form
@@ -190,7 +185,7 @@ def delete_storage_service(storage_service_id):
     return render_template(
         "result_message.html",
         title="Storage Service",
-        message="Storage service '{}' is being deleted".format(storage_service.name),
+        message=f"Storage service '{storage_service.name}' is being deleted",
     )
 
 
@@ -264,7 +259,7 @@ def delete_fetch_job(fetch_job_id):
     storage_service = StorageService.query.get(fetch_job.storage_service_id)
     tasks.delete_fetch_job.delay(fetch_job_id)
 
-    flash("Fetch job {} is being deleted".format(fetch_job.download_start))
+    flash(f"Fetch job {fetch_job.download_start} is being deleted")
     return redirect(
         url_for("aggregator.storage_service", storage_service_id=storage_service.id)
     )
@@ -318,7 +313,7 @@ def get_mets_task_status(coordinatorid):
             response.append(
                 {
                     "state": mets_task_status,
-                    "package": "METS.{}.xml".format(package_uuid),
+                    "package": f"METS.{package_uuid}.xml",
                     "totalAIPs": totalAIPs,
                 }
             )
@@ -337,7 +332,7 @@ def get_mets_task_status(coordinatorid):
     obj.download_end = downloadEnd
     db.session.commit()
     response = {"state": "COMPLETED"}
-    flash("Fetch Job {} completed".format(downloadStart))
+    flash(f"Fetch Job {downloadStart} completed")
     return jsonify(response)
 
 

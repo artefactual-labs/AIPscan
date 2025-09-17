@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import json
 import os
 import shutil
@@ -7,31 +6,26 @@ from datetime import datetime
 import requests
 from celery.utils.log import get_task_logger
 
-from AIPscan import db, typesense_helpers
+from AIPscan import db
+from AIPscan import typesense_helpers
 from AIPscan.Aggregator import database_helpers
 from AIPscan.Aggregator.celery_helpers import write_celery_update
-from AIPscan.Aggregator.mets_parse_helpers import (
-    METSError,
-    download_mets,
-    get_aip_original_name,
-    parse_mets_with_metsrw,
-)
-from AIPscan.Aggregator.task_helpers import (
-    format_api_url_with_limit_offset,
-    parse_package_list_file,
-    process_package_object,
-    summarize_fetch_job_results,
-)
+from AIPscan.Aggregator.mets_parse_helpers import METSError
+from AIPscan.Aggregator.mets_parse_helpers import download_mets
+from AIPscan.Aggregator.mets_parse_helpers import get_aip_original_name
+from AIPscan.Aggregator.mets_parse_helpers import parse_mets_with_metsrw
+from AIPscan.Aggregator.task_helpers import format_api_url_with_limit_offset
+from AIPscan.Aggregator.task_helpers import parse_package_list_file
+from AIPscan.Aggregator.task_helpers import process_package_object
+from AIPscan.Aggregator.task_helpers import summarize_fetch_job_results
 from AIPscan.extensions import celery
 from AIPscan.helpers import file_sha256_hash
-from AIPscan.models import (
-    AIP,
-    Agent,
-    FetchJob,
-    StorageService,
-    get_mets_tasks,
-    index_tasks,
-)
+from AIPscan.models import AIP
+from AIPscan.models import Agent
+from AIPscan.models import FetchJob
+from AIPscan.models import StorageService
+from AIPscan.models import get_mets_tasks
+from AIPscan.models import index_tasks
 
 logger = get_task_logger(__name__)
 
@@ -45,9 +39,7 @@ class TaskError(Exception):
 
 def write_packages_json(count, packages, packages_directory):
     """Write package JSON to disk"""
-    json_download_file = os.path.join(
-        packages_directory, "packages{}.json".format(count)
-    )
+    json_download_file = os.path.join(packages_directory, f"packages{count}.json")
     logger.info("Packages file is downloaded to '%s'", json_download_file)
     try:
         with open(json_download_file, "w") as json_file:
@@ -147,7 +139,7 @@ def workflow_coordinator(
     all_packages = []
     for package_list_no in range(1, total_package_lists + 1):
         json_file_path = os.path.join(
-            packages_directory, "packages{}.json".format(package_list_no)
+            packages_directory, f"packages{package_list_no}.json"
         )
         # Process packages and create a new worker to download and parse
         # each METS separately.
@@ -174,17 +166,15 @@ def make_request(request_url, request_url_without_api_key):
     """
     response = requests.get(request_url)
     if response.status_code != requests.codes.ok:
-        err = "Check the URL and API details, cannot connect to: `{}`".format(
-            request_url_without_api_key
-        )
+        err = f"Check the URL and API details, cannot connect to: `{request_url_without_api_key}`"
         logger.error(err)
-        raise TaskError("Bad response from server: {}".format(err))
+        raise TaskError(f"Bad response from server: {err}")
     try:
         packages = response.json()
-    except json.JSONDecodeError:
-        err = "Response is OK, but cannot decode JSON from server"
-        logger.error(err)
-        raise TaskError(err)
+    except json.JSONDecodeError as exc:
+        msg = "Response is OK, but cannot decode JSON from server"
+        logger.error(msg)
+        raise TaskError(msg) from exc
     return packages
 
 
@@ -225,7 +215,7 @@ def package_lists_request(self, storage_service_id, timestamp, packages_director
     next_url = packages.get(META, {}).get(NEXT, None)
     write_packages_json(packages_count, packages, packages_directory)
     while next_url is not None:
-        next_request = "{}{}".format(base_url, next_url)
+        next_request = f"{base_url}{next_url}"
         next_packages = make_request(next_request, request_url_without_api_key)
         packages_count += 1
         write_packages_json(packages_count, next_packages, packages_directory)
@@ -233,9 +223,7 @@ def package_lists_request(self, storage_service_id, timestamp, packages_director
         self.update_state(
             state=IN_PROGRESS,
             meta={
-                "message": "Total packages: {} Total package lists: {}".format(
-                    total_packages, total_package_lists
-                )
+                "message": f"Total packages: {total_packages} Total package lists: {total_package_lists}"
             },
         )
 
@@ -328,15 +316,15 @@ def get_mets(
     matching_aip = AIP.query.filter_by(mets_sha256=mets_hash).first()
     if matching_aip is not None:
         tasklogger.info(
-            "Skipping METS file {} - identical to existing record".format(mets_name)
+            f"Skipping METS file {mets_name} - identical to existing record"
         )
         try:
             os.remove(download_file)
         except OSError as err:
-            tasklogger.warning("Unable to delete METS file: {}".format(err))
+            tasklogger.warning(f"Unable to delete METS file: {err}")
         return
 
-    tasklogger.info("Processing METS file {}".format(mets_name))
+    tasklogger.info(f"Processing METS file {mets_name}")
 
     try:
         mets = parse_mets_with_metsrw(download_file)
@@ -356,7 +344,7 @@ def get_mets(
     previous_aips = AIP.query.filter_by(uuid=package_uuid).all()
     for previous_aip in previous_aips:
         tasklogger.info(
-            "Deleting record for AIP {} to replace from newer METS".format(package_uuid)
+            f"Deleting record for AIP {package_uuid} to replace from newer METS"
         )
         database_helpers.delete_aip_object(previous_aip)
 
@@ -378,7 +366,7 @@ def get_mets(
     try:
         os.remove(download_file)
     except OSError as err:
-        tasklogger.warning("Unable to delete METS file: {}".format(err))
+        tasklogger.warning(f"Unable to delete METS file: {err}")
 
 
 @celery.task()

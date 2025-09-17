@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """Field name constants."""
 
 FIELD_FILE_FORMAT = "file_format"

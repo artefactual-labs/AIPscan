@@ -4,7 +4,8 @@ import uuid
 import pytest
 from flask import current_app
 
-from AIPscan.models import File, FileType
+from AIPscan.models import File
+from AIPscan.models import FileType
 from AIPscan.Reporter.report_aips_by_puid import get_format_string_from_puid
 
 EXPECTED_CSV_ORIGINAL = b"AIP Name,UUID,Count,Size,Size (bytes)\r\nTest AIP,111111111111-1111-1111-11111111,1,1.0 kB,1000\r\n"
@@ -90,9 +91,7 @@ def test_aips_by_puid(app_with_populated_files, original_files):
     """Test that report template renders."""
     with current_app.test_client() as test_client:
         response = test_client.get(
-            "/reporter/aips_by_puid/?amss_id=1&puid=fmt/353&original_files={}".format(
-                original_files
-            )
+            f"/reporter/aips_by_puid/?amss_id=1&puid=fmt/353&original_files={original_files}"
         )
         assert response.status_code == 200
 
@@ -110,9 +109,7 @@ def test_aips_by_puid_csv(app_with_populated_files, original_files, expected_csv
     """Test CSV export."""
     with current_app.test_client() as test_client:
         response = test_client.get(
-            "/reporter/aips_by_puid/?amss_id=1&puid=fmt/353&original_files={}&csv=True".format(
-                original_files
-            )
+            f"/reporter/aips_by_puid/?amss_id=1&puid=fmt/353&original_files={original_files}&csv=True"
         )
         assert response.status_code == 200
         assert (

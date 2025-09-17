@@ -1,18 +1,18 @@
-# -*- coding: utf-8 -*-
 from operator import itemgetter
 
-from flask import render_template, request
+from flask import render_template
+from flask import request
 
-from AIPscan.Data import data, fields
-from AIPscan.helpers import parse_bool, parse_datetime_bound
-from AIPscan.Reporter import (
-    download_csv,
-    format_size_for_csv,
-    get_display_end_date,
-    reporter,
-    request_params,
-    translate_headers,
-)
+from AIPscan.Data import data
+from AIPscan.Data import fields
+from AIPscan.helpers import parse_bool
+from AIPscan.helpers import parse_datetime_bound
+from AIPscan.Reporter import download_csv
+from AIPscan.Reporter import format_size_for_csv
+from AIPscan.Reporter import get_display_end_date
+from AIPscan.Reporter import reporter
+from AIPscan.Reporter import request_params
+from AIPscan.Reporter import translate_headers
 
 CSV_HEADERS = [
     fields.FIELD_UUID,
@@ -49,12 +49,7 @@ def _create_aip_formats_string_representation(aips, separator="<br>"):
             count = format_.get(fields.FIELD_COUNT)
             if count > 1:
                 plural = "s"
-            format_string = "{puid} ({format_name}): {count} file{plural}".format(
-                puid=format_.get(fields.FIELD_PUID),
-                format_name=format_.get(fields.FIELD_FORMAT),
-                count=count,
-                plural=plural,
-            )
+            format_string = f"{format_.get(fields.FIELD_PUID)} ({format_.get(fields.FIELD_FORMAT)}): {count} file{plural}"
             formats.append(format_string)
         aip[fields.FIELD_FORMATS] = f"{separator}".join(
             [format_ for format_ in formats]
@@ -82,9 +77,8 @@ def _create_aip_formats_list_sorted_by_count(formats):
         format_info[fields.FIELD_PUID] = key
         format_info[fields.FIELD_FORMAT] = values.get(fields.FIELD_NAME)
         if values.get(fields.FIELD_VERSION):
-            format_info[fields.FIELD_FORMAT] = "{format_name} {version}".format(
-                format_name=values.get(fields.FIELD_NAME),
-                version=values.get(fields.FIELD_VERSION),
+            format_info[fields.FIELD_FORMAT] = (
+                f"{values.get(fields.FIELD_NAME)} {values.get(fields.FIELD_VERSION)}"
             )
         format_info[fields.FIELD_COUNT] = values.get(fields.FIELD_COUNT)
         formats_list.append(format_info)

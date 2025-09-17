@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """This module contains code related to Celery configuration."""
 
 from AIPscan import extensions

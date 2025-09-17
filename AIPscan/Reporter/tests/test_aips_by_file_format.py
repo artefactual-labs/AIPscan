@@ -18,9 +18,7 @@ def test_aips_by_file_format(app_with_populated_files, original_files):
     """Test that report template renders."""
     with current_app.test_client() as test_client:
         response = test_client.get(
-            "/reporter/aips_by_file_format/?amss_id=1&file_format=Tagged Image File Format&original_files={}".format(
-                original_files
-            )
+            f"/reporter/aips_by_file_format/?amss_id=1&file_format=Tagged Image File Format&original_files={original_files}"
         )
         assert response.status_code == 200
 
@@ -40,9 +38,7 @@ def test_aips_by_file_format_csv(
     """Test CSV export."""
     with current_app.test_client() as test_client:
         response = test_client.get(
-            "/reporter/aips_by_file_format/?amss_id=1&file_format=Tagged Image File Format&original_files={}&csv=True".format(
-                original_files
-            )
+            f"/reporter/aips_by_file_format/?amss_id=1&file_format=Tagged Image File Format&original_files={original_files}&csv=True"
         )
         assert response.status_code == 200
         assert (

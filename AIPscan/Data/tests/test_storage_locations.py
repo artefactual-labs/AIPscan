@@ -2,13 +2,12 @@ from datetime import datetime
 
 import pytest
 
-from AIPscan.conftest import (
-    STORAGE_LOCATION_1_DESCRIPTION,
-    STORAGE_LOCATION_1_UUID,
-    STORAGE_LOCATION_2_DESCRIPTION,
-    STORAGE_LOCATION_2_UUID,
-)
-from AIPscan.Data import fields, report_data
+from AIPscan.conftest import STORAGE_LOCATION_1_DESCRIPTION
+from AIPscan.conftest import STORAGE_LOCATION_1_UUID
+from AIPscan.conftest import STORAGE_LOCATION_2_DESCRIPTION
+from AIPscan.conftest import STORAGE_LOCATION_2_UUID
+from AIPscan.Data import fields
+from AIPscan.Data import report_data
 from AIPscan.helpers import parse_datetime_bound
 
 ORDERED_LIST = [{fields.FIELD_AIPS: 8}, {fields.FIELD_AIPS: 3}]

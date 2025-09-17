@@ -1,20 +1,21 @@
-# -*- coding: utf-8 -*-
 import datetime
 import uuid
 
 import pytest
 
-from AIPscan import typesense_helpers, typesense_test_helpers
-from AIPscan.Data import fields, report_data, report_data_typesense
-from AIPscan.Data.tests import (
-    MOCK_AIP,
-    MOCK_AIP_NAME,
-    MOCK_AIP_UUID,
-    MOCK_STORAGE_SERVICE,
-    MOCK_STORAGE_SERVICE_ID,
-)
+from AIPscan import typesense_helpers
+from AIPscan import typesense_test_helpers
+from AIPscan.Data import fields
+from AIPscan.Data import report_data
+from AIPscan.Data import report_data_typesense
+from AIPscan.Data.tests import MOCK_AIP
+from AIPscan.Data.tests import MOCK_AIP_NAME
+from AIPscan.Data.tests import MOCK_AIP_UUID
+from AIPscan.Data.tests import MOCK_STORAGE_SERVICE
+from AIPscan.Data.tests import MOCK_STORAGE_SERVICE_ID
 from AIPscan.helpers import parse_datetime_bound
-from AIPscan.models import File, FileType
+from AIPscan.models import File
+from AIPscan.models import FileType
 
 TEST_FILES = [
     File(

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """Infos namespace
 
 At the moment, this is just a demonstration endpoint to show how
@@ -7,7 +5,9 @@ a namespace can be created and used. We only use it to return version
 from the application itself.
 """
 
-from flask_restx import Namespace, Resource, fields
+from flask_restx import Namespace
+from flask_restx import Resource
+from flask_restx import fields
 
 import AIPscan
 

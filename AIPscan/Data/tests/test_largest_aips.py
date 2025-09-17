@@ -1,7 +1,10 @@
 import pytest
 
-from AIPscan import typesense_helpers, typesense_test_helpers
-from AIPscan.Data import fields, report_data, report_data_typesense
+from AIPscan import typesense_helpers
+from AIPscan import typesense_test_helpers
+from AIPscan.Data import fields
+from AIPscan.Data import report_data
+from AIPscan.Data import report_data_typesense
 from AIPscan.helpers import parse_datetime_bound
 from AIPscan.models import AIP
 

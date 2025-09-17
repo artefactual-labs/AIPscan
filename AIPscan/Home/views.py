@@ -1,6 +1,6 @@
-# -*- coding: utf-8 -*-
-
-from flask import Blueprint, redirect, url_for
+from flask import Blueprint
+from flask import redirect
+from flask import url_for
 
 home = Blueprint("home", __name__)
 

@@ -27,9 +27,7 @@ def test_preservation_derivatives_csv(
     """Test CSV export."""
     with current_app.test_client() as test_client:
         response = test_client.get(
-            "/reporter/preservation_derivatives/?amss_id=1&aip_uuid={}&csv=True".format(
-                aip_uuid
-            )
+            f"/reporter/preservation_derivatives/?amss_id=1&aip_uuid={aip_uuid}&csv=True"
         )
         assert response.status_code == 200
         assert (

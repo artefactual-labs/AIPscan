@@ -57,9 +57,7 @@ def test_storage_locations_usage_over_time_csv(
     """Test CSV export."""
     with current_app.test_client() as test_client:
         response = test_client.get(
-            "/reporter/storage_locations_usage_over_time/?amss_id=1&csv=True&start_date=2020-01-01&end_date=2020-06-30&metric={}&cumulative={}".format(
-                metric, cumulative
-            )
+            f"/reporter/storage_locations_usage_over_time/?amss_id=1&csv=True&start_date=2020-01-01&end_date=2020-06-30&metric={metric}&cumulative={cumulative}"
         )
         assert response.status_code == 200
         assert (

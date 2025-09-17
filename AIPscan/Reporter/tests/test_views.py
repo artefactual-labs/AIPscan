@@ -10,7 +10,7 @@ def test_download_mets(app_with_populated_files, mocker):
     # Mock storage server API request response
     request = mocker.patch("requests.get")
 
-    class MockResponse(object):
+    class MockResponse:
         pass
 
     return_response = MockResponse()

@@ -1,10 +1,12 @@
-# -*- coding: utf-8 -*-
-
 """Data endpoints optimized for providing general overviews of AIPs."""
 
-from AIPscan.Data import fields, report_dict
+from AIPscan.Data import fields
+from AIPscan.Data import report_dict
 from AIPscan.helpers import _simplify_datetime
-from AIPscan.models import AIP, File, FileType, StorageService
+from AIPscan.models import AIP
+from AIPscan.models import File
+from AIPscan.models import FileType
+from AIPscan.models import StorageService
 
 
 def storage_services():
@@ -112,9 +114,7 @@ def aip_file_format_overview(
 
             formats[format_key] = file_.file_format
             if file_.format_version:
-                formats[format_key] = "{} {}".format(
-                    file_.file_format, file_.format_version
-                )
+                formats[format_key] = f"{file_.file_format} {file_.format_version}"
 
             size = aip_info[fields.FIELD_SIZE]
             try:
@@ -127,12 +127,12 @@ def aip_file_format_overview(
                 aip_info[fields.FIELD_FORMATS][format_key] = {}
                 aip_info[fields.FIELD_FORMATS][format_key][fields.FIELD_COUNT] = 1
                 try:
-                    aip_info[fields.FIELD_FORMATS][format_key][
-                        fields.FIELD_VERSION
-                    ] = file_.format_version
-                    aip_info[fields.FIELD_FORMATS][format_key][
-                        fields.FIELD_NAME
-                    ] = file_.file_format
+                    aip_info[fields.FIELD_FORMATS][format_key][fields.FIELD_VERSION] = (
+                        file_.format_version
+                    )
+                    aip_info[fields.FIELD_FORMATS][format_key][fields.FIELD_NAME] = (
+                        file_.file_format
+                    )
                 except AttributeError:
                     pass
             else:
@@ -188,11 +188,11 @@ def derivative_overview(storage_service_id, storage_location_id=None):
             original_format_version = original_file.format_version
             if original_format_version is None:
                 original_format_version = ""
-            file_derivative_pair[fields.FIELD_ORIGINAL_FORMAT] = "{} {} ({})".format(
-                original_file.file_format, original_format_version, original_file.puid
+            file_derivative_pair[fields.FIELD_ORIGINAL_FORMAT] = (
+                f"{original_file.file_format} {original_format_version} ({original_file.puid})"
             )
-            file_derivative_pair[fields.FIELD_DERIVATIVE_FORMAT] = "{}".format(
-                preservation_derivative.file_format
+            file_derivative_pair[fields.FIELD_DERIVATIVE_FORMAT] = (
+                f"{preservation_derivative.file_format}"
             )
             aip_report[fields.FIELD_RELATED_PAIRING].append(file_derivative_pair)
 

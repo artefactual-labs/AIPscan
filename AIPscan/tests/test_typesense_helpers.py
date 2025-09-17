@@ -7,7 +7,8 @@ from pytz import timezone
 from AIPscan import test_helpers
 from AIPscan import typesense_helpers as ts_helpers
 from AIPscan import typesense_test_helpers
-from AIPscan.models import File, Pipeline
+from AIPscan.models import File
+from AIPscan.models import Pipeline
 
 
 def test_typesense_enabled(app_instance, enable_typesense):

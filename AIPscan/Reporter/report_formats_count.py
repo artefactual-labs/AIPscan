@@ -1,33 +1,33 @@
-# -*- coding: utf-8 -*-
-
 """Report formats count consists of the tabular report, plot, and
 chart which describe the file formats present across the AIPs in a
 storage service with AIPs filtered by date range.
 """
 
 from collections import Counter
-from datetime import datetime, timedelta
+from datetime import datetime
+from datetime import timedelta
 
-from flask import render_template, request
+from flask import render_template
+from flask import request
 
 from AIPscan import typesense_helpers as ts_helpers
-from AIPscan.Data import (
-    fields,
-    get_storage_location_description,
-    get_storage_service_name,
-    report_data,
-    report_data_typesense,
-)
-from AIPscan.helpers import filesizeformat, parse_bool, parse_datetime_bound
-from AIPscan.models import AIP, File, FileType
-from AIPscan.Reporter import (
-    download_csv,
-    format_size_for_csv,
-    get_display_end_date,
-    reporter,
-    request_params,
-    translate_headers,
-)
+from AIPscan.Data import fields
+from AIPscan.Data import get_storage_location_description
+from AIPscan.Data import get_storage_service_name
+from AIPscan.Data import report_data
+from AIPscan.Data import report_data_typesense
+from AIPscan.helpers import filesizeformat
+from AIPscan.helpers import parse_bool
+from AIPscan.helpers import parse_datetime_bound
+from AIPscan.models import AIP
+from AIPscan.models import File
+from AIPscan.models import FileType
+from AIPscan.Reporter import download_csv
+from AIPscan.Reporter import format_size_for_csv
+from AIPscan.Reporter import get_display_end_date
+from AIPscan.Reporter import reporter
+from AIPscan.Reporter import request_params
+from AIPscan.Reporter import translate_headers
 
 HEADERS = [fields.FIELD_FORMAT, fields.FIELD_COUNT, fields.FIELD_SIZE]
 

@@ -1,6 +1,6 @@
-# -*- coding: utf-8 -*-
 import hashlib
-from datetime import datetime, timedelta
+from datetime import datetime
+from datetime import timedelta
 
 
 def parse_bool(value, default=True):

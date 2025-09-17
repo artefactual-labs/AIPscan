@@ -1,13 +1,14 @@
-# -*- coding: utf-8 -*-
-
 """This module defines shared AIPscan pytest fixtures."""
+
 import uuid
 from datetime import datetime
 
 import pytest
 from flask import current_app
 
-from AIPscan import create_app, db, test_helpers
+from AIPscan import create_app
+from AIPscan import db
+from AIPscan import test_helpers
 from AIPscan.models import FileType
 
 AIP_DATE_FORMAT = "%Y-%m-%d"
@@ -45,7 +46,7 @@ ORIGINAL_FILE_2_NAME = "original-file-2.jpg"
 ORIGINAL_FILE_2_UUID = "444444444444-4444-4444-44444444"
 
 ORIGIN_PIPELINE_UUID = "777777777777-7777-7777-77777777"
-ORIGIN_PIPELINE = "/api/v2/pipeline/{}/".format(ORIGIN_PIPELINE_UUID)
+ORIGIN_PIPELINE = f"/api/v2/pipeline/{ORIGIN_PIPELINE_UUID}/"
 
 PRESERVATION_FILE_1_NAME = "preservation-file-1.tif"
 PRESERVATION_FILE_2_NAME = "preservation-file-2.tif"
@@ -61,15 +62,11 @@ PUID_2 = "fmt/61"
 PUID_3 = "x-fmt/111"
 
 STORAGE_LOCATION_1_UUID = "2bbcea40-eb4d-4076-a81d-1ab046e34f6a"
-STORAGE_LOCATION_1_CURRENT_LOCATION = "/api/v2/location/{}/".format(
-    STORAGE_LOCATION_1_UUID
-)
+STORAGE_LOCATION_1_CURRENT_LOCATION = f"/api/v2/location/{STORAGE_LOCATION_1_UUID}/"
 STORAGE_LOCATION_1_DESCRIPTION = "AIP Store Location 1"
 
 STORAGE_LOCATION_2_UUID = "e69beb57-0e32-4c45-8db7-9b7723724a05"
-STORAGE_LOCATION_2_CURRENT_LOCATION = "/api/v2/location/{}/".format(
-    STORAGE_LOCATION_2_UUID
-)
+STORAGE_LOCATION_2_CURRENT_LOCATION = f"/api/v2/location/{STORAGE_LOCATION_2_UUID}/"
 STORAGE_LOCATION_2_DESCRIPTION = "AIP Store Location 2"
 
 STORAGE_SERVICE_NAME = "Test Storage Service"

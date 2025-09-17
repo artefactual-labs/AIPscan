@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """Data namespace
 
 Return 'unkempt' data from AIPscan so that it can be filtered, cut, and
@@ -8,11 +6,13 @@ raw. No data is without bias.
 """
 
 from flask import request
-from flask_restx import Namespace, Resource
+from flask_restx import Namespace
+from flask_restx import Resource
 
 from AIPscan.API import fields
 from AIPscan.Data import data
-from AIPscan.helpers import parse_bool, parse_datetime_bound
+from AIPscan.helpers import parse_bool
+from AIPscan.helpers import parse_datetime_bound
 
 api = Namespace("data", description="Retrieve data from AIPscan to shape as you desire")
 

@@ -1,10 +1,9 @@
 import pytest
 
-from AIPscan.conftest import (
-    STORAGE_LOCATION_1_DESCRIPTION,
-    STORAGE_LOCATION_2_DESCRIPTION,
-)
-from AIPscan.Data import data, fields
+from AIPscan.conftest import STORAGE_LOCATION_1_DESCRIPTION
+from AIPscan.conftest import STORAGE_LOCATION_2_DESCRIPTION
+from AIPscan.Data import data
+from AIPscan.Data import fields
 from AIPscan.Data.tests import MOCK_STORAGE_SERVICES
 from AIPscan.helpers import parse_datetime_bound
 

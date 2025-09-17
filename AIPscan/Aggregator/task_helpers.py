@@ -1,13 +1,13 @@
-# -*- coding: utf-8 -*-
-
 """Collects a number of reusable components of tasks.py. Also ensures
 the module remains clean and easy to refactor over time.
 """
+
 import json
 import os
 from datetime import datetime
 
-from dateutil.parser import ParserError, parse
+from dateutil.parser import ParserError
+from dateutil.parser import parse
 
 from AIPscan.Aggregator.types import StorageServicePackage
 
@@ -18,12 +18,8 @@ def format_api_url_with_limit_offset(storage_service):
     """
     base_url = storage_service.url.rstrip("/")
 
-    request_url_without_api_key = "{}/api/v2/file/?limit={}&offset={}".format(
-        base_url, storage_service.download_limit, storage_service.download_offset
-    )
-    request_url = "{}&username={}&api_key={}".format(
-        request_url_without_api_key, storage_service.user_name, storage_service.api_key
-    )
+    request_url_without_api_key = f"{base_url}/api/v2/file/?limit={storage_service.download_limit}&offset={storage_service.download_offset}"
+    request_url = f"{request_url_without_api_key}&username={storage_service.user_name}&api_key={storage_service.api_key}"
     return base_url, request_url_without_api_key, request_url
 
 
@@ -35,14 +31,14 @@ def get_packages_directory(timestamp):
 
 
 def parse_package_list_file(filepath, logger=None, remove_after_parsing=False):
-    with open(filepath, "r") as packages_json:
+    with open(filepath) as packages_json:
         package_list = json.load(packages_json)
     try:
         if remove_after_parsing:
             os.remove(filepath)
     except OSError as err:
         if logger:
-            logger.warning("Unable to delete package JSON file: {}".format(err))
+            logger.warning(f"Unable to delete package JSON file: {err}")
 
     return package_list
 
@@ -123,11 +119,9 @@ def get_mets_url(storage_service, package_uuid, path_to_mets):
 def get_storage_service_api_url(storage_service, api_path):
     """Return URL to fetch location infofrom Storage Service."""
     base_url = storage_service.url.rstrip("/")
-    request_url_without_api_key = "{}{}".format(base_url, api_path).rstrip("/")
+    request_url_without_api_key = f"{base_url}{api_path}".rstrip("/")
 
-    request_url = "{}?username={}&api_key={}".format(
-        request_url_without_api_key, storage_service.user_name, storage_service.api_key
-    )
+    request_url = f"{request_url_without_api_key}?username={storage_service.user_name}&api_key={storage_service.api_key}"
     return request_url, request_url_without_api_key
 
 
@@ -153,7 +147,7 @@ def write_mets(http_response, package_uuid, subdir):
     we want to store our METS at, and then stream the response into a
     file.
     """
-    mets_file = "METS.{}.xml".format(package_uuid)
+    mets_file = f"METS.{package_uuid}.xml"
     download_file = os.path.join(subdir, mets_file)
     with open(download_file, "wb") as file:
         file.write(http_response.content)
@@ -161,10 +155,4 @@ def write_mets(http_response, package_uuid, subdir):
 
 
 def summarize_fetch_job_results(fetch_job):
-    return "aips: '{}'; sips: '{}'; dips: '{}'; deleted: '{}'; replicated: '{}'".format(
-        fetch_job.total_aips,
-        fetch_job.total_sips,
-        fetch_job.total_dips,
-        fetch_job.total_deleted_aips,
-        fetch_job.total_replicas,
-    )
+    return f"aips: '{fetch_job.total_aips}'; sips: '{fetch_job.total_sips}'; dips: '{fetch_job.total_dips}'; deleted: '{fetch_job.total_deleted_aips}'; replicated: '{fetch_job.total_replicas}'"

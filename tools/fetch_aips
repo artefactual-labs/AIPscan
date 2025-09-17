@@ -6,16 +6,15 @@ from datetime import datetime
 
 import click
 from app import cli
-from filelock import FileLock, Timeout
+from filelock import FileLock
+from filelock import Timeout
 from helpers import fetch
 
 from AIPscan import db
 from AIPscan.Aggregator import database_helpers
-from AIPscan.Aggregator.task_helpers import (
-    create_numbered_subdirs,
-    process_packages,
-    summarize_fetch_job_results,
-)
+from AIPscan.Aggregator.task_helpers import create_numbered_subdirs
+from AIPscan.Aggregator.task_helpers import process_packages
+from AIPscan.Aggregator.task_helpers import summarize_fetch_job_results
 from AIPscan.models import StorageService
 from config import CONFIGS
 

@@ -1,14 +1,22 @@
-# -*- coding: utf-8 -*-
-
 """Data endpoints optimized for reports in the Reporter blueprint."""
-from datetime import datetime, timedelta
+
+from datetime import datetime
+from datetime import timedelta
 from operator import itemgetter
 
-from dateutil.rrule import DAILY, rrule
+from dateutil.rrule import DAILY
+from dateutil.rrule import rrule
 
 from AIPscan import db
-from AIPscan.Data import fields, get_storage_service_name, report_dict
-from AIPscan.models import AIP, Event, File, FileType, StorageLocation, StorageService
+from AIPscan.Data import fields
+from AIPscan.Data import get_storage_service_name
+from AIPscan.Data import report_dict
+from AIPscan.models import AIP
+from AIPscan.models import Event
+from AIPscan.models import File
+from AIPscan.models import FileType
+from AIPscan.models import StorageLocation
+from AIPscan.models import StorageService
 
 VALID_FILE_TYPES = set(item.value for item in FileType)
 
@@ -644,7 +652,6 @@ def storage_locations(storage_service_id, start_date, end_date):
     unsorted_results = []
 
     for location in locations:
-
         loc_info = {}
 
         loc_info[fields.FIELD_ID] = location.id

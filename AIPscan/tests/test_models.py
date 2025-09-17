@@ -1,30 +1,29 @@
-# -*- coding: utf-8 -*-
 """This module tests models."""
+
 from datetime import date
 
 import pytest
 
 from AIPscan import test_helpers
-from AIPscan.conftest import (
-    AIP_CREATION_TIME,
-    JPEG_1_01_PUID,
-    JPEG_1_02_PUID,
-    PRESERVATION_FORMAT,
-    PRESERVATION_PUID,
-    STORAGE_LOCATION_1_CURRENT_LOCATION,
-    STORAGE_LOCATION_2_CURRENT_LOCATION,
-    TIFF_PUID,
-)
+from AIPscan.conftest import AIP_CREATION_TIME
+from AIPscan.conftest import JPEG_1_01_PUID
+from AIPscan.conftest import JPEG_1_02_PUID
+from AIPscan.conftest import PRESERVATION_FORMAT
+from AIPscan.conftest import PRESERVATION_PUID
+from AIPscan.conftest import STORAGE_LOCATION_1_CURRENT_LOCATION
+from AIPscan.conftest import STORAGE_LOCATION_2_CURRENT_LOCATION
+from AIPscan.conftest import TIFF_PUID
 from AIPscan.helpers import parse_datetime_bound
-from AIPscan.models import StorageLocation, StorageService
+from AIPscan.models import StorageLocation
+from AIPscan.models import StorageService
 
 VALID_UUID = "3ce6fbcb-cdfc-4cca-97e4-d19a469ca043"
-VALID_CURRENT_LOCATION = "/api/v2/location/{}/".format(VALID_UUID)
-VALID_ORIGIN_PIPELINE = "/api/v2/pipeline/{}/".format(VALID_UUID)
+VALID_CURRENT_LOCATION = f"/api/v2/location/{VALID_UUID}/"
+VALID_ORIGIN_PIPELINE = f"/api/v2/pipeline/{VALID_UUID}/"
 
 INVALID_UUID = "not-a-uuid"
-INVALID_CURRENT_LOCATION = "/api/v2/location/{}/".format(INVALID_UUID)
-INVALID_ORIGIN_PIPELINE = "/api/v2/pipeline/{}/".format(INVALID_UUID)
+INVALID_CURRENT_LOCATION = f"/api/v2/location/{INVALID_UUID}/"
+INVALID_ORIGIN_PIPELINE = f"/api/v2/pipeline/{INVALID_UUID}/"
 
 
 def test_new_storage_service(app_with_populated_files):

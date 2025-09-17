@@ -1,5 +1,6 @@
 from AIPscan import typesense_helpers as ts_helpers
-from AIPscan.Data import fields, report_dict
+from AIPscan.Data import fields
+from AIPscan.Data import report_dict
 
 
 def document_to_report_row(document, report_fields):

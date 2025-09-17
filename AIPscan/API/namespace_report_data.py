@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """Report data namespace
 
 Return data optimized for reports implemented in the Reporter
@@ -7,11 +5,13 @@ blueprint for consumption by external systems.
 """
 
 from flask import request
-from flask_restx import Namespace, Resource
+from flask_restx import Namespace
+from flask_restx import Resource
 
 from AIPscan.API import fields
 from AIPscan.Data import report_data
-from AIPscan.helpers import parse_bool, parse_datetime_bound
+from AIPscan.helpers import parse_bool
+from AIPscan.helpers import parse_datetime_bound
 
 api = Namespace(
     "report-data", description="Retrieve data optimized for AIPscan reports"

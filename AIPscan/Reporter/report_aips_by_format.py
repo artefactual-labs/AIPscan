@@ -1,15 +1,14 @@
-# -*- coding: utf-8 -*-
-from flask import render_template, request
+from flask import render_template
+from flask import request
 
-from AIPscan.Data import fields, report_data
+from AIPscan.Data import fields
+from AIPscan.Data import report_data
 from AIPscan.helpers import parse_bool
-from AIPscan.Reporter import (
-    download_csv,
-    format_size_for_csv,
-    reporter,
-    request_params,
-    translate_headers,
-)
+from AIPscan.Reporter import download_csv
+from AIPscan.Reporter import format_size_for_csv
+from AIPscan.Reporter import reporter
+from AIPscan.Reporter import request_params
+from AIPscan.Reporter import translate_headers
 
 HEADERS = [
     fields.FIELD_AIP_NAME,
@@ -38,7 +37,7 @@ def aips_by_format():
     if csv:
         headers = translate_headers(HEADERS, True)
 
-        filename = "aips_by_file_format_{}.csv".format(file_format)
+        filename = f"aips_by_file_format_{file_format}.csv"
         csv_data = format_size_for_csv(aip_data[fields.FIELD_AIPS])
         return download_csv(headers, csv_data, filename)
 
