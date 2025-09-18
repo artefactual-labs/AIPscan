@@ -38,7 +38,7 @@ services:
       - 5000:5000
     command: gunicorn --preload -t 300 --workers 3 --bind 0.0.0.0:5000 "AIPscan:create_app()"
     volumes:
-      - "./:/src:rw"
+      - "./:/app:rw"
     deploy:
       restart_policy:
         condition: on-failure
@@ -47,7 +47,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-
     depends_on:
       aipscan-mysql:
          condition: service_healthy
@@ -80,7 +79,7 @@ services:
       - CELERY_RESULT_BACKEND=db+mysql+pymysql://aipscan:demo@aipscan-mysql:3306/celery
     command: celery -A AIPscan.worker.celery worker --loglevel=info
     volumes:
-      - "./:/src:rw"
+      - "./:/app:rw"
     depends_on:
       aipscan-mysql:
          condition: service_healthy
