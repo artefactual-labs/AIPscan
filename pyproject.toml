@@ -92,7 +92,6 @@ commands = [
         "run",
         "--all-files",
         "--show-diff-on-failure",
-        { replace = "posargs", default = [
-        ], extend = true },
+        { replace = "posargs", default = [], extend = true },
     ],
 ]
