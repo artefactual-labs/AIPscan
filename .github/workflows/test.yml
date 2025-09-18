@@ -20,6 +20,8 @@ jobs:
             toxenv: "py311"
           - python-version: "3.12"
             toxenv: "py312"
+          - python-version: "3.13"
+            toxenv: "py313"
     steps:
       - name: "Check out repository"
         uses: "actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8" # v5.0.0

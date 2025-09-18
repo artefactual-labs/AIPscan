@@ -75,7 +75,7 @@ max-complexity = 12
 
 [tool.tox]
 requires = ["tox>=4", "tox-uv>=1"]
-env_list = ["py39", "py310", "py311", "py312", "linting"]
+env_list = ["py39", "py310", "py311", "py312", "py313", "linting"]
 
 [tool.tox.env_run_base]
 runner = "uv-venv-lock-runner"
