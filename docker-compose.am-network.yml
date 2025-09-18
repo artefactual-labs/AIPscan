@@ -15,6 +15,10 @@ services:
     networks:
       - am_default
 
+  typesense:
+    networks:
+      - am_default
+
 networks:
   am_default:
     external: true
