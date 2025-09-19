@@ -16,17 +16,20 @@ from config import CONFIGS
 db = SQLAlchemy()
 
 
-def create_app(config_name="default"):
-    """Flask app factory, returns app instance."""
+def create_app(config_name=None):
+    """Flask app factory, returns app instance.
+
+    If no config_name is passed (i.e. config_name is None), honor the
+    ``FLASK_CONFIG`` environment variable; otherwise default to "default".
+    """
+    if config_name is None:
+        config_name = os.environ.get("FLASK_CONFIG", "default")
+    config = CONFIGS.get(config_name)
+
     app = Flask(__name__)
+    app.config.from_object(config)
 
-    app.config.from_object(CONFIGS[config_name])
-
-    # Display DB settings
-    if "SQLALCHEMY_DATABASE_URI" in os.environ:
-        app.logger.info(
-            f"SQLALCHEMY_DATABASE_URI set to {os.environ['SQLALCHEMY_DATABASE_URI']}"
-        )
+    app.logger.info("Starting AIPscan application... (config=%s)", config_name)
 
     with app.app_context():
         from AIPscan.Aggregator.views import aggregator
