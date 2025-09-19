@@ -37,7 +37,7 @@ services:
       - CREATE_DB=true
     ports:
       - 5000:5000
-    command: gunicorn --preload --timeout 300 --workers 3 --error-logfile - --log-level debug --capture-output --bind 0.0.0.0:5000 "AIPscan:create_app()"
+    command: gunicorn --preload --timeout 10 --workers 1 --error-logfile - --log-level debug --capture-output --bind 0.0.0.0:5000 "AIPscan:create_app()"
     volumes:
       - "./:/app:rw"
     deploy:
