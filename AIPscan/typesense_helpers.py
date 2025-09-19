@@ -100,8 +100,8 @@ def file_filters(storage_service_id, storage_location_id, start_date, end_date):
     end_timestamp = datetime_to_timestamp_int(end_date)
 
     filters = [
-        ("date_created", ">=", start_timestamp),
-        ("date_created", "<", end_timestamp),
+        ("aip_create_date", ">=", start_timestamp),
+        ("aip_create_date", "<", end_timestamp),
         ("storage_service_id", "=", storage_service_id),
         ("file_type", "=", "'original'"),
     ]
