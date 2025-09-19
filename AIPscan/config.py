@@ -1,9 +1,10 @@
 import os
 
-basedir = os.path.abspath(os.path.dirname(__file__))
+package_dir = os.path.abspath(os.path.dirname(__file__))
+project_root = os.path.abspath(os.path.join(package_dir, os.pardir))
 
-DEFAULT_AIPSCAN_DB = "sqlite:///" + os.path.join(basedir, "aipscan.db")
-DEFAULT_CELERY_DB = "sqlite:///" + os.path.join(basedir, "celerytasks.db")
+DEFAULT_AIPSCAN_DB = "sqlite:///" + os.path.join(project_root, "aipscan.db")
+DEFAULT_CELERY_DB = "sqlite:///" + os.path.join(project_root, "celerytasks.db")
 
 DEFAULT_TYPESENSE_HOST = "localhost"
 DEFAULT_TYPESENSE_PORT = "8108"

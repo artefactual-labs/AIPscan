@@ -7,8 +7,8 @@ from app import cli
 from helpers import data
 
 from AIPscan import db
+from AIPscan.config import CONFIGS
 from AIPscan.models import FetchJob
-from config import CONFIGS
 
 
 @click.command()

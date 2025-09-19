@@ -5,7 +5,7 @@ from app import cli
 
 from AIPscan import db
 from AIPscan import typesense_helpers
-from config import CONFIGS
+from AIPscan.config import CONFIGS
 
 
 def main():

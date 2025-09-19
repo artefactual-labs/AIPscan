@@ -15,8 +15,8 @@ from AIPscan.Aggregator import database_helpers
 from AIPscan.Aggregator.task_helpers import create_numbered_subdirs
 from AIPscan.Aggregator.task_helpers import process_packages
 from AIPscan.Aggregator.task_helpers import summarize_fetch_job_results
+from AIPscan.config import CONFIGS
 from AIPscan.models import StorageService
-from config import CONFIGS
 
 
 @click.command()
