@@ -45,6 +45,14 @@ from AIPscan.Reporter.helpers import calculate_paging_window
 from AIPscan.Reporter.helpers import remove_dict_none_values
 
 
+def _get_default_storage_service():
+    """Return the default StorageService if present, otherwise the first one or None."""
+    storage_service = StorageService.query.filter_by(default=True).first()
+    if storage_service is None:
+        storage_service = StorageService.query.first()
+    return storage_service
+
+
 def _get_storage_service(storage_service_id):
     """Get Storage Service from specified ID.
 
@@ -58,16 +66,20 @@ def _get_storage_service(storage_service_id):
 
     :returns: StorageService object or None
     """
+    if not storage_service_id:
+        return _get_default_storage_service()
+
     storage_service = StorageService.query.get(storage_service_id)
     if storage_service is None:
-        storage_service = StorageService.query.filter_by(default=True).first()
-    if storage_service is None:
-        storage_service = StorageService.query.first()
+        storage_service = _get_default_storage_service()
+
     return storage_service
 
 
 def _get_storage_location(storage_location_id):
     """Return Storage Location or None."""
+    if not storage_location_id:
+        return None
     return StorageLocation.query.get(storage_location_id)
 
 
