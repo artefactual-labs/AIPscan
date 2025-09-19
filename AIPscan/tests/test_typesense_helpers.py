@@ -114,8 +114,8 @@ def test_file_filters(app_instance):
     )
 
     desired_filters = [
-        ("date_created", ">=", 1546300800),
-        ("date_created", "<", 1548892800),
+        ("aip_create_date", ">=", 1546300800),
+        ("aip_create_date", "<", 1548892800),
         ("storage_service_id", "=", 1),
         ("file_type", "=", "'original'"),
         ("storage_location_id", "=", 1),
