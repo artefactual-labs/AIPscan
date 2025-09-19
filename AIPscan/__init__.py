@@ -10,8 +10,8 @@ from flask import render_template
 from flask_sqlalchemy import SQLAlchemy
 
 from AIPscan.celery import configure_celery
+from AIPscan.config import CONFIGS
 from AIPscan.navbar import NavBar
-from config import CONFIGS
 
 db = SQLAlchemy()
 

@@ -6,7 +6,6 @@
 !/AIPscan/**
 !/build_config/**
 !/.python-version
-!/config.py
 !/pyproject.toml
 !/uv.lock
 !/package-lock.json
