@@ -18,7 +18,7 @@ from AIPscan.Aggregator.task_helpers import format_api_url_with_limit_offset
 from AIPscan.Aggregator.task_helpers import parse_package_list_file
 from AIPscan.Aggregator.task_helpers import process_package_object
 from AIPscan.Aggregator.task_helpers import summarize_fetch_job_results
-from AIPscan.extensions import celery
+from AIPscan.celery import celery
 from AIPscan.helpers import file_sha256_hash
 from AIPscan.models import AIP
 from AIPscan.models import Agent

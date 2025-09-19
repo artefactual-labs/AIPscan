@@ -6,7 +6,6 @@
 !/AIPscan/**
 !/build_config/**
 !/.python-version
-!/celery_config.py
 !/config.py
 !/pyproject.toml
 !/uv.lock
