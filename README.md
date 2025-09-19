@@ -11,7 +11,7 @@ only needs a valid Storage Service API key to fetch source data.
 
 # License
 
-[Apache License Version 2.0](LICENSE)  
+[Apache License Version 2.0](LICENSE)
 Copyright Artefactual Systems Inc (2021)
 
 # Contents
@@ -26,7 +26,7 @@ Copyright Artefactual Systems Inc (2021)
 
 ![screencap1](screencaps/aipscan_fetch_job.png)
 
-### Finding an AIP  
+### Finding an AIP
 
 ![screencap2](screencaps/aipscan_find_aip.png)
 
@@ -63,7 +63,7 @@ AIPscan report.
 * Install requirements (this includes Flask & Celery): `pip install -r requirements/base.txt`
 * Bundle static assets: `make build`
 * Enable DEBUG mode if desired for development: `export FLASK_CONFIG=dev`
-* In a terminal window, start the Flask server: `python run.py`
+* In a terminal window, start the Flask server: `python -m AIPscan.run`
 * Confirm that the Flask server and AIPscan application are up and running at
   [`localhost:5000`][usage-1] in your browser.. You should see a blank AIPscan
   page like this:
@@ -97,7 +97,7 @@ Typesense support is enabled by the setting of `TYPESENSE_API_KEY`.
 Here's an example:
 
   ```bash
-  TYPESENSE_API_KEY="xOxOxOxO" python run.py
+  TYPESENSE_API_KEY="xOxOxOxO" python -m AIPscan.run
   ```
 
 #### Related CLI tools

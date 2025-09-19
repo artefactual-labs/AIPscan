@@ -9,7 +9,6 @@
 !/celery_config.py
 !/config.py
 !/pyproject.toml
-!/run.py
 !/uv.lock
 !/package-lock.json
 !/package.json
