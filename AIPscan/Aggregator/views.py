@@ -21,7 +21,7 @@ from AIPscan.Aggregator.forms import StorageServiceForm
 from AIPscan.Aggregator.task_helpers import format_api_url_with_limit_offset
 from AIPscan.Aggregator.task_helpers import get_packages_directory
 from AIPscan.Aggregator.tasks import TaskError
-from AIPscan.extensions import celery
+from AIPscan.celery import celery
 
 # Custom celery Models.
 from AIPscan.models import FetchJob
