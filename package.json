@@ -1,9 +1,12 @@
 {
   "name": "aipscan",
-  "version": "0.7.0b",
   "description": "Crawl Archivematica AIPs to provide repository-wide reporting",
   "scripts": {
-    "build": "make build"
+    "build": "run-p --print-label build:*",
+    "build:base": "vite build -c build_config/base.config.js",
+    "build:report": "vite build -c build_config/report_base.config.js",
+    "build:chart": "vite build -c build_config/chart_formats_count.config.js",
+    "build:plot": "vite build -c build_config/plot_formats_count.config.js"
   },
   "devDependencies": {
     "@fortawesome/fontawesome-free": "^5.15.4",
@@ -12,6 +15,7 @@
     "chart.js": "^4.5.0",
     "jquery": "^3.7.1",
     "jquery-ui-dist": "^1.13.3",
+    "npm-run-all": "^4.1.5",
     "plotly.js-dist": "^2.27.1",
     "vite": "^7.1.5"
   },

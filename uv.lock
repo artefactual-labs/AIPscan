@@ -17,8 +17,7 @@ resolution-markers = [
 
 [[package]]
 name = "aipscan"
-version = "0.9.0"
-source = { virtual = "." }
+source = { editable = "." }
 dependencies = [
     { name = "celery" },
     { name = "click" },
@@ -28,7 +27,6 @@ dependencies = [
     { name = "flask-restx" },
     { name = "flask-sqlalchemy" },
     { name = "flask-wtf" },
-    { name = "gunicorn" },
     { name = "lxml" },
     { name = "metsrw" },
     { name = "natsort" },
@@ -40,6 +38,11 @@ dependencies = [
     { name = "sqlalchemy" },
     { name = "typesense" },
     { name = "wtforms" },
+]
+
+[package.optional-dependencies]
+server = [
+    { name = "gunicorn" },
 ]
 
 [package.dev-dependencies]
@@ -65,7 +68,7 @@ requires-dist = [
     { name = "flask-restx" },
     { name = "flask-sqlalchemy" },
     { name = "flask-wtf" },
-    { name = "gunicorn" },
+    { name = "gunicorn", marker = "extra == 'server'" },
     { name = "lxml" },
     { name = "metsrw" },
     { name = "natsort" },
@@ -78,6 +81,7 @@ requires-dist = [
     { name = "typesense" },
     { name = "wtforms" },
 ]
+provides-extras = ["server"]
 
 [package.metadata.requires-dev]
 dev = [

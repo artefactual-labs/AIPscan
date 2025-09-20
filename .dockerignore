@@ -5,14 +5,17 @@
 !/.init-scripts/**
 !/AIPscan/**
 !/build_config/**
+!/dist/*.whl
 !/.python-version
 !/pyproject.toml
+!/build.py
 !/uv.lock
 !/package-lock.json
 !/package.json
+!/README.md
 
 # Exclude
 /AIPscan/Aggregator/downloads
-**/dist
+/AIPscan/**/dist/**
 **/__pycache__
 **/*.pyc

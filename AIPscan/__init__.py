@@ -1,9 +1,9 @@
-__version__ = "0.7.0b"
-__version_info__ = tuple(int(i) for i in __version__.split(".") if i.isdigit())
-
-__all__ = ["__version__", "__version_info__"]
-
 import os
+from importlib.metadata import version as _metadata_version
+
+__version__ = _metadata_version("AIPscan")
+
+__all__ = ["__version__"]
 
 from flask import Flask
 from flask import render_template

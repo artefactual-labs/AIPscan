@@ -6,14 +6,19 @@ inputs:
     description: Version to validate (PEP 440 compliant, e.g., 1.2.3 or 2024.9.post1)
     required: true
 
+outputs:
+  is-prerelease:
+    description: Whether the provided version is a prerelease identifier
+    value: ${{ steps.validate.outputs.is-prerelease }}
+
 runs:
   using: composite
   steps:
     - uses: getsentry/action-setup-venv@b3fb2c6402d963e90c2c8e6a6536946c7fe4ebde # v2.2.0
       with:
-        python-version-file: .python-version
         install-cmd: pip install packaging
     - name: Validate version
+      id: validate
       shell: python
       env:
         VERSION: ${{ inputs.version }}
@@ -21,6 +26,7 @@ runs:
         import os
         import sys
         from packaging.version import Version, InvalidVersion
+
         version = os.environ.get("VERSION", "").strip()
         if not version:
             print("Error: Version input is required.", file=sys.stderr)
@@ -28,9 +34,22 @@ runs:
         if version.lower().startswith("v"):
             print("Error: Versions must not start with 'v'.", file=sys.stderr)
             sys.exit(1)
+
         try:
-            Version(version)
+            parsed = Version(version)
         except InvalidVersion:
             print(f"Error: '{version}' is not a valid PEP 440 version.", file=sys.stderr)
             sys.exit(1)
-        print(f"Valid PEP 440 version: {version}")
+
+        normalized = str(parsed)
+        if version != normalized:
+            print(f"Error: Version '{version}' is not in normalized form.", file=sys.stderr)
+            print(f"Expected: '{normalized}'", file=sys.stderr)
+            sys.exit(1)
+
+        is_prerelease = "true" if parsed.is_prerelease else "false"
+        github_output = os.environ.get("GITHUB_OUTPUT")
+        if github_output:
+            with open(github_output, "a", encoding="utf-8") as handle:
+                handle.write(f"is-prerelease={is_prerelease}\n")
+        print(is_prerelease)

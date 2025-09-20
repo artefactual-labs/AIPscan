@@ -1,16 +1,10 @@
 name: Release
 
-# This workflow is an interim release process that currently only builds and
-# publishes container images, but should be expanded into a full release
-# pipeline with additional steps such as running automated tests, building and
-# packaging artifacts, publishing to PyPI and performing other necessary checks
-# to ensure reliable and automated releases.
-
 on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Semantic version to release (e.g., 1.2.3 or 1.2.3-rc.1)"
+        description: "PEP 440 version to release (e.g., 1.2.3, 1.2.3a1 or 1.2.3rc1)"
         required: true
         type: string
 
@@ -21,23 +15,90 @@ jobs:
   validate-version:
     name: Validate release version
     runs-on: ubuntu-24.04
+    outputs:
+      is-prerelease: ${{ steps.validate.outputs.is-prerelease }}
     steps:
       - name: Check out the repository
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
-          sparse-checkout: .github/actions/validate-pep440-version.yml
+          sparse-checkout: .github/actions/validate-pep440-version
       - name: Validate PEP 440 version
-        uses: ./.github/actions/validate-pep440-version.yml
+        id: validate
+        uses: ./.github/actions/validate-pep440-version
         with:
           version: ${{ github.event.inputs.version }}
 
-  publish:
-    needs: validate-version
-    name: Publish Docker image
+  build:
+    name: Build Python packages
     runs-on: ubuntu-24.04
+    needs: validate-version
     steps:
       - name: Check out the repository
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - name: Create local release tag
+        run: git tag ${{ github.event.inputs.version }}
+      - name: Install Node.js
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version-file: .node-version
+      - name: Install uv
+        uses: astral-sh/setup-uv@b75a909f75acd358c2196fb9a5f1299a9a8868a4 # v6.7.0
+        with:
+          enable-cache: true
+          version: latest
+      - name: Build package
+        run: uv build
+      - name: Save distribution directory
+        uses: actions/upload-artifact@de65e23aa2b7e23d713bb51fbfcb6d502f8667d8 # v4.6.2
+        with:
+          # We expect:
+          # - dist/aipscan-[version].tar.gz
+          # - dist/aipscan-[version]-py3-none-any.whl
+          name: dist
+          path: dist
+
+  pypi:
+    name: Publish Python packages
+    runs-on: ubuntu-24.04
+    needs: build
+    environment: pypi
+    permissions:
+      id-token: write
+    steps:
+      - name: Restore distribution directory
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
+        with:
+          name: dist
+          path: dist
+      - name: Upload distribution packages to PyPI
+        uses: pypa/gh-action-pypi-publish@ed0c53931b1dc9bd32cbe73a98c7f6766f8a527e # v1.13.0
+
+  tag:
+    name: Push tag
+    runs-on: ubuntu-24.04
+    needs: pypi
+    permissions:
+      contents: write
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - name: Push release tag
+        run: |
+          git tag ${{ github.event.inputs.version }}
+          git push origin refs/tags/${{ github.event.inputs.version }}
+
+  image:
+    name: Publish Docker images
+    runs-on: ubuntu-24.04
+    needs: tag
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - name: Restore distribution directory
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
+        with:
+          name: dist
+          path: dist
       - name: Login to Docker Hub
         uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1 # v3.5.0
         with:
@@ -61,3 +122,25 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           platforms: linux/amd64
+          target: release
+          build-args: |
+            WHEEL=aipscan-${{ github.event.inputs.version }}-py3-none-any.whl
+
+  release:
+    name: Create GitHub release
+    runs-on: ubuntu-24.04
+    needs: [image, validate-version]
+    permissions:
+      contents: write
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - name: Create GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [[ "${{ needs.validate-version.outputs.is-prerelease }}" == "true" ]]; then
+            gh release create ${{ github.event.inputs.version }} --title ${{ github.event.inputs.version }} --generate-notes --prerelease
+          else
+            gh release create ${{ github.event.inputs.version }} --title ${{ github.event.inputs.version }} --generate-notes
+          fi
