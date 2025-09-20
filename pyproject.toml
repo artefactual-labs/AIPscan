@@ -1,9 +1,22 @@
+[build-system]
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
 [project]
 name = "aipscan"
-version = "0.9.0"
+dynamic = ["version"]
 description = "A reporting system for Archivematica using data from AIPs."
+license = "Apache-2.0"
+license-files = ["LICENSE"]
 readme = "README.md"
 requires-python = ">=3.9"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
 dependencies = [
     "click",
     "celery",
@@ -13,7 +26,6 @@ dependencies = [
     "flask-restx",
     "flask-sqlalchemy",
     "flask-wtf",
-    "gunicorn",
     "typesense",
     "wtforms",
     "lxml",
@@ -27,6 +39,14 @@ dependencies = [
     "sqlalchemy",
 ]
 
+[project.urls]
+Homepage = "https://github.com/artefactual-labs/AIPscan"
+Repository = "https://github.com/artefactual-labs/AIPscan"
+Issues = "https://github.com/artefactual-labs/AIPscan/issues"
+
+[project.optional-dependencies]
+server = ["gunicorn"]
+
 [dependency-groups]
 dev = [
     "faker",
@@ -37,6 +57,35 @@ dev = [
     "tzlocal",
 ]
 linting = ["pre-commit-uv"]
+
+
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.build.hooks.custom]
+path = "build.py"
+
+[tool.hatch.build.targets.sdist]
+packages = ["AIPscan"]
+include = [
+    "/build.py",
+    "/build_config/**",
+    "/package.json",
+    "/package-lock.json",
+]
+artifacts = ["AIPscan/static/dist/**"]
+
+# Force Hatch to ship the build hook and frontend sources, i.e. "include" alone
+# misses files outside packages.
+[tool.hatch.build.targets.sdist.force-include]
+"build.py" = "build.py"
+"build_config" = "build_config"
+"package.json" = "package.json"
+"package-lock.json" = "package-lock.json"
+
+[tool.hatch.build.targets.wheel]
+packages = ["AIPscan"]
+artifacts = ["AIPscan/static/dist/**"]
 
 [tool.pytest.ini_options]
 testpaths = ["AIPscan", "tools"]

@@ -61,7 +61,7 @@ AIPscan report.
 * Set up virtualenv in the project root directory: `virtualenv -p python3 venv`
 * Activate virtualenv: `source venv/bin/activate`
 * Install requirements (this includes Flask & Celery): `pip install -r requirements/base.txt`
-* Bundle static assets: `make build`
+* Bundle static assets: `npm run build`
 * Enable DEBUG mode if desired for development: `export FLASK_CONFIG=dev`
 * In a terminal window, start the Flask server: `python -m AIPscan.run`
 * Confirm that the Flask server and AIPscan application are up and running at
