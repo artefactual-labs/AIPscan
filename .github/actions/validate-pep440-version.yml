@@ -1,0 +1,36 @@
+name: Validate PEP 440 Version
+description: Validates a PEP 440 compliant version string (without a leading 'v').
+
+inputs:
+  version:
+    description: Version to validate (PEP 440 compliant, e.g., 1.2.3 or 2024.9.post1)
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - uses: getsentry/action-setup-venv@b3fb2c6402d963e90c2c8e6a6536946c7fe4ebde # v2.2.0
+      with:
+        python-version-file: .python-version
+        install-cmd: pip install packaging
+    - name: Validate version
+      shell: python
+      env:
+        VERSION: ${{ inputs.version }}
+      run: |
+        import os
+        import sys
+        from packaging.version import Version, InvalidVersion
+        version = os.environ.get("VERSION", "").strip()
+        if not version:
+            print("Error: Version input is required.", file=sys.stderr)
+            sys.exit(1)
+        if version.lower().startswith("v"):
+            print("Error: Versions must not start with 'v'.", file=sys.stderr)
+            sys.exit(1)
+        try:
+            Version(version)
+        except InvalidVersion:
+            print(f"Error: '{version}' is not a valid PEP 440 version.", file=sys.stderr)
+            sys.exit(1)
+        print(f"Valid PEP 440 version: {version}")
