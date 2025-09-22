@@ -5,6 +5,7 @@ from datetime import datetime
 import metsrw
 import pytest
 
+from AIPscan import db
 from AIPscan.Aggregator import database_helpers
 from AIPscan.Aggregator import types
 from AIPscan.conftest import ORIGIN_PIPELINE
@@ -294,7 +295,7 @@ def test_create_or_update_storage_location(
         "AIPscan.Aggregator.database_helpers.create_storage_location_object"
     )
 
-    storage_service = StorageService.query.get(1)
+    storage_service = db.session.get(StorageService, 1)
 
     storage_location = database_helpers.create_or_update_storage_location(
         current_location=current_location, storage_service=storage_service
@@ -331,7 +332,7 @@ def test_create_or_update_pipeline(
     )
     get_storage_service_api_url.return_value = (None, None)
 
-    storage_service = StorageService.query.get(1)
+    storage_service = db.session.get(StorageService, 1)
 
     pipeline = database_helpers.create_or_update_pipeline(
         origin_pipeline=origin_pipeline, storage_service=storage_service

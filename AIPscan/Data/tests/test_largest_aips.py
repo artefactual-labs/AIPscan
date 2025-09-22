@@ -1,5 +1,6 @@
 import pytest
 
+from AIPscan import db
 from AIPscan import typesense_helpers
 from AIPscan import typesense_test_helpers
 from AIPscan.Data import fields
@@ -48,7 +49,7 @@ def test_largest_aips(
 
 
 def test_largest_aips_typesense(app_with_populated_files, enable_typesense, mocker):
-    doc = typesense_helpers.model_instance_to_document(AIP, AIP.query.get(1))
+    doc = typesense_helpers.model_instance_to_document(AIP, db.session.get(AIP, 1))
     fake_results = {"hits": [{"document": doc}]}
 
     typesense_test_helpers.fake_collection(mocker, fake_results)

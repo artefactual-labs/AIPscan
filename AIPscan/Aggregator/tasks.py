@@ -63,7 +63,7 @@ def start_mets_task(
     """Initiate a get_mets task worker and record the event in the
     celery database.
     """
-    storage_service = StorageService.query.get(storage_service_id)
+    storage_service = db.session.get(StorageService, storage_service_id)
     storage_location = database_helpers.create_or_update_storage_location(
         current_location, storage_service
     )
@@ -188,7 +188,7 @@ def package_lists_request(self, storage_service_id, timestamp, packages_director
     COUNT = "total_count"
     IN_PROGRESS = "IN PROGRESS"
 
-    storage_service = StorageService.query.get(storage_service_id)
+    storage_service = db.session.get(StorageService, storage_service_id)
 
     (
         base_url,
@@ -300,7 +300,7 @@ def get_mets(
         tasklogger = customlogger
 
     # Download METS file
-    storage_service = StorageService.query.get(storage_service_id)
+    storage_service = db.session.get(StorageService, storage_service_id)
     download_file = download_mets(
         storage_service,
         package_uuid,
@@ -371,7 +371,7 @@ def get_mets(
 
 @celery.task()
 def delete_fetch_job(fetch_job_id):
-    fetch_job = FetchJob.query.get(fetch_job_id)
+    fetch_job = db.session.get(FetchJob, fetch_job_id)
     if os.path.exists(fetch_job.download_directory):
         shutil.rmtree(fetch_job.download_directory)
     db.session.delete(fetch_job)
@@ -380,7 +380,7 @@ def delete_fetch_job(fetch_job_id):
 
 @celery.task()
 def delete_storage_service(storage_service_id):
-    storage_service = StorageService.query.get(storage_service_id)
+    storage_service = db.session.get(StorageService, storage_service_id)
     mets_fetch_jobs = FetchJob.query.filter_by(
         storage_service_id=storage_service_id
     ).all()

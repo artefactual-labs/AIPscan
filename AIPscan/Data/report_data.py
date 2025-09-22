@@ -270,7 +270,7 @@ def largest_files(
         except AttributeError:
             pass
 
-        matching_aip = AIP.query.get(file_.aip_id)
+        matching_aip = db.session.get(AIP, file_.aip_id)
         if matching_aip is not None:
             file_info[fields.FIELD_AIP_NAME] = matching_aip.transfer_name
             file_info[fields.FIELD_AIP_UUID] = matching_aip.uuid
@@ -684,7 +684,7 @@ def _get_days_covered_by_date_range(storage_service_id, start_date, end_date):
     :returns: List of strings like "YYYY-MM-DD"
     """
     if start_date == datetime.min:
-        storage_service = StorageService.query.get(storage_service_id)
+        storage_service = db.session.get(StorageService, storage_service_id)
         start_date = storage_service.earliest_aip_created
     if end_date >= datetime.now():
         end_date = datetime.now()

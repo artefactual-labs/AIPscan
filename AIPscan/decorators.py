@@ -4,12 +4,14 @@ from flask import abort
 from flask import render_template
 from flask import request
 
+from AIPscan import db
+
 
 def confirm_required(model, id_argument, prompt, action, cancel_route):
     def decorator(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
-            instance = model.query.get(kwargs[id_argument])
+            instance = db.session.get(model, kwargs[id_argument])
 
             if not instance:
                 abort(404)

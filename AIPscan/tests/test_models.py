@@ -4,6 +4,7 @@ from datetime import date
 
 import pytest
 
+from AIPscan import db
 from AIPscan import test_helpers
 from AIPscan.conftest import AIP_CREATION_TIME
 from AIPscan.conftest import JPEG_1_01_PUID
@@ -68,7 +69,7 @@ def test_storage_service_unique_file_formats(
 ):
     """Test Storage Service unique file format properties."""
     if storage_service_id:
-        storage_service = StorageService.query.get(storage_service_id)
+        storage_service = db.session.get(StorageService, storage_service_id)
     else:
         storage_service = test_helpers.create_test_storage_service(
             name="empty storage service"
@@ -96,7 +97,7 @@ def test_storage_service_unique_puids(
 ):
     """Test Storage Service unique PUID properties."""
     if storage_service_id:
-        storage_service = StorageService.query.get(storage_service_id)
+        storage_service = db.session.get(StorageService, storage_service_id)
     else:
         storage_service = test_helpers.create_test_storage_service(
             name="empty storage service"

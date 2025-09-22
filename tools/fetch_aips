@@ -85,7 +85,7 @@ def fetch_aips(logger, ss_id, session_id, page, packages_per_page, logfile):
     package_list_no = "batch"
     with app.app_context():
         # Get storage service configuration
-        storage_service = StorageService.query.get(ss_id)
+        storage_service = db.session.get(StorageService, ss_id)
 
         if storage_service is None:
             cli.log_and_raise_click_error(
