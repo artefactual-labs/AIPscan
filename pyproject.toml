@@ -53,7 +53,7 @@ dev = [
     "pytest",
     "pytest-cov",
     "pytest-mock",
-    "ruff>=0.13.0",
+    "ruff",
     "tzlocal",
 ]
 linting = ["pre-commit-uv"]
