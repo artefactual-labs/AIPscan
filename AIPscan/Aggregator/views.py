@@ -87,7 +87,7 @@ def ss_default():
 
 @aggregator.route("/storage_service/<storage_service_id>", methods=["GET"])
 def storage_service(storage_service_id):
-    storage_service = StorageService.query.get(storage_service_id)
+    storage_service = db.session.get(StorageService, storage_service_id)
 
     if storage_service is None:
         abort(404)
@@ -111,7 +111,7 @@ def storage_services():
 @aggregator.route("/edit_storage_service/<storage_service_id>", methods=["GET", "POST"])
 def edit_storage_service(storage_service_id):
     form = StorageServiceForm()
-    storage_service = StorageService.query.get(storage_service_id)
+    storage_service = db.session.get(StorageService, storage_service_id)
 
     if storage_service is None:
         abort(404)
@@ -175,7 +175,7 @@ def new_storage_service():
     "aggregator.ss_default",
 )
 def delete_storage_service(storage_service_id):
-    storage_service = StorageService.query.get(storage_service_id)
+    storage_service = db.session.get(StorageService, storage_service_id)
 
     if storage_service is None:
         abort(404)
@@ -192,7 +192,7 @@ def delete_storage_service(storage_service_id):
 @aggregator.route("/new_fetch_job/<fetch_job_id>", methods=["POST"])
 def new_fetch_job(fetch_job_id):
     """Fetch and process AIP METS files from Storage Service."""
-    storage_service = StorageService.query.get(fetch_job_id)
+    storage_service = db.session.get(StorageService, fetch_job_id)
 
     # Check Storage Service credentials and return 400 if invalid prior to
     # creating the Fetch Job and kicking off the Celery task.
@@ -251,12 +251,12 @@ def new_fetch_job(fetch_job_id):
     "aggregator.ss_default",
 )
 def delete_fetch_job(fetch_job_id):
-    fetch_job = FetchJob.query.get(fetch_job_id)
+    fetch_job = db.session.get(FetchJob, fetch_job_id)
 
     if fetch_job is None:
         abort(404)
 
-    storage_service = StorageService.query.get(fetch_job.storage_service_id)
+    storage_service = db.session.get(StorageService, fetch_job.storage_service_id)
     tasks.delete_fetch_job.delay(fetch_job_id)
 
     flash(f"Fetch job {fetch_job.download_start} is being deleted")

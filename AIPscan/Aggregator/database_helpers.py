@@ -300,7 +300,7 @@ def _add_normalization_date(file_id):
 
     :param file_id: File ID
     """
-    file_ = File.query.get(file_id)
+    file_ = db.session.get(File, file_id)
     creation_event = Event.query.filter_by(file_id=file_.id, type="creation").first()
     if creation_event is not None:
         file_.date_created = creation_event.date
@@ -309,7 +309,7 @@ def _add_normalization_date(file_id):
 
 def _add_premis_object_xml(fs_entry, file_id):
     """Add string representation of PREMIS Object to File object."""
-    file_ = File.query.get(file_id)
+    file_ = db.session.get(File, file_id)
 
     if hasattr(fs_entry, "amdsecs"):
         for ss in fs_entry.amdsecs[0].subsections:

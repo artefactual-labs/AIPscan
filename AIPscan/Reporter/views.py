@@ -15,6 +15,7 @@ from flask import render_template
 from flask import request
 from flask import session
 
+from AIPscan import db
 from AIPscan.Aggregator.task_helpers import get_mets_url
 from AIPscan.models import AIP
 from AIPscan.models import Event
@@ -69,7 +70,7 @@ def _get_storage_service(storage_service_id):
     if not storage_service_id:
         return _get_default_storage_service()
 
-    storage_service = StorageService.query.get(storage_service_id)
+    storage_service = db.session.get(StorageService, storage_service_id)
     if storage_service is None:
         storage_service = _get_default_storage_service()
 
@@ -80,7 +81,7 @@ def _get_storage_location(storage_location_id):
     """Return Storage Location or None."""
     if not storage_location_id:
         return None
-    return StorageLocation.query.get(storage_location_id)
+    return db.session.get(StorageLocation, storage_location_id)
 
 
 def storage_locations_with_aips(storage_locations):
@@ -183,18 +184,18 @@ def view_aips():
 @reporter.route("/aip/<aip_id>", methods=["GET"])
 def view_aip(aip_id):
     """Detailed view of specific AIP."""
-    aip = AIP.query.get(aip_id)
+    aip = db.session.get(AIP, aip_id)
 
     if aip is None:
         abort(404)
 
-    fetch_job = FetchJob.query.get(aip.fetch_job_id)
-    storage_service = StorageService.query.get(fetch_job.storage_service_id)
-    storage_location = StorageLocation.query.get(aip.storage_location_id)
+    fetch_job = db.session.get(FetchJob, aip.fetch_job_id)
+    storage_service = db.session.get(StorageService, fetch_job.storage_service_id)
+    storage_location = db.session.get(StorageLocation, aip.storage_location_id)
     aips_count = AIP.query.filter_by(storage_service_id=storage_service.id).count()
     original_file_count = aip.original_file_count
     preservation_file_count = aip.preservation_file_count
-    origin_pipeline = Pipeline.query.get(aip.origin_pipeline_id)
+    origin_pipeline = db.session.get(Pipeline, aip.origin_pipeline_id)
 
     originals = []
 
@@ -239,12 +240,12 @@ def view_aip(aip_id):
 @reporter.route("/file/<file_id>", methods=["GET"])
 def view_file(file_id):
     """File page displays Object and Event metadata for file"""
-    file_ = File.query.get(file_id)
+    file_ = db.session.get(File, file_id)
 
     if file_ is None:
         abort(404)
 
-    aip = AIP.query.get(file_.aip_id)
+    aip = db.session.get(AIP, file_.aip_id)
     events = Event.query.filter_by(file_id=file_id).all()
     preservation_file = File.query.filter_by(
         file_type=FileType.preservation, original_file_id=file_.id
@@ -252,7 +253,7 @@ def view_file(file_id):
 
     original_filename = None
     if file_.original_file_id is not None:
-        original_file = File.query.get(file_.original_file_id)
+        original_file = db.session.get(File, file_.original_file_id)
         original_filename = original_file.name
 
     return render_template(
@@ -370,8 +371,8 @@ def update_dates():
 
 @reporter.route("/download_mets/<aip_id>", methods=["GET"])
 def download_mets(aip_id):
-    aip = AIP.query.get(aip_id)
-    storage_service = StorageService.query.get(aip.storage_service_id)
+    aip = db.session.get(AIP, aip_id)
+    storage_service = db.session.get(StorageService, aip.storage_service_id)
 
     mets_response = requests.get(
         get_mets_url(

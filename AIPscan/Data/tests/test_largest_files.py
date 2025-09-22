@@ -3,6 +3,7 @@ import uuid
 
 import pytest
 
+from AIPscan import db
 from AIPscan import typesense_helpers
 from AIPscan import typesense_test_helpers
 from AIPscan.Data import fields
@@ -116,7 +117,7 @@ def test_largest_files_elements(
     mock_get_ss_name = mocker.patch("AIPscan.Data._get_storage_service")
     mock_get_ss_name.return_value = MOCK_STORAGE_SERVICE
 
-    mock_get_aip = mocker.patch("sqlalchemy.orm.query.Query.get")
+    mock_get_aip = mocker.patch("AIPscan.Data.report_data.db.session.get")
     mock_get_aip.return_value = MOCK_AIP
 
     report = report_data.largest_files(
@@ -147,7 +148,7 @@ def test_largest_files_elements(
 
 
 def test_largest_files_typesense(app_with_populated_files, enable_typesense, mocker):
-    doc = typesense_helpers.model_instance_to_document(File, File.query.get(1))
+    doc = typesense_helpers.model_instance_to_document(File, db.session.get(File, 1))
     doc["transfer_name"] = "Test AIP"
     doc["aip_uuid"] = "111111111111-1111-1111-11111111"
 

@@ -181,7 +181,7 @@ def main(
                     print(f"    * Created AIP {aipcount}/{aips_to_create}")
 
                 # Update package/AIP counts in fetch job
-                fetch_job = FetchJob.query.get(fetch_jobs[ss_id])
+                fetch_job = db.session.get(FetchJob, fetch_jobs[ss_id])
                 fetch_job.total_packages += aipcount
                 fetch_job.total_aips += aipcount
                 db.session.commit()
