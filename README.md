@@ -56,14 +56,13 @@ AIPscan report.
 
 ## AIPScan Flask server
 
+* Install [uv] if it's not already available
 * Clone files and cd to directory:
   `git clone https://github.com/artefactual-labs/AIPscan && cd AIPscan`
-* Set up virtualenv in the project root directory: `virtualenv -p python3 venv`
-* Activate virtualenv: `source venv/bin/activate`
-* Install requirements (this includes Flask & Celery): `pip install -r requirements/base.txt`
+* Install all project dependencies (including development extras): `uv sync`
 * Bundle static assets: `npm run build`
 * Enable DEBUG mode if desired for development: `export FLASK_CONFIG=dev`
-* In a terminal window, start the Flask server: `python -m AIPscan.run`
+* In a terminal window, start the Flask server: `uv run python -m AIPscan.run`
 * Confirm that the Flask server and AIPscan application are up and running at
   [`localhost:5000`][usage-1] in your browser.. You should see a blank AIPscan
   page like this:
@@ -149,17 +148,15 @@ machine or you can run it in either location from a Docker container.
 
 ## Celery
 
-Celery is installed as a Python module dependency during the initial AIPscan
-requirements import command: `pip install -r requirements.txt`
+Celery is installed when you run `uv sync`.
 
 To start up Celery workers that are ready to receive tasks from RabbitMQ:
 
 * Open a new terminal tab or window.
 * Navigate to the AIPscan root project directory.
-* Activate the Python virtualenv in the AIPscan project directory so that the
-  Celery dependency gets automatically loaded: `source venv/bin/activate`
+* Install dependencies if you have not already (`uv sync`).
 * Enter the following command:
-  `celery -A AIPscan.worker.celery worker --loglevel=info`
+  `uv run celery -A AIPscan.worker.celery worker --loglevel=info`
 * You should see terminal output similar to this to indicate that the Celery
   task queue is ready:
 
@@ -226,8 +223,8 @@ will be output during startup of both AIPscan and Celery workers.
 SQLite databases can be migrated using ```sqlite3mysql```:
 
 ```shell
-/usr/share/archivematica/virtualenvs/AIPscan/bin/pip install sqlite3-to-mysql
-/usr/share/archivematica/virtualenvs/AIPscan/bin/sqlite3mysql -f aipscan.db -d <mysql database name> -u<mysql database user> ----mysql-password <mysql database password>
+uv tool install sqlite3-to-mysql
+sqlite3mysql -f aipscan.db -d <mysql database name> -u<mysql database user> ----mysql-password <mysql database password>
 ```
 
 ## Tools
@@ -336,6 +333,7 @@ by a web browser by opening `index.html`.
   "Reports" menu to view all the interesting information about your
   Archivematica content in a variety of layouts.
 
+[uv]: https://docs.astral.sh/uv/getting-started/installation/
 [rabbit-MQ1]: https://www.rabbitmq.com/
 [celery-1]: https://docs.celeryproject.org/en/stable/getting-started/introduction.html
 [rabbit-MQ2]: http://localhost:15672/

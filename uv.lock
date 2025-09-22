@@ -89,7 +89,7 @@ dev = [
     { name = "pytest" },
     { name = "pytest-cov" },
     { name = "pytest-mock" },
-    { name = "ruff", specifier = ">=0.13.0" },
+    { name = "ruff" },
     { name = "tzlocal" },
 ]
 linting = [{ name = "pre-commit-uv" }]

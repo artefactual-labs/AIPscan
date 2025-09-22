@@ -9,16 +9,18 @@ systems and servers have not been tested.
 
 ## AIPScan Flask server
 
+Install [uv] and [Node LTS] on the server before continuing.
+
 * Move to project directory: `cd /usr/share/archivematica`
 * Clone files to directory: `git clone https://github.com/artefactual-labs/AIPscan
   /usr/share/archivematica/AIPscan`
-* Set up the AIPscan virtualenv directory in the Archivematica virtualenvs
-  directory:
-  * `cd /usr/share/archivematica/virtualenvs`  
-  * `python3 -m venv AIPscan`
-* Activate virtualenv: `source AIPscan/bin/activate`
-* Install requirements (this will include Flask, Celery, and Gunicorn): `pip
-  install -r requirements.txt`
+* Change into the project directory: `cd /usr/share/archivematica/AIPscan`
+* Configure uv to use a shared virtual environment directory for AIPscan:
+  `export UV_PROJECT_ENVIRONMENT=/usr/share/archivematica/virtualenvs/AIPscan`
+  (re-export this variable in future shells when running `uv` commands)
+* Install the runtime dependencies (uv will create the environment at that
+  path if it does not already exist): `uv sync --no-dev --extra server`
+* Bundle static assets: `npm run build`
 
 ## RabbitMQ
 
@@ -104,7 +106,7 @@ ExecReload=/bin/kill -s HUP $MAINPID
 ExecStop=/bin/kill -s TERM $MAINPID
 PrivateTmp=true
 Restart=always
-RestartSec=30 
+RestartSec=30
 
 [Install]
 WantedBy=multi-user.target
@@ -278,6 +280,8 @@ sudo systemctl status celery
 If all these steps were successful, you should now have a robust, production
 ready AIPscan service running at `your.aipscan.server.ip`.
 
+[uv]: (https://docs.astral.sh/uv/getting-started/installation/)
+[Node LTS]: https://nodejs.org/en/download
 [rabbit-MQ1]: https://www.rabbitmq.com/install-debian.html
 [fla-1]: https://flask.palletsprojects.com
 [gun-1]: https://gunicorn.org/

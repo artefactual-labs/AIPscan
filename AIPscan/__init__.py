@@ -1,7 +1,11 @@
 import os
+from importlib.metadata import PackageNotFoundError
 from importlib.metadata import version as _metadata_version
 
-__version__ = _metadata_version("AIPscan")
+try:
+    __version__ = _metadata_version("AIPscan")
+except PackageNotFoundError:
+    __version__ = "0.0.0+unknown"
 
 __all__ = ["__version__"]
 
