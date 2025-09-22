@@ -48,6 +48,9 @@ def create_app(config_name=None):
         app.register_blueprint(api)
         app.register_blueprint(home)
 
+        # Ensure all SQLAlchemy models are registered before schema creation.
+        from AIPscan import models  # noqa: F401
+
         db.init_app(app)
         configure_celery(app)
 
