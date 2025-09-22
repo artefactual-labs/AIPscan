@@ -26,7 +26,7 @@ class get_mets_tasks(db.Model):
 
 
 class index_tasks(db.Model):
-    __bind_key__ = "celery"
+    __tablename__ = "index_tasks"
     index_task_id = db.Column(db.String(36), primary_key=True)
     fetch_job_id = db.Column(
         db.Integer(), db.ForeignKey("fetch_job.id"), nullable=False
