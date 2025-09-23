@@ -7,7 +7,7 @@ server should be used to serve the AIPscan application. We recommend
 are for production deployment to an Ubuntu/Debian server. Other operating
 systems and servers have not been tested.
 
-## AIPScan Flask server
+## AIPscan Flask server
 
 Install [uv] and [Node LTS] on the server before continuing.
 

@@ -22,7 +22,7 @@ Copyright Artefactual Systems Inc (2021)
 
 ## Screenshots
 
-### AIPScan fetch job
+### AIPscan fetch job
 
 ![screencap1](screencaps/aipscan_fetch_job.png)
 
@@ -54,7 +54,7 @@ for production deployment instructions. See [CONTRIBUTING](CONTRIBUTING.md) for
 guidelines on how to contribute to the project, including how to create a new
 AIPscan report.
 
-## AIPScan Flask server
+## AIPscan Flask server
 
 * Install [uv] if it's not already available
 * Clone files and cd to directory:
@@ -144,7 +144,7 @@ machine or you can run it in either location from a Docker container.
 
 * The RabbitMQ dashboard is available at [`http://localhost:15672/`][rabbit-MQ2]
 * username: `guest` / password: `guest`
-* AIPScan connects to the RabbitMQ queue on port `:5672`.
+* AIPscan connects to the RabbitMQ queue on port `:5672`.
 
 ## Celery
 
