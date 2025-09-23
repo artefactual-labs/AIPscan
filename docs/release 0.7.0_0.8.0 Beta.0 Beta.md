@@ -23,15 +23,15 @@ error page.
 
 ### Issue 91: When deleting a storage service, remove agents associated with it
 
-If a storage service is removed from AIPScan, then related agent information
+If a storage service is removed from AIPscan, then related agent information
 will now be removed from  AIPscan’s database.
 
 ### Issue 99: Update AIPscan database with deleted storage service AIPs
 
 Previously, if an AIP was deleted from the storage service this was not
-reflected in AIPScan’s database  and the deleted AIP would continue to be shown
+reflected in AIPscan’s database  and the deleted AIP would continue to be shown
 on the UI. This fix addresses this issue and any AIPs deleted in the storage
-service will now be removed from the AIPScan database and will no longer appear
+service will now be removed from the AIPscan database and will no longer appear
 in the UI.
 
 ### Issue 180: Display PREMIS object XML, if populated, when viewing files
@@ -42,7 +42,7 @@ XML form within AIPscan.
 ## 0.8.0
 
 This next section contains release notes related to the most recent update to
-AIPScan
+AIPscan
 
 ### Issue 13: Show active tab in main menu
 
@@ -51,13 +51,13 @@ which section a user is currently working in. For example, if a user is on the
 detail page for a storage service then “Archivematica Storage Services” is
 highlighted, shown with white text rather than gray, in the navigation bar.
 
-### Issue 23: window.location.origin paths will not work on sites where AIPScan is not hosted at root url
+### Issue 23: window.location.origin paths will not work on sites where AIPscan is not hosted at root url
 
 The window.location.origin values were used in Javascript URL generation for
 the _reporter/reports/_ and _reporter/view_aips pages_. The URLs generated
 would fail if AIPscan was being hosted at subpaths of a root url, e.g.
 _example.com/dir/AIPscan/_ instead of _example.com/AIPscan_. This issue has
-been fixed and will allow for AIPScan to be hosted at subpaths of a root URL.
+been fixed and will allow for AIPscan to be hosted at subpaths of a root URL.
 
 ### Issue 77: Add GUI element to largest files report to control number of files shown
 
@@ -91,17 +91,17 @@ sends data for these specific AIPs rather than all AIPs. This makes the AIP
 page load much faster in web browsers when a lot of AIPs exist in AIPscan’s
 database.
 
-### Issue 217: Create a script to generate test content for AIPScan testing
+### Issue 217: Create a script to generate test content for AIPscan testing
 
 A CLI tool was added to allow developers to generate sample database content to
 make it easier to do performance testing and development in general.
 
 ### Issue 234: When the database is unpopulated the AIPs and Reports pages will result in “Internal Server Error”
 
-Previous versions of AIPScan had a silent failure when the database was
+Previous versions of AIPscan had a silent failure when the database was
 unpopulated and so users were unaware that the database was unpopulated. This
 fix alerts users to the fact that information is either not being pulled from
-the storage space or that other potential issues are preventing AIPScan from
+the storage space or that other potential issues are preventing AIPscan from
 capturing and displaying information.
 
 ### Issue 241: Add lock file functionality to fetch tool
