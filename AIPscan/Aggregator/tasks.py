@@ -9,6 +9,7 @@ from celery.utils.log import get_task_logger
 from AIPscan import db
 from AIPscan import typesense_helpers
 from AIPscan.Aggregator import database_helpers
+from AIPscan.Aggregator.celery_helpers import with_db_session
 from AIPscan.Aggregator.celery_helpers import write_celery_update
 from AIPscan.Aggregator.mets_parse_helpers import METSError
 from AIPscan.Aggregator.mets_parse_helpers import download_mets
@@ -48,6 +49,7 @@ def write_packages_json(count, packages, packages_directory):
         logger.error("Cannot decode JSON from %s", json_download_file)
 
 
+@with_db_session
 def start_mets_task(
     package_uuid,
     aip_size,
@@ -100,6 +102,7 @@ def start_mets_task(
         get_mets.apply(args=args)
 
 
+@with_db_session
 def delete_aip(uuid):
     logger.warning("Package deleted from SS: '%s'", uuid)
 
@@ -111,6 +114,7 @@ def delete_aip(uuid):
 
 
 @celery.task(bind=True)
+@with_db_session
 def workflow_coordinator(
     self, timestamp, storage_service_id, fetch_job_id, packages_directory
 ):
@@ -179,6 +183,7 @@ def make_request(request_url, request_url_without_api_key):
 
 
 @celery.task(bind=True)
+@with_db_session
 def package_lists_request(self, storage_service_id, timestamp, packages_directory):
     """Request package lists from the storage service. Package lists
     will contain details of the AIPs that we want to download.
@@ -234,6 +239,7 @@ def package_lists_request(self, storage_service_id, timestamp, packages_director
     }
 
 
+@with_db_session
 def start_index_task(fetch_job_id):
     task = index_task.delay(fetch_job_id)
 
@@ -245,6 +251,7 @@ def start_index_task(fetch_job_id):
 
 
 @celery.task()
+@with_db_session
 def index_task(fetch_job_id):
     # Update Typesense index
     typesense_helpers.initialize_index()
@@ -268,6 +275,7 @@ def index_task(fetch_job_id):
 
 
 @celery.task()
+@with_db_session
 def get_mets(
     package_uuid,
     aip_size,
@@ -370,6 +378,7 @@ def get_mets(
 
 
 @celery.task()
+@with_db_session
 def delete_fetch_job(fetch_job_id):
     fetch_job = db.session.get(FetchJob, fetch_job_id)
     if os.path.exists(fetch_job.download_directory):
@@ -379,6 +388,7 @@ def delete_fetch_job(fetch_job_id):
 
 
 @celery.task()
+@with_db_session
 def delete_storage_service(storage_service_id):
     storage_service = db.session.get(StorageService, storage_service_id)
     mets_fetch_jobs = FetchJob.query.filter_by(

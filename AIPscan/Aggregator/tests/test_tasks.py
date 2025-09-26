@@ -7,6 +7,7 @@ from datetime import datetime
 import celery
 import pytest
 
+from AIPscan import db
 from AIPscan import test_helpers
 from AIPscan.Aggregator.tasks import TaskError
 from AIPscan.Aggregator.tasks import delete_aip
@@ -73,10 +74,15 @@ def test_get_mets_task(app_instance, tmpdir, mocker, fixture_path, package_uuid)
     delete_mets_file = mocker.patch("AIPscan.Aggregator.tasks.os.remove")
 
     storage_service = test_helpers.create_test_storage_service()
+    storage_service_id = storage_service.id
+
     storage_location = test_helpers.create_test_storage_location(
-        storage_service_id=storage_service.id
+        storage_service_id=storage_service_id
     )
-    pipeline = test_helpers.create_test_pipeline(storage_service_id=storage_service.id)
+    storage_location_id = storage_location.id
+
+    pipeline = test_helpers.create_test_pipeline(storage_service_id=storage_service_id)
+    pipeline_id = pipeline.id
 
     get_storage_location = mocker.patch(
         "AIPscan.Aggregator.database_helpers.create_or_update_storage_location"
@@ -84,7 +90,7 @@ def test_get_mets_task(app_instance, tmpdir, mocker, fixture_path, package_uuid)
     get_storage_location.return_value = storage_location
 
     # No AIPs should exist at this point.
-    aips = _get_aips(storage_service.id)
+    aips = _get_aips(storage_service_id)
     assert not aips
 
     # Set up custom logger and add handler to capture output
@@ -93,8 +99,9 @@ def test_get_mets_task(app_instance, tmpdir, mocker, fixture_path, package_uuid)
 
     # Create AIP and verify record.
     fetch_job1 = test_helpers.create_test_fetch_job(
-        storage_service_id=storage_service.id
+        storage_service_id=storage_service_id
     )
+    fetch_job1_id = fetch_job1.id
     get_mets(
         package_uuid=package_uuid,
         aip_size=1000,
@@ -103,22 +110,24 @@ def test_get_mets_task(app_instance, tmpdir, mocker, fixture_path, package_uuid)
         .replace(microsecond=0)
         .strftime("%Y-%m-%d-%H-%M-%S"),
         package_list_no=1,
-        storage_service_id=storage_service.id,
-        storage_location_id=storage_location.id,
-        fetch_job_id=fetch_job1.id,
-        origin_pipeline_id=pipeline.id,
+        storage_service_id=storage_service_id,
+        storage_location_id=storage_location_id,
+        fetch_job_id=fetch_job1_id,
+        origin_pipeline_id=pipeline_id,
         customlogger=customlogger,
     )
-    aips = _get_aips(storage_service.id)
+    aips = _get_aips(storage_service_id)
     assert len(aips) == 1
-    assert len(fetch_job1.aips) == 1
+    fetch_job1_refreshed = db.session.get(FetchJob, fetch_job1_id)
+    assert len(fetch_job1_refreshed.aips) == 1
 
     original_mets_sha256 = aips[0].mets_sha256
 
     # Try to create AIP again and verify no duplicate is created.
     fetch_job2 = test_helpers.create_test_fetch_job(
-        storage_service_id=storage_service.id
+        storage_service_id=storage_service_id
     )
+    fetch_job2_id = fetch_job2.id
     get_mets(
         package_uuid=package_uuid,
         aip_size=1000,
@@ -127,23 +136,26 @@ def test_get_mets_task(app_instance, tmpdir, mocker, fixture_path, package_uuid)
         .replace(microsecond=0)
         .strftime("%Y-%m-%d-%H-%M-%S"),
         package_list_no=1,
-        storage_service_id=storage_service.id,
-        storage_location_id=storage_location.id,
-        fetch_job_id=fetch_job2.id,
-        origin_pipeline_id=pipeline.id,
+        storage_service_id=storage_service_id,
+        storage_location_id=storage_location_id,
+        fetch_job_id=fetch_job2_id,
+        origin_pipeline_id=pipeline_id,
     )
-    aips = _get_aips(storage_service.id)
+    aips = _get_aips(storage_service_id)
     assert len(aips) == 1
     assert aips[0].mets_sha256 == original_mets_sha256
-    assert len(fetch_job1.aips) == 1
-    assert len(fetch_job2.aips) == 0
+    fetch_job1_refreshed = db.session.get(FetchJob, fetch_job1_id)
+    fetch_job2_refreshed = db.session.get(FetchJob, fetch_job2_id)
+    assert len(fetch_job1_refreshed.aips) == 1
+    assert len(fetch_job2_refreshed.aips) == 0
 
     # Replace METS with a new METS file and run again. The old AIP record
     # should be deleted and replaced with one from the new METS.
     mets_file = os.path.join(FIXTURES_DIR, "iso_mets", "iso_mets.xml")
     fetch_job3 = test_helpers.create_test_fetch_job(
-        storage_service_id=storage_service.id
+        storage_service_id=storage_service_id
     )
+    fetch_job3_id = fetch_job3.id
     get_mets(
         package_uuid=package_uuid,
         aip_size=1000,
@@ -152,17 +164,20 @@ def test_get_mets_task(app_instance, tmpdir, mocker, fixture_path, package_uuid)
         .replace(microsecond=0)
         .strftime("%Y-%m-%d-%H-%M-%S"),
         package_list_no=1,
-        storage_service_id=storage_service.id,
-        storage_location_id=storage_location.id,
-        fetch_job_id=fetch_job3.id,
-        origin_pipeline_id=pipeline.id,
+        storage_service_id=storage_service_id,
+        storage_location_id=storage_location_id,
+        fetch_job_id=fetch_job3_id,
+        origin_pipeline_id=pipeline_id,
     )
-    aips = _get_aips(storage_service.id)
+    aips = _get_aips(storage_service_id)
     assert len(aips) == 1
     assert aips[0].mets_sha256 != original_mets_sha256
-    assert len(fetch_job1.aips) == 0
-    assert len(fetch_job2.aips) == 0
-    assert len(fetch_job3.aips) == 1
+    fetch_job1_refreshed = db.session.get(FetchJob, fetch_job1_id)
+    fetch_job2_refreshed = db.session.get(FetchJob, fetch_job2_id)
+    fetch_job3_refreshed = db.session.get(FetchJob, fetch_job3_id)
+    assert len(fetch_job1_refreshed.aips) == 0
+    assert len(fetch_job2_refreshed.aips) == 0
+    assert len(fetch_job3_refreshed.aips) == 1
 
     delete_calls = [
         mocker.call(os.path.join(FIXTURES_DIR, fixture_path)),
@@ -369,22 +384,24 @@ def test_start_index_task(app_instance, mocker):
 
     # Create test fetch job
     storage_service = test_helpers.create_test_storage_service()
+    storage_service_id = storage_service.id
 
     fetch_job = test_helpers.create_test_fetch_job(
-        storage_service_id=storage_service.id
+        storage_service_id=storage_service_id
     )
+    fetch_job_id = fetch_job.id
 
     # At this point no index_tasks should exist for the fetch job
-    index_task_obj = index_tasks.query.filter_by(fetch_job_id=fetch_job.id).first()
+    index_task_obj = index_tasks.query.filter_by(fetch_job_id=fetch_job_id).first()
     assert index_task_obj is None
 
     # Start mock index task, making sure it got started with the right value
-    start_index_task(fetch_job.id)
+    start_index_task(fetch_job_id)
 
-    mock_index_task.assert_called_with(fetch_job.id)
+    mock_index_task.assert_called_with(fetch_job_id)
 
     # At this point an index_tasks should exist for the fetch job
-    index_task_obj = index_tasks.query.filter_by(fetch_job_id=fetch_job.id).first()
+    index_task_obj = index_tasks.query.filter_by(fetch_job_id=fetch_job_id).first()
     assert type(index_task_obj) is index_tasks
 
 
