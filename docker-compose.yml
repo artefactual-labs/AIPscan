@@ -58,8 +58,6 @@ services:
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
       - rabbitmq_logs:/var/log/rabbitmq
-    depends_on:
-      - aipscan
     healthcheck:
        test: rabbitmq-diagnostics -q ping
        interval: 30s
