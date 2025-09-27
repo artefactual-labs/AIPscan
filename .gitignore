@@ -3,6 +3,7 @@ celerytasks.db
 AIPscan/Aggregator/downloads/
 AIPscan/static/dist/
 
+/.env
 [.]venv/
 node_modules/
 .tox/

@@ -9,6 +9,7 @@ from celery.utils.log import get_task_logger
 from AIPscan import db
 from AIPscan import typesense_helpers
 from AIPscan.Aggregator import database_helpers
+from AIPscan.Aggregator.celery_helpers import with_db_session
 from AIPscan.Aggregator.celery_helpers import write_celery_update
 from AIPscan.Aggregator.mets_parse_helpers import METSError
 from AIPscan.Aggregator.mets_parse_helpers import download_mets
@@ -19,7 +20,6 @@ from AIPscan.Aggregator.task_helpers import parse_package_list_file
 from AIPscan.Aggregator.task_helpers import process_package_object
 from AIPscan.Aggregator.task_helpers import summarize_fetch_job_results
 from AIPscan.celery import celery
-from AIPscan.helpers import file_sha256_hash
 from AIPscan.models import AIP
 from AIPscan.models import Agent
 from AIPscan.models import FetchJob
@@ -48,6 +48,7 @@ def write_packages_json(count, packages, packages_directory):
         logger.error("Cannot decode JSON from %s", json_download_file)
 
 
+@with_db_session
 def start_mets_task(
     package_uuid,
     aip_size,
@@ -100,6 +101,7 @@ def start_mets_task(
         get_mets.apply(args=args)
 
 
+@with_db_session
 def delete_aip(uuid):
     logger.warning("Package deleted from SS: '%s'", uuid)
 
@@ -111,6 +113,7 @@ def delete_aip(uuid):
 
 
 @celery.task(bind=True)
+@with_db_session
 def workflow_coordinator(
     self, timestamp, storage_service_id, fetch_job_id, packages_directory
 ):
@@ -179,6 +182,7 @@ def make_request(request_url, request_url_without_api_key):
 
 
 @celery.task(bind=True)
+@with_db_session
 def package_lists_request(self, storage_service_id, timestamp, packages_directory):
     """Request package lists from the storage service. Package lists
     will contain details of the AIPs that we want to download.
@@ -234,6 +238,7 @@ def package_lists_request(self, storage_service_id, timestamp, packages_director
     }
 
 
+@with_db_session
 def start_index_task(fetch_job_id):
     task = index_task.delay(fetch_job_id)
 
@@ -245,6 +250,7 @@ def start_index_task(fetch_job_id):
 
 
 @celery.task()
+@with_db_session
 def index_task(fetch_job_id):
     # Update Typesense index
     typesense_helpers.initialize_index()
@@ -268,6 +274,7 @@ def index_task(fetch_job_id):
 
 
 @celery.task()
+@with_db_session
 def get_mets(
     package_uuid,
     aip_size,
@@ -301,7 +308,7 @@ def get_mets(
 
     # Download METS file
     storage_service = db.session.get(StorageService, storage_service_id)
-    download_file = download_mets(
+    download_file, mets_hash = download_mets(
         storage_service,
         package_uuid,
         relative_path_to_mets,
@@ -309,7 +316,6 @@ def get_mets(
         package_list_no,
     )
     mets_name = os.path.basename(download_file)
-    mets_hash = file_sha256_hash(download_file)
 
     # If METS file's hash matches an existing value, this is a duplicate of an
     # existing AIP and we can safely ignore it.
@@ -370,6 +376,7 @@ def get_mets(
 
 
 @celery.task()
+@with_db_session
 def delete_fetch_job(fetch_job_id):
     fetch_job = db.session.get(FetchJob, fetch_job_id)
     if os.path.exists(fetch_job.download_directory):
@@ -379,6 +386,7 @@ def delete_fetch_job(fetch_job_id):
 
 
 @celery.task()
+@with_db_session
 def delete_storage_service(storage_service_id):
     storage_service = db.session.get(StorageService, storage_service_id)
     mets_fetch_jobs = FetchJob.query.filter_by(

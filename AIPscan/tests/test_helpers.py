@@ -1,6 +1,9 @@
+import hashlib
+
 import pytest
 
 from AIPscan.helpers import filesizeformat
+from AIPscan.helpers import stream_write_and_hash
 
 
 @pytest.mark.parametrize(
@@ -27,3 +30,36 @@ from AIPscan.helpers import filesizeformat
 )
 def test_filesizeformat(byte_size, binary, expected_result):
     assert filesizeformat(byte_size, binary=binary) == expected_result
+
+
+class _FakeStreamingResponse:
+    def __init__(self, chunks):
+        self._chunks = chunks
+
+    def iter_content(self, chunk_size=None):
+        yield from self._chunks
+
+
+def test_stream_write_and_hash(tmp_path):
+    payload = b"test payload for mets file"
+    chunks = [payload[:5], payload[5:-1], payload[-1:], b""]
+    response = _FakeStreamingResponse(chunks)
+
+    destination = tmp_path / "mets.xml"
+
+    digest = stream_write_and_hash(response, destination)
+
+    assert destination.read_bytes() == payload
+    assert digest == hashlib.sha256(payload).hexdigest()
+
+
+def test_stream_write_and_hash_with_iterable(tmp_path):
+    payload = b"chunked bytes"
+    chunks = [payload[:6], payload[6:]]
+
+    destination = tmp_path / "payload.bin"
+
+    digest = stream_write_and_hash(chunks, destination)
+
+    assert destination.read_bytes() == payload
+    assert digest == hashlib.sha256(payload).hexdigest()
