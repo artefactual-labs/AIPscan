@@ -104,8 +104,44 @@ def _simplify_datetime(date_string, return_object=True):
     return formatted_date.strftime(DATE_FORMAT_FULL)
 
 
-def file_sha256_hash(filepath):
-    """Return SHA256 hash for contents of file."""
-    with open(filepath, "rb") as f:
-        expected_bytes = f.read()
-        return hashlib.sha256(expected_bytes).hexdigest()
+def stream_write_and_hash(chunk_source, destination_path, chunk_size=65536):
+    """Write bytes from a stream/iterable to disk while computing SHA256.
+
+    The helper accepts any object that yields byte chunks: a `requests.Response`
+    obtained with ``stream=True``, a file-like object exposing ``read`` or an
+    arbitrary iterable of bytes. Chunks are consumed incrementally so only a
+    small buffer is retained in memory. The caller is responsible for closing
+    the *chunk_source* when applicable.
+
+    :param chunk_source: Iterable, file-like object, or response providing data.
+    :param destination_path: Filesystem path where the payload is written.
+    :param chunk_size: Bytes to read per iteration when ``chunk_source`` supports
+        size hints (defaults to 64 KiB).
+    :returns: SHA256 hex digest of the written payload.
+    """
+
+    if hasattr(chunk_source, "iter_content"):
+        iterator = chunk_source.iter_content(chunk_size=chunk_size)
+    elif hasattr(chunk_source, "read"):
+
+        def _reader():
+            while True:
+                data = chunk_source.read(chunk_size)
+                if not data:
+                    break
+                yield data
+
+        iterator = _reader()
+    else:
+        iterator = iter(chunk_source)
+
+    sha256_hasher = hashlib.sha256()
+
+    with open(destination_path, "wb") as destination:
+        for chunk in iterator:
+            if not chunk:
+                continue
+            destination.write(chunk)
+            sha256_hasher.update(chunk)
+
+    return sha256_hasher.hexdigest()

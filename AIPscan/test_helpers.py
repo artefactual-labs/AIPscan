@@ -1,3 +1,4 @@
+import hashlib
 import logging
 import os
 import time
@@ -21,6 +22,12 @@ from AIPscan.models import StorageService
 from AIPscan.models import index_tasks
 
 TEST_SHA_256 = "79c16fa9573ec46c5f60fd54b34f314159e0623ca53d8d2f00c5875dbb4e0dfd"
+
+
+def file_sha256_hash(filepath):
+    """Return SHA256 hash for contents of file."""
+    with open(filepath, "rb") as f:
+        return hashlib.sha256(f.read()).hexdigest()
 
 
 def _add_test_object_to_db(test_object):

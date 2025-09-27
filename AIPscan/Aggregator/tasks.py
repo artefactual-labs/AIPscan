@@ -20,7 +20,6 @@ from AIPscan.Aggregator.task_helpers import parse_package_list_file
 from AIPscan.Aggregator.task_helpers import process_package_object
 from AIPscan.Aggregator.task_helpers import summarize_fetch_job_results
 from AIPscan.celery import celery
-from AIPscan.helpers import file_sha256_hash
 from AIPscan.models import AIP
 from AIPscan.models import Agent
 from AIPscan.models import FetchJob
@@ -306,7 +305,7 @@ def get_mets(
 
     # Download METS file
     storage_service = db.session.get(StorageService, storage_service_id)
-    download_file = download_mets(
+    download_file, mets_hash = download_mets(
         storage_service,
         package_uuid,
         relative_path_to_mets,
@@ -314,7 +313,6 @@ def get_mets(
         package_list_no,
     )
     mets_name = os.path.basename(download_file)
-    mets_hash = file_sha256_hash(download_file)
 
     # If METS file's hash matches an existing value, this is a duplicate of an
     # existing AIP and we can safely ignore it.
