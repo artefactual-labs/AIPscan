@@ -142,17 +142,5 @@ def create_numbered_subdirs(timestamp, package_list_number):
     return numbered_subdir
 
 
-def write_mets(http_response, package_uuid, subdir):
-    """Given a http response containing our METS data, create the path
-    we want to store our METS at, and then stream the response into a
-    file.
-    """
-    mets_file = f"METS.{package_uuid}.xml"
-    download_file = os.path.join(subdir, mets_file)
-    with open(download_file, "wb") as file:
-        file.write(http_response.content)
-    return download_file
-
-
 def summarize_fetch_job_results(fetch_job):
     return f"aips: '{fetch_job.total_aips}'; sips: '{fetch_job.total_sips}'; dips: '{fetch_job.total_dips}'; deleted: '{fetch_job.total_deleted_aips}'; replicated: '{fetch_job.total_replicas}'"

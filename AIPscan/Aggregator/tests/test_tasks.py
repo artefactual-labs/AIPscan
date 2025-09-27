@@ -68,7 +68,7 @@ def test_get_mets_task(app_instance, tmpdir, mocker, fixture_path, package_uuid)
         timestamp_str,
         package_list_no,
     ):
-        return mets_file
+        return mets_file, test_helpers.file_sha256_hash(mets_file)
 
     mocker.patch("AIPscan.Aggregator.tasks.download_mets", mock_download_mets)
     delete_mets_file = mocker.patch("AIPscan.Aggregator.tasks.os.remove")
