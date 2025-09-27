@@ -27,6 +27,7 @@ from AIPscan.Aggregator.tests import RESPONSE_DICT
 from AIPscan.Aggregator.tests import VALID_JSON
 from AIPscan.Aggregator.tests import MockResponse
 from AIPscan.Aggregator.types import StorageServicePackage
+from AIPscan.helpers import file_sha256_hash
 from AIPscan.models import AIP
 from AIPscan.models import Agent
 from AIPscan.models import FetchJob
@@ -68,7 +69,7 @@ def test_get_mets_task(app_instance, tmpdir, mocker, fixture_path, package_uuid)
         timestamp_str,
         package_list_no,
     ):
-        return mets_file
+        return mets_file, file_sha256_hash(mets_file)
 
     mocker.patch("AIPscan.Aggregator.tasks.download_mets", mock_download_mets)
     delete_mets_file = mocker.patch("AIPscan.Aggregator.tasks.os.remove")

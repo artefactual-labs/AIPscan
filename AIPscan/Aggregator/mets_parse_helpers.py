@@ -2,13 +2,15 @@
 information from an AIP METS file.
 """
 
+import os
+
 import lxml
 import metsrw
 import requests
 
 from AIPscan.Aggregator.task_helpers import create_numbered_subdirs
 from AIPscan.Aggregator.task_helpers import get_mets_url
-from AIPscan.Aggregator.task_helpers import write_mets
+from AIPscan.helpers import stream_write_and_hash
 
 
 class METSError(Exception):
@@ -83,17 +85,23 @@ def get_aip_original_name(mets):
 def download_mets(
     storage_service, package_uuid, relative_path_to_mets, timestamp, package_list_no
 ):
-    """Download METS from the storage service."""
+    """Download METS from the storage service.
 
-    # Request the METS file.
+    The METS document is streamed directly to disk while its SHA256 digest is
+    computed so that the caller can avoid re-reading the file.
+    """
+
+    numbered_subdir = create_numbered_subdirs(timestamp, package_list_no)
+    download_file = os.path.join(numbered_subdir, f"METS.{package_uuid}.xml")
+
     mets_response = requests.get(
-        get_mets_url(storage_service, package_uuid, relative_path_to_mets)
+        get_mets_url(storage_service, package_uuid, relative_path_to_mets),
+        stream=True,
     )
 
-    # Create a directory to download the METS to.
-    numbered_subdir = create_numbered_subdirs(timestamp, package_list_no)
+    try:
+        mets_hash = stream_write_and_hash(mets_response, download_file)
+    finally:
+        mets_response.close()
 
-    # Output METS to a convenient location to later be parsed.
-    download_file = write_mets(mets_response, package_uuid, numbered_subdir)
-
-    return download_file
+    return download_file, mets_hash
