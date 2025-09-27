@@ -81,8 +81,6 @@ services:
          condition: service_healthy
       rabbitmq:
          condition: service_healthy
-      aipscan:
-         condition: service_healthy
 
   typesense:
     image: typesense/typesense:29.0
