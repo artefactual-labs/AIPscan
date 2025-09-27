@@ -40,9 +40,7 @@ services:
     command: gunicorn --preload --timeout 10 --workers 1 --error-logfile - --log-level debug --capture-output --bind 0.0.0.0:5000 "AIPscan:create_app()"
     volumes:
       - "./:/app:rw"
-    deploy:
-      restart_policy:
-        condition: on-failure
+    restart: on-failure
     healthcheck:
       test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:5000', timeout=3).raise_for_status()"]
       interval: 10s
