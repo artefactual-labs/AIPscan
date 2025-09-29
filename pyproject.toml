@@ -87,6 +87,7 @@ artifacts = ["AIPscan/static/dist/**"]
 [tool.hatch.build.targets.wheel]
 packages = ["AIPscan"]
 artifacts = ["AIPscan/static/dist/**"]
+exclude = ["**/tests/**"]
 
 [tool.pytest.ini_options]
 testpaths = ["AIPscan", "tools"]
