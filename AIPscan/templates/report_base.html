@@ -5,14 +5,15 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='dist/report_base/report_base.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='dist/base/base.css') }}">
 
     {% block head_content %}
         <!-- Repeat this block in your template to include additional stylesheets.
             the content in this one will be replaced. -->
     {% endblock %}
 
-    <script type="text/javascript" language="javascript" src="{{ url_for('static', filename='dist/report_base/report_base.js') }}"></script>
+    <script type="module" language="javascript" src="{{ url_for('static', filename='dist/base/base.js') }}"></script>
+    <script type="module" language="javascript" src="{{ url_for('static', filename='dist/report_base/report_base.js') }}"></script>
 </head>
 
 <body data-url-root="{{ request.url_root }}">
