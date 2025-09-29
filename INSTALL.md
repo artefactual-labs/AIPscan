@@ -248,6 +248,20 @@ in the `[Service]` section of this file. For example:
 Environment="TYPESENSE_API_KEY=1234"
 ```
 
+Before enabling the service, review the [Celery Workers Guide] for tuning
+options that help keep AIPscan workers stable in production. The
+`--max-memory-per-child` flag is often helpful for recycling workers once they
+reach a specified memory limit. For instance, `--max-memory-per-child 1048576`
+will recycle a worker after it uses about 1 GB of RAM (Celery expects the value
+in kilobytes, so 1024 × 1024 = 1048576 KB).
+
+Add flags like these to the end of the `ExecStart` command if they are
+appropriate for your deployment. For example:
+
+```bash
+ExecStart=/usr/share/archivematica/virtualenvs/AIPscan/bin/celery -A AIPscan.worker.celery worker --max-memory-per-child 1048576
+```
+
 * Start the Celery service:
 
 ```bash
@@ -277,8 +291,11 @@ sudo systemctl status celery
 
 ## Conclusion
 
-If all these steps were successful, you should now have a robust, production
-ready AIPscan service running at `your.aipscan.server.ip`.
+If these steps completed without errors, you will have a basic AIPscan
+deployment reachable at `your.aipscan.server.ip`. This guide is a starting
+point, i.e. production readiness requires ongoing monitoring to understand
+system behaviour, security hardening and performance tuning to improve
+reliability over time.
 
 [uv]: (https://docs.astral.sh/uv/getting-started/installation/)
 [Node LTS]: https://nodejs.org/en/download
@@ -287,3 +304,4 @@ ready AIPscan service running at `your.aipscan.server.ip`.
 [gun-1]: https://gunicorn.org/
 [ngx-1]: https://www.nginx.com/
 [ufw-1]: https://wiki.ubuntu.com/UncomplicatedFirewall
+[Celery Workers Guide]: https://docs.celeryproject.org/en/stable/userguide/workers.html#worker-concurrency
