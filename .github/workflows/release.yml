@@ -98,6 +98,11 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - name: Read Python version
+        id: python-version
+        run: |
+          python_version="$(tr -d '\n' < .python-version)"
+          echo "value=${python_version}" >> "$GITHUB_OUTPUT"
       - name: Restore distribution directory
         uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
         with:
@@ -132,6 +137,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           target: release
           build-args: |
+            PYTHON_VERSION=${{ steps.python-version.outputs.value }}
             WHEEL=aipscan-${{ github.event.inputs.version }}-py3-none-any.whl
 
   release:
