@@ -1,3 +1,4 @@
+[![PyPI version](https://badge.fury.io/py/aipscan.svg)](https://badge.fury.io/py/aipscan)
 [![GitHub CI](https://github.com/artefactual-labs/AIPscan/actions/workflows/test.yml/badge.svg)](https://github.com/artefactual-labs/AIPscan/actions/workflows/test.yml)
 [![codecov](https://codecov.io/gh/artefactual-labs/AIPscan/branch/main/graph/badge.svg?token=2RRFAM8P89)](https://codecov.io/gh/artefactual-labs/AIPscan)
 
