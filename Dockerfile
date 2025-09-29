@@ -45,7 +45,7 @@ ARG WHEEL
 RUN adduser --disabled-password --gecos "" aipscan
 RUN --mount=type=bind,source=dist,target=/dist,ro \
     --mount=type=cache,target=/root/.cache/pip \
-    pip install --compile /dist/${WHEEL}[server]
+    pip install --root-user-action=ignore --compile /dist/${WHEEL}[server]
 COPY .init-scripts/entrypoint.sh /
 USER aipscan
 ENTRYPOINT ["/entrypoint.sh"]
