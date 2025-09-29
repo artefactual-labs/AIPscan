@@ -1,3 +1,5 @@
-import "./shared/base_shared.js";
+import $ from "jquery";
+
+window.$ = window.jQuery = $;
 
 import "/AIPscan/static/js/report.js";
