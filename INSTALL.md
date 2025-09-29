@@ -9,18 +9,26 @@ systems and servers have not been tested.
 
 ## AIPscan Flask server
 
-Install [uv] and [Node LTS] on the server before continuing.
+Ensure a modern Python 3 interpreter (3.13+ recommended) is available on the
+server. Starting with version 0.9.0, AIPscan packages are distributed via
+PyPI, so you can install production builds directly without cloning the
+repository.
 
-* Move to project directory: `cd /usr/share/archivematica`
-* Clone files to directory: `git clone https://github.com/artefactual-labs/AIPscan
-  /usr/share/archivematica/AIPscan`
-* Change into the project directory: `cd /usr/share/archivematica/AIPscan`
-* Configure uv to use a shared virtual environment directory for AIPscan:
-  `export UV_PROJECT_ENVIRONMENT=/usr/share/archivematica/virtualenvs/AIPscan`
-  (re-export this variable in future shells when running `uv` commands)
-* Install the runtime dependencies (uv will create the environment at that
-  path if it does not already exist): `uv sync --no-dev --extra server`
-* Bundle static assets: `npm run build`
+* Create the directories used by the services if they do not already exist:
+
+      sudo mkdir -p /usr/share/archivematica/AIPscan /usr/share/archivematica/virtualenvs
+
+* Create the dedicated virtual environment with Python 3:
+
+      python3 -m venv /usr/share/archivematica/virtualenvs/AIPscan
+
+* Install the runtime dependencies from PyPI:
+
+      source /usr/share/archivematica/virtualenvs/AIPscan/bin/activate
+      pip install --upgrade pip
+      pip install "aipscan[server]==VERSION"
+
+Replace `VERSION` with the desired version number, e.g. `0.9.0`.
 
 ## RabbitMQ
 
@@ -297,8 +305,6 @@ point, i.e. production readiness requires ongoing monitoring to understand
 system behaviour, security hardening and performance tuning to improve
 reliability over time.
 
-[uv]: (https://docs.astral.sh/uv/getting-started/installation/)
-[Node LTS]: https://nodejs.org/en/download
 [rabbit-MQ1]: https://www.rabbitmq.com/install-debian.html
 [fla-1]: https://flask.palletsprojects.com
 [gun-1]: https://gunicorn.org/
