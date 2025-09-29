@@ -8,5 +8,7 @@
     "headings": false, // Don't check headings
     "tables": false // Don't check table Markdown
   },
-  "MD041": false // Disable: first line in a file should be a top-level heading
+  "MD041": false, // Disable: first line in a file should be a top-level heading
+  "MD046": false // Disable: indented code blocks are awesome!
+
 }
