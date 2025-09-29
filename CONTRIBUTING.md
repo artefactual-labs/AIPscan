@@ -11,6 +11,16 @@ In general, follow code style guidelines from the Archivematica
 project's [CONTRIBUTING](https://github.com/artefactual/archivematica/blob/HEAD/CONTRIBUTING.md)
 to the greatest degree possible.
 
+## Preparing a release
+
+Before running the release workflow, confirm that `.python-version` reflects the
+Python release you want baked into the Docker images; update it to a recent
+supported version if needed. Run the release process with an alpha or release
+candidate tag first to shake out issues, using e.g.
+`gh workflow run release.yml --ref main -f version=0.9.0a2`. When everything
+looks good, repeat the same command with the final version number to cut the
+official release (the workflow handles building, tagging, and publishing).
+
 ## Writing a new AIPscan report
 
 Creating a new report in AIPscan is a multi-step process, comprising:

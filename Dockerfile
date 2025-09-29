@@ -1,4 +1,8 @@
+
 ARG TARGET=dev
+
+# Value comes from .python-version (default avoids InvalidDefaultArgInFrom).
+ARG PYTHON_VERSION=3.13
 
 FROM ghcr.io/astral-sh/uv:trixie-slim AS builder
 ENV UV_COMPILE_BYTECODE=1
@@ -36,19 +40,14 @@ WORKDIR /app
 COPY .init-scripts/entrypoint.sh /
 ENTRYPOINT ["/entrypoint.sh"]
 
-FROM ghcr.io/astral-sh/uv:trixie-slim AS release
+FROM python:${PYTHON_VERSION}-slim-trixie AS release
 ARG WHEEL
-ENV UV_COMPILE_BYTECODE=1
-ENV UV_LINK_MODE=copy
-ENV UV_PYTHON_PREFERENCE=only-managed
-RUN --mount=type=bind,source=.python-version,target=/.python-version,ro \
-    uv python install
-RUN uv venv /venv
-ENV PATH="/venv/bin:$PATH"
-RUN --mount=type=cache,target=/root/.cache/uv \
-    --mount=type=bind,source=dist,target=/dist,ro \
-    uv pip install /dist/${WHEEL}[server]
+RUN adduser --disabled-password --gecos "" aipscan
+RUN --mount=type=bind,source=dist,target=/dist,ro \
+    --mount=type=cache,target=/root/.cache/pip \
+    pip install --compile /dist/${WHEEL}[server]
 COPY .init-scripts/entrypoint.sh /
+USER aipscan
 ENTRYPOINT ["/entrypoint.sh"]
 
 FROM ${TARGET}
