@@ -120,6 +120,12 @@ RestartSec=30
 WantedBy=multi-user.target
 ```
 
+Adjust `--workers` to match the concurrency you expect. AIPscan's Flask views
+mostly wait on database and HTTP calls, so the workload is primarily I/O bound.
+We've only tested AIPscan with Gunicorn's prefork (`sync`) workers so far, but
+threaded workers such as `gthread` should also be viable if you prefer to scale
+with threads.
+
 If you wish to use Typesense with AIPscan, you'll need to define an environment variable
 in the `[Service]` section of this file. For example:
 
