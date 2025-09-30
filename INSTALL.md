@@ -183,14 +183,28 @@ server {
     listen 80;
     server_name your.aipscan.server.ip.here;
 
-    location / {
-        satisfy all;
+    # Enable compression for improved performance.
+    gzip on;
+    gzip_types text/css application/javascript application/json application/xml image/svg+xml;
 
+    # Serve compiled static assets directly from the venv.
+    location /static/ {
+        # Update this path as needed!
+        alias /usr/share/archivematica/virtualenvs/AIPscan/lib/python3.13/site-packages/AIPscan/static/;
+        access_log off;
+        try_files $uri $uri/ =404;
+    }
+
+    location / {
         include proxy_params;
         proxy_pass http://unix:/usr/share/archivematica/AIPscan/aipscan.sock;
     }
 }
 ```
+
+Wheel installs place static assets under `.../site-packages/AIPscan/static` in
+the virtual environment. Update the alias accordingly so Nginx, not Flask,
+serves these files.
 
 * Create the symlink to enable this Nginx configuration:
 
