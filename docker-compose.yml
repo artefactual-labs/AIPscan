@@ -46,9 +46,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-    depends_on:
-      aipscan-mysql:
-         condition: service_healthy
 
   rabbitmq:
     image: rabbitmq:4.1.4-management
@@ -76,11 +73,6 @@ services:
     command: celery -A AIPscan.worker.celery worker --loglevel=info
     volumes:
       - "./:/app:rw"
-    depends_on:
-      aipscan-mysql:
-         condition: service_healthy
-      rabbitmq:
-         condition: service_healthy
 
   typesense:
     image: typesense/typesense:29.0

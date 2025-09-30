@@ -54,6 +54,10 @@ def create_app(config_name=None):
         db.init_app(app)
         configure_celery(app)
 
+        from AIPscan.cli import register_cli
+
+        register_cli(app)
+
         # Avoid schema creation races under Gunicorn/Celery.
         # Set this only for one process.
         if app.config.get("CREATE_DB"):

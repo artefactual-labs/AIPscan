@@ -1,4 +1,21 @@
 services:
+  aipscan-setup:
+    build: ./
+    environment:
+      - FLASK_CONFIG=dev
+      - CELERY_BROKER_URL=amqp://guest@rabbitmq//
+      - TYPESENSE_HOST=typesense
+      - SQLALCHEMY_DATABASE_URI=mysql+pymysql://aipscan:demo@aipscan-mysql:3306/aipscan
+      - SQLALCHEMY_CELERY_BACKEND=mysql+pymysql://aipscan:demo@aipscan-mysql:3306/aipscan
+      - CELERY_RESULT_BACKEND=db+mysql+pymysql://aipscan:demo@aipscan-mysql:3306/celery
+      - TYPESENSE_API_KEY=xyz
+    volumes:
+      - "./:/app:ro"
+    command: flask --app AIPscan:create_app storage-service-bootstrap --name "Demo Storage Service" --url http://nginx:8000 --username test --api-key test --default --wait
+    restart: on-failure
+    networks:
+      - am_default
+
   aipscan:
     networks:
       - am_default
