@@ -14,7 +14,7 @@ services:
       MYSQL_PASSWORD: "demo"
     volumes:
       - "mysql_data:/var/lib/mysql"
-      - "./.init-scripts/:/docker-entrypoint-initdb.d/:ro"
+      - "./.init-scripts/mysql/:/docker-entrypoint-initdb.d/:ro"
     ports:
       - "127.0.0.1:3406:3306"
     cap_add:
