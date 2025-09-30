@@ -1,0 +1,41 @@
+name: Create GitHub Release
+description: Generate release notes and create a GitHub release using the gh CLI.
+
+inputs:
+  tag:
+    description: Git tag to release
+    required: true
+  title:
+    description: Release title override
+    required: false
+  repo:
+    description: Repository slug to operate on (defaults to current repo)
+    required: false
+  prerelease:
+    description: Set to "true" to mark the release as a prerelease
+    required: false
+runs:
+  using: composite
+  steps:
+    - name: Create release
+      shell: bash
+      env:
+        INPUT_TAG: ${{ inputs.tag }}
+        INPUT_TITLE: ${{ inputs.title }}
+        INPUT_REPO: ${{ inputs.repo }}
+        INPUT_PRERELEASE: ${{ inputs.prerelease }}
+      run: |
+        set -euo pipefail
+        script_path="${{ github.action_path }}/release.sh"
+        args=()
+        if [[ -n "${INPUT_TITLE}" ]]; then
+          args+=(--title "${INPUT_TITLE}")
+        fi
+        if [[ -n "${INPUT_REPO}" ]]; then
+          args+=(--repo "${INPUT_REPO}")
+        fi
+        if [[ -n "${INPUT_PRERELEASE}" ]]; then
+          args+=(--prerelease="${INPUT_PRERELEASE}")
+        fi
+        args+=("${INPUT_TAG}")
+        "${script_path}" "${args[@]}"
