@@ -6,12 +6,10 @@ volumes:
 
 services:
   aipscan-mysql:
-    image: "percona/percona-server:8.0.43-34"
+    image: "percona/percona-server:8.4.6-6.1"
     command: "--character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci"
     environment:
       MYSQL_ROOT_PASSWORD: "12345"
-      MYSQL_USER: "aipscan"
-      MYSQL_PASSWORD: "demo"
     volumes:
       - "mysql_data:/var/lib/mysql"
       - "./.init-scripts/mysql/:/docker-entrypoint-initdb.d/:ro"
@@ -30,9 +28,9 @@ services:
       - FLASK_CONFIG=dev
       - CELERY_BROKER_URL=amqp://guest@rabbitmq//
       - TYPESENSE_HOST=typesense
-      - SQLALCHEMY_DATABASE_URI=mysql+pymysql://aipscan:demo@aipscan-mysql:3306/aipscan
-      - SQLALCHEMY_CELERY_BACKEND=mysql+pymysql://aipscan:demo@aipscan-mysql:3306/aipscan
-      - CELERY_RESULT_BACKEND=db+mysql+pymysql://aipscan:demo@aipscan-mysql:3306/celery
+      - SQLALCHEMY_DATABASE_URI=mysql+pymysql://aipscan:demo@aipscan-mysql:3306/aipscan?charset=utf8mb4
+      - SQLALCHEMY_CELERY_BACKEND=mysql+pymysql://aipscan:demo@aipscan-mysql:3306/aipscan?charset=utf8mb4
+      - CELERY_RESULT_BACKEND=db+mysql+pymysql://aipscan:demo@aipscan-mysql:3306/celery?charset=utf8mb4
       - TYPESENSE_API_KEY=xyz
       - CREATE_DB=true
     ports:
@@ -67,9 +65,9 @@ services:
       - CELERY_BROKER_URL=amqp://guest@rabbitmq//
       - TYPESENSE_HOST=typesense
       - TYPESENSE_API_KEY=xyz
-      - SQLALCHEMY_DATABASE_URI=mysql+pymysql://aipscan:demo@aipscan-mysql:3306/aipscan
-      - SQLALCHEMY_CELERY_BACKEND=mysql+pymysql://aipscan:demo@aipscan-mysql:3306/aipscan
-      - CELERY_RESULT_BACKEND=db+mysql+pymysql://aipscan:demo@aipscan-mysql:3306/celery
+      - SQLALCHEMY_DATABASE_URI=mysql+pymysql://aipscan:demo@aipscan-mysql:3306/aipscan?charset=utf8mb4
+      - SQLALCHEMY_CELERY_BACKEND=mysql+pymysql://aipscan:demo@aipscan-mysql:3306/aipscan?charset=utf8mb4
+      - CELERY_RESULT_BACKEND=db+mysql+pymysql://aipscan:demo@aipscan-mysql:3306/celery?charset=utf8mb4
     command: celery -A AIPscan.worker.celery worker --loglevel=info
     volumes:
       - "./:/app:rw"
