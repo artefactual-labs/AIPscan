@@ -17,6 +17,14 @@ endif
 		exit 1; \
 	}
 
+build: # @HELP An alias for build-frontend-assets (for backward compatibility).
+build: build-frontend-assets
+
+build-frontend-assets: # @HELP Build frontend assets (JS/CSS) using npm.
+build-frontend-assets:
+	npm clean-install
+	npm run build
+
 build-release-image: # @HELP Build release image `aipscan-release-test` for local testing.
 build-release-image: AIPSCAN_VERSION=1.0.0.dev1
 build-release-image: IMAGE_TAG=aipscan-release-test:$(AIPSCAN_VERSION)
