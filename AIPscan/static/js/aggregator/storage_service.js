@@ -7,7 +7,21 @@ function consoleAppend(message) {
   $("#console").scrollTop($("#console")[0].scrollHeight);
 }
 
+// Temporary guard against double-clicking the launch button.
+let fetchButton = null;
+
+function setFetchButtonDisabled(disabled) {
+  if (fetchButton) {
+    fetchButton.prop("disabled", disabled);
+  }
+}
+
+// TODO: Follow 701fb93538d0's warning: the browser still chains the workflow
+// and the POST spin-waits up to a minute. Refactor front/back ends so the
+// server owns orchestration, status is durable, and requests stay sub-second
+// even if the tab closes.
 function newFetchJob(storageServiceId) {
+  setFetchButtonDisabled(true);
   var url = new URL(
     `aggregator/new_fetch_job/${storageServiceId}`,
     $("body").data("url-root"),
@@ -28,6 +42,7 @@ function newFetchJob(storageServiceId) {
     },
 
     error: function (response) {
+      setFetchButtonDisabled(false);
       if (response.hasOwnProperty("responseJSON")) {
         alert(response.responseJSON["message"]);
       } else {
@@ -73,6 +88,7 @@ function packageListTaskStatus(taskId, showcount, fetchJobId) {
     },
 
     error: function () {
+      setFetchButtonDisabled(false);
       alert("Unexpected error");
     },
   });
@@ -118,6 +134,7 @@ function getMetsTaskStatus(coordinatorId, totalAIPs, fetchJobId) {
     },
 
     error: function () {
+      setFetchButtonDisabled(false);
       alert("Unexpected error");
     },
   });
@@ -140,6 +157,7 @@ function indexStart(fetchJobId) {
     },
 
     error: function (data) {
+      setFetchButtonDisabled(false);
       if (data.status == 422) {
         // Fetching is complete and indexing isn't needed
         setTimeout(function () {
@@ -175,6 +193,7 @@ function indexRefreshStatus(fetchJobId) {
         }, 1000);
       } else if (data["state"] == "COMPLETED") {
         consoleAppend("Indexing completed");
+        setFetchButtonDisabled(false);
         setTimeout(function () {
           location.reload(true);
         }, 3000);
@@ -182,6 +201,7 @@ function indexRefreshStatus(fetchJobId) {
     },
 
     error: function () {
+      setFetchButtonDisabled(false);
       alert("Unexpected error");
     },
   });
@@ -190,6 +210,7 @@ function indexRefreshStatus(fetchJobId) {
 var scriptElement = document.currentScript;
 
 $(document).ready(function () {
+  fetchButton = $("#newfetchjob");
   var storageServiceId = $(scriptElement).data("storage-service-id");
   var storageServiceApiKey = $(scriptElement).data("storage-service-api-key");
 
