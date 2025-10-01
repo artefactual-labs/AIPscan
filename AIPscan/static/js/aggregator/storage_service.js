@@ -220,7 +220,7 @@ $(document).ready(function () {
 
   $(".stats").hide();
 
-  $(".fa-info-circle").click(function () {
+  $(".fa-circle-info").click(function () {
     $(`#stats-${this.id}`).toggle();
   });
 

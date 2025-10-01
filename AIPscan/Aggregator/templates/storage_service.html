@@ -21,7 +21,7 @@
     </td>
     <td>
       <span id="apikey">&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull; </span>
-      <i id="apikeyBtn" class="fa fa-eye" aria-hidden="true"></i>
+      <i id="apikeyBtn" class="fa-solid fa-eye" aria-hidden="true"></i>
     </td>
   </tr>
   <tr><td width=20%><strong>Download limit</strong></td><td>{{ storage_service.download_limit}}</td></tr>
@@ -62,7 +62,7 @@
         <td>{{ mets_fetch_job.download_start }}</td>
         <td>{% if mets_fetch_job.download_end %} {{ mets_fetch_job.download_end - mets_fetch_job.download_start }} {% endif %}</td>
         <td>{{ mets_fetch_job.total_packages }} packages
-          <i class="fa fa-info-circle fa-lg" id="{{ mets_fetch_job.id }}" style="margin-left: 5px;"></i><br/>
+          <i class="fa-solid fa-circle-info fa-lg" id="{{ mets_fetch_job.id }}" style="margin-left: 5px;"></i><br/>
           <div class="stats" id="stats-{{ mets_fetch_job.id }}">
             <span class="text-muted">
               <small>

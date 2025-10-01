@@ -12,14 +12,14 @@
 
   <div class="float-end">
     <form action="{{ url_for('reporter.view_aips') }}" method="GET" class="pr-3" id="queryform">
-      <i class="fas fa-search"></i> Search <input name="query" id="query"/><input type="submit" hidden/>
+      <i class="fa-solid fa-magnifying-glass"></i> Search <input name="query" id="query"/><input type="submit" hidden/>
     </form>
   </div>
 
   <div class="report-opts" style="margin-bottom: 0.2em;">
     <div>
       <span class="fixed-width-menu-span-left">
-        <i class="fa fa-database" aria-hidden="true"></i>
+        <i class="fa-solid fa-database" aria-hidden="true"></i>
         Storage Service
       </span>
       <select id="ss" method="GET" action="/">
@@ -36,7 +36,7 @@
   <div class="report-opts" style="margin-bottom: 1em;">
     <div>
       <span class="fixed-width-menu-span-left">
-        <i class="fa fa-archive" aria-hidden="true"></i>
+        <i class="fa-solid fa-box-archive" aria-hidden="true"></i>
         Location
       </span>
       <select id="sl" method="GET" action="/">
