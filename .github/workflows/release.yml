@@ -163,7 +163,7 @@ jobs:
   image-merge:
     name: Publish Docker manifests
     runs-on: ubuntu-24.04
-    needs: image-build
+    needs: [image-build, validate-version]
     steps:
       - name: Download digests
         uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
@@ -185,7 +185,7 @@ jobs:
           images: ${{ env.REGISTRY_IMAGE }}
           tags: |
             ${{ github.event.inputs.version }}
-            latest
+            ${{ needs.validate-version.outputs.is-prerelease == 'true' && 'pre' || 'latest' }}
       - name: Create manifest list and push
         working-directory: ${{ runner.temp }}/digests
         run: |
