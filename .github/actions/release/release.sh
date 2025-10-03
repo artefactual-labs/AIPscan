@@ -147,7 +147,7 @@ if ! git rev-parse "$previous_tag^{commit}" >/dev/null 2>&1; then
 fi
 
 compare_url="https://github.com/${repo}/compare/${previous_tag}...${current_tag}"
-notes_file="$(mktemp -t release-notes).md"
+notes_file="$(mktemp -t release-notes.XXXXXX)"
 
 commit_lines=()
 while IFS=$'\t' read -r sha title_line login name; do
