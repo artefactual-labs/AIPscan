@@ -36,6 +36,9 @@ class Config:
     SQLALCHEMY_BINDS = {"celery": SQLALCHEMY_CELERY_BACKEND}
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ECHO = False
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        "pool_pre_ping": True,
+    }
 
     # Control whether to create DB schema at startup (e.g., single process).
     CREATE_DB = _env_bool("CREATE_DB")
