@@ -68,6 +68,7 @@ jobs, and seeding test data.
 [codecov-report]: https://codecov.io/gh/artefactual-labs/AIPscan
 [Artefactual]: https://www.artefactual.com/
 [Flask]: https://pypi.org/project/Flask/
+[LICENSE]: LICENSE
 [INSTALL.md]: INSTALL.md
 [CONTRIBUTING.md]: CONTRIBUTING.md
 [USAGE.md]: USAGE.md

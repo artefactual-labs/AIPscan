@@ -1,4 +1,5 @@
 import os
+from importlib import resources
 
 DEFAULT_AIPSCAN_DB = (
     "mysql+pymysql://aipscan:demo@127.0.0.1:3406/aipscan?charset=utf8mb4"
@@ -17,14 +18,9 @@ DEFAULT_TYPESENSE_API_KEY = None
 DEFAULT_TYPESENSE_PROTOCOL = "http"
 DEFAULT_TYPESENSE_TIMEOUT_SECONDS = "30"
 DEFAULT_TYPESENSE_COLLECTION_PREFIX = "aipscan_"
-
-
-def _env_bool(name, default="false"):
-    """Return a boolean from an environment variable.
-
-    Accepts common truthy strings: 1, true, yes, on (case-insensitive).
-    """
-    return os.getenv(name, default).strip().lower() in ("1", "true", "yes", "on")
+DEFAULT_AGGREGATOR_DOWNLOAD_ROOT = os.fspath(
+    resources.files(__package__).joinpath("Aggregator", "downloads")
+)
 
 
 class Config:
@@ -54,6 +50,9 @@ class Config:
     )
     TYPESENSE_COLLECTION_PREFIX = os.getenv(
         "TYPESENSE_COLLECTION_PREFIX", DEFAULT_TYPESENSE_COLLECTION_PREFIX
+    )
+    AGGREGATOR_DOWNLOAD_ROOT = os.getenv(
+        "AGGREGATOR_DOWNLOAD_ROOT", DEFAULT_AGGREGATOR_DOWNLOAD_ROOT
     )
 
 

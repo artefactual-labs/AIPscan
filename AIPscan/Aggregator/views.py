@@ -17,6 +17,7 @@ from AIPscan import decorators
 from AIPscan import typesense_helpers
 from AIPscan.Aggregator import database_helpers
 from AIPscan.Aggregator import tasks
+from AIPscan.Aggregator.downloads import get_download_root
 from AIPscan.Aggregator.forms import StorageServiceForm
 from AIPscan.Aggregator.task_helpers import format_api_url_with_limit_offset
 from AIPscan.Aggregator.task_helpers import get_packages_directory
@@ -59,6 +60,7 @@ def _test_storage_service_connection(storage_service):
     _, request_url_without_api_key, request_url = format_api_url_with_limit_offset(
         storage_service
     )
+
     try:
         _ = tasks.make_request(request_url, request_url_without_api_key)
     except TaskError as err:
@@ -201,14 +203,18 @@ def new_fetch_job(fetch_job_id):
     except ConnectionError:
         return jsonify({}), 400
 
-    # create a subdirectory for the download job using a timestamp as its name
+    # create a subdirectory for the download job using a timestamp string as its name
     datetime_obj_start = datetime.now().replace(microsecond=0)
     timestamp_str = datetime_obj_start.strftime("%Y-%m-%d-%H-%M-%S")
     timestamp = datetime_obj_start.strftime("%Y-%m-%d %H:%M:%S")
 
+    download_root = get_download_root()
+
     try:
-        os.makedirs(f"AIPscan/Aggregator/downloads/{timestamp_str}/packages/")
-        os.makedirs(f"AIPscan/Aggregator/downloads/{timestamp_str}/mets/")
+        os.makedirs(
+            os.path.join(download_root, timestamp_str, "packages"), exist_ok=True
+        )
+        os.makedirs(os.path.join(download_root, timestamp_str, "mets"), exist_ok=True)
     except PermissionError:
         return jsonify({"message": "Permissions error"}), 500
 
