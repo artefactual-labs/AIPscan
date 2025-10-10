@@ -10,3 +10,4 @@ node_modules/
 __pycache__/
 *.py[codz]
 .DS_Store
+/output

@@ -356,7 +356,7 @@ def test_handle_deletion(app_instance, mocker):
 
 
 def test_delete_aip(app_instance):
-    """Test that SS deleted AIPs gets deleted in aipscan.db."""
+    """Test that SS deleted AIPs get removed from the database."""
     PACKAGE_UUID = str(uuid.uuid4())
 
     test_helpers.create_test_aip(uuid=PACKAGE_UUID)

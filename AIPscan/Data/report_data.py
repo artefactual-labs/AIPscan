@@ -140,7 +140,7 @@ def _format_versions_count_query(
         .filter(File.file_type == FileType.original.value)
         .filter(AIP.create_date >= start_date)
         .filter(AIP.create_date < end_date)
-        .group_by(File.puid)
+        .group_by(File.puid, File.file_format, File.format_version)
         .order_by(db.func.count(File.id).desc(), db.func.sum(File.size).desc())
     )
     if storage_location_id:
