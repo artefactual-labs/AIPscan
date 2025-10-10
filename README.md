@@ -208,25 +208,24 @@ docker-compose down
 Shut down the AIPscan Docker containers and remove the rabbitmq volumes:
 
 ```shell
-docker-composer down --volumes
+docker-compose down --volumes
 ```
 
 ## Production deployments
 
-For production deployments, it's recommended to use MySQL instead of SQLite.
-This can be achieved by exporting an environment variable named
-```SQLALCHEMY_DATABASE_URI```  for celery and AIPscan services, that points to
-MySQL using the format ```mysql+pymysql://user:pass@host/db```.
+AIPscan requires MySQL for both the application database and the Celery result
+backend. It could be configured to target other backends, but we only test and
+recommend MySQL.
 
-When the `SQLALCHEMY_DATABASE_URI` environment variable is set the value of it
-will be output during startup of both AIPscan and Celery workers.
+Provide MySQL connection strings using SQLAlchemy's MySQL URL format:
 
-SQLite databases can be migrated using ```sqlite3mysql```:
+    mysql+pymysql://user:password@host:port/database?charset=utf8mb4
 
-```shell
-uv tool install sqlite3-to-mysql
-sqlite3mysql -f aipscan.db -d <mysql database name> -u<mysql database user> ----mysql-password <mysql database password>
-```
+At a minimum set the following environment variables for each service:
+
+    export SQLALCHEMY_DATABASE_URI="mysql+pymysql://user:password@host:3306/aipscan?charset=utf8mb4"
+    export SQLALCHEMY_CELERY_BACKEND="mysql+pymysql://user:password@host:3306/celery?charset=utf8mb4"
+    export CELERY_RESULT_BACKEND="db+mysql+pymysql://user:password@host:3306/celery?charset=utf8mb4"
 
 ## Tools
 
@@ -299,18 +298,6 @@ source <path to AIPscan virtual environment>/bin/activate
 
 In order to display a tool's CLI arguments and options, enter `<path to tool>
 --help`.
-
-#### Database documentation generator
-
-To generate database documentation, using Schemaspy run via Docker, enter the
-following:
-
-```shell
-sudo make schema-docs
-```
-
-Database documentation will be output to the `output` directory and viewable
-by a web browser by opening `index.html`.
 
 # Usage
 

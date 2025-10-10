@@ -6,6 +6,7 @@ import metsrw
 import pytest
 
 from AIPscan import db
+from AIPscan import test_helpers
 from AIPscan.Aggregator import database_helpers
 from AIPscan.Aggregator import types
 from AIPscan.conftest import ORIGIN_PIPELINE
@@ -48,12 +49,12 @@ def test_create_storage_location_object(app_instance):
     LOCATION_UUID = str(uuid.uuid4())
     CURRENT_LOCATION = f"/api/v2/location/{LOCATION_UUID}"
     DESCRIPTION = "My test AIP Store location"
-    STORAGE_SERVICE_ID = 1
+    storage_service = test_helpers.create_test_storage_service()
 
     database_helpers.create_storage_location_object(
         current_location=CURRENT_LOCATION,
         description=DESCRIPTION,
-        storage_service_id=STORAGE_SERVICE_ID,
+        storage_service_id=storage_service.id,
     )
 
     storage_location = StorageLocation.query.filter_by(
@@ -63,7 +64,7 @@ def test_create_storage_location_object(app_instance):
     assert storage_location.current_location == CURRENT_LOCATION
     assert storage_location.uuid == LOCATION_UUID
     assert storage_location.description == DESCRIPTION
-    assert storage_location.storage_service_id == STORAGE_SERVICE_ID
+    assert storage_location.storage_service_id == storage_service.id
 
 
 def test_create_pipeline_object(app_instance):
@@ -85,43 +86,55 @@ def test_create_aip(app_instance):
     """Test AIP creation."""
     PACKAGE_UUID = str(uuid.uuid4())
     TRANSFER_NAME = "some name"
-    STORAGE_SERVICE_ID = 1
-    STORAGE_LOCATION_ID = 1
-    FETCH_JOB_ID = 1
-    ORIGIN_PIPELINE_ID = 1
+    storage_service = test_helpers.create_test_storage_service()
+    storage_location = test_helpers.create_test_storage_location(
+        storage_service_id=storage_service.id
+    )
+    fetch_job = test_helpers.create_test_fetch_job(
+        storage_service_id=storage_service.id
+    )
+    pipeline = test_helpers.create_test_pipeline()
 
     database_helpers.create_aip_object(
         package_uuid=PACKAGE_UUID,
         transfer_name=TRANSFER_NAME,
         create_date="2020-11-02",
         mets_sha256=TEST_SHA_256,
-        storage_service_id=STORAGE_SERVICE_ID,
-        storage_location_id=STORAGE_LOCATION_ID,
-        fetch_job_id=FETCH_JOB_ID,
-        origin_pipeline_id=ORIGIN_PIPELINE_ID,
+        storage_service_id=storage_service.id,
+        storage_location_id=storage_location.id,
+        fetch_job_id=fetch_job.id,
+        origin_pipeline_id=pipeline.id,
     )
 
     aip = AIP.query.filter_by(uuid=PACKAGE_UUID).first()
     assert aip is not None
     assert aip.transfer_name == TRANSFER_NAME
-    assert aip.storage_service_id == STORAGE_SERVICE_ID
-    assert aip.fetch_job_id == FETCH_JOB_ID
-    assert aip.origin_pipeline_id == ORIGIN_PIPELINE_ID
+    assert aip.storage_service_id == storage_service.id
+    assert aip.fetch_job_id == fetch_job.id
+    assert aip.origin_pipeline_id == pipeline.id
 
 
 def test_delete_aip(app_instance):
     """Test AIP deletion."""
     PACKAGE_UUID = str(uuid.uuid4())
+    storage_service = test_helpers.create_test_storage_service()
+    storage_location = test_helpers.create_test_storage_location(
+        storage_service_id=storage_service.id
+    )
+    fetch_job = test_helpers.create_test_fetch_job(
+        storage_service_id=storage_service.id
+    )
+    pipeline = test_helpers.create_test_pipeline()
 
     database_helpers.create_aip_object(
         package_uuid=PACKAGE_UUID,
         transfer_name="some name",
         create_date="2020-11-02",
         mets_sha256=TEST_SHA_256,
-        storage_service_id=1,
-        storage_location_id=1,
-        fetch_job_id=1,
-        origin_pipeline_id=1,
+        storage_service_id=storage_service.id,
+        storage_location_id=storage_location.id,
+        fetch_job_id=fetch_job.id,
+        origin_pipeline_id=pipeline.id,
     )
 
     aip = AIP.query.filter_by(uuid=PACKAGE_UUID).first()

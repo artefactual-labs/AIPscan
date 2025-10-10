@@ -1,5 +1,7 @@
-CREATE DATABASE aipscan CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
-CREATE DATABASE celery CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
-CREATE USER 'aipscan'@'%' IDENTIFIED WITH caching_sha2_password BY 'demo';
+CREATE USER IF NOT EXISTS 'aipscan'@'%' IDENTIFIED WITH caching_sha2_password BY 'demo';
+CREATE DATABASE IF NOT EXISTS aipscan CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+CREATE DATABASE IF NOT EXISTS celery CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+CREATE DATABASE IF NOT EXISTS aipscan_test CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
 GRANT ALL PRIVILEGES ON aipscan.* TO 'aipscan'@'%';
 GRANT ALL PRIVILEGES ON celery.*  TO 'aipscan'@'%';
+GRANT ALL PRIVILEGES ON aipscan_test.*  TO 'aipscan'@'%';
