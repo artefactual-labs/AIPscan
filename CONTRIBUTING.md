@@ -21,6 +21,19 @@ candidate tag first to shake out issues, using e.g.
 looks good, repeat the same command with the final version number to cut the
 official release (the workflow handles building, tagging, and publishing).
 
+## Generating database schema documentation
+
+To generate database documentation using [SchemaSpy] run the following command:
+
+    sudo make schema-docs
+
+If you're using `docker-compose.am-network.yml`, then use this instead:
+
+    sudo make schema-docs NETWORK=am_default
+
+SchemaSpy writes its output to the `output` directory; open `output/index.html`
+in a browser to review the results.
+
 ## Writing a new AIPscan report
 
 Creating a new report in AIPscan is a multi-step process, comprising:
@@ -358,7 +371,7 @@ For example:
 {% block content %}
 
 <div class="alert alert-secondary">
-  
+
   {% include "report_buttons.html" %}
 
   <strong>Report:</strong> File format version count
@@ -459,3 +472,6 @@ $("#aipsByOriginalFormat").on("click", function() {
 ```
 
 Congratulations! You've now added a new report to AIPscan.
+
+[release workflow]: https://github.com/artefactual-labs/AIPscan/actions/workflows/release.yml
+[SchemaSpy]: http://schemaspy.org/
