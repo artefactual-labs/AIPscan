@@ -42,8 +42,31 @@ your own containerized setup.
 - Expect occasional breaking changes while the project remains in the 0.x
   series. For example, version 0.9.0 removes SQLite support even though it had
   previously been the default database backend.
+- Set `SECRET_KEY` to a strong random value as [recommended][flask-secret-key]
+  by Flask before exposing the application publicly.
 
-## Troubleshooting
+## Configuration
+
+AIPscan reads its production configuration from environment variables; review
+[AIPscan/config.py](./AIPscan/config.py) for defaults and additional context
+before changing values.
+
+The full list of configurable environment variables includes:
+
+- `SECRET_KEY`
+- `SQLALCHEMY_DATABASE_URI`
+- `SQLALCHEMY_CELERY_BACKEND`
+- `TYPESENSE_HOST`
+- `TYPESENSE_PORT`
+- `TYPESENSE_API_KEY`
+- `TYPESENSE_PROTOCOL`
+- `TYPESENSE_TIMEOUT_SECONDS`
+- `TYPESENSE_COLLECTION_PREFIX`
+- `AGGREGATOR_DOWNLOAD_ROOT`
+
+By default `AGGREGATOR_DOWNLOAD_ROOT` resolves to
+`AIPscan/Aggregator/downloads`, but it can be set via environment variable or
+Flask config if you prefer to stage downloads elsewhere.
 
 ### Workers are using too much memory and being terminated
 
@@ -57,3 +80,4 @@ about 1 GB of RAM (Celery expects the value in kilobytes, so 1024 × 1024 =
 [AIPscan Ansible role]: https://github.com/artefactual-labs/ansible-aipscan
 [docker-compose.yml]: ./docker-compose.yml
 [Celery Workers Guide]: https://docs.celeryproject.org/en/stable/userguide/workers.html#worker-concurrency
+[flask-secret-key]: https://flask.palletsprojects.com/en/latest/security/#secret-keys

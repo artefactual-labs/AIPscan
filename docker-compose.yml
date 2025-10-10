@@ -3,6 +3,7 @@ volumes:
   rabbitmq_logs:
   typesense_data:
   mysql_data:
+  downloads:
 
 services:
   aipscan-mysql:
@@ -32,11 +33,13 @@ services:
       - SQLALCHEMY_CELERY_BACKEND=mysql+pymysql://aipscan:demo@aipscan-mysql:3306/aipscan?charset=utf8mb4
       - CELERY_RESULT_BACKEND=db+mysql+pymysql://aipscan:demo@aipscan-mysql:3306/celery?charset=utf8mb4
       - TYPESENSE_API_KEY=xyz
+      - AGGREGATOR_DOWNLOAD_ROOT=/downloads
     ports:
       - 5000:5000
     command: gunicorn --preload --timeout 10 --workers 3 --error-logfile - --log-level debug --capture-output --bind 0.0.0.0:5000 "AIPscan:create_app()"
     volumes:
       - "./:/app:rw"
+      - "downloads:/downloads:rw"
     restart: on-failure
     healthcheck:
       test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:5000', timeout=3).raise_for_status()"]
@@ -78,9 +81,11 @@ services:
       - SQLALCHEMY_DATABASE_URI=mysql+pymysql://aipscan:demo@aipscan-mysql:3306/aipscan?charset=utf8mb4
       - SQLALCHEMY_CELERY_BACKEND=mysql+pymysql://aipscan:demo@aipscan-mysql:3306/aipscan?charset=utf8mb4
       - CELERY_RESULT_BACKEND=db+mysql+pymysql://aipscan:demo@aipscan-mysql:3306/celery?charset=utf8mb4
+      - AGGREGATOR_DOWNLOAD_ROOT=/downloads
     command: celery -A AIPscan.worker.celery worker --loglevel=info
     volumes:
       - "./:/app:rw"
+      - "downloads:/downloads:rw"
 
   typesense:
     image: typesense/typesense:29.0

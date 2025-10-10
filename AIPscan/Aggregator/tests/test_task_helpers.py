@@ -149,29 +149,37 @@ def test_get_storage_service_api_url(
     assert url_without_secrets == expected_url_without_api_key
 
 
-@pytest.mark.parametrize(
-    "timestamp, package_list_number, result",
-    [("1234", 1, "AIPscan/Aggregator/downloads/1234/mets/1")],
-)
-def test_create_numbered_subdirs(timestamp, package_list_number, result, mocker):
+@pytest.mark.parametrize("timestamp, package_list_number", [("1234", 1)])
+def test_create_numbered_subdirs(timestamp, package_list_number, mocker, tmp_path):
     """Ensure that the logic that we use to create sub-directories for
     storing METS is sound.
     """
 
+    download_root = tmp_path / "aipscan-downloads"
+    expected_path = os.path.join(
+        os.fspath(download_root), timestamp, "mets", str(package_list_number)
+    )
+
+    mocker.patch(
+        "AIPscan.Aggregator.task_helpers.get_download_root",
+        return_value=os.fspath(download_root),
+    )
+
     # Test that an unknown directory is created first time around and
     # that the correct result is returned.
+    mocker.patch("os.path.exists", return_value=False)
     mocked_makedirs = mocker.patch("os.makedirs")
     subdir_string = task_helpers.create_numbered_subdirs(timestamp, package_list_number)
-    assert mocked_makedirs.call_count == 1
-    assert subdir_string == result
+    mocked_makedirs.assert_called_once_with(expected_path)
+    assert subdir_string == expected_path
 
     # Test that if the path exists, we don't create the directory, and
     # that the correct result is returned.
-    mocker.patch("os.path.exists", result=True)
+    mocker.patch("os.path.exists", return_value=True)
     mocked_makedirs = mocker.patch("os.makedirs")
     subdir_string = task_helpers.create_numbered_subdirs(timestamp, package_list_number)
     assert mocked_makedirs.call_count == 0
-    assert subdir_string == result
+    assert subdir_string == expected_path
 
 
 @pytest.fixture()

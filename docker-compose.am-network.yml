@@ -9,6 +9,7 @@ services:
       - SQLALCHEMY_CELERY_BACKEND=mysql+pymysql://aipscan:demo@aipscan-mysql:3306/aipscan?charset=utf8mb4
       - CELERY_RESULT_BACKEND=db+mysql+pymysql://aipscan:demo@aipscan-mysql:3306/celery?charset=utf8mb4
       - TYPESENSE_API_KEY=xyz
+      - AGGREGATOR_DOWNLOAD_ROOT=/downloads
     volumes:
       - "./:/app:ro"
     command: flask --app AIPscan:create_app storage-service-bootstrap --name "Demo Storage Service" --url http://nginx:8000 --username test --api-key test --default --wait

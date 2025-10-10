@@ -1,6 +1,7 @@
 import json
 import pathlib
 
+from AIPscan.Aggregator.downloads import get_download_root
 from AIPscan.Aggregator.task_helpers import format_api_url_with_limit_offset
 from AIPscan.Aggregator.task_helpers import get_packages_directory
 from AIPscan.Aggregator.task_helpers import parse_package_list_file
@@ -43,7 +44,8 @@ def create_packages_directory(timestamp_str):
 
 
 def create_mets_directory(timestamp_str):
-    mets_dir = pathlib.Path("AIPscan/Aggregator/downloads") / timestamp_str / "mets"
+    download_root = pathlib.Path(get_download_root())
+    mets_dir = download_root / timestamp_str / "mets"
 
     if not pathlib.Path(mets_dir).is_dir():
         pathlib.Path(mets_dir).mkdir(parents=True, exist_ok=True)
