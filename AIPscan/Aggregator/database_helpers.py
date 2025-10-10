@@ -2,6 +2,7 @@
 database.
 """
 
+import os
 from datetime import datetime
 
 from celery.utils.log import get_task_logger
@@ -9,6 +10,7 @@ from lxml import etree
 
 from AIPscan import db
 from AIPscan.Aggregator import tasks
+from AIPscan.Aggregator.downloads import get_download_root
 from AIPscan.Aggregator.task_helpers import _tz_neutral_date
 from AIPscan.Aggregator.task_helpers import get_storage_service_api_url
 from AIPscan.models import AIP
@@ -406,13 +408,15 @@ def process_aip_data(aip, mets):
 
 
 def create_fetch_job(datetime_obj_start, timestamp_str, storage_server_id):
+    download_root = get_download_root()
+    download_directory = os.path.join(download_root, timestamp_str, "")
     fetch_job = FetchJob(
         total_packages=None,
         total_deleted_aips=None,
         total_aips=None,
         download_start=datetime_obj_start,
         download_end=None,
-        download_directory=f"AIPscan/Aggregator/downloads/{timestamp_str}/",
+        download_directory=download_directory,
         storage_service_id=storage_server_id,
     )
     db.session.add(fetch_job)

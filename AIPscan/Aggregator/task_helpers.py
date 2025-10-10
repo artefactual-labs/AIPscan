@@ -9,6 +9,7 @@ from datetime import datetime
 from dateutil.parser import ParserError
 from dateutil.parser import parse
 
+from AIPscan.Aggregator.downloads import get_download_root
 from AIPscan.Aggregator.types import StorageServicePackage
 
 
@@ -27,7 +28,7 @@ def get_packages_directory(timestamp):
     """Create a path which we will use to store packages downloaded from
     the storage service plus other metadata.
     """
-    return os.path.join("AIPscan", "Aggregator", "downloads", timestamp, "packages")
+    return os.path.join(get_download_root(), timestamp, "packages")
 
 
 def parse_package_list_file(filepath, logger=None, remove_after_parsing=False):
@@ -129,12 +130,11 @@ def create_numbered_subdirs(timestamp, package_list_number):
     """Check for the existence and create a container folder for our
     METS files as required.
     """
-    AGGREGATOR_DOWNLOADS = os.path.join("AIPscan", "Aggregator", "downloads")
     METS_FOLDER = "mets"
 
     # Create a package list numbered subdirectory if it doesn't exist.
     numbered_subdir = os.path.join(
-        AGGREGATOR_DOWNLOADS, timestamp, METS_FOLDER, str(package_list_number)
+        get_download_root(), timestamp, METS_FOLDER, str(package_list_number)
     )
     if not os.path.exists(numbered_subdir):
         os.makedirs(numbered_subdir)
