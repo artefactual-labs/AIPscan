@@ -271,12 +271,16 @@ identifier "somedescriptor" was used, showing where the `packages.json` file,
 containing the list of a storage service's packages, would be put.
 
 ```text
-AIPscan/Aggregator/downloads/somedescriptor
+<AGGREGATOR_DOWNLOAD_ROOT>/somedescriptor
 ├── mets
 │   └── batch
 └── packages
     └── packages.json
 ```
+
+By default `AGGREGATOR_DOWNLOAD_ROOT` resolves to
+`AIPscan/Aggregator/downloads`, but it can be set via environment variable or
+Flask config if you prefer to stage downloads elsewhere.
 
 **NOTE:** Each run of the script will generate a new fetch job database entry.
 These individual fetch jobs shouldn't be deleted, via the AIPscan web UI,
