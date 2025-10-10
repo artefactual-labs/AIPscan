@@ -1,4 +1,3 @@
-
 ARG TARGET=dev
 
 # Value comes from .python-version (default avoids InvalidDefaultArgInFrom).

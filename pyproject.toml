@@ -17,6 +17,7 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
 ]
 dependencies = [
     "click",
@@ -126,7 +127,7 @@ max-complexity = 12
 
 [tool.tox]
 requires = ["tox>=4", "tox-uv>=1"]
-env_list = ["py39", "py310", "py311", "py312", "py313", "linting"]
+env_list = ["py39", "py310", "py311", "py312", "py313", "py314", "linting"]
 
 [tool.tox.env_run_base]
 runner = "uv-venv-lock-runner"
