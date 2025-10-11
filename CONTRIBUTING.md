@@ -11,24 +11,56 @@ In general, follow code style guidelines from the Archivematica
 project's [CONTRIBUTING](https://github.com/artefactual/archivematica/blob/HEAD/CONTRIBUTING.md)
 to the greatest degree possible.
 
+## Upgrading dependencies
+
+If you want to update Python:
+
+- Update the `.python-version file`.
+- Update the `PYTHON_VERSION` build argument in the `Dockerfile`.
+- Update the CI matrix and the project classifiers.
+
+If you want to update Node.js, there are two steps:
+
+- Update the `.node-version` file.
+- Update the base image used by the `frontend` in the `Dockerfile`.
+
+Other dependencies:
+
+    # Python dependencies.
+    # Use `--dry-run` first to see what would be changed.
+    uv lock --upgrade
+
+    # pre-commit dependencies.
+    uvx pre-commit autoupdate
+
+    # Node.js dependencies.
+    npx npm-check-updates --interactive
+
 ## Preparing a release
 
-Before running the release workflow, confirm that `.python-version` reflects the
-Python release you want baked into the Docker images; update it to a recent
-supported version if needed. Run the release process with an alpha or release
-candidate tag first to shake out issues, using e.g.
-`gh workflow run release.yml --ref main -f version=0.9.0a2`. When everything
-looks good, repeat the same command with the final version number to cut the
-official release (the workflow handles building, tagging, and publishing).
+Prerequisites:
+
+- Make sure that all tests pass.
+- Make sure that the dependencies are up to date (see above).
+
+Run the release process with an alpha or release candidate tag first to shake
+out issues. Remember to use the PEP 440 versioning scheme, e.g. `0.9.0a2`:
+
+    gh workflow run release.yml --ref main -f version=0.9.0a2
+
+Head to the Actions tab in GitHub and monitor the progress of the [release
+workflow]. When everything looks good, repeat the same command with the final
+version number to cut the official release (the workflow handles building,
+tagging, and publishing).
 
 ## Writing a new AIPscan report
 
 Creating a new report in AIPscan is a multi-step process, comprising:
 
-* [Creating a new Data endpoint](#creating-a-new-data-endpoint)
-* [Creating a new API endpoint](#creating-a-new-api-endpoint)
-* [Creating a new view and template](#creating-a-new-view-and-template)
-* [Integrating the new report to the Reports selection screen](#integrating-the-new-report-to-the-reports-selection-screen)
+- [Creating a new Data endpoint](#creating-a-new-data-endpoint)
+- [Creating a new API endpoint](#creating-a-new-api-endpoint)
+- [Creating a new view and template](#creating-a-new-view-and-template)
+- [Integrating the new report to the Reports selection screen](#integrating-the-new-report-to-the-reports-selection-screen)
 
 All new Data endpoints and reports must have appropriate test coverage.
 In addition, new reports should support CSV export as well as filtering
@@ -358,7 +390,7 @@ For example:
 {% block content %}
 
 <div class="alert alert-secondary">
-  
+
   {% include "report_buttons.html" %}
 
   <strong>Report:</strong> File format version count
@@ -459,3 +491,5 @@ $("#aipsByOriginalFormat").on("click", function() {
 ```
 
 Congratulations! You've now added a new report to AIPscan.
+
+[release workflow]: https://github.com/artefactual-labs/AIPscan/actions/workflows/release.yml

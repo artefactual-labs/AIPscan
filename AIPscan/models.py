@@ -3,7 +3,6 @@ import re
 from datetime import date
 from datetime import datetime
 
-import sqlalchemy as sa
 from sqlalchemy.dialects import mysql
 
 from AIPscan import db
@@ -401,7 +400,7 @@ class File(db.Model):
     format_version = db.Column(db.String(255))
     checksum_type = db.Column(db.String(255))
     checksum_value = db.Column(db.String(255), index=True)
-    premis_object = db.Column(sa.Text().with_variant(mysql.LONGTEXT, "mysql"))
+    premis_object = db.Column(mysql.LONGTEXT)
 
     original_file_id = db.Column(db.Integer(), db.ForeignKey("file.id"))
     original_file = db.relationship(
@@ -446,37 +445,12 @@ class File(db.Model):
     def __repr__(self):
         return f"<File '{self.id}' - '{self.name}'"
 
-    # Safe accessors for PREMIS object XML, normalizing backend-specific types.
-    def get_premis_object_text(self):
-        """Return PREMIS object XML as a text string or None.
-
-        Some backends/dialects may return variant-backed values such as
-        bytes, bytearray, or memoryview for long text columns. This getter
-        normalizes to a UTF-8 string (with replacement on decode errors)
-        so callers can safely consume the value without worrying about
-        the underlying SQLAlchemy variant type.
-        """
-        value = self.premis_object
-        if value is None:
-            return None
-        # Normalize variant-backed binary-like values
-        if isinstance(value, memoryview):
-            try:
-                return value.tobytes().decode("utf-8", errors="replace")
-            except Exception:
-                return str(value.tobytes())
-        if isinstance(value, (bytes, bytearray)):
-            try:
-                return value.decode("utf-8", errors="replace")
-            except Exception:
-                return str(bytes(value))
-        # Fallback to string representation
-        return str(value)
-
     def get_premis_xml_lines(self):
         """Return PREMIS object XML split into lines (list of str)."""
-        text = self.get_premis_object_text()
-        return text.splitlines() if text else []
+        value = self.premis_object
+        if value is None:
+            return []
+        return str(value).splitlines()
 
 
 EventAgent = db.Table(
@@ -494,7 +468,7 @@ class Event(db.Model):
     date = db.Column(db.DateTime())
     detail = db.Column(db.String(255))
     outcome = db.Column(db.String(255))
-    outcome_detail = db.Column(db.Text())
+    outcome_detail = db.Column(mysql.LONGTEXT)
     file_id = db.Column(db.Integer(), db.ForeignKey("file.id"), nullable=False)
     event_agents = db.relationship(
         "Agent", secondary=EventAgent, backref=db.backref("Event", lazy="dynamic")

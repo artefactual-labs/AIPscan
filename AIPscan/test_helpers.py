@@ -38,9 +38,19 @@ def _add_test_object_to_db(test_object):
 
 def create_test_storage_service(**kwargs):
     """Create and return a Storage Service with overridable defaults."""
+    name = kwargs.get("name", "test storage service")
+    existing = StorageService.query.filter_by(name=name).first()
+    if existing is not None:
+        return existing
+    if "url" in kwargs:
+        url = kwargs["url"]
+    elif "name" in kwargs:
+        url = kwargs["name"]
+    else:
+        url = "http://example.com"
     storage_service = StorageService(
-        name=kwargs.get("name", "test storage service"),
-        url=kwargs.get("name", "http://example.com"),
+        name=name,
+        url=url,
         user_name=kwargs.get("user_name", "test"),
         api_key=kwargs.get("api_key", "test"),
         download_limit=kwargs.get("download_limit", 0),
@@ -53,6 +63,10 @@ def create_test_storage_service(**kwargs):
 
 def create_test_fetch_job(**kwargs):
     """Create and return a test Fetch Job with overridable defaults."""
+    storage_service_id = kwargs.get("storage_service_id")
+    if not storage_service_id:
+        storage_service = create_test_storage_service()
+        storage_service_id = storage_service.id
     fetch_job = FetchJob(
         total_packages=kwargs.get("total_packages", 1),
         total_aips=kwargs.get("total_aips", 1),
@@ -60,7 +74,7 @@ def create_test_fetch_job(**kwargs):
         download_start=kwargs.get("download_start", datetime.now()),
         download_end=kwargs.get("download_end", datetime.now()),
         download_directory=kwargs.get("download_directory", "/some/directory/"),
-        storage_service_id=kwargs.get("storage_service_id", 1),
+        storage_service_id=storage_service_id,
     )
     _add_test_object_to_db(fetch_job)
     return fetch_job
@@ -68,12 +82,19 @@ def create_test_fetch_job(**kwargs):
 
 def create_test_storage_location(**kwargs):
     """Create and return a test Storage Location with overridable defaults."""
+    storage_service_id = kwargs.get("storage_service_id")
+    if storage_service_id is None:
+        storage_service_id = kwargs.get("default_storage_service_id")
+    if not storage_service_id:
+        storage_service = create_test_storage_service()
+        storage_service_id = storage_service.id
+    current_location = kwargs.get(
+        "current_location", f"/api/v2/location/{uuid.uuid4()}/"
+    )
     storage_location = StorageLocation(
-        current_location=kwargs.get(
-            "current_location", "/api/v2/location/test-location/"
-        ),
+        current_location=current_location,
         description=kwargs.get("description", "test storage location"),
-        storage_service_id=kwargs.get("storage_service_id", 1),
+        storage_service_id=storage_service_id,
     )
     _add_test_object_to_db(storage_location)
     return storage_location
@@ -81,8 +102,9 @@ def create_test_storage_location(**kwargs):
 
 def create_test_pipeline(**kwargs):
     """Create and return a test Pipeline with overridable defaults."""
+    origin_pipeline = kwargs.get("origin_pipeline", f"/api/v2/pipeline/{uuid.uuid4()}")
     pipeline = Pipeline(
-        origin_pipeline=kwargs.get("origin_pipeline", "/api/v2/pipeline/test-pipeline"),
+        origin_pipeline=origin_pipeline,
         dashboard_url=kwargs.get("dashboard_url", "http://example.com"),
     )
     _add_test_object_to_db(pipeline)
@@ -91,16 +113,35 @@ def create_test_pipeline(**kwargs):
 
 def create_test_aip(**kwargs):
     """Create and return a test AIP with overridable defaults."""
+    storage_service_id = kwargs.get("storage_service_id")
+    if not storage_service_id:
+        storage_service = create_test_storage_service()
+        storage_service_id = storage_service.id
+    storage_location_id = kwargs.get("storage_location_id")
+    if not storage_location_id:
+        storage_location = create_test_storage_location(
+            storage_service_id=storage_service_id
+        )
+        storage_location_id = storage_location.id
+    fetch_job_id = kwargs.get("fetch_job_id")
+    if not fetch_job_id:
+        fetch_job = create_test_fetch_job(storage_service_id=storage_service_id)
+        fetch_job_id = fetch_job.id
+    origin_pipeline_id = kwargs.get("origin_pipeline_id")
+    if not origin_pipeline_id:
+        pipeline = create_test_pipeline()
+        origin_pipeline_id = pipeline.id
+
     aip = AIP(
         uuid=kwargs.get("uuid", str(uuid.uuid4())),
         transfer_name=kwargs.get("transfer_name", "Test AIP"),
         create_date=kwargs.get("create_date", datetime.now()),
         mets_sha256=kwargs.get("mets_sha256", TEST_SHA_256),
         size=kwargs.get("size", 100),
-        storage_service_id=kwargs.get("storage_service_id", 1),
-        storage_location_id=kwargs.get("storage_location_id", 1),
-        fetch_job_id=kwargs.get("fetch_job_id", 1),
-        origin_pipeline_id=kwargs.get("origin_pipeline_id", 1),
+        storage_service_id=storage_service_id,
+        storage_location_id=storage_location_id,
+        fetch_job_id=fetch_job_id,
+        origin_pipeline_id=origin_pipeline_id,
     )
     _add_test_object_to_db(aip)
     return aip
@@ -108,6 +149,14 @@ def create_test_aip(**kwargs):
 
 def create_test_file(**kwargs):
     """Create and return a test File with overridable defaults."""
+    aip_id = kwargs.get("aip_id")
+    if not aip_id:
+        existing_aip = AIP.query.first()
+        if existing_aip is not None:
+            aip_id = existing_aip.id
+        else:
+            aip = create_test_aip()
+            aip_id = aip.id
     file_ = File(
         name=kwargs.get("name", "file_name.ext"),
         filepath=kwargs.get("filepath", "/path/to/file_name.ext"),
@@ -121,7 +170,7 @@ def create_test_file(**kwargs):
         checksum_type=kwargs.get("checksum_type", "test"),
         checksum_value=kwargs.get("checksum_value", "test"),
         original_file_id=kwargs.get("original_file_id", None),
-        aip_id=kwargs.get("aip_id", 1),
+        aip_id=aip_id,
     )
     _add_test_object_to_db(file_)
     return file_
@@ -129,13 +178,21 @@ def create_test_file(**kwargs):
 
 def create_test_agent(**kwargs):
     """Create and return a test Agent with overridable defaults."""
+    storage_service_id = kwargs.get("storage_service_id")
+    if not storage_service_id:
+        # Prefer an existing storage service if present so tests that
+        # set one up in advance get agents linked to it.
+        existing = StorageService.query.order_by(StorageService.id.asc()).first()
+        if existing is None:
+            existing = create_test_storage_service()
+        storage_service_id = existing.id
     agent = Agent(
         linking_type_value=kwargs.get("linking_type_value", "Archivematica user pk-1"),
         agent_type=kwargs.get("agent_type", "Archivematica user"),
         agent_value=kwargs.get(
             "agent_value", 'username="user one", first_name="", last_name=""'
         ),
-        storage_service_id=kwargs.get("storage_service_id", 1),
+        storage_service_id=storage_service_id,
     )
     _add_test_object_to_db(agent)
     return agent
@@ -144,7 +201,7 @@ def create_test_agent(**kwargs):
 def create_test_event(**kwargs):
     """Create and return a test Event with overridable defaults."""
     event = Event(
-        event_type=kwargs.get("type", "ingestion"),
+        event_type=kwargs.get("event_type", kwargs.get("type", "ingestion")),
         uuid=kwargs.get("uuid", str(uuid.uuid4())),
         date=kwargs.get("date", datetime.now()),
         detail=kwargs.get("detail", "ingestion detail"),
