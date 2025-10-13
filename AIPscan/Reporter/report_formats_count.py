@@ -107,6 +107,7 @@ def chart_formats_count():
             zip(
                 [item["Format"] for item in report[fields.FIELD_FORMATS]],
                 [item["Count"] for item in report[fields.FIELD_FORMATS]],
+                strict=False,
             )
         )
     else:

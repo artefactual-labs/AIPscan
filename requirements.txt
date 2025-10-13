@@ -21,15 +21,7 @@ cffi==2.0.0 ; platform_python_implementation != 'PyPy'
     # via cryptography
 charset-normalizer==3.4.3
     # via requests
-click==8.1.8 ; python_full_version < '3.10'
-    # via
-    #   aipscan
-    #   celery
-    #   click-didyoumean
-    #   click-plugins
-    #   click-repl
-    #   flask
-click==8.3.0 ; python_full_version >= '3.10'
+click==8.3.0
     # via
     #   aipscan
     #   celery
@@ -49,9 +41,7 @@ cryptography==46.0.2
     # via pymysql
 faker==37.11.0
     # via aipscan
-filelock==3.19.1 ; python_full_version < '3.10'
-    # via aipscan
-filelock==3.20.0 ; python_full_version >= '3.10'
+filelock==3.20.0
     # via aipscan
 flask==3.1.2
     # via
@@ -71,8 +61,6 @@ gunicorn==23.0.0
     # via aipscan
 idna==3.10
     # via requests
-importlib-metadata==8.7.0 ; python_full_version < '3.10'
-    # via flask
 importlib-resources==6.5.2
     # via flask-restx
 itsdangerous==2.2.0
@@ -103,14 +91,7 @@ narwhals==2.7.0
     # via plotly
 natsort==8.4.0
     # via aipscan
-numpy==2.0.2 ; python_full_version < '3.10'
-    # via
-    #   pandas
-    #   patsy
-    #   plotly-express
-    #   scipy
-    #   statsmodels
-numpy==2.2.6 ; python_full_version == '3.10.*'
+numpy==2.2.6 ; python_full_version < '3.11'
     # via
     #   pandas
     #   patsy
@@ -169,11 +150,7 @@ rpds-py==0.27.1
     # via
     #   jsonschema
     #   referencing
-scipy==1.13.1 ; python_full_version < '3.10'
-    # via
-    #   plotly-express
-    #   statsmodels
-scipy==1.15.3 ; python_full_version == '3.10.*'
+scipy==1.15.3 ; python_full_version < '3.11'
     # via
     #   plotly-express
     #   statsmodels
@@ -218,7 +195,3 @@ wtforms==3.2.1
     # via
     #   aipscan
     #   flask-wtf
-zipp==3.23.0 ; python_full_version < '3.10'
-    # via
-    #   importlib-metadata
-    #   importlib-resources
