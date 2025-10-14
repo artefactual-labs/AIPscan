@@ -1,9 +1,5 @@
 """Tests for custom Flask CLI commands."""
 
-import pytest
-
-from AIPscan import create_app
-from AIPscan import db
 from AIPscan.models import StorageService
 
 

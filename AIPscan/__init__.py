@@ -21,6 +21,7 @@ from AIPscan.navbar import NavBar
 db = SQLAlchemy()
 migrate = Migrate()
 
+
 def create_app(config_name=None):
     """Flask app factory, returns app instance.
 
@@ -34,8 +35,10 @@ def create_app(config_name=None):
     app = Flask(__name__)
     app.config.from_object(config)
 
-    migrations_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "migrations"))
-    migrate.init_app(app, db, directory=migrations_dir)
+    migrations_dir = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), "migrations")
+    )
+    migrate.init_app(app, db, directory=migrations_dir, compare_type=True)
 
     app.logger.info("Starting AIPscan application... (config=%s)", config_name)
 
