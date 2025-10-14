@@ -35,6 +35,7 @@ COPY --from=builder --chown=python:python /python /python
 COPY --from=builder --chown=app:app /app /app
 COPY --from=frontend --chown=app:app /app/AIPscan/static/dist /app/AIPscan/static/dist
 ENV PATH="/venv/bin:$PATH"
+ENV FLASK_APP=AIPscan:create_app
 WORKDIR /app
 COPY .init-scripts/entrypoint.sh /
 ENTRYPOINT ["/entrypoint.sh"]
@@ -45,6 +46,7 @@ RUN adduser --disabled-password --gecos "" aipscan
 RUN --mount=type=bind,source=dist,target=/dist,ro \
     --mount=type=cache,target=/root/.cache/pip \
     pip install --root-user-action=ignore --compile /dist/${WHEEL}[server]
+ENV FLASK_APP=AIPscan:create_app
 COPY .init-scripts/entrypoint.sh /
 USER aipscan
 ENTRYPOINT ["/entrypoint.sh"]
