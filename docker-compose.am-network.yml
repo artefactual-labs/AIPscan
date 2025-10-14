@@ -20,6 +20,10 @@ services:
     networks:
       - am_default
 
+  aipscan-migrate:
+    networks:
+      - am_default
+
   rabbitmq:
     networks:
       - am_default
