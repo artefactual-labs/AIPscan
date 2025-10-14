@@ -24,6 +24,10 @@ Or you might run the following command to start a Celery worker:
 
   celery -A AIPscan.worker.celery worker --loglevel=info
 
+To apply database migrations, you can run:
+
+  flask db upgrade
+
 Or any other command available in the environment, e.g.:
 
   python -V
