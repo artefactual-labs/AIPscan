@@ -58,6 +58,17 @@ services:
        timeout: 30s
        retries: 3
 
+  aipscan-migrate:
+    build: ./
+    environment:
+      - FLASK_CONFIG=dev
+      - SQLALCHEMY_DATABASE_URI=mysql+pymysql://aipscan:demo@aipscan-mysql:3306/aipscan?charset=utf8mb4
+      - SQLALCHEMY_CELERY_BACKEND=mysql+pymysql://aipscan:demo@aipscan-mysql:3306/aipscan?charset=utf8mb4
+    command: flask db upgrade
+    volumes:
+      - "./:/app:rw"
+    restart: on-failure
+
   celery-worker:
     build: ./
     environment:
