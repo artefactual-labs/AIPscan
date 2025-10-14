@@ -45,9 +45,6 @@ class Config:
         "pool_pre_ping": True,
     }
 
-    # Control whether to create DB schema at startup (e.g., single process).
-    CREATE_DB = _env_bool("CREATE_DB")
-
     TYPESENSE_HOST = os.getenv("TYPESENSE_HOST", DEFAULT_TYPESENSE_HOST)
     TYPESENSE_PORT = os.getenv("TYPESENSE_PORT", DEFAULT_TYPESENSE_PORT)
     TYPESENSE_API_KEY = os.getenv("TYPESENSE_API_KEY", DEFAULT_TYPESENSE_API_KEY)

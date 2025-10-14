@@ -32,7 +32,6 @@ services:
       - SQLALCHEMY_CELERY_BACKEND=mysql+pymysql://aipscan:demo@aipscan-mysql:3306/aipscan?charset=utf8mb4
       - CELERY_RESULT_BACKEND=db+mysql+pymysql://aipscan:demo@aipscan-mysql:3306/celery?charset=utf8mb4
       - TYPESENSE_API_KEY=xyz
-      - CREATE_DB=true
     ports:
       - 5000:5000
     command: gunicorn --preload --timeout 10 --workers 3 --error-logfile - --log-level debug --capture-output --bind 0.0.0.0:5000 "AIPscan:create_app()"
