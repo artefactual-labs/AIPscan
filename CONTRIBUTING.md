@@ -8,14 +8,48 @@ code contributions are similarly welcome but should typically be
 submitted after filing an issue and discussing the proposed approach.
 
 In general, follow code style guidelines from the Archivematica
-project's [CONTRIBUTING](https://github.com/artefactual/archivematica/blob/HEAD/CONTRIBUTING.md)
-to the greatest degree possible.
+project's [CONTRIBUTING.md] to the greatest degree possible.
+
+## Development environment
+
+- Install Docker CE, Docker Compose and [uv].
+
+- Clone the repository:
+
+      git clone https://github.com/artefactual-labs/AIPscan
+
+- Change your working directory:
+
+      cd AIPscan
+
+- Decide if you want to use the Archivematica network so the containers can
+  talk directly. If so, populate the `.env` file with the following contents:
+
+      COMPOSE_FILE=./docker-compose.yml:./docker-compose.am-network.yml
+
+- Start the services:
+
+      docker compose up --detach --wait
+
+- Access the web app at <http://localhost:5000>.
+
+- Access logs for running services:
+
+      docker compose logs -f
+
+- Shut down the stack when finished:
+
+      docker compose down
+
+- Remove all volumes when you need a clean slate:
+
+      docker compose down --volumes
 
 ## Upgrading dependencies
 
 If you want to update Python:
 
-- Update the `.python-version file`.
+- Update the `.python-version` file.
 - Update the `PYTHON_VERSION` build argument in the `Dockerfile`.
 - Update the CI matrix and the project classifiers.
 
@@ -44,7 +78,8 @@ Prerequisites:
 - Make sure that the dependencies are up to date (see above).
 
 Run the release process with an alpha or release candidate tag first to shake
-out issues. Remember to use the PEP 440 versioning scheme, e.g. `0.9.0a2`:
+out issues. Remember to use the PEP 440 versioning scheme, e.g. `0.9.0a2`, using
+the GitHub CLI:
 
     gh workflow run release.yml --ref main -f version=0.9.0a2
 
@@ -53,15 +88,34 @@ workflow]. When everything looks good, repeat the same command with the final
 version number to cut the official release (the workflow handles building,
 tagging, and publishing).
 
+## Database migrations
+
+AIPscan now uses Alembic migrations managed through Flask-Migrate. We
+recommend using the Docker Compose services so the app and migration commands
+share the same configuration.
+
+- Make sure that the development environment is running.
+
+- Create a new migration when models change:
+
+      docker compose run --rm aipscan-migrate flask db migrate -m "Describe change"
+
+- Verify the migration applies cleanly:
+
+      docker compose run --rm aipscan-migrate flask db upgrade
+
+- Commit the generated revision(s) under `AIPscan/migrations` alongside your
+  model changes. Regenerate the migration if follow-up edits change the schema.
+
 ## Generating database schema documentation
 
 To generate database documentation using [SchemaSpy] run the following command:
 
-    sudo make schema-docs
+    make schema-docs
 
 If you're using `docker-compose.am-network.yml`, then use this instead:
 
-    sudo make schema-docs NETWORK=am_default
+    make schema-docs NETWORK=am_default
 
 SchemaSpy writes its output to the `output` directory; open `output/index.html`
 in a browser to review the results.
@@ -75,38 +129,33 @@ Creating a new report in AIPscan is a multi-step process, comprising:
 - [Creating a new view and template](#creating-a-new-view-and-template)
 - [Integrating the new report to the Reports selection screen](#integrating-the-new-report-to-the-reports-selection-screen)
 
-All new Data endpoints and reports must have appropriate test coverage.
-In addition, new reports should support CSV export as well as filtering
-by Storage Service, Storage Location, and start and end dates.
+All new Data endpoints and reports must have appropriate test coverage. In
+addition, new reports should support CSV export as well as filtering by Storage
+Service, Storage Location, and start and end dates.
 
 ### Creating a new Data endpoint
 
 The first step when creating a new AIPscan report is to implement a new
 endpoint for the report's data.
 
-AIPscan implements [Flask blueprints](https://flask.palletsprojects.com/en/1.1.x/blueprints/)
-to separate code into discrete sections by function. The `Data`
-blueprint is home to the `data` and `report_data` Python modules, which
-contain all of the application's data endpoints. Endpoints that expose
-overview information can be found in `AIPscan/Data/data.py`. Endpoints
-which expose data particular to a report are in
-`AIPscan/Data/report_data.py` - this is typically where the Data
-endpoint for a new report should be added.
+AIPscan implements [Flask blueprints] to separate code into discrete sections by
+function. The `Data` blueprint is home to the `data` and `report_data` Python
+modules, which contain all of the application's data endpoints. Endpoints that
+expose overview information can be found in `AIPscan/Data/data.py`. Endpoints
+which expose data particular to a report are in `AIPscan/Data/report_data.py` -
+this is typically where the Data endpoint for a new report should be added.
 
 Data endpoints are Python functions which take parameters such as
-`storage_service_id`, `start_date`, `end_date`, and
-`storage_location_id` as input (`start_date` and `end_date` are
-`datetime.datetime` objects, which should always be created by passing
-YYYY-MM-DD string inputs through the
-[parse_datetime_bound](https://github.com/artefactual-labs/AIPscan/blob/main/AIPscan/helpers.py#L14-L45)
-helper). Each report returns a dictionary containing the name of the
-queried Storage Service and Storage Location and the output data. The
-structure of these dictionaries can be explored via the API endpoints,
-which present the data returned by `Data` endpoints as JSON.
+`storage_service_id`, `start_date`, `end_date`, and `storage_location_id` as
+input (`start_date` and `end_date` are `datetime.datetime` objects, which should
+always be created by passing YYYY-MM-DD string inputs through the
+`parse_datetime_bound` helper). Each report returns a dictionary containing the
+name of the queried Storage Service and Storage Location and the output data.
+The structure of these dictionaries can be explored via the API endpoints, which
+present the data returned by `Data` endpoints as JSON.
 
-Data endpoints will typically rely on database queries using
-[SQLAlchemy](https://www.sqlalchemy.org/) to fetch and shape data
-efficiently.
+Data endpoints will typically rely on database queries using [SQLAlchemy] to
+fetch and shape data efficiently.
 
 For example:
 
@@ -200,9 +249,8 @@ def formats_count(storage_service_id, start_date, end_date, storage_location_id=
 
 All new Data endpoints must have proper test coverage. Examples can
 be found in `AIPscan/Data/tests`. Integration tests which use a test
-database rely heavily on [pytest](https://docs.pytest.org) fixtures in
-AIPscan's
-[project-wide conftest module](https://github.com/artefactual-labs/AIPscan/blob/main/AIPscan/conftest.py).
+database rely heavily on [pytest] fixtures in AIPscan's
+[project-wide conftest module].
 
 ### Creating a new API endpoint
 
@@ -210,9 +258,8 @@ Each new Data endpoint should have a corresponding API endpoint. These
 are not used to serve data within the AIPscan application, but serve to
 allow flexible uses of data gathered by AIPscan.
 
-All API code can be found in the `API` blueprint. AIPscan uses the
-[Flask-RESTX](https://flask-restx.readthedocs.io/en/latest/) library to
-provide API functionality and API documentation using Swagger.
+All API code can be found in the `API` blueprint. AIPscan uses the [Flask-RESTX]
+library to provide API functionality and API documentation using Swagger.
 
 API endpoints in AIPscan are thin wrappers around their corresponding
 `Data` endpoints. These can be found in the `namespace_data` and
@@ -271,27 +318,24 @@ class FormatVersionList(Resource):
         )
 ```
 
-The API endpoints can be very useful during the development process, as
-they provide increased visibility into the data being returned from a
-Data endpoint.
+The API endpoints can be very useful during the development process, as they
+provide increased visibility into the data being returned from a Data endpoint.
 
 ### Creating a new view and template
 
-Once a Data endpoint has been created and tested, it is time to
-create a new report in the GUI. Each report in AIPscan is a web page
-with a corresponding view and template in the `Reporter` blueprint.
-Reports with multiple representations (for example, a tabular report
-and a pie chart) will have a separate view function and template for
-each representation.
+Once a Data endpoint has been created and tested, it is time to create a new
+report in the GUI. Each report in AIPscan is a web page with a corresponding
+view and template in the `Reporter` blueprint. Reports with multiple
+representations (for example, a tabular report and a pie chart) will have a
+separate view function and template for each representation.
 
 Each report's views are contained within a separate module, which is
-subsequently imported into `AIPscan/Reporter/views.py`.  All views
-related to a report should be contained within the same module.
-Common request parameters are defined as constants in
-`AIPscan/Reporter/request_params.py`.
+subsequently imported into `AIPscan/Reporter/views.py`. All views related to a
+report should be contained within the same module. Common request parameters are
+defined as constants in `AIPscan/Reporter/request_params.py`.
 
-For example, the `report_format_versions_count()` tabular view is
-defined in `AIPscan/Reporter/report_format_versions_count.py`:
+For example, the `report_format_versions_count()` tabular view is defined in
+`AIPscan/Reporter/report_format_versions_count.py`:
 
 ```python
 from flask import render_template, request
@@ -365,11 +409,9 @@ def report_format_versions_count():
     )
 ```
 
-CSV downloads are handled by the `Reporter` blueprint's
-[download_csv
-helper](https://github.com/artefactual-labs/AIPscan/blob/main/AIPscan/Reporter/helpers.py#L100-L116).
-Report data is also formatted using the `format_size_for_csv` helper,
-which converts sizes in bytes to human-readable values.
+CSV downloads are handled by the `Reporter` blueprint's `download_csv` helper.
+Report data is also formatted using the `format_size_for_csv` helper, which
+converts sizes in bytes to human-readable values.
 
 The report module is then imported in `AIPscan/Reporter/views.py`:
 
@@ -390,10 +432,9 @@ from AIPscan.Reporter import (  # noqa: F401
 )
 ```
 
-Each Flask view has a corresponding
-[jinja2 template](https://flask.palletsprojects.com/en/1.1.x/templating/)
-within `AIPscan/Reporter/templates`. Each template extends from a base
-template defined in `AIPscan/templates/report_base.html`.
+Each Flask view has a corresponding [jinja2 template] within
+`AIPscan/Reporter/templates`. Each template extends from a base template defined
+in `AIPscan/templates/report_base.html`.
 
 For example:
 
@@ -455,33 +496,31 @@ For example:
 {% endblock %}
 ```
 
-A template partial is utilized for the "Download CSV" and "Print"
-buttons to ensure consistency between all reports.
+A template partial is utilized for the "Download CSV" and "Print" buttons to
+ensure consistency between all reports.
 
-At this point, you can verify that your report is working as expected
-by manually entering the URL specified by the view into your browser.
+At this point, you can verify that your report is working as expected by
+manually entering the URL specified by the view into your browser.
 
-New reports in the `Reporter` endpoint should have accompanying tests
-in `Reporter/tests`. This should include at least one test to ensure
-that the view returns the correct page as expected, and at least one
-test to verify the contents of a CSV export.
+New reports in the `Reporter` endpoint should have accompanying tests in
+`Reporter/tests`. This should include at least one test to ensure that the view
+returns the correct page as expected, and at least one test to verify the
+contents of a CSV export.
 
 ### Integrating the new report to the Reports selection screen
 
-Finally, once a Data endpoint, API endpoint, and report view and
-template have been created, it is time to add your new report to the
-Reports selection screen template
-`AIPscan/Reporter/templates/reports.html`.
+Finally, once a Data endpoint, API endpoint, and report view and template have
+been created, it is time to add your new report to the Reports selection screen
+template `AIPscan/Reporter/templates/reports.html`.
 
-First, add your new report to the reports table. Each report should
-have a title, description (including available filters), and one or
-more buttons in the "Format" column. Additional parameter dropdown
-selectors can be added to the "Report" column under the report's title
-as needed. Be sure to give each button in the "Format" column a
-readable and semantically meaningful ID.
+First, add your new report to the reports table. Each report should have a
+title, description (including available filters), and one or more buttons in the
+"Format" column. Additional parameter dropdown selectors can be added to the
+"Report" column under the report's title as needed. Be sure to give each button
+in the "Format" column a readable and semantically meaningful ID.
 
-Finally, add an event handler for each button in the template's
-JavaScript, which uses jQuery.
+Finally, add an event handler for each button in the template's JavaScript,
+which uses jQuery.
 
 For example:
 
@@ -505,5 +544,13 @@ $("#aipsByOriginalFormat").on("click", function() {
 
 Congratulations! You've now added a new report to AIPscan.
 
+[uv]: https://docs.astral.sh/uv/getting-started/installation/
 [release workflow]: https://github.com/artefactual-labs/AIPscan/actions/workflows/release.yml
 [SchemaSpy]: http://schemaspy.org/
+[CONTRIBUTING.md]: https://github.com/artefactual/archivematica/blob/HEAD/CONTRIBUTING.md
+[Flask blueprints]: https://flask.palletsprojects.com/en/1.1.x/blueprints/
+[SQLAlchemy]: https://www.sqlalchemy.org/
+[pytest]: https://docs.pytest.org
+[project-wide conftest module]: https://github.com/artefactual-labs/AIPscan/blob/main/AIPscan/conftest.py
+[Flask-RESTX]: https://flask-restx.readthedocs.io/en/latest/
+[jinja2 template]: https://flask.palletsprojects.com/en/1.1.x/templating/
