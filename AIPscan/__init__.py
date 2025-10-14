@@ -11,6 +11,7 @@ __all__ = ["__version__"]
 
 from flask import Flask
 from flask import render_template
+from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 
 from AIPscan.celery import configure_celery
@@ -18,7 +19,7 @@ from AIPscan.config import CONFIGS
 from AIPscan.navbar import NavBar
 
 db = SQLAlchemy()
-
+migrate = Migrate()
 
 def create_app(config_name=None):
     """Flask app factory, returns app instance.
@@ -32,6 +33,9 @@ def create_app(config_name=None):
 
     app = Flask(__name__)
     app.config.from_object(config)
+
+    migrations_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "migrations"))
+    migrate.init_app(app, db, directory=migrations_dir)
 
     app.logger.info("Starting AIPscan application... (config=%s)", config_name)
 
