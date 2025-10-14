@@ -1,333 +1,59 @@
 # AIPscan production installation
 
-AIPscan is a Python [Flask][fla-1] application. The Flask Werkzeug development
-server is not recommended for use in production. Instead, a WSGI and HTTP proxy
-server should be used to serve the AIPscan application. We recommend
-[Gunicorn][gun-1] and [Nginx][ngx-1] respectively. The following instructions
-are for production deployment to an Ubuntu/Debian server. Other operating
-systems and servers have not been tested.
-
-## AIPscan Flask server
-
-Ensure a modern Python 3 interpreter (3.13+ recommended) is available on the
-server. Starting with version 0.9.0, AIPscan packages are distributed via
-PyPI, so you can install production builds directly without cloning the
-repository.
-
-* Create the directories used by the services if they do not already exist:
-
-      sudo mkdir -p /usr/share/archivematica/AIPscan /usr/share/archivematica/virtualenvs
-
-* Create the dedicated virtual environment with Python 3:
-
-      python3 -m venv /usr/share/archivematica/virtualenvs/AIPscan
-
-* Install the runtime dependencies from PyPI:
-
-      source /usr/share/archivematica/virtualenvs/AIPscan/bin/activate
-      pip install --upgrade pip
-      pip install "aipscan[server]==VERSION"
-
-Replace `VERSION` with the desired version number, e.g. `0.9.0`.
-
-## RabbitMQ
-
-* [Install][rabbit-MQ1] the RabbitMQ package:
-
-  ```bash
-  sudo apt-get update -y
-  sudo apt-get install -y rabbitmq-server
-  ```
-
-* Start the RabbitMQ service:
-
-   ```bash
-   sudo service rabbitmq-server start
-   ```
-
-* Check that it is running correctly:
-
-   ```bash
-   sudo service rabbitmq-server status
-   ```
-
-* You should see output that looks like this:
-
-   ```bash
-   Loaded: loaded (/lib/systemd/system/rabbitmq-server.service; enabled; vendor preset: enabled)
-   Active: active (running) since Tue 2021-02-02 23:02:36 UTC; 6min ago
-   Process: 3356 ExecStop=/bin/sh -c while ps -p $MAINPID >/dev/null 2>&1; do sleep 1; done (code=exited, status=0/SUCCESS)
-   Process: 3208 ExecStop=/usr/lib/rabbitmq/bin/rabbitmqctl stop (code=exited, status=0/SUCCESS)
-   Main PID: 3403 (beam.smp)
-   Status: "Initialized"
-   Tasks: 86 (limit: 4915)
-   CGroup: /system.slice/rabbitmq-server.service
-           ├─3403 /usr/lib/erlang/erts-9.2/bin/beam.smp -W w -A 64 -P 1048576 -t 5000000 -stbt db -zdbbl 128000 -K true -- -root /usr/lib/erlang -progname erl -- -home /var/lib/rabbitmq -- -pa /usr/lib/rabbitmq/lib/rabbitmq_server-3.6.16/ebin -noshell -noinput -s rabbit boot -sname rabbit@
-           ├─3500 /usr/lib/erlang/erts-9.2/bin/epmd -daemon
-           ├─3645 erl_child_setup 1024
-           ├─3670 inet_gethost 4
-           └─3671 inet_gethost 4
-
-* If you need to stop it for any reason:
-
-   ```bash
-   sudo service rabbitmq-server stop
-   ```
-
-## Typesense (optional)
-
-Typesense doesn't yet exist in major Linux distribution package repositories and
-has to be installed manually.
-
-Official installation instructions are available for [Ubuntu][1] and [Centos/RHEL][2].
-
-[1]: https://typesense.org/docs/guide/install-typesense.html#deb-package-on-ubuntu-debian
-
-[2]: https://typesense.org/docs/guide/install-typesense.html#rpm-package-on-centos-rhel
-
-After installing Typesense the API key, needed to enable Typesense
-functionality in AIPscan, can be found in the
-`/etc/typesense/typesense-server.ini` file.
-
-## Gunicorn service
-
-* Create the following service file for Gunicorn:
-
-```bash
-sudo nano /etc/systemd/system/aipscan.service
-```
-
-* Add and save the following content to this file.
-
-```bash
-[Unit]
-Description=Gunicorn instance to serve AIPscan
-After=network.target
-
-[Service]
-User=archivematica
-Group=archivematica
-WorkingDirectory=/usr/share/archivematica/AIPscan
-Environment="PYTHONUNBUFFERED=1"
-ExecStart=/usr/share/archivematica/virtualenvs/AIPscan/bin/gunicorn --preload --workers 3 --bind unix:aipscan.sock "AIPscan:create_app()"
-ExecReload=/bin/kill -s HUP $MAINPID
-ExecStop=/bin/kill -s TERM $MAINPID
-PrivateTmp=true
-Restart=always
-RestartSec=30
-
-[Install]
-WantedBy=multi-user.target
-```
-
-Adjust `--workers` to match the concurrency you expect. AIPscan's Flask views
-mostly wait on database and HTTP calls, so the workload is primarily I/O bound.
-We've only tested AIPscan with Gunicorn's prefork (`sync`) workers so far, but
-threaded workers such as `gthread` should also be viable if you prefer to scale
-with threads.
-
-If you wish to use Typesense with AIPscan, you'll need to define an environment variable
-in the `[Service]` section of this file. For example:
-
-```bash
-Environment="TYPESENSE_API_KEY=1234"
-```
-
-* Start the new AIPscan Gunicorn service:
-
-```bash
-sudo systemctl start aipscan
-sudo systemctl enable aipscan
-```
-
-* Check that it is running correctly:
-
-```bash
-sudo systemctl status aipscan
-```
-
-* You should see output that looks like:
-
-```bash
-● aipscan.service - Gunicorn instance to serve AIPscan
-   Loaded: loaded (/etc/systemd/system/aipscan.service; enabled; vendor preset: enabled)
-   Active: active (running) since Wed 2020-11-04 21:18:30 UTC; 3h 4min ago
- Main PID: 25278 (gunicorn)
-    Tasks: 4 (limit: 4915)
-   CGroup: /system.slice/aipscan.service
-           ├─25278 /usr/share/archivematica/virtualenvs/AIPscan/bin/python3 /usr/share/archivematica/virtualenvs/AIPscan/bin/gunicorn --workers 3 --bind unix:aipscan.sock -m 007 wsgi:app
-           ├─25301 /usr/share/archivematica/virtualenvs/AIPscan/bin/python3 /usr/share/archivematica/virtualenvs/AIPscan/bin/gunicorn --workers 3 --bind unix:aipscan.sock -m 007 wsgi:app
-           ├─26969 /usr/share/archivematica/virtualenvs/AIPscan/bin/python3 /usr/share/archivematica/virtualenvs/AIPscan/bin/gunicorn --workers 3 --bind unix:aipscan.sock -m 007 wsgi:app
-           └─26985 /usr/share/archivematica/virtualenvs/AIPscan/bin/python3 /usr/share/archivematica/virtualenvs/AIPscan/bin/gunicorn --workers 3 --bind unix:aipscan.sock -m 007 wsgi:app
-```
-
-## Nginx web server
-
-* Install Nginx.
-
-```bash
-sudo apt update
-sudo apt install nginx
-```
-
-* Configure a Nginx server block for the AIPscan application.
-
-```bash
-sudo nano /etc/nginx/sites-available/aipscan
-```
-
-* Add the following content to this file and save.
-
-```bash
-server {
-    listen 80;
-    server_name your.aipscan.server.ip.here;
-
-    # Enable compression for improved performance.
-    gzip on;
-    gzip_types text/css application/javascript application/json application/xml image/svg+xml;
-
-    # Serve compiled static assets directly from the venv.
-    location /static/ {
-        # Update this path as needed!
-        alias /usr/share/archivematica/virtualenvs/AIPscan/lib/python3.13/site-packages/AIPscan/static/;
-        access_log off;
-        try_files $uri $uri/ =404;
-    }
-
-    location / {
-        include proxy_params;
-        proxy_pass http://unix:/usr/share/archivematica/AIPscan/aipscan.sock;
-    }
-}
-```
-
-Wheel installs place static assets under `.../site-packages/AIPscan/static` in
-the virtual environment. Update the alias accordingly so Nginx, not Flask,
-serves these files.
-
-* Create the symlink to enable this Nginx configuration:
-
-```bash
-sudo ln -s /etc/nginx/sites-available/aipscan /etc/nginx/sites-enabled
-```
-
-* Confirm that the Nginx configuration is correct:
-
-```bash
-sudo nginx -t
-```
-
-* You should see:
-
-```bash
-nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
-nginx: configuration file /etc/nginx/nginx.conf test is successful
-```
-
-* Don't forget to [enable your firewall][ufw-1] to protect the application:
-
-```bash
-sudo ufw status
-```
-
-* Also, be sure to restart Nginx anytime you make any changes to the server
-block:
-
-```bash
-sudo systemctl restart nginx
-```
-
-## Celery service
-
-* AIPscan uses Celery workers, coordinated by RabbitMQ to run background jobs.
-To run Celery as a persistent service, create the following file:
-
-```bash
-/etc/systemd/system/celery.service
-```
-
-* Add and save the following content:
-
-```bash
-[Unit]
-Description=Celery worker service for AIPscan
-After=network.target
-
-[Service]
-User=archivematica
-
-WorkingDirectory=/usr/share/archivematica/AIPscan
-ExecStart=/usr/share/archivematica/virtualenvs/AIPscan/bin/celery -A AIPscan.worker.celery worker
-ExecReload=/bin/kill -s HUP $MAINPID
-ExecStop=/bin/kill -s TERM $MAINPID
-PrivateTmp=true
-Restart=always
-RestartSec=30
-
-[Install]
-WantedBy=multi-user.target
-```
-
-If you wish to use Typesense with AIPscan, you'll need to define an environment variable
-in the `[Service]` section of this file. For example:
-
-```bash
-Environment="TYPESENSE_API_KEY=1234"
-```
-
-Before enabling the service, review the [Celery Workers Guide] for tuning
-options that help keep AIPscan workers stable in production. The
-`--max-memory-per-child` flag is often helpful for recycling workers once they
-reach a specified memory limit. For instance, `--max-memory-per-child 1048576`
-will recycle a worker after it uses about 1 GB of RAM (Celery expects the value
-in kilobytes, so 1024 × 1024 = 1048576 KB).
-
-Add flags like these to the end of the `ExecStart` command if they are
-appropriate for your deployment. For example:
-
-```bash
-ExecStart=/usr/share/archivematica/virtualenvs/AIPscan/bin/celery -A AIPscan.worker.celery worker --max-memory-per-child 1048576
-```
-
-* Start the Celery service:
-
-```bash
-sudo systemctl start celery
-sudo systemctl enable celery
-```
-
-* Confirm that the service is working correctly:
-
-```bash
-sudo systemctl status celery
-```
-
-* You should output like this:
-
-```bash
-● celery.service - Celery worker service for AIPscan
-   Loaded: loaded (/etc/systemd/system/celery.service; enabled; vendor preset: enabled)
-   Active: active (running) since Wed 2020-11-04 22:52:50 UTC; 1h 51min ago
- Main PID: 26842 (celery)
-    Tasks: 3 (limit: 4915)
-   CGroup: /system.slice/celery.service
-           ├─26842 /usr/share/archivematica/virtualenvs/AIPscan/bin/python3 /usr/share/archivematica/virtualenvs/AIPscan/bin/celery -A AIPscan.worker.celery worker
-           ├─26860 /usr/share/archivematica/virtualenvs/AIPscan/bin/python3 /usr/share/archivematica/virtualenvs/AIPscan/bin/celery -A AIPscan.worker.celery worker
-           └─26861 /usr/share/archivematica/virtualenvs/AIPscan/bin/python3 /usr/share/archivematica/virtualenvs/AIPscan/bin/celery -A AIPscan.worker.celery worker
-```
-
-## Conclusion
-
-If these steps completed without errors, you will have a basic AIPscan
-deployment reachable at `your.aipscan.server.ip`. This guide is a starting
-point, i.e. production readiness requires ongoing monitoring to understand
-system behaviour, security hardening and performance tuning to improve
-reliability over time.
-
-[rabbit-MQ1]: https://www.rabbitmq.com/install-debian.html
-[fla-1]: https://flask.palletsprojects.com
-[gun-1]: https://gunicorn.org/
-[ngx-1]: https://www.nginx.com/
-[ufw-1]: https://wiki.ubuntu.com/UncomplicatedFirewall
+AIPscan is deployed as a small distributed system centred on a Python Flask web
+application. A production deployment combines the following services:
+
+- **Web application service** – The Flask app runs under Gunicorn, with Nginx
+  terminating TLS, proxying HTTP traffic, and serving static assets to end
+  users.
+- **Background worker service** – A dedicated Celery worker processes
+  harvesting, indexing, and reporting tasks asynchronously so the web layer
+  stays responsive.
+- **Message broker** – RabbitMQ coordinates task distribution between the web
+  service and Celery worker, providing durable queues and predictable
+  throughput.
+- **Database backend** – MySQL stores all AIPscan state while also acting as the
+  Celery result backend, ensuring a single authoritative datastore.
+- **Optional search accelerator** – Typesense can be enabled to index report
+  data after each fetch, allowing the application to produce complex reports
+  without stressing MySQL.
+
+While other technologies could theoretically replace individual components
+(e.g., Redis instead of RabbitMQ, or a different SQL engine), these combinations
+are not part of our test matrix. For predictable upgrades and support, we
+strongly recommend adhering to the reference architecture described above.
+
+## Reference deployment
+
+The supported reference deployment is managed through Ansible. For detailed
+configuration guidance and environment-specific variables, consult the official
+[AIPscan Ansible role].
+
+We don't currently maintain a production-ready container-orchestrated deployment
+(e.g., Kubernetes). However, the repository's [docker-compose.yml] defines our
+standard development stack and can serve as a useful reference when planning
+your own containerized setup.
+
+## Recommended practices
+
+- Treat the [published AIPscan wheel](https://pypi.org/project/aipscan/) as the
+  authoritative distribution. Install the package from PyPI when bootstrapping
+  your Python environment.
+- Expect occasional breaking changes while the project remains in the 0.x
+  series. For example, version 0.9.0 removes SQLite support even though it had
+  previously been the default database backend.
+
+## Troubleshooting
+
+### Workers are using too much memory and being terminated
+
+Please review the [Celery Workers Guide] for tuning options that help keep
+AIPscan workers stable in production.The `--max-memory-per-child` flag is often
+helpful for recycling workers once they reach a specified memory limit. For
+instance, `--max-memory-per-child 1048576` will recycle a worker after it uses
+about 1 GB of RAM (Celery expects the value in kilobytes, so 1024 × 1024 =
+1048576 KB).
+
+[AIPscan Ansible role]: https://github.com/artefactual-labs/ansible-aipscan
+[docker-compose.yml]: ./docker-compose.yml
 [Celery Workers Guide]: https://docs.celeryproject.org/en/stable/userguide/workers.html#worker-concurrency
