@@ -24,6 +24,7 @@ dependencies = [
     "faker",
     "filelock",
     "flask",
+    "flask-migrate",
     "flask-restx",
     "flask-sqlalchemy",
     "flask-wtf",
