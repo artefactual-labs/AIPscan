@@ -37,6 +37,7 @@ dependencies = [
     "plotly-express",
     "pymysql[rsa]",
     "python-dateutil",
+    "python-dotenv",
     "requests",
     "sqlalchemy",
 ]

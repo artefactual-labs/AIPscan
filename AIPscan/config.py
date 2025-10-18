@@ -4,12 +4,8 @@ from importlib import resources
 DEFAULT_AIPSCAN_DB = (
     "mysql+pymysql://aipscan:demo@127.0.0.1:3406/aipscan?charset=utf8mb4"
 )
-DEFAULT_CELERY_DB = "mysql+pymysql://aipscan:demo@127.0.0.1:3406/celery?charset=utf8mb4"
 DEFAULT_TEST_DB = (
     "mysql+pymysql://aipscan:demo@127.0.0.1:3406/aipscan_test?charset=utf8mb4"
-)
-DEFAULT_TEST_CELERY_DB = (
-    "mysql+pymysql://aipscan:demo@127.0.0.1:3406/celery?charset=utf8mb4"
 )
 
 DEFAULT_TYPESENSE_HOST = "localhost"
@@ -31,10 +27,6 @@ class Config:
     TESTING = False
 
     SQLALCHEMY_DATABASE_URI = os.getenv("SQLALCHEMY_DATABASE_URI", DEFAULT_AIPSCAN_DB)
-    SQLALCHEMY_CELERY_BACKEND = os.getenv(
-        "SQLALCHEMY_CELERY_BACKEND", DEFAULT_CELERY_DB
-    )
-    SQLALCHEMY_BINDS = {"celery": SQLALCHEMY_CELERY_BACKEND}
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ECHO = False
     SQLALCHEMY_ENGINE_OPTIONS = {
@@ -63,11 +55,6 @@ class DevelopmentConfig(Config):
 class TestConfig(Config):
     TESTING = True
     SQLALCHEMY_DATABASE_URI = os.getenv("SQLALCHEMY_TEST_DATABASE_URI", DEFAULT_TEST_DB)
-    SQLALCHEMY_CELERY_BACKEND = os.getenv(
-        "SQLALCHEMY_TEST_CELERY_BACKEND",
-        os.getenv("SQLALCHEMY_CELERY_BACKEND", DEFAULT_TEST_CELERY_DB),
-    )
-    SQLALCHEMY_BINDS = {"celery": SQLALCHEMY_CELERY_BACKEND}
 
 
 CONFIGS = {"dev": DevelopmentConfig, "test": TestConfig, "default": Config}

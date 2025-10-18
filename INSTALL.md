@@ -55,7 +55,8 @@ The full list of configurable environment variables includes:
 
 - `SECRET_KEY`
 - `SQLALCHEMY_DATABASE_URI`
-- `SQLALCHEMY_CELERY_BACKEND`
+- `CELERY_RESULT_BACKEND`
+- `CELERY_BROKER_URL`
 - `TYPESENSE_HOST`
 - `TYPESENSE_PORT`
 - `TYPESENSE_API_KEY`
