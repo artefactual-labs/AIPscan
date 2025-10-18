@@ -3,11 +3,10 @@ services:
     build: ./
     environment:
       - FLASK_CONFIG=dev
-      - CELERY_BROKER_URL=amqp://guest@rabbitmq//
-      - TYPESENSE_HOST=typesense
+      - CELERY_BROKER_URL=amqp://guest@aipscan-rabbitmq//
       - SQLALCHEMY_DATABASE_URI=mysql+pymysql://aipscan:demo@aipscan-mysql:3306/aipscan?charset=utf8mb4
-      - SQLALCHEMY_CELERY_BACKEND=mysql+pymysql://aipscan:demo@aipscan-mysql:3306/aipscan?charset=utf8mb4
       - CELERY_RESULT_BACKEND=db+mysql+pymysql://aipscan:demo@aipscan-mysql:3306/celery?charset=utf8mb4
+      - TYPESENSE_HOST=aipscan-typesense
       - TYPESENSE_API_KEY=xyz
       - AGGREGATOR_DOWNLOAD_ROOT=/downloads
     volumes:
@@ -25,11 +24,11 @@ services:
     networks:
       - am_default
 
-  rabbitmq:
+  aipscan-rabbitmq:
     networks:
       - am_default
 
-  celery-worker:
+  aipscan-worker:
     networks:
       - am_default
 
@@ -37,7 +36,7 @@ services:
     networks:
       - am_default
 
-  typesense:
+  aipscan-typesense:
     networks:
       - am_default
 
