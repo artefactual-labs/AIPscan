@@ -145,6 +145,8 @@ python-dateutil==2.9.0.post0
     #   aipscan
     #   celery
     #   pandas
+python-dotenv==1.1.1
+    # via aipscan
 pytz==2025.2
     # via pandas
 referencing==0.36.2
