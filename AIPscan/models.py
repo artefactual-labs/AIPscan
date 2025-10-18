@@ -11,13 +11,13 @@ UUID_REGEX = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
 
 
 class package_tasks(db.Model):
-    __bind_key__ = "celery"
+    __tablename__ = "package_tasks"
     package_task_id = db.Column(db.String(36), primary_key=True)
     workflow_coordinator_id = db.Column(db.String(36))
 
 
 class get_mets_tasks(db.Model):
-    __bind_key__ = "celery"
+    __tablename__ = "get_mets_tasks"
     get_mets_task_id = db.Column(db.String(36), primary_key=True)
     workflow_coordinator_id = db.Column(db.String(36))
     package_uuid = db.Column(db.String(36))
