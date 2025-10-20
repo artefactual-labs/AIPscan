@@ -1,11 +1,11 @@
 """Data endpoints optimized for reports in the Reporter blueprint."""
 
 from datetime import datetime
-from datetime import timedelta
 from operator import itemgetter
 
 from dateutil.rrule import DAILY
 from dateutil.rrule import rrule
+from sqlalchemy import case
 
 from AIPscan import db
 from AIPscan.Data import fields
@@ -702,8 +702,12 @@ def storage_locations_usage_over_time(
     :param storage_service_id: Storage Service ID (int)
     :param start_date: Inclusive AIP creation start date
         (datetime.datetime object)
-    :param end_date: Inclusive AIP creation end date
-        (datetime.datetime object)
+    :param end_date: Exclusive upper bound for AIP creation timestamps
+        (datetime.datetime). Callers that work with inclusive calendar dates
+        should use ``parse_datetime_bound(..., upper=True)``.
+        For example, the range “2024-01-01 to 2024-01-31” becomes:
+          - ``start_date = 2024-01-01 00:00:00``, and
+          - ``end_date = 2024-02-01 00:00:00``
     :param cumulative: Flag indicating whether to calculate cumulatively, where
         each month adds to previous totals (bool)
 
@@ -714,35 +718,91 @@ def storage_locations_usage_over_time(
     report = {}
     report[fields.FIELD_STORAGE_NAME] = get_storage_service_name(storage_service_id)
 
-    locations = _get_storage_locations(storage_service_id)
+    locations = sorted(
+        _get_storage_locations(storage_service_id), key=lambda loc: loc.id
+    )
+    location_ids = [loc.id for loc in locations]
     days = _get_days_covered_by_date_range(storage_service_id, start_date, end_date)
 
-    results = {}
+    # Build a single aggregated query that returns daily metrics per location.
+    # MySQL: DATE(AIP.create_date) groups by calendar day.
+    day_col = db.func.date(AIP.create_date).label("day")
 
+    # CASE expression to count only original files.
+    orig_file_case = case((File.file_type == FileType.original, 1), else_=0)
+
+    aggregated = (
+        db.session.query(
+            day_col,
+            AIP.storage_location_id.label("storage_location_id"),
+            db.func.count(db.func.distinct(AIP.id)).label("aips"),
+            db.func.coalesce(db.func.sum(File.size), 0).label("size_sum"),
+            db.func.coalesce(db.func.sum(orig_file_case), 0).label("orig_files"),
+        )
+        .outerjoin(File, File.aip_id == AIP.id)
+        .filter(AIP.storage_service_id == storage_service_id)
+        .filter(AIP.create_date >= start_date)
+        .filter(AIP.create_date < end_date)
+        .group_by(day_col, AIP.storage_location_id)
+        .all()
+    )
+
+    # Map aggregated rows for quick lookup.
+    daily_loc_metrics = {}  # {day_str: {loc_id: {aips,size,files}}}
+    for row in aggregated:
+        # row.day can be date/datetime; normalize to YYYY-MM-DD string
+        day_str = str(row.day)
+        loc_id = row.storage_location_id
+        day_bucket = daily_loc_metrics.setdefault(day_str, {})
+        day_bucket[loc_id] = {
+            fields.FIELD_AIPS: int(row.aips or 0),
+            fields.FIELD_SIZE: int(row.size_sum or 0),
+            fields.FIELD_FILE_COUNT: int(row.orig_files or 0),
+        }
+
+    # Prepare cumulative running totals per location if needed
+    running_totals = {
+        loc_id: {fields.FIELD_AIPS: 0, fields.FIELD_SIZE: 0, fields.FIELD_FILE_COUNT: 0}
+        for loc_id in location_ids
+    }
+
+    results = {}
     for day in days:
         daily_locations_data = []
 
-        for location in locations:
-            loc_info = {}
+        # Use aggregated metrics for the given day; default to zeros.
+        day_metrics = daily_loc_metrics.get(day, {})
+        for loc in locations:
+            base = day_metrics.get(
+                loc.id,
+                {
+                    fields.FIELD_AIPS: 0,
+                    fields.FIELD_SIZE: 0,
+                    fields.FIELD_FILE_COUNT: 0,
+                },
+            )
 
-            subquery_start_date = datetime.strptime(day, "%Y-%m-%d")
-            subquery_end_date = subquery_start_date + timedelta(days=1)
             if cumulative:
-                subquery_start_date = datetime.strptime(days[0], "%Y-%m-%d")
+                run = running_totals[loc.id]
+                run[fields.FIELD_AIPS] += base[fields.FIELD_AIPS]
+                run[fields.FIELD_SIZE] += base[fields.FIELD_SIZE]
+                run[fields.FIELD_FILE_COUNT] += base[fields.FIELD_FILE_COUNT]
+                aips_val = run[fields.FIELD_AIPS]
+                size_val = run[fields.FIELD_SIZE]
+                files_val = run[fields.FIELD_FILE_COUNT]
+            else:
+                aips_val = base[fields.FIELD_AIPS]
+                size_val = base[fields.FIELD_SIZE]
+                files_val = base[fields.FIELD_FILE_COUNT]
 
-            loc_info[fields.FIELD_ID] = location.id
-            loc_info[fields.FIELD_UUID] = location.uuid
-            loc_info[fields.FIELD_STORAGE_LOCATION] = location.description
-            loc_info[fields.FIELD_AIPS] = location.aip_count(
-                subquery_start_date, subquery_end_date
-            )
-            loc_info[fields.FIELD_SIZE] = location.aip_total_size(
-                subquery_start_date, subquery_end_date
-            )
-            loc_info[fields.FIELD_FILE_COUNT] = location.file_count(
-                subquery_start_date, subquery_end_date
-            )
-
+            loc_info = {
+                fields.FIELD_ID: loc.id,
+                fields.FIELD_UUID: loc.uuid,
+                fields.FIELD_STORAGE_LOCATION: loc.description,
+                fields.FIELD_AIPS: aips_val,
+                fields.FIELD_SIZE: size_val,
+                fields.FIELD_FILE_COUNT: files_val,
+            }
             daily_locations_data.append(loc_info)
 
         results[day] = daily_locations_data
