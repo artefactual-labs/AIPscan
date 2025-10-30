@@ -20,9 +20,7 @@ DEFAULT_AGGREGATOR_DOWNLOAD_ROOT = os.fspath(
 
 
 class Config:
-    # Be sure to set a secure secret key for production.
-    SECRET_KEY = os.getenv("SECRET_KEY", "you-will-never-guess")
-
+    SECRET_KEY = None
     DEBUG = False
     TESTING = False
 
