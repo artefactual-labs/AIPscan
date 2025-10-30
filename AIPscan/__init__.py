@@ -35,6 +35,17 @@ def create_app(config_name=None):
     app = Flask(__name__)
     app.config.from_object(config)
 
+    # Set up the secret key.
+    secret = os.getenv("SECRET_KEY") or app.config.get("SECRET_KEY")
+    if app.debug or app.testing:
+        app.config["SECRET_KEY"] = secret or "dev"
+    else:
+        if not secret or not str(secret).strip():
+            raise RuntimeError(
+                "SECRET_KEY must be set to a non-empty value when running in production."
+            )
+        app.config["SECRET_KEY"] = secret
+
     migrations_dir = os.path.abspath(
         os.path.join(os.path.dirname(__file__), "migrations")
     )
