@@ -12,35 +12,43 @@ tabular and visual reports about repository holdings. It is designed to run as a
 stand-alone add-on to Archivematica and requires only a valid Storage Service
 API key to fetch source data.
 
-You are free to copy, modify, and distribute AIPscan, with attribution, under
-the terms of the Apache License, version 2.0. See the [LICENSE] file for
-details.
-
 ## Screenshots
 
-### AIPscan fetch job
+<details>
+<summary>Running a fetch job</summary>
 
-![screencap1](screencaps/aipscan_fetch_job.png)
+![AIPscan fetch job](screencaps/aipscan_fetch_job.png)
+</details>
 
-### Finding an AIP
+<details>
+<summary>Finding an AIP</summary>
 
-![screencap2](screencaps/aipscan_find_aip.png)
+![Finding an AIP](screencaps/aipscan_find_aip.png)
+</details>
 
-### Viewing an AIP
+<details>
+<summary>Viewing an AIP</summary>
 
-![screencap3](screencaps/aipscan_view_aip.png)
+![Viewing an AIP](screencaps/aipscan_view_aip.png)
+</details>
 
-### Selecting a report
+<details>
+<summary>Selecting a report</summary>
 
-![screencap4](screencaps/aipscan_select_report.png)
+![Selecting a report](screencaps/aipscan_select_report.png)
+</details>
 
-### Example: pie chart "format types" report
+<details>
+<summary>Example: pie chart "format types" report</summary>
 
-![screencap5](screencaps/aipscan_piechart_report.png)
+![Pie chart "format types" report](screencaps/aipscan_piechart_report.png)
+</details>
 
-### Example: tabular "largest files" report
+<details>
+<summary>Example: tabular "largest files" report</summary>
 
-![screencap6](screencaps/aipscan_tabular_report.png)
+![Tabular "largest files" report](screencaps/aipscan_tabular_report.png)
+</details>
 
 ## Installation
 
@@ -49,16 +57,21 @@ micro-framework. See [INSTALL.md] for production deployment instructions. See
 [CONTRIBUTING.md] for guidelines on how to contribute to the project, including
 how to set up the development environment and create a new AIPscan report.
 
-## Contributing
-
-See [CONTRIBUTING.md] for full contribution guidelines and
-development environment setup instructions.
-
 ## Usage
 
 Consult [USAGE.md] for a walkthrough of the web workflow and the helper scripts
 in the `tools` directory. It covers verifying your deployment, running fetch
 jobs, and seeding test data.
+
+## Contributing
+
+See [CONTRIBUTING.md] for full contribution guidelines and
+development environment setup instructions.
+
+## License
+
+This project is licensed under the Apache-2.0 license ([LICENSE] or
+<https://opensource.org/licenses/Apache-2.0>).
 
 [badge-pypi]: https://badge.fury.io/py/aipscan.svg
 [pypi-release]: https://badge.fury.io/py/aipscan

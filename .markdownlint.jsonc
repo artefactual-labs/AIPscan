@@ -8,7 +8,12 @@
     "headings": false, // Don't check headings
     "tables": false // Don't check table Markdown
   },
+  "MD033": {
+    "allowed_elements": [
+      "details",
+      "summary"
+    ]
+  },
   "MD041": false, // Disable: first line in a file should be a top-level heading
   "MD046": false // Disable: indented code blocks are awesome!
-
 }
