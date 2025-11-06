@@ -42,6 +42,10 @@ build-release-image: .uv
 	echo "To test, run:"
 	echo "  docker run --rm ${IMAGE_TAG}"
 
+lint: # @HELP Run linters.
+lint: .uv
+	uv run tox -e linting -- $(ARGS)
+
 schema-docs: IMAGE ?= schemaspy/schemaspy:7.0.2
 schema-docs: NETWORK ?= default
 schema-docs: DB_HOST ?= aipscan-mysql
@@ -58,6 +62,17 @@ schema-docs:
 		--user $(DB_USER) --password $(DB_PASS) \
 		--database-name $(DB_NAME) --schema $(DB_NAME) \
 		--output /output --catalog aipscan
+
+test: # @HELP Run tests.
+test: TOXENV ?=
+test: LABEL ?= test
+test: PYTESTARGS ?= -x
+test: .uv
+	if [ -z "$(TOXENV)" ]; then \
+		uv run tox -m "$(LABEL)" -- $(PYTESTARGS); \
+	else \
+		uv run tox -e "$(TOXENV)" -- $(PYTESTARGS); \
+	fi
 
 help: # @HELP Print this message.
 help:
