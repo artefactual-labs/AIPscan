@@ -57,6 +57,8 @@ dev = [
     "pytest-cov",
     "pytest-mock",
     "ruff",
+    "tox",
+    "tox-uv",
     "tzlocal",
 ]
 linting = ["pre-commit-uv"]
