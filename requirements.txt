@@ -64,7 +64,7 @@ flask-sqlalchemy==3.1.1
     #   flask-migrate
 flask-wtf==1.2.2
     # via aipscan
-greenlet==3.2.4 ; platform_machine == 'AMD64' or platform_machine == 'WIN32' or platform_machine == 'aarch64' or platform_machine == 'amd64' or platform_machine == 'ppc64le' or platform_machine == 'win32' or platform_machine == 'x86_64'
+greenlet==3.3.0 ; platform_machine == 'AMD64' or platform_machine == 'WIN32' or platform_machine == 'aarch64' or platform_machine == 'amd64' or platform_machine == 'ppc64le' or platform_machine == 'win32' or platform_machine == 'x86_64'
     # via sqlalchemy
 gunicorn==23.0.0
     # via aipscan
@@ -99,7 +99,7 @@ markupsafe==3.0.3
     #   wtforms
 metsrw==0.6.1
     # via aipscan
-narwhals==2.12.0
+narwhals==2.13.0
     # via plotly
 natsort==8.4.0
     # via aipscan
@@ -174,12 +174,12 @@ scipy==1.16.3 ; python_full_version >= '3.11'
     #   statsmodels
 six==1.17.0
     # via python-dateutil
-sqlalchemy==2.0.44
+sqlalchemy==2.0.45
     # via
     #   aipscan
     #   alembic
     #   flask-sqlalchemy
-statsmodels==0.14.5
+statsmodels==0.14.6
     # via plotly-express
 tomli==2.3.0 ; python_full_version < '3.11'
     # via alembic
@@ -201,7 +201,7 @@ tzdata==2025.2
     #   tzlocal
 tzlocal==5.3.1
     # via celery
-urllib3==2.5.0
+urllib3==2.6.1
     # via requests
 vine==5.1.0
     # via
