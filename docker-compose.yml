@@ -7,7 +7,7 @@ volumes:
 
 services:
   aipscan-mysql:
-    image: "percona/percona-server:8.4.6-6.1"
+    image: "percona/percona-server:8.4.7-7.1"
     command: "--character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci"
     environment:
       MYSQL_ROOT_PASSWORD: "12345"
@@ -47,7 +47,7 @@ services:
       retries: 5
 
   aipscan-rabbitmq:
-    image: rabbitmq:4.2.1-management
+    image: rabbitmq:4.2.2-management
     ports:
       - 5672:5672
       - 15672:15672
