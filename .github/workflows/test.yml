@@ -22,7 +22,7 @@ jobs:
       - name: "Check out repository"
         uses: "actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8" # v6.0.1
       - name: "Install uv"
-        uses: "astral-sh/setup-uv@ed21f2f24f8dd64503750218de024bcf64c7250a" # v7.1.5
+        uses: "astral-sh/setup-uv@681c641aba71e4a1c380be3ab5e12ad51f415867" # v7.1.6
       - name: "Install OS packages"
         run: |
           sudo apt-get --quiet update
@@ -34,7 +34,7 @@ jobs:
         run: make test TOXENV="${{ matrix.toxenv }}" PYTESTARGS="--cov AIPscan --cov-config .coveragerc --cov-report xml:coverage.xml"
       - name: "Upload coverage report"
         if: ${{ github.repository == 'artefactual-labs/AIPscan' && !contains(github.event.head_commit.message, '[skip codecov]') && !contains(github.event.head_commit.message, '[skip-codecov]') }}
-        uses: "codecov/codecov-action@5a1091511ad55cbe89839c7260b706298ca349f7" # v5.5.1
+        uses: "codecov/codecov-action@671740ac38dd9b0130fbe1cec585b89eea48d3de" # v5.5.2
         env:
           CODECOV_TOKEN: "${{ secrets.CODECOV_TOKEN }}"
         with:
@@ -54,7 +54,7 @@ jobs:
       - name: "Check out repository"
         uses: "actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8" # v6.0.1
       - name: "Install uv"
-        uses: "astral-sh/setup-uv@ed21f2f24f8dd64503750218de024bcf64c7250a" # v7.1.5
+        uses: "astral-sh/setup-uv@681c641aba71e4a1c380be3ab5e12ad51f415867" # v7.1.6
       - name: "Run linters"
         run: make lint
   migration-check:
