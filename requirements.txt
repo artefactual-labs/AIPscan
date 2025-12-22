@@ -99,7 +99,7 @@ markupsafe==3.0.3
     #   wtforms
 metsrw==0.6.1
     # via aipscan
-narwhals==2.13.0
+narwhals==2.14.0
     # via plotly
 natsort==8.4.0
     # via aipscan
@@ -193,7 +193,7 @@ typing-extensions==4.15.0
     #   referencing
     #   sqlalchemy
     #   typesense
-tzdata==2025.2
+tzdata==2025.3
     # via
     #   faker
     #   kombu
@@ -201,7 +201,7 @@ tzdata==2025.2
     #   tzlocal
 tzlocal==5.3.1
     # via celery
-urllib3==2.6.1
+urllib3==2.6.2
     # via requests
 vine==5.1.0
     # via
