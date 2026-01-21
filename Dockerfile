@@ -1,7 +1,7 @@
 ARG TARGET=dev
 
 # Value comes from .python-version (default avoids InvalidDefaultArgInFrom).
-ARG PYTHON_VERSION=3.13
+ARG PYTHON_VERSION=3.14
 
 FROM ghcr.io/astral-sh/uv:trixie-slim AS builder
 ENV UV_COMPILE_BYTECODE=1

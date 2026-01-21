@@ -1,8 +1,8 @@
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 import pytest
 import typesense
-from pytz import timezone
 
 from AIPscan import test_helpers
 from AIPscan import typesense_helpers as ts_helpers
@@ -66,13 +66,13 @@ def test_collection_prefix(app_instance):
         # The function should treat this as the PST date boundary and return the
         # corresponding epoch seconds
         (
-            timezone("US/Pacific").localize(datetime(2019, 1, 30, 0, 0, 0)),
+            datetime(2019, 1, 30, 0, 0, 0, tzinfo=ZoneInfo("America/Los_Angeles")),
             1548835200,
         ),
         # PST early-morning time: a time after midnight in PST should be
         # truncated to the same PST date boundary.
         (
-            timezone("US/Pacific").localize(datetime(2019, 1, 30, 2, 30, 50)),
+            datetime(2019, 1, 30, 2, 30, 50, tzinfo=ZoneInfo("America/Los_Angeles")),
             1548835200,
         ),
         # Naive datetime (no tz): for these tests naive datetimes are treated as
@@ -82,7 +82,7 @@ def test_collection_prefix(app_instance):
         # Explicit UTC timezone: should map directly to the UTC date boundary
         # timestamp.
         (
-            timezone("UTC").localize(datetime(2019, 1, 30, 0, 0, 0)),
+            datetime(2019, 1, 30, 0, 0, 0, tzinfo=ZoneInfo("UTC")),
             1548806400,
         ),
         # Naive later time in the day: later-naive times should be truncated to
