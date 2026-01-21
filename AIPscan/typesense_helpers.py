@@ -58,7 +58,7 @@ def collection_prefix(collection):
     return current_app.config["TYPESENSE_COLLECTION_PREFIX"] + collection
 
 
-EPOCH_UTC = datetime.datetime(1970, 1, 1, tzinfo=datetime.timezone.utc)
+EPOCH_UTC = datetime.datetime(1970, 1, 1, tzinfo=datetime.UTC)
 
 
 def datetime_to_timestamp_int(datetime_obj):
@@ -75,10 +75,10 @@ def datetime_to_timestamp_int(datetime_obj):
     # Normalize to UTC.
     if base.tzinfo is None:
         # Naive datetime: assume it's in UTC by attaching UTC tzinfo.
-        base = base.replace(tzinfo=datetime.timezone.utc)
+        base = base.replace(tzinfo=datetime.UTC)
     else:
         # Aware datetime: convert the timestamp to the equivalent UTC time.
-        base = base.astimezone(datetime.timezone.utc)
+        base = base.astimezone(datetime.UTC)
 
     return int((base - EPOCH_UTC).total_seconds())
 
