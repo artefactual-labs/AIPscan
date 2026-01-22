@@ -183,12 +183,16 @@ $(document).ready(function () {
     window.open(url.href);
   });
 
+  function isValidPositiveNumber(value) {
+    return Number.isFinite(Number(value)) && Number(value) >= 1;
+  }
+
   $("#largestAIPs").on("click", function () {
     var startdate = $("#startdate").val();
     var enddate = $("#enddate").val();
     var limit = $("#largestAipsLimit").val();
 
-    if (!$.isNumeric(limit) || limit < 1) {
+    if (!isValidPositiveNumber(limit)) {
       alert(LIMIT_ALERT);
 
       return false;
@@ -216,7 +220,7 @@ $(document).ready(function () {
     var enddate = $("#enddate").val();
     var limit = $("#largestFilesLimit").val();
 
-    if (!$.isNumeric(limit) || limit < 1) {
+    if (!isValidPositiveNumber(limit)) {
       alert(LIMIT_ALERT);
 
       return false;
