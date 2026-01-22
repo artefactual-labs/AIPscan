@@ -65,7 +65,7 @@ Other dependencies:
     uv lock --upgrade
 
     # pre-commit dependencies.
-    uvx pre-commit autoupdate
+    uv run prek autoupdate
 
     # Node.js dependencies.
     npx npm-check-updates --interactive
