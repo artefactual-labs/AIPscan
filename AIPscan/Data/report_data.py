@@ -18,7 +18,7 @@ from AIPscan.models import FileType
 from AIPscan.models import StorageLocation
 from AIPscan.models import StorageService
 
-VALID_FILE_TYPES = set(item.value for item in FileType)
+VALID_FILE_TYPES = {item.value for item in FileType}
 
 
 def _get_username(agent_string):

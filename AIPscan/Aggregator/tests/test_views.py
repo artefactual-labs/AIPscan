@@ -31,7 +31,7 @@ def test_new_fetch_job_success_returns_task_id(app_instance, mocker):
         assert response.status_code == 200
 
         data = response.get_json()
-        assert set(["timestamp", "taskId", "fetchJobId"]).issubset(data.keys())
+        assert {"timestamp", "taskId", "fetchJobId"}.issubset(data.keys())
         assert data["taskId"] == "child-456"
         assert isinstance(data["fetchJobId"], int)
 
