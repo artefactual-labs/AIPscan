@@ -26,40 +26,36 @@ $(document).ready(function () {
     reloadPage(false);
   });
 
-  $("#startdate").datepicker({
-    dateFormat: "yy-mm-dd",
-    onSelect: function (date) {
-      let enddate = $("#enddate").val();
-      if (enddate != "" && enddate < date) {
-        alert(DATE_ALERT_START);
-      }
+  $("#startdate").on("change", function () {
+    let date = $("#startdate").val();
+    let enddate = $("#enddate").val();
+    if (enddate != "" && enddate < date) {
+      alert(DATE_ALERT_START);
+    }
 
-      const url = new URL("reporter/update_dates", $("body").data("url-root"));
+    const url = new URL("reporter/update_dates/", $("body").data("url-root"));
 
-      fetch(url.href, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ start_date: date }),
-      });
-    },
+    fetch(url.href, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ start_date: date }),
+    });
   });
 
-  $("#enddate").datepicker({
-    dateFormat: "yy-mm-dd",
-    onSelect: function (date) {
-      let startdate = $("#startdate").val();
-      if (startdate != "" && startdate > date) {
-        alert(DATE_ALERT_START);
-      }
+  $("#enddate").on("change", function () {
+    let date = $("#enddate").val();
+    let startdate = $("#startdate").val();
+    if (startdate != "" && startdate > date) {
+      alert(DATE_ALERT_START);
+    }
 
-      const url = new URL("reporter/update_dates", $("body").data("url-root"));
+    const url = new URL("reporter/update_dates", $("body").data("url-root"));
 
-      fetch(url.href, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ end_date: date }),
-      });
-    },
+    fetch(url.href, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ end_date: date }),
+    });
   });
 
   $("#report1a").on("click", function () {
