@@ -56,7 +56,9 @@ dev = [
     "tox-uv",
     "tzlocal",
 ]
-linting = ["pre-commit-uv"]
+linting = [
+    "prek",
+]
 
 
 [tool.hatch.version]
@@ -139,7 +141,7 @@ skip_install = true
 dependency_groups = ["linting"]
 commands = [
     [
-        "pre-commit",
+        "prek",
         "run",
         "--all-files",
         "--show-diff-on-failure",
