@@ -43,7 +43,7 @@ def test_search(app_instance, enable_typesense, mocker):
 
     fake_collection = typesense_test_helpers.FakeCollection(fake_results)
 
-    query = mocker.patch("typesense.collections.Collections.__getitem__")
+    query = mocker.patch("typesense.sync.collections.Collections.__getitem__")
     query.return_value = fake_collection
 
     results = ts_helpers.search("file", search_parameters, client)
@@ -164,10 +164,10 @@ def test_initialize_index(app_instance, enable_typesense, mocker):
     fake_collections = FakeCollections()
     fake_collection = typesense_test_helpers.FakeCollection()
 
-    query = mocker.patch("typesense.collections.Collections.__getitem__")
+    query = mocker.patch("typesense.sync.collections.Collections.__getitem__")
     query.return_value = fake_collection
 
-    query2 = mocker.patch("typesense.collections.Collections.create")
+    query2 = mocker.patch("typesense.sync.collections.Collections.create")
     query2.return_value = fake_collections
 
     ts_helpers.initialize_index()
@@ -176,7 +176,7 @@ def test_initialize_index(app_instance, enable_typesense, mocker):
 def test_populate_index(app_instance, enable_typesense, mocker):
     fake_collection = typesense_test_helpers.FakeCollection()
 
-    query = mocker.patch("typesense.collections.Collections.__getitem__")
+    query = mocker.patch("typesense.sync.collections.Collections.__getitem__")
     query.return_value = fake_collection
 
     ts_helpers.populate_index()

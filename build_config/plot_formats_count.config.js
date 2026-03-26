@@ -1,7 +1,6 @@
 import { resolve } from "path";
 import { copyFileSync, mkdirSync } from "fs";
 import { defineConfig } from "vite";
-import inject from "@rollup/plugin-inject";
 
 const rawLogLevel = process.env.LOG_LEVEL ?? "warning";
 const logLevel = rawLogLevel === "warning" ? "warn" : rawLogLevel;
@@ -25,12 +24,19 @@ export default defineConfig({
   logLevel: logLevel,
   base: "/static/dist/plot_formats_count",
   build: {
-    rollupOptions: {
+    rolldownOptions: {
       input: {
         plot_formats_count: resolve(
           __dirname,
           "entry/plot_formats_count.entry.js",
         ),
+      },
+      transform: {
+        inject: {
+          $: "jquery",
+          jQuery: "jquery",
+          Plotly: "Plotly",
+        },
       },
       output: {
         entryFileNames: "[name].js",
@@ -40,13 +46,5 @@ export default defineConfig({
     },
     outDir: "AIPscan/static/dist/plot_formats_count",
   },
-  plugins: [
-    inject({
-      include: "**/*.js",
-      $: "jquery",
-      jQuery: "jquery",
-      Plotly: "Plotly",
-    }),
-    copyPlotlyPlugin(),
-  ],
+  plugins: [copyPlotlyPlugin()],
 });

@@ -1,6 +1,5 @@
 import { resolve } from "path";
 import { defineConfig } from "vite";
-import inject from "@rollup/plugin-inject";
 
 const rawLogLevel = process.env.LOG_LEVEL ?? "warning";
 const logLevel = rawLogLevel === "warning" ? "warn" : rawLogLevel;
@@ -9,9 +8,15 @@ export default defineConfig({
   logLevel: logLevel,
   base: "/static/dist/report_base",
   build: {
-    rollupOptions: {
+    rolldownOptions: {
       input: {
         report_base: resolve(__dirname, "entry/report_base.entry.js"),
+      },
+      transform: {
+        inject: {
+          $: "jquery",
+          jQuery: "jquery",
+        },
       },
       output: {
         entryFileNames: "[name].js",
@@ -21,11 +26,4 @@ export default defineConfig({
     },
     outDir: "AIPscan/static/dist/report_base",
   },
-  plugins: [
-    inject({
-      include: "**/*.js",
-      $: "jquery",
-      jQuery: "jquery",
-    }),
-  ],
 });

@@ -209,7 +209,7 @@ class StorageLocation(db.Model):
         )
         try:
             return results[0]
-        except (IndexError, TypeError):
+        except IndexError, TypeError:
             return DEFAULT
 
     def aip_total_size(self, start_date=None, end_date=None):
@@ -231,7 +231,7 @@ class StorageLocation(db.Model):
         if results[0]:
             try:
                 return results[0]
-            except (IndexError, TypeError):
+            except IndexError, TypeError:
                 pass
         return DEFAULT
 
@@ -404,7 +404,9 @@ class File(db.Model):
 
     original_file_id = db.Column(db.Integer(), db.ForeignKey("file.id"))
     original_file = db.relationship(
-        "File", remote_side=[id], backref=db.backref("derivatives")
+        "File",
+        remote_side=[id],  # noqa: A003
+        backref=db.backref("derivatives"),
     )
 
     aip_id = db.Column(db.Integer(), db.ForeignKey("aip.id"), nullable=False)

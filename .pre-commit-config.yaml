@@ -6,17 +6,17 @@ repos:
     - id: fix-byte-order-marker
     - id: check-executables-have-shebangs
 - repo: https://github.com/astral-sh/uv-pre-commit
-  rev: 0.9.26
+  rev: 0.11.1
   hooks:
     - id: uv-lock
 - repo: https://github.com/astral-sh/ruff-pre-commit
-  rev: v0.14.13
+  rev: v0.15.7
   hooks:
     - id: ruff-check
       args: ["--fix"]
     - id: ruff-format
 - repo: https://github.com/igorshubovych/markdownlint-cli
-  rev: v0.47.0
+  rev: v0.48.0
   hooks:
     - id: markdownlint
       args: ["--config", ".markdownlint.jsonc"]
