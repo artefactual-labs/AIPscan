@@ -17,7 +17,7 @@ endif
 		exit 1; \
 	}
 
-build: # @HELP An alias for build-frontend-assets (for backward compatibility).
+build: # @HELP An alias for build-frontend-assets (for backward compatibility).
 build: build-frontend-assets
 
 build-frontend-assets: # @HELP Build frontend assets (JS/CSS) using npm.

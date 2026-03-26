@@ -120,7 +120,7 @@ def aip_file_format_overview(
             try:
                 aip_info[fields.FIELD_SIZE] = size + file_.size
             # TODO: Find out why size is sometimes None.
-            except (AttributeError, TypeError):
+            except AttributeError, TypeError:
                 pass
 
             if format_key not in aip_info[fields.FIELD_FORMATS]:

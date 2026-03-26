@@ -80,8 +80,8 @@ def test_formats_count(app_instance, mocker, query_results, results_count):
 def test_formats_count_no_results_typesense(
     app_with_populated_files, enable_typesense, mocker
 ):
-    mocker.patch("typesense.collections.Collections.__getitem__")
-    mocker.patch("typesense.multi_search.MultiSearch.perform")
+    mocker.patch("typesense.sync.collections.Collections.__getitem__")
+    mocker.patch("typesense.sync.multi_search.MultiSearch.perform")
     mocker.patch("AIPscan.typesense_helpers.facet_value_counts")
 
     expected_result = {

@@ -43,7 +43,7 @@ def parse_datetime_bound(date_string, upper=False):
         if upper:
             parsed_datetime = parsed_datetime + timedelta(days=1)
         return parsed_datetime
-    except (TypeError, ValueError):
+    except TypeError, ValueError:
         return default_datetime
 
 

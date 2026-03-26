@@ -18,10 +18,12 @@ FAKE_MULTI_SEARCH_RESULTS_FORMAT_COUNTS = {
 def fake_collection_format_counts(mocker):
     fake_collection = FakeCollection(FAKE_RESULTS_FORMAT_COUNTS)
 
-    query_collection = mocker.patch("typesense.collections.Collections.__getitem__")
+    query_collection = mocker.patch(
+        "typesense.sync.collections.Collections.__getitem__"
+    )
     query_collection.return_value = fake_collection
 
-    query_multi = mocker.patch("typesense.multi_search.MultiSearch.perform")
+    query_multi = mocker.patch("typesense.sync.multi_search.MultiSearch.perform")
     query_multi.return_value = FAKE_MULTI_SEARCH_RESULTS_FORMAT_COUNTS
 
     return fake_collection
@@ -30,7 +32,7 @@ def fake_collection_format_counts(mocker):
 def fake_collection(mocker, fake_results):
     fake_collection = FakeCollection(fake_results)
 
-    query = mocker.patch("typesense.collections.Collections.__getitem__")
+    query = mocker.patch("typesense.sync.collections.Collections.__getitem__")
     query.return_value = fake_collection
 
 
