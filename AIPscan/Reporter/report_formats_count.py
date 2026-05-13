@@ -32,6 +32,17 @@ from AIPscan.Reporter import translate_headers
 HEADERS = [fields.FIELD_FORMAT, fields.FIELD_COUNT, fields.FIELD_SIZE]
 
 
+def _chart_labels_and_values(format_counts):
+    """Return chart labels and values in the same count-descending order."""
+    ordered_format_counts = sorted(
+        format_counts.items(), key=lambda item: item[1], reverse=True
+    )
+    return (
+        [format_ for format_, _ in ordered_format_counts],
+        [count for _, count in ordered_format_counts],
+    )
+
+
 @reporter.route("/report_formats_count/", methods=["GET"])
 def report_formats_count():
     """Report (tabular) on all file formats and their counts and size on
@@ -133,9 +144,7 @@ def chart_formats_count():
 
         format_counts = Counter(format_labels)
 
-    labels = list(format_counts.keys())
-    labels.sort()
-    values = list(format_counts.values())
+    labels, values = _chart_labels_and_values(format_counts)
 
     originals_count = sum(values)
     different_formats = len(format_counts.keys())
