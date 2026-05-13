@@ -1,10 +1,31 @@
+import json
+import re
+
 import pytest
 from flask import current_app
 from flask import url_for
 
 from AIPscan import typesense_test_helpers
+from AIPscan.Data import fields
+from AIPscan.Reporter.report_formats_count import _chart_labels_and_values
 
 EXPECTED_CSV_CONTENTS = b"Format,Count,Size,Size (bytes)\r\nJPEG,2,3.0 kB,3000\r\nISO Disk Image File,1,0 Bytes,0\r\n"
+
+
+def _hidden_textarea_json(response, element_id):
+    match = re.search(
+        rf'<textarea class="d-none" id="{element_id}">(.*?)</textarea>',
+        response.data.decode(),
+    )
+    assert match is not None
+    return json.loads(match.group(1))
+
+
+def test_chart_labels_and_values_keep_counts_with_labels():
+    labels, values = _chart_labels_and_values({"3DM": 1, "Plain Text": 5})
+
+    assert labels == ["Plain Text", "3DM"]
+    assert values == [5, 1]
 
 
 @pytest.mark.parametrize(
@@ -90,3 +111,42 @@ def test_formats_count_csv(app_with_populated_format_versions):
         )
         assert response.mimetype == "text/csv"
         assert response.data == EXPECTED_CSV_CONTENTS
+
+
+def test_chart_formats_count_labels_match_values(app_with_populated_format_versions):
+    """Test pie chart label/value ordering."""
+    with current_app.test_client() as test_client:
+        response = test_client.get(
+            "/reporter/chart_formats_count/?start_date=2019-01-30&end_date=2024-02-26&amss_id=1"
+        )
+
+        assert response.status_code == 200
+        assert _hidden_textarea_json(response, "chart_labels") == [
+            "JPEG",
+            "ISO Disk Image File",
+        ]
+        assert _hidden_textarea_json(response, "chart_values") == [2, 1]
+
+
+def test_chart_formats_count_labels_match_values_using_typesense(
+    app_with_populated_format_versions, enable_typesense, mocker
+):
+    """Test pie chart label/value ordering when using Typesense."""
+    mocker.patch(
+        "AIPscan.Data.report_data_typesense.formats_count",
+        return_value={
+            fields.FIELD_FORMATS: [
+                {fields.FIELD_FORMAT: "Plain Text", fields.FIELD_COUNT: 5},
+                {fields.FIELD_FORMAT: "3DM", fields.FIELD_COUNT: 1},
+            ],
+        },
+    )
+
+    with current_app.test_client() as test_client:
+        response = test_client.get(
+            "/reporter/chart_formats_count/?start_date=2019-01-30&end_date=2024-02-26&amss_id=1"
+        )
+
+        assert response.status_code == 200
+        assert _hidden_textarea_json(response, "chart_labels") == ["Plain Text", "3DM"]
+        assert _hidden_textarea_json(response, "chart_values") == [5, 1]
