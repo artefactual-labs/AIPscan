@@ -30,7 +30,7 @@ jobs:
         run: make test TOXENV="${{ matrix.toxenv }}" PYTESTARGS="--cov AIPscan --cov-config .coveragerc --cov-report xml:coverage.xml"
       - name: "Upload coverage report"
         if: ${{ github.repository == 'artefactual-labs/AIPscan' && !contains(github.event.head_commit.message, '[skip codecov]') && !contains(github.event.head_commit.message, '[skip-codecov]') }}
-        uses: "codecov/codecov-action@57e3a136b779b570ffcdbf80b3bdc90e7fab3de2" # v6.0.0
+        uses: "codecov/codecov-action@e79a6962e0d4c0c17b229090214935d2e33f8354" # v6.0.1
         env:
           CODECOV_TOKEN: "${{ secrets.CODECOV_TOKEN }}"
         with:
