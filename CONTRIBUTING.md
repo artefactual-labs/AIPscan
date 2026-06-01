@@ -22,12 +22,7 @@ project's [CONTRIBUTING.md] to the greatest degree possible.
 
       cd AIPscan
 
-- Decide if you want to use the Archivematica network so the containers can
-  talk directly. If so, populate the `.env` file with the following contents:
-
-      COMPOSE_FILE=./docker-compose.yml:./docker-compose.am-network.yml
-
-- Start the services:
+- Start the application services:
 
       docker compose up --detach --wait
 
@@ -44,6 +39,64 @@ project's [CONTRIBUTING.md] to the greatest degree possible.
 - Remove all volumes when you need a clean slate:
 
       docker compose down --volumes
+
+### Archivematica network
+
+The Archivematica network is optional. Use it when you want AIPscan containers
+to talk directly to an Archivematica development environment.
+
+Populate the `.env` file with the following contents:
+
+      COMPOSE_FILE=./docker-compose.yml:./docker-compose.am-network.yml
+
+Then start the services:
+
+      docker compose up --detach --wait
+
+This expects an external Docker network named `am_default`, usually created by
+the Archivematica development environment. The regular test suite does not need
+this network.
+
+## Running tests
+
+The pytest suite needs MySQL, but it does not need the full application stack,
+RabbitMQ, Typesense, Celery workers, or an Archivematica development
+environment.
+
+Start only the MySQL service:
+
+    COMPOSE_FILE=./docker-compose.yml docker compose up --detach --wait --no-deps aipscan-mysql
+
+Run the Python test environments:
+
+    uv run tox -m test
+
+To run a single tox environment:
+
+    uv run tox -e 3.14
+    uv run tox -e 3.14t
+
+To pass arguments through to pytest:
+
+    uv run tox -e 3.14 -- -x AIPscan/tests/test_app.py
+
+To run the linting environment:
+
+    uv run tox -e linting
+
+The default `uv run tox` command runs every environment in `pyproject.toml`,
+including linting. Use `uv run tox -m test` when you only want the test matrix.
+
+To match CI more closely, run:
+
+    COMPOSE_FILE=./docker-compose.yml docker compose up --detach --wait --no-deps aipscan-mysql
+    make test PYTESTARGS="--cov AIPscan --cov-config .coveragerc --cov-report xml:coverage.xml"
+    make lint
+    COMPOSE_FILE=./docker-compose.yml docker compose run --rm --no-deps aipscan-migrate bash -c "flask db upgrade && flask db check"
+
+When finished, stop the test database and remove volumes:
+
+    COMPOSE_FILE=./docker-compose.yml docker compose down --volumes
 
 ## Upgrading dependencies
 
