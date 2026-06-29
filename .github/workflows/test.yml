@@ -16,9 +16,9 @@ jobs:
           - "3.14"
     steps:
       - name: "Check out repository"
-        uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
+        uses: "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0" # v7.0.0
       - name: "Install uv"
-        uses: "astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b" # v8.1.0
+        uses: "astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39" # v8.2.0
       - name: "Install OS packages"
         run: |
           sudo apt-get --quiet update
@@ -30,7 +30,7 @@ jobs:
         run: make test TOXENV="${{ matrix.toxenv }}" PYTESTARGS="--cov AIPscan --cov-config .coveragerc --cov-report xml:coverage.xml"
       - name: "Upload coverage report"
         if: ${{ github.repository == 'artefactual-labs/AIPscan' && !contains(github.event.head_commit.message, '[skip codecov]') && !contains(github.event.head_commit.message, '[skip-codecov]') }}
-        uses: "codecov/codecov-action@e79a6962e0d4c0c17b229090214935d2e33f8354" # v6.0.1
+        uses: "codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f" # v7.0.0
         env:
           CODECOV_TOKEN: "${{ secrets.CODECOV_TOKEN }}"
         with:
@@ -48,9 +48,9 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: "Check out repository"
-        uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
+        uses: "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0" # v7.0.0
       - name: "Install uv"
-        uses: "astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b" # v8.1.0
+        uses: "astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39" # v8.2.0
       - name: "Run linters"
         run: make lint
   migration-check:
@@ -58,7 +58,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: "Check out repository"
-        uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
+        uses: "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0" # v7.0.0
       - name: "Start MySQL"
         run: docker compose up --detach --wait --wait-timeout 180 --no-deps aipscan-mysql
       - name: "Upgrade and check migrations"
