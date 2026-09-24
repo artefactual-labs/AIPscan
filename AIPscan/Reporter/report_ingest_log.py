@@ -108,7 +108,9 @@ def get_figure_html(ingests):
     df = pd.DataFrame(pd_list)
     fig = px.timeline(df, x_start="Start", x_end="Finish", y="User")
     fig.update_yaxes(autorange="reversed")
-    ingests[FIGURE_HTML] = fig.to_html(full_html=False)
+    ingests[FIGURE_HTML] = fig.to_html(
+        full_html=False, config={"showSendToCloud": False}
+    )
     ingests[TRANSFER_COUNT] = transfer_count
     return ingests
 

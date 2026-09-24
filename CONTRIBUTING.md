@@ -123,6 +123,9 @@ Other dependencies:
     # Node.js dependencies.
     npx npm-check-updates --interactive
 
+Prettier runs from the npm lockfile through a local prek hook, so run `npm ci`
+before `make lint`.
+
 ## Preparing a release
 
 Prerequisites:

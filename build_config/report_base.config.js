@@ -10,7 +10,7 @@ export default defineConfig({
   build: {
     rolldownOptions: {
       input: {
-        report_base: resolve(__dirname, "entry/report_base.entry.js"),
+        report_base: resolve(import.meta.dirname, "entry/report_base.entry.js"),
       },
       transform: {
         inject: {

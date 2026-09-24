@@ -11,7 +11,7 @@ export default defineConfig({
     rolldownOptions: {
       input: {
         chart_formats_count: resolve(
-          __dirname,
+          import.meta.dirname,
           "entry/chart_formats_count.entry.js",
         ),
       },
