@@ -1,0 +1,8 @@
+{
+  "name": "aipscan",
+  "engineVersion": "v0.21.9",
+  "sdk": {
+    "source": "python"
+  },
+  "source": ".dagger"
+}

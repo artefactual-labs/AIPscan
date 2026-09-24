@@ -98,6 +98,49 @@ When finished, stop the test database and remove volumes:
 
     COMPOSE_FILE=./docker-compose.yml docker compose down --volumes
 
+### End-to-end reporting test
+
+The Dagger module exercises a real ingest in ambox 1.2.1, followed by an
+AIPscan fetch through Celery and an HTTP CSV export. It starts fresh ambox,
+MySQL, RabbitMQ, and AIPscan services without publishing host ports or using
+existing Archivematica installations. The web server and worker share one
+container so they can access the same download directory.
+
+The same run packages the upstream `production-aip-mets-file.xml` fixture from
+mets-reader-writer without changing its metadata. This Archivematica 1.6 METS
+uses PREMIS 2.2 and omits the original file's creation date. A second package
+uses a variant with the original's format identification removed. CSV reports
+must retain both package names and byte totals, and the unidentified original
+must appear as Unknown in the format-count CSV and browser charts. The known
+legacy and modern originals must aggregate together as Plain Text.
+
+The test also builds the frontend with the configured Node.js version and opens
+the reports in Chromium using Playwright. It checks the pie and scatter charts
+against the imported file counts and sizes, checks the ingest timeline and
+storage time series, and exercises hover text and time-series controls. Missing
+assets, HTTP failures, and browser JavaScript errors fail the test. Playwright
+and Chromium are installed only in the test runner container.
+
+With Docker and Dagger 0.21.9 installed, run from the repository root:
+
+```sh
+dagger call test-end-to-end
+```
+
+The first run downloads the images and browser, builds the Python environment,
+and compiles the frontend assets.
+Subsequent runs reuse build layers, while service data is temporary.
+The test has bounded waits and prints recent HTTP responses on failure;
+Dagger's trace includes the service logs. To retain the local console output:
+
+```sh
+mkdir -p output
+dagger call test-end-to-end >output/e2e.log 2>&1
+```
+
+CI runs this scenario in a separate job; the regular pytest suite remains
+independent of ambox and Dagger.
+
 ## Upgrading dependencies
 
 If you want to update Python:
@@ -124,7 +167,9 @@ Other dependencies:
     npx npm-check-updates --interactive
 
 Prettier runs from the npm lockfile through a local prek hook, so run `npm ci`
-before `make lint`.
+before `make lint`. Update service image versions in both `docker-compose.yml`
+and `.dagger/src/aipscan/main.py`, and keep the uv image versions and hook aligned.
+The Dagger module has its own lockfile (`uv lock --upgrade --directory .dagger`).
 
 ## Preparing a release
 

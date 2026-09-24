@@ -15,5 +15,9 @@ AIP name tests also use this fixture to recover the package name from the
 physical structure map when no PREMIS package name is available. They vary
 the root directory label in memory to exercise UUID suffix handling.
 
+The Dagger scenario packages this METS unchanged and also creates a variant
+with the original file's format identification removed. It verifies both
+packages through Storage Service, Celery, CSV exports, and browser charts.
+
 [mets-reader-writer]: https://github.com/artefactual-labs/mets-reader-writer/blob/0affd1133b3fee11c1ee911eb445ba8504c9be1c/fixtures/production-aip-mets-file.xml
 [1a1fcc93]: https://github.com/artefactual-labs/mets-reader-writer/commit/1a1fcc93e73237e1a7c252b416dc4b6e443e9185

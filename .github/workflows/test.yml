@@ -6,6 +6,21 @@ on:
     branches:
       - "main"
 jobs:
+  e2e:
+    name: "End-to-end reports and charts"
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - name: "Check out repository"
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: "Run Dagger end-to-end tests"
+        uses: dagger/dagger-for-github@27b130bf0f79a7f6fbbbe0fbca6760dc9bb40a77 # v8.4.1
+        with:
+          version: "0.21.9"
+          verb: call
+          args: test-end-to-end
   tox:
     name: "Test ${{ matrix.toxenv }}"
     runs-on: ubuntu-24.04
