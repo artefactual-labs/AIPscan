@@ -3,7 +3,7 @@ ARG TARGET=dev
 # Value comes from .python-version (default avoids InvalidDefaultArgInFrom).
 ARG PYTHON_VERSION=3.14
 
-FROM ghcr.io/astral-sh/uv:trixie-slim AS builder
+FROM ghcr.io/astral-sh/uv:0.12.21-trixie-slim AS builder
 ENV UV_COMPILE_BYTECODE=1
 ENV UV_LINK_MODE=copy
 ENV UV_PYTHON_INSTALL_DIR=/python
@@ -22,7 +22,7 @@ COPY . .
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --locked --no-dev --extra server
 
-FROM node:24 AS frontend
+FROM node:26 AS frontend
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm clean-install

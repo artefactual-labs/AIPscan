@@ -114,7 +114,7 @@ def get_aip_pager(page, per_page, storage_service, **kwargs):
         aips = aips.filter(
             AIP.uuid.like(f"%{query}%")
             | AIP.transfer_name.like(f"%{query}%")
-            | AIP.create_date.like(f"%{query}%")
+            | AIP.create_date.cast(db.String).like(f"%{query}%")
         )
 
     pager = aips.paginate(page=page, per_page=per_page, error_out=False)

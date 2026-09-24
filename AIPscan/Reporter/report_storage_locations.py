@@ -80,7 +80,7 @@ def _get_line_chart_figure_html(locations, metric="aips"):
 
     df = pd.DataFrame(table_dict)
     fig = px.line(df, x="days", y=metric, color="location", markers=True)
-    return fig.to_html(full_html=False), df
+    return fig.to_html(full_html=False, config={"showSendToCloud": False}), df
 
 
 @reporter.route("/storage_locations_usage_over_time/", methods=["GET"])

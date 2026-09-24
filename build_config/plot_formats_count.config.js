@@ -27,7 +27,7 @@ export default defineConfig({
     rolldownOptions: {
       input: {
         plot_formats_count: resolve(
-          __dirname,
+          import.meta.dirname,
           "entry/plot_formats_count.entry.js",
         ),
       },

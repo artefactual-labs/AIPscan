@@ -18,8 +18,8 @@ $(document).ready(function () {
   ];
   var layout = {
     hovermode: "closest",
-    yaxis: { title: "format occurence count" },
-    xaxis: { title: "total size in bytes" },
+    yaxis: { title: { text: "format occurrence count" } },
+    xaxis: { title: { text: "total size in bytes" } },
     showlegend: false,
   };
 

@@ -79,7 +79,8 @@ class StorageService(db.Model):
     @property
     def unique_file_formats(self):
         return (
-            db.session.query(File.file_format.distinct().label("name"))
+            db.session.query(File.file_format.label("name"))
+            .distinct()
             .join(AIP)
             .join(StorageService)
             .filter(StorageService.id == self.id)
@@ -101,7 +102,8 @@ class StorageService(db.Model):
     @property
     def unique_puids(self):
         return (
-            db.session.query(File.puid.distinct().label("puid"))
+            db.session.query(File.puid.label("puid"))
+            .distinct()
             .join(AIP)
             .join(StorageService)
             .filter(StorageService.id == self.id)
@@ -151,7 +153,8 @@ class StorageLocation(db.Model):
     @property
     def unique_file_formats(self):
         return (
-            db.session.query(File.file_format.distinct().label("name"))
+            db.session.query(File.file_format.label("name"))
+            .distinct()
             .join(AIP)
             .join(StorageLocation)
             .filter(StorageLocation.id == self.id)
@@ -173,7 +176,8 @@ class StorageLocation(db.Model):
     @property
     def unique_puids(self):
         return (
-            db.session.query(File.puid.distinct().label("puid"))
+            db.session.query(File.puid.label("puid"))
+            .distinct()
             .join(AIP)
             .join(StorageLocation)
             .filter(StorageLocation.id == self.id)

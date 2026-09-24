@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import pytest
 from flask import current_app
 from werkzeug.datastructures import Headers
@@ -47,6 +49,8 @@ def test_download_mets(app_with_populated_files, mocker):
         ("Does Not Exist", 1, 0, 0, None, None, False),  # Search doesn't match any AIP
         ("Test AIP", 1, 2, 3, None, 2, False),  # Search matches all AIPs, page 1
         ("Test AIP", 2, 2, 3, 1, None, False),  # Search matches all AIPs, page 2
+        ("2020-12-02", 1, 1, 1, None, None, False),  # Search by creation date
+        ("2020-12", 1, 1, 1, None, None, False),  # Search by partial creation date
     ],
 )
 def test_get_aip_pager(
@@ -71,16 +75,19 @@ def test_get_aip_pager(
 
     test_helpers.create_test_aip(
         transfer_name="Test AIP",
+        create_date=datetime(2020, 12, 2, 10, 30, 32),
         storage_service_id=storage_service.id,
         storage_location_id=default_storage_location.id,
     )
     test_helpers.create_test_aip(
         transfer_name="Another Test AIP",
+        create_date=datetime(2021, 1, 1),
         storage_service_id=storage_service.id,
         storage_location_id=default_storage_location.id,
     )
     test_helpers.create_test_aip(
         transfer_name="This Is Also A Test AIP",
+        create_date=datetime(2022, 1, 1),
         storage_service_id=storage_service.id,
         storage_location_id=other_storage_location.id,
     )

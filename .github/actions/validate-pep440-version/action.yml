@@ -14,7 +14,7 @@ outputs:
 runs:
   using: composite
   steps:
-    - uses: getsentry/action-setup-venv@b3fb2c6402d963e90c2c8e6a6536946c7fe4ebde # v2.2.0
+    - uses: getsentry/action-setup-venv@5a80476d175edf56cb205b08bc58986fa99d1725 # v3.2.0
       with:
         install-cmd: pip install packaging
     - name: Validate version

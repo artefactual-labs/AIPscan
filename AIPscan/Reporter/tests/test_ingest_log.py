@@ -2,6 +2,7 @@
 
 import pytest
 from flask import current_app
+from lxml import html
 
 from AIPscan.Data import fields
 from AIPscan.Reporter.report_ingest_log import get_figure_html
@@ -105,8 +106,10 @@ def test_get_figure_html(agents_transfers, transfer_count, storage_name):
     response = get_figure_html(agents_transfers)
     assert response["transfer_count"] == transfer_count
     assert response["StorageName"] == storage_name
-    assert response["figure"].startswith("<div>")
-    assert response["figure"].endswith("</div>")
+    figure = html.fromstring(response["figure"])
+    assert figure.tag == "div"
+    if transfer_count:
+        assert figure.xpath('.//div[@class="plotly-graph-div"]')
 
 
 def test_user_ingest_log(app_with_populated_files):
