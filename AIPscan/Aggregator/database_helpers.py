@@ -290,7 +290,9 @@ def _get_file_properties(fs_entry):
             )
             if not isinstance(key_alias, tuple):
                 file_info["puid"] = key_alias
-            file_info["file_format"] = premis_object.format_name
+            name_alias = premis_object.format_name
+            if not isinstance(name_alias, tuple):
+                file_info["file_format"] = name_alias
             version_alias = premis_object.format_version
             if not isinstance(version_alias, tuple):
                 file_info["format_version"] = version_alias

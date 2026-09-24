@@ -1,10 +1,14 @@
+import csv
+import io
 import json
 import re
 
 import pytest
 from flask import current_app
 from flask import url_for
+from lxml import html
 
+from AIPscan import test_helpers
 from AIPscan import typesense_test_helpers
 from AIPscan.Data import fields
 from AIPscan.Reporter.report_formats_count import _chart_labels_and_values
@@ -150,3 +154,52 @@ def test_chart_formats_count_labels_match_values_using_typesense(
         assert response.status_code == 200
         assert _hidden_textarea_json(response, "chart_labels") == ["Plain Text", "3DM"]
         assert _hidden_textarea_json(response, "chart_values") == [5, 1]
+
+
+@pytest.mark.parametrize("report", ["csv", "table", "pie", "scatter"])
+def test_formats_count_groups_unidentified_originals(app_instance, report):
+    aip = test_helpers.create_test_aip()
+    for format_name, size in [(None, 4), ("", 7), ("Unknown", 13), ("Plain Text", 25)]:
+        test_helpers.create_test_file(
+            aip_id=aip.id, puid=None, file_format=format_name, size=size
+        )
+    routes = {
+        "csv": "report_formats_count",
+        "table": "report_formats_count",
+        "pie": "chart_formats_count",
+        "scatter": "plot_formats_count",
+    }
+    response = app_instance.test_client().get(
+        f"/reporter/{routes[report]}/",
+        query_string={
+            "amss_id": aip.storage_service_id,
+            "start_date": "2000-01-01",
+            "end_date": "2100-01-01",
+            "csv": str(report == "csv").lower(),
+        },
+    )
+    assert response.status_code == 200
+    if report == "csv":
+        rows = list(csv.DictReader(io.StringIO(response.get_data(as_text=True))))
+        assert [
+            (row["Format"], int(row["Count"]), int(row["Size (bytes)"])) for row in rows
+        ] == [("Unknown", 3, 24), ("Plain Text", 1, 25)]
+    elif report == "table":
+        document = html.fromstring(response.data)
+        rows = document.xpath("//table[@id='formatversioncounts']/tbody/tr")
+        assert [
+            [cell.text_content() for cell in row.xpath("./td")] for row in rows
+        ] == [["Unknown", "3", "24 Bytes"], ["Plain Text", "1", "25 Bytes"]]
+    elif report == "pie":
+        assert _hidden_textarea_json(response, "chart_labels") == [
+            "Unknown",
+            "Plain Text",
+        ]
+        assert _hidden_textarea_json(response, "chart_values") == [3, 1]
+    else:
+        assert _hidden_textarea_json(response, "plot_format") == [
+            "Unknown",
+            "Plain Text",
+        ]
+        assert _hidden_textarea_json(response, "plot_x_axis") == [24, 25]
+        assert _hidden_textarea_json(response, "plot_y_axis") == [3, 1]

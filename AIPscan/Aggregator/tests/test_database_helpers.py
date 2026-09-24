@@ -1,6 +1,9 @@
+import csv
+import io
 import os
 import uuid
 from datetime import datetime
+from xml.etree import ElementTree as ET
 
 import metsrw
 import pytest
@@ -480,3 +483,60 @@ def test_import_optional_original_file_date(app_instance, mocker, date_xml, expe
     assert file_.size == 4
     assert file_.puid == "x-fmt/111"
     assert file_.file_format == "Plain Text"
+
+
+@pytest.mark.parametrize("format_state", ["absent", "empty"])
+def test_import_missing_format_metadata(app_instance, mocker, format_state):
+    """Keep an unidentified original's metadata and bytes through reporting."""
+    path = os.path.join(
+        os.path.dirname(__file__),
+        FIXTURES_DIR,
+        "legacy_mets",
+        "production-aip-mets-file.xml",
+    )
+    namespaces = {"m": "http://www.loc.gov/METS/", "premis": "info:lc/xmlns/premis-v2"}
+    xml = ET.parse(path).getroot()
+    characteristics = xml.find(
+        "m:amdSec/m:techMD/.//premis:objectCharacteristics", namespaces
+    )
+    format_ = characteristics.find("premis:format", namespaces)
+    if format_state == "absent":
+        characteristics.remove(format_)
+    else:
+        format_.clear()
+    mets = metsrw.METSDocument.fromstring(ET.tostring(xml))
+    aip = test_helpers.create_test_aip()
+    aip_id = aip.id
+    storage_service_id = aip.storage_service_id
+    mocker.patch("AIPscan.Aggregator.tasks.get_mets.update_state")
+
+    database_helpers.process_aip_data(aip, mets)
+
+    db.session.remove()
+    file_ = File.query.filter_by(aip_id=aip_id).one()
+    assert file_.name == "abc.txt"
+    assert file_.size == 4
+    assert file_.puid is None
+    assert file_.file_format is None
+    assert file_.date_created is None
+    assert (
+        file_.checksum_value
+        == "edeaaff3f1774ad2888673770c6d64097e391bc362d7d6fb34982ddf0efd18cb"
+    )
+    response = app_instance.test_client().get(
+        "/reporter/aip_contents/",
+        query_string={"amss_id": storage_service_id, "csv": "true"},
+    )
+    assert response.status_code == 200
+    (row,) = csv.DictReader(io.StringIO(response.get_data(as_text=True)))
+    assert int(row["Size (bytes)"]) == 4
+    assert row["Formats"] == "Unknown (Unknown): 1 file"
+    response = app_instance.test_client().get(
+        "/reporter/report_formats_count/",
+        query_string={"amss_id": storage_service_id, "csv": "true"},
+    )
+    assert response.status_code == 200
+    (row,) = csv.DictReader(io.StringIO(response.get_data(as_text=True)))
+    assert row["Format"] == "Unknown"
+    assert int(row["Count"]) == 1
+    assert int(row["Size (bytes)"]) == 4

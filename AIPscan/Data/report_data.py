@@ -49,9 +49,11 @@ def _formats_count_query(
     FILE_COUNT = "file_count"
     FILE_SIZE = "total_size"
 
+    format_name = db.func.coalesce(db.func.nullif(File.file_format, ""), "Unknown")
+
     results = (
         db.session.query(
-            File.file_format.label(FILE_FORMAT),
+            format_name.label(FILE_FORMAT),
             db.func.count(File.id).label(FILE_COUNT),
             db.func.sum(File.size).label(FILE_SIZE),
         )
@@ -62,7 +64,7 @@ def _formats_count_query(
         .filter(File.file_type == FileType.original.value)
         .filter(AIP.create_date >= start_date)
         .filter(AIP.create_date < end_date)
-        .group_by(File.file_format)
+        .group_by(format_name)
         .order_by(db.func.count(File.id).desc(), db.func.sum(File.size).desc())
     )
     if storage_location_id:

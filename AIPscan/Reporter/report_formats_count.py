@@ -140,7 +140,7 @@ def chart_formats_count():
                 elif aip.create_date > day_after:
                     continue
                 else:
-                    format_labels.append(original.file_format)
+                    format_labels.append(original.file_format or "Unknown")
 
         format_counts = Counter(format_labels)
 
@@ -215,7 +215,7 @@ def plot_formats_count():
                     continue
                 else:
                     originals_count += 1
-                    file_format = original.file_format
+                    file_format = original.file_format or "Unknown"
                     size = original.size
 
                     if file_format in format_count:

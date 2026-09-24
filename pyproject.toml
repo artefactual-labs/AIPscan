@@ -56,6 +56,9 @@ dev = [
     "tox-uv",
     "tzlocal",
 ]
+e2e = [
+    "playwright>=1.63,<2",
+]
 linting = [
     "prek",
 ]
@@ -133,6 +136,7 @@ labels = { test = ["3.14t", "3.14"] }
 [tool.tox.env_run_base]
 runner = "uv-venv-lock-runner"
 dependency_groups = ["dev"]
+pass_env = ["SQLALCHEMY_TEST_DATABASE_URI", "CELERY_RESULT_BACKEND"]
 commands = [["pytest", { replace = "posargs", default = [], extend = true }]]
 
 [tool.tox.env.linting]
