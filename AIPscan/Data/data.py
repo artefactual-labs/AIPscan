@@ -105,36 +105,21 @@ def aip_file_format_overview(
             files = File.query.filter_by(aip_id=aip.id, file_type=FileType.preservation)
 
         for file_ in files:
-            try:
-                format_key = file_.puid
-            except AttributeError:
-                format_key = file_.file_format
-            if format_key is None:
-                continue
-
-            formats[format_key] = file_.file_format
+            format_name = file_.file_format or "Unknown"
+            format_key = file_.puid or format_name
+            formats[format_key] = format_name
             if file_.format_version:
-                formats[format_key] = f"{file_.file_format} {file_.format_version}"
+                formats[format_key] = f"{format_name} {file_.format_version}"
 
-            size = aip_info[fields.FIELD_SIZE]
-            try:
-                aip_info[fields.FIELD_SIZE] = size + file_.size
-            # TODO: Find out why size is sometimes None.
-            except AttributeError, TypeError:
-                pass
+            # Format identification is optional and must not exclude file bytes.
+            aip_info[fields.FIELD_SIZE] += file_.size or 0
 
             if format_key not in aip_info[fields.FIELD_FORMATS]:
-                aip_info[fields.FIELD_FORMATS][format_key] = {}
-                aip_info[fields.FIELD_FORMATS][format_key][fields.FIELD_COUNT] = 1
-                try:
-                    aip_info[fields.FIELD_FORMATS][format_key][fields.FIELD_VERSION] = (
-                        file_.format_version
-                    )
-                    aip_info[fields.FIELD_FORMATS][format_key][fields.FIELD_NAME] = (
-                        file_.file_format
-                    )
-                except AttributeError:
-                    pass
+                aip_info[fields.FIELD_FORMATS][format_key] = {
+                    fields.FIELD_COUNT: 1,
+                    fields.FIELD_VERSION: file_.format_version,
+                    fields.FIELD_NAME: format_name,
+                }
             else:
                 count = aip_info[fields.FIELD_FORMATS][format_key][fields.FIELD_COUNT]
                 aip_info[fields.FIELD_FORMATS][format_key][fields.FIELD_COUNT] = (
