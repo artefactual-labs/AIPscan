@@ -40,16 +40,13 @@ def parse_mets_with_metsrw(mets_file):
     return mets
 
 
-def get_aip_original_name(mets):
-    """Retrieve PREMIS original name from a METSDocument object.
+def get_aip_original_name(mets, package_uuid):
+    """Retrieve the package name from PREMIS or its physical directory label.
 
     If the original name cannot be reliably retrieved from the METS file
     a METSError exception is returned to be handled by the caller as
     desired.
     """
-
-    # Negated as we're going to want to remove this length of values.
-    NAMESUFFIX = -len("-00000000-0000-0000-0000-000000000000")
 
     # The transfer directory prefix is a directory prefix that can also
     # exist in a dmdSec intellectual entity and we want to identify and
@@ -66,16 +63,22 @@ def get_aip_original_name(mets):
             full_name = dmd_element.find(
                 ELEM_ORIGINAL_NAME_PATTERN, namespaces=NAMESPACES
             )
-            if full_name is not None and full_name.text.startswith(TRANSFER_DIR_PREFIX):
+            if full_name is None or not full_name.text:
+                continue
+            if full_name.text.startswith(TRANSFER_DIR_PREFIX):
                 # We don't want this value, it will usually represent an
                 # directory entity.
                 continue
-            try:
-                original_name = full_name.text[:NAMESUFFIX]
-            except AttributeError:
-                continue
+            original_name = full_name.text
 
-    # There should be a transfer name in every METS.
+    # Older Archivematica METS only identify the package in the physical
+    # structure map. METSRW represents its top-level divs as parentless entries.
+    if not original_name:
+        roots = [entry for entry in mets.all_files() if entry.parent is None]
+        if len(roots) == 1 and roots[0].type == "Directory":
+            original_name = roots[0].label or ""
+
+    original_name = original_name.removesuffix(f"-{package_uuid}")
     if original_name == "":
         raise METSError("Cannot locate transfer name in METS")
 
