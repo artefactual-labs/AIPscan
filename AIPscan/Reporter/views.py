@@ -210,7 +210,9 @@ def view_aip(aip_id):
         original["name"] = file_.name
         original["uuid"] = file_.uuid
         original["size"] = file_.size
-        original["date_created"] = file_.date_created.strftime("%Y-%m-%d")
+        original["date_created"] = (
+            file_.date_created.strftime("%Y-%m-%d") if file_.date_created else "Unknown"
+        )
         original["puid"] = file_.puid
         original["file_format"] = file_.file_format
         original["format_version"] = file_.format_version
