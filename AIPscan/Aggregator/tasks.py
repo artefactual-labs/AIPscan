@@ -336,7 +336,7 @@ def get_mets(
         return
 
     try:
-        original_name = get_aip_original_name(mets)
+        original_name = get_aip_original_name(mets, package_uuid)
     except METSError:
         # Some other error with the METS file that we might want to
         # log and act upon.
