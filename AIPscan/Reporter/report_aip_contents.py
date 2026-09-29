@@ -1,3 +1,4 @@
+from html import escape
 from operator import itemgetter
 
 from flask import render_template
@@ -30,11 +31,12 @@ TABLE_HEADERS = [
 ]
 
 
-def _create_aip_formats_string_representation(aips, separator="<br>"):
-    """Return data prepared for CSV file.
+def _create_aip_formats_string_representation(aips, separator="<br>", escape_html=True):
+    """Format each AIP's format counts for an HTML table or CSV export.
 
     :param aips: AIPS data returned by data.aip_file_format_overview
         endpoint (list of dicts)
+    :param escape_html: Escape labels for HTML; disable for CSV export
 
     :returns: Input data with each AIP's formats value formatted as a string
         (list of dicts)
@@ -50,6 +52,8 @@ def _create_aip_formats_string_representation(aips, separator="<br>"):
             if count > 1:
                 plural = "s"
             format_string = f"{format_.get(fields.FIELD_PUID)} ({format_.get(fields.FIELD_FORMAT)}): {count} file{plural}"
+            if escape_html:
+                format_string = escape(format_string)
             formats.append(format_string)
         aip[fields.FIELD_FORMATS] = f"{separator}".join(
             [format_ for format_ in formats]
@@ -108,7 +112,7 @@ def aip_contents():
 
         filename = "aip_contents.csv"
         aips = _create_aip_formats_string_representation(
-            aip_data.get(fields.FIELD_AIPS), separator="|"
+            aip_data.get(fields.FIELD_AIPS), separator="|", escape_html=False
         )
         csv_data = format_size_for_csv(aips)
         return download_csv(headers, csv_data, filename)

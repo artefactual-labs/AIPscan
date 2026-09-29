@@ -1,11 +1,13 @@
 import pytest
 
+from AIPscan import test_helpers
 from AIPscan.conftest import STORAGE_LOCATION_1_DESCRIPTION
 from AIPscan.conftest import STORAGE_LOCATION_2_DESCRIPTION
 from AIPscan.Data import data
 from AIPscan.Data import fields
 from AIPscan.Data.tests import MOCK_STORAGE_SERVICES
 from AIPscan.helpers import parse_datetime_bound
+from AIPscan.models import FileType
 
 DATE_BEFORE_AIP_1 = "2019-01-01"
 DATE_AFTER_AIP_1 = "2020-01-02"
@@ -186,4 +188,52 @@ def test_storage_services(app_instance, mocker):
             {"id": 1, "name": "some name"},
             {"id": 2, "name": "another name"},
         ]
+    }
+
+
+@pytest.mark.parametrize("original_files", [True, False])
+def test_aip_contents_includes_identified_and_unidentified_files(
+    app_instance, original_files
+):
+    aip = test_helpers.create_test_aip()
+    file_type = FileType.original if original_files else FileType.preservation
+    for puid, format_name, size in (
+        ("fmt/43", "JPEG", 100),
+        (None, "Unregistered format", 200),
+        (None, None, 300),
+        (None, None, None),
+    ):
+        test_helpers.create_test_file(
+            aip_id=aip.id,
+            file_type=file_type,
+            puid=puid,
+            file_format=format_name,
+            format_version=None,
+            size=size,
+        )
+    test_helpers.create_test_file(
+        aip_id=aip.id,
+        file_type=FileType.preservation if original_files else FileType.original,
+        puid=None,
+        file_format="Other file type",
+        size=1000,
+    )
+
+    response = app_instance.test_client().get(
+        f"/api/data/aip-overview/{aip.storage_service_id}",
+        query_string={"original_files": str(original_files).lower()},
+    )
+    assert response.status_code == 200
+    report = response.get_json()
+
+    (aip_report,) = report[fields.FIELD_AIPS]
+    assert aip_report[fields.FIELD_SIZE] == 600
+    assert aip_report[fields.FIELD_FORMATS] == {
+        "fmt/43": {"Count": 1, "Name": "JPEG", "Version": None},
+        "Unregistered format": {
+            "Count": 1,
+            "Name": "Unregistered format",
+            "Version": None,
+        },
+        "Unknown": {"Count": 2, "Name": "Unknown", "Version": None},
     }
