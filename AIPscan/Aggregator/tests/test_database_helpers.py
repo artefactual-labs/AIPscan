@@ -428,3 +428,55 @@ def test_update_fetch_job(app_instance, mocker):
     assert obj.total_aips == 1
     assert obj.total_dips == 1
     assert obj.total_sips == 1
+
+
+@pytest.mark.parametrize(
+    "date_xml, expected",
+    [
+        ("", None),
+        (
+            "<premis:creatingApplication><premis:dateCreatedByApplication/></premis:creatingApplication>",
+            None,
+        ),
+        (
+            "<premis:creatingApplication><premis:dateCreatedByApplication>not-a-date</premis:dateCreatedByApplication></premis:creatingApplication>",
+            None,
+        ),
+        (
+            "<premis:creatingApplication><premis:dateCreatedByApplication>2019-09-12T07:43:27+02:00</premis:dateCreatedByApplication></premis:creatingApplication>",
+            datetime(2019, 9, 12, 7, 43, 27),
+        ),
+    ],
+    ids=["missing", "empty", "invalid", "valid"],
+)
+def test_import_optional_original_file_date(app_instance, mocker, date_xml, expected):
+    """Import optional PREMIS dates without inventing dates or losing metadata."""
+    path = os.path.join(
+        os.path.dirname(__file__),
+        FIXTURES_DIR,
+        "legacy_mets",
+        "production-aip-mets-file.xml",
+    )
+    with open(path, "rb") as stream:
+        # Vary only the original file's date, before its metadata extensions.
+        xml = stream.read().replace(
+            b"</premis:format>",
+            b"</premis:format>" + date_xml.encode(),
+            1,
+        )
+    mets = metsrw.METSDocument.fromstring(xml)
+    aip = test_helpers.create_test_aip()
+    aip_id = aip.id
+    mocker.patch("AIPscan.Aggregator.tasks.get_mets.update_state")
+
+    database_helpers.process_aip_data(aip, mets)
+
+    db.session.remove()
+    file_ = File.query.filter_by(aip_id=aip_id).one()
+    assert file_.file_type == FileType.original
+    assert file_.uuid == "db8d8d30-8c7f-4ca3-9add-2e1000b6e460"
+    assert file_.name == "abc.txt"
+    assert file_.date_created == expected
+    assert file_.size == 4
+    assert file_.puid == "x-fmt/111"
+    assert file_.file_format == "Plain Text"

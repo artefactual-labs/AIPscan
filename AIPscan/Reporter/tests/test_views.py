@@ -4,8 +4,20 @@ import pytest
 from flask import current_app
 from werkzeug.datastructures import Headers
 
+from AIPscan import db
 from AIPscan import test_helpers
+from AIPscan.models import File
 from AIPscan.Reporter import views
+
+
+@pytest.mark.parametrize("path", ["/reporter/aip/1", "/reporter/file/1"])
+def test_view_with_unknown_file_date(app_with_populated_files, path):
+    file_ = db.session.get(File, 1)
+    file_.date_created = None
+    db.session.commit()
+    response = current_app.test_client().get(path)
+    assert response.status_code == 200
+    assert b"Unknown" in response.data
 
 
 def test_download_mets(app_with_populated_files, mocker):

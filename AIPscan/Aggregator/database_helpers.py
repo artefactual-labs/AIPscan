@@ -6,6 +6,7 @@ import os
 from datetime import datetime
 
 from celery.utils.log import get_task_logger
+from dateutil.parser import parse
 from lxml import etree
 
 from AIPscan import db
@@ -249,6 +250,16 @@ def create_or_update_pipeline(origin_pipeline, storage_service):
     return pipeline
 
 
+def _optional_file_date(value):
+    """Keep absent or unusable PREMIS file dates unknown."""
+    if value is None or value == () or value == "":
+        return None
+    try:
+        return parse(value).replace(tzinfo=None, microsecond=0)
+    except ValueError, TypeError, OverflowError:
+        return None
+
+
 def _get_file_properties(fs_entry):
     """Retrieve file properties from FSEntry
 
@@ -274,7 +285,7 @@ def _get_file_properties(fs_entry):
         for premis_object in fs_entry.get_premis_objects():
             file_info["size"] = premis_object.size
             key_alias = premis_object.format_registry_key
-            file_info["date_created"] = _tz_neutral_date(
+            file_info["date_created"] = _optional_file_date(
                 premis_object.date_created_by_application
             )
             if not isinstance(key_alias, tuple):

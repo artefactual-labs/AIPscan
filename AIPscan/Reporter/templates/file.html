@@ -27,7 +27,7 @@
         <strong>Last modified date</strong>
       {% endif %}
     </td>
-    <td>{{ file_.date_created.strftime('%Y-%m-%d') }}</td>
+    <td>{{ file_.date_created.strftime('%Y-%m-%d') if file_.date_created else 'Unknown' }}</td>
   </tr>
   <tr>
     <td width=20%>
