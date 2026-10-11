@@ -1,5 +1,9 @@
 from flask import current_app
 
+from AIPscan import typesense_helpers
+from AIPscan import typesense_test_helpers
+from AIPscan.models import AIP
+
 EXPECTED_CSV_CONTENTS = b"AIP Name,UUID,AIP Size,AIP Size (bytes),File Count\r\nTest AIP,111111111111-1111-1111-11111111,100 Bytes,100,1\r\nTest AIP,222222222222-2222-2222-22222222,100 Bytes,100,2\r\n"
 
 
@@ -21,3 +25,18 @@ def test_largest_aips_csv(app_with_populated_format_versions):
         )
         assert response.mimetype == "text/csv"
         assert response.data == EXPECTED_CSV_CONTENTS
+
+
+def test_largest_aips_indexed_csv_columns(
+    app_with_populated_format_versions, enable_typesense, mocker
+):
+    documents = [
+        {"document": typesense_helpers.model_instance_to_document(AIP, aip)}
+        for aip in AIP.query.order_by(AIP.id).all()
+    ]
+    typesense_test_helpers.fake_collection(mocker, {"hits": documents})
+    response = current_app.test_client().get(
+        "/reporter/largest_aips/?amss_id=1&csv=True"
+    )
+    assert response.status_code == 200
+    assert response.data == EXPECTED_CSV_CONTENTS

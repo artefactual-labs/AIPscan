@@ -1,3 +1,4 @@
+from copy import deepcopy
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
@@ -180,6 +181,48 @@ def test_populate_index(app_instance, enable_typesense, mocker):
     query.return_value = fake_collection
 
     ts_helpers.populate_index()
+
+
+@pytest.mark.parametrize("file_count", [0, 1, 39, 40, 41, 85])
+def test_populate_index_sends_each_document_once(app_instance, mocker, file_count):
+    aip = test_helpers.create_test_aip()
+    for index in range(file_count):
+        test_helpers.create_test_file(aip_id=aip.id, uuid=f"file-{index}")
+    batches = []
+    client = mocker.patch("AIPscan.typesense_helpers.client").return_value
+    aip_documents = mocker.Mock()
+    aip_documents.import_.return_value = [{"success": True}]
+    file_documents = mocker.Mock()
+
+    def import_files(documents):
+        batches.append(deepcopy(documents))
+        return [{"success": True} for _ in documents]
+
+    file_documents.import_.side_effect = import_files
+    client.collections.__getitem__.side_effect = lambda name: mocker.Mock(
+        documents=file_documents if name.endswith("_file") else aip_documents
+    )
+
+    progress = list(ts_helpers.populate_index())
+
+    assert [len(batch) for batch in batches] == [40] * (file_count // 40) + (
+        [file_count % 40] if file_count % 40 else []
+    )
+    assert {doc["uuid"] for batch in batches for doc in batch} == {
+        f"file-{index}" for index in range(file_count)
+    }
+    assert progress[-1]["percent"] == 100
+
+
+def test_populate_index_reports_rejected_documents(app_instance, mocker):
+    test_helpers.create_test_aip()
+    client = mocker.patch("AIPscan.typesense_helpers.client").return_value
+    client.collections.__getitem__.return_value.documents.import_.return_value = [
+        {"success": False, "error": "Invalid document"}
+    ]
+
+    with pytest.raises(RuntimeError, match="did not accept every aip document"):
+        list(ts_helpers.populate_index())
 
 
 def test_augment_file_document_with_aip_data(app_instance):

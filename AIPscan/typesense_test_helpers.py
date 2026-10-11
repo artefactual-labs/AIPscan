@@ -1,6 +1,6 @@
 FAKE_RESULTS_FORMAT_COUNTS = {
     "facet_counts": [
-        {"field_name": "file_format", "counts": [{"value": "wav", "count": 10}]}
+        {"field_name": "format_name", "counts": [{"value": "wav", "count": 10}]}
     ]
 }
 
@@ -8,7 +8,7 @@ FAKE_RESULTS_FORMAT_COUNTS = {
 FAKE_MULTI_SEARCH_RESULTS_FORMAT_COUNTS = {
     "results": [
         {
-            "hits": [{"document": {"file_format": "wav"}}],
+            "hits": [{"document": {"format_name": "wav"}}],
             "facet_counts": [{"field_name": "size", "stats": {"sum": 999}}],
         }
     ]
@@ -53,3 +53,11 @@ class FakeCollection:
 
     def delete(self):
         return
+
+    def retrieve(self):
+        return {
+            "fields": [
+                {"name": "format_name", "facet": True},
+                {"name": "format_group", "facet": True},
+            ]
+        }

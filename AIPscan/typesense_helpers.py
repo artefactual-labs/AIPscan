@@ -1,4 +1,5 @@
 import datetime
+import json
 import math
 
 import typesense
@@ -58,6 +59,16 @@ def collection_prefix(collection):
     return current_app.config["TYPESENSE_COLLECTION_PREFIX"] + collection
 
 
+def collection_has_facets(collection, names):
+    """Recognize older schemas without changing the persisted index."""
+    try:
+        schema = client().collections[collection_prefix(collection)].retrieve()
+    except typesense.exceptions.ObjectNotFound:
+        return False
+    facets = {field["name"] for field in schema["fields"] if field.get("facet")}
+    return names <= facets
+
+
 EPOCH_UTC = datetime.datetime(1970, 1, 1, tzinfo=datetime.UTC)
 
 
@@ -95,7 +106,9 @@ def assemble_filter_by(filters):
     return filter_by
 
 
-def file_filters(storage_service_id, storage_location_id, start_date, end_date):
+def file_filters(
+    storage_service_id, storage_location_id, start_date, end_date, file_type="original"
+):
     start_timestamp = datetime_to_timestamp_int(start_date)
     end_timestamp = datetime_to_timestamp_int(end_date)
 
@@ -103,8 +116,10 @@ def file_filters(storage_service_id, storage_location_id, start_date, end_date):
         ("aip_create_date", ">=", start_timestamp),
         ("aip_create_date", "<", end_timestamp),
         ("storage_service_id", "=", storage_service_id),
-        ("file_type", "=", "'original'"),
     ]
+
+    if file_type in {item.value for item in FileType}:
+        filters.append(("file_type", "=", f"'{file_type}'"))
 
     if storage_location_id is not None and storage_location_id != "":
         filters.append(("storage_location_id", "=", storage_location_id))
@@ -192,6 +207,8 @@ def collection_fields_from_model(model):
         fields.append({"name": "aip_create_date", "type": "int64", "facet": True})
         fields.append({"name": "transfer_name", "type": "string"})
         fields.append({"name": "aip_uuid", "type": "string"})
+        fields.append({"name": "format_name", "type": "string", "facet": True})
+        fields.append({"name": "format_group", "type": "string", "facet": True})
 
     return fields
 
@@ -239,6 +256,14 @@ def model_instance_to_document(model, instance, model_fields=None):
 
             if value is not None:
                 document[field["name"]] = value
+
+    if model is File:
+        document["format_name"] = instance.file_format or "Unknown"
+        # A nonempty facet key preserves missing values and distinct versions.
+        document["format_group"] = json.dumps(
+            [instance.puid, instance.file_format, instance.format_version],
+            separators=(",", ":"),
+        )
 
     return document
 
@@ -308,11 +333,17 @@ def populate_index():
 def perform_bulk_document_creation(ts_client, table, docs):
     # Send bulk creation every 40 documents
     if len(docs) == 40:
-        ts_client.collections[collection_prefix(table)].documents.import_(docs)
-        docs = []
+        finish_bulk_document_creation(ts_client, table, docs)
 
 
 def finish_bulk_document_creation(ts_client, table, docs):
     # Send bulk creation of remaining documents
     if len(docs):
-        ts_client.collections[collection_prefix(table)].documents.import_(docs)
+        results = ts_client.collections[collection_prefix(table)].documents.import_(
+            docs
+        )
+        if len(results) != len(docs) or any(
+            not result.get("success", False) for result in results
+        ):
+            raise RuntimeError(f"Typesense did not accept every {table} document")
+        docs.clear()

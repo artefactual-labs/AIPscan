@@ -1,5 +1,8 @@
+import json
+
 from AIPscan import typesense_helpers as ts_helpers
 from AIPscan.Data import fields
+from AIPscan.Data import report_data
 from AIPscan.Data import report_dict
 
 
@@ -24,6 +27,10 @@ def formats_count(
     end_date,
     include_size_data=True,
 ):
+    if not ts_helpers.collection_has_facets("file", {"format_name"}):
+        return report_data.formats_count(
+            storage_service_id, start_date, end_date, storage_location_id
+        )
     report = report_dict(storage_service_id, storage_location_id)
     report[fields.FIELD_FORMATS] = []
 
@@ -38,12 +45,12 @@ def formats_count(
             "q": "*",
             "filter_by": ts_helpers.assemble_filter_by(file_filters),
             "exclude_fields": "*",
-            "facet_by": "file_format",
+            "facet_by": "format_name",
             "max_facet_values": 10000,
         },
     )
 
-    value_counts = ts_helpers.facet_value_counts(results, "file_format")
+    value_counts = ts_helpers.facet_value_counts(results, "format_name")
 
     # If no formats were found then don't proceed to get counts
     if len(value_counts) == 0:
@@ -55,7 +62,7 @@ def formats_count(
         search_requests = {"searches": []}
         for file_format in value_counts.keys():
             format_filters = file_filters.copy()
-            format_filters.append(("file_format", "=", f"`{file_format}`"))
+            format_filters.append(("format_name", "=", f"`{file_format}`"))
 
             format_filter_by = ts_helpers.assemble_filter_by(format_filters)
 
@@ -63,9 +70,10 @@ def formats_count(
                 {
                     "collection": ts_helpers.collection_prefix("file"),
                     "q": "*",
-                    "include_fields": "file_format",
+                    "include_fields": "format_name",
                     "filter_by": format_filter_by,
                     "facet_by": "size",
+                    "facet_strategy": "exhaustive",
                     "max_facet_values": 1,
                 }
             )
@@ -77,11 +85,13 @@ def formats_count(
         # Summarize file format sizes
         for results in searches["results"]:
             if "hits" in results:
-                file_format = results["hits"][0]["document"]["file_format"]
+                file_format = results["hits"][0]["document"]["format_name"]
 
                 for count in results["facet_counts"]:
                     if count["field_name"] == "size":
-                        format_size_sums[file_format] = count["stats"]["sum"]
+                        format_size_sums[file_format] = int(
+                            count.get("stats", {}).get("sum", 0)
+                        )
 
     # Format results for report
     format_data = {}
@@ -125,8 +135,8 @@ def largest_aips(
 
     # Get AIPs in descending order of size
     report_fields = {
-        fields.FIELD_UUID: "uuid",
         fields.FIELD_NAME: "transfer_name",
+        fields.FIELD_UUID: "uuid",
         fields.FIELD_SIZE: "size",
         fields.FIELD_FILE_COUNT: "original_file_count",
     }
@@ -163,7 +173,7 @@ def largest_files(
 
     # Get files in descending order of size
     file_filters = ts_helpers.file_filters(
-        storage_service_id, storage_location_id, start_date, end_date
+        storage_service_id, storage_location_id, start_date, end_date, file_type
     )
 
     report_fields = {
@@ -201,86 +211,64 @@ def largest_files(
 def format_versions_count(
     storage_service_id, start_date, end_date, storage_location_id=None
 ):
+    if not ts_helpers.collection_has_facets("file", {"format_group"}):
+        return report_data.format_versions_count(
+            storage_service_id, start_date, end_date, storage_location_id
+        )
     report = report_dict(storage_service_id, storage_location_id)
     report[fields.FIELD_FORMAT_VERSIONS] = []
 
-    # Get format counts via facet data
     file_filters = ts_helpers.file_filters(
         storage_service_id, storage_location_id, start_date, end_date
     )
-
     results = ts_helpers.search(
         "file",
         {
             "q": "*",
             "filter_by": ts_helpers.assemble_filter_by(file_filters),
-            "include_fields": "puid",
-            "facet_by": "puid",
+            "exclude_fields": "*",
+            "facet_by": "format_group",
             "max_facet_values": 10000,
         },
     )
-
-    puid_counts = ts_helpers.facet_value_counts(results, "puid")
-
-    # If no format versions were found then don't proceed to get counts
-    if len(puid_counts) == 0:
+    groups = ts_helpers.facet_value_counts(results, "format_group")
+    if not groups:
         return report
 
-    # Request total size of files for each PUID
-    puids = list(puid_counts.keys())
-
-    search_requests = {"searches": []}
-    for puid in puids:
-        format_filters = file_filters.copy()
-        format_filters.append(("puid", "=", f"`{puid}`"))
-
-        format_filter_by = ts_helpers.assemble_filter_by(format_filters)
-
-        search_requests["searches"].append(
+    searches = {"searches": []}
+    for group in groups:
+        filters = file_filters + [("format_group", "=", f"`{group}`")]
+        searches["searches"].append(
             {
                 "collection": ts_helpers.collection_prefix("file"),
                 "q": "*",
-                "include_fields": "puid,file_format,format_version",
-                "filter_by": format_filter_by,
+                "exclude_fields": "*",
+                "filter_by": ts_helpers.assemble_filter_by(filters),
                 "facet_by": "size",
+                "facet_strategy": "exhaustive",
                 "max_facet_values": 1,
             }
         )
-
-    searches = ts_helpers.client().multi_search.perform(
-        search_requests, {"limit_multi_searches": len(search_requests["searches"])}
+    totals = ts_helpers.client().multi_search.perform(
+        searches, {"limit_multi_searches": len(groups)}
     )
-
-    # Summarize PUID sizes
-    puid_sizes = {}
-    puid_formats = {}
-    puid_versions = {}
-
-    for results in searches["results"]:
-        document = results["hits"][0]["document"]
-
-        puid = document["puid"]
-        puid_formats[puid] = document["file_format"]
-        puid_versions[puid] = document.get("format_version", "")
-
-        for count in results["facet_counts"]:
-            if count["field_name"] == "size":
-                puid_sizes[puid] = count["stats"]["sum"]
-
-    # Format results for report
-    for puid in puids:
-        version_info = {}
-
-        version_info[fields.FIELD_PUID] = puid
-        version_info[fields.FIELD_FORMAT] = puid_formats[puid]
-        version_info[fields.FIELD_VERSION] = puid_versions.get("puid", "")
-        version_info[fields.FIELD_COUNT] = puid_counts[puid]
-
-        version_info[fields.FIELD_SIZE] = 0
-
-        if puid_sizes[puid] is not None:
-            version_info[fields.FIELD_SIZE] = puid_sizes[puid]
-
-        report[fields.FIELD_FORMAT_VERSIONS].append(version_info)
-
+    for group, result in zip(groups, totals["results"], strict=True):
+        puid, file_format, version = json.loads(group)
+        size = next(
+            facet.get("stats", {}).get("sum", 0)
+            for facet in result["facet_counts"]
+            if facet["field_name"] == "size"
+        )
+        report[fields.FIELD_FORMAT_VERSIONS].append(
+            {
+                fields.FIELD_PUID: puid,
+                fields.FIELD_FORMAT: file_format,
+                fields.FIELD_VERSION: version,
+                fields.FIELD_COUNT: groups[group],
+                fields.FIELD_SIZE: int(size),
+            }
+        )
+    report[fields.FIELD_FORMAT_VERSIONS].sort(
+        key=lambda row: (row[fields.FIELD_COUNT], row[fields.FIELD_SIZE]), reverse=True
+    )
     return report

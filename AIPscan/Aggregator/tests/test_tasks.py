@@ -104,6 +104,22 @@ def test_package_listing_timeout_hides_credentials(mocker):
     assert str(error.value) == f"Cannot connect to: {REQUEST_URL_WITHOUT_API_KEY}"
 
 
+def test_index_task_does_not_complete_rejected_import(app_instance, mocker):
+    aip = test_helpers.create_test_aip()
+    job_id = aip.fetch_job_id
+    test_helpers.create_test_index_tasks(job_id, "rejected-index")
+    client = mocker.patch("AIPscan.typesense_helpers.client").return_value
+    client.collections.__getitem__.return_value.documents.import_.return_value = [
+        {"success": False, "error": "Invalid document"}
+    ]
+
+    result = index_task.apply(args=[job_id], throw=False)
+
+    assert result.state == "FAILURE"
+    assert "did not accept every aip document" in str(result.result)
+    assert index_tasks.query.filter_by(fetch_job_id=job_id).one().indexing_end is None
+
+
 def test_coordinator_reports_failed_package_listing(app_instance, tmp_path, mocker):
     child = mocker.patch(
         "AIPscan.Aggregator.tasks.package_lists_request.delay"
