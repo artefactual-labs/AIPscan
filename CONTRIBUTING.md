@@ -134,8 +134,9 @@ behavior. No existing Archivematica installation or host ports are needed.
 
 By default, the suite builds a wheel with its frontend assets and installs it in
 the release Dockerfile target. The application runs as its non-root user with
-production settings. The web server and worker share the download directory, and
-migrations run at service startup.
+production settings. Runtime dependencies come from `uv.lock` and their hashes
+are checked during image installation. The web server and worker share the
+download directory, and migrations run at service startup.
 
 With Docker and Dagger installed, run:
 
