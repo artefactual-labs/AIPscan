@@ -1,10 +1,12 @@
 import json
 import os
 import shutil
+import time
 from datetime import datetime
 
 import requests
 from celery.utils.log import get_task_logger
+from flask import current_app
 
 from AIPscan import db
 from AIPscan import typesense_helpers
@@ -127,15 +129,25 @@ def workflow_coordinator(
     # Wait for package lists task to finish downloading all package
     # lists.
     task = package_lists_request.AsyncResult(package_lists_task.id, app=celery)
-    while True:
-        if (task.state == "SUCCESS") or (task.state == "FAILURE"):
-            break
+    idle_timeout = current_app.config["PACKAGE_LIST_IDLE_TIMEOUT_SECONDS"]
+    deadline = time.monotonic() + idle_timeout
+    completed_lists = 0
+    while task.state not in {"SUCCESS", "FAILURE"}:
+        now = time.monotonic()
+        info = task.info
+        progress = info if isinstance(info, dict) else {}
+        if progress.get("completedPackageLists", 0) > completed_lists:
+            completed_lists = progress["completedPackageLists"]
+            deadline = now + idle_timeout
+        if now >= deadline:
+            raise TaskError(
+                f"Package listing made no progress for {idle_timeout} seconds"
+            )
+        time.sleep(0.2)
+    if task.state == "FAILURE":
+        raise TaskError("Package listing failed; check the worker logs")
 
-    if isinstance(package_lists_task.info, TaskError):
-        # Re-raise.
-        raise (package_lists_task.info)
-
-    total_package_lists = package_lists_task.info["totalPackageLists"]
+    total_package_lists = task.info["totalPackageLists"]
 
     all_packages = []
     for package_list_no in range(1, total_package_lists + 1):
@@ -152,7 +164,7 @@ def workflow_coordinator(
 
         all_packages = all_packages + packages
 
-    total_packages_count = package_lists_task.info["totalPackages"]
+    total_packages_count = task.info["totalPackages"]
 
     obj = database_helpers.update_fetch_job(
         fetch_job_id, all_packages, total_packages_count
@@ -165,7 +177,11 @@ def make_request(request_url, request_url_without_api_key):
     """Make our request to the storage service and return a valid
     response to our caller or raise a TaskError for celery.
     """
-    response = requests.get(request_url)
+    try:
+        response = requests.get(request_url, timeout=(10, 120))
+    except requests.RequestException:
+        # Request exceptions may contain the URL, including its API key.
+        raise TaskError(f"Cannot connect to: {request_url_without_api_key}") from None
     if response.status_code != requests.codes.ok:
         err = f"Check the URL and API details, cannot connect to: `{request_url_without_api_key}`"
         logger.error(err)
@@ -225,7 +241,8 @@ def package_lists_request(self, storage_service_id, timestamp, packages_director
         self.update_state(
             state=IN_PROGRESS,
             meta={
-                "message": f"Total packages: {total_packages} Total package lists: {total_package_lists}"
+                "completedPackageLists": packages_count,
+                "message": f"Total packages: {total_packages} Total package lists: {total_package_lists}",
             },
         )
 

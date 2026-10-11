@@ -144,6 +144,10 @@ def fetch_aips(logger, ss_id, session_id, page, packages_per_page, logfile):
         fetch_job = database_helpers.update_fetch_job(
             fetch_job_id, processed_packages, total_packages
         )
+        # Imports run synchronously here, so there is no browser poll to
+        # record completion after the package counts have been updated.
+        fetch_job.download_end = datetime.now().replace(microsecond=0)
+        db.session.commit()
 
         logger.info(
             f"Updated fetch job record {fetch_job_id} with package type counts."

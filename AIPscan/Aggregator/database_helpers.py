@@ -3,7 +3,6 @@ database.
 """
 
 import os
-from datetime import datetime
 
 from celery.utils.log import get_task_logger
 from dateutil.parser import parse
@@ -470,7 +469,6 @@ def update_fetch_job(fetch_job_id, processed_packages, total_packages_count):
     obj.total_sips = total_sips
     obj.total_replicas = total_replicas
     obj.total_deleted_aips = total_deleted_aips
-    obj.download_end = datetime.now().replace(microsecond=0)
     db.session.commit()
 
     return obj

@@ -3,9 +3,13 @@ import logging
 import os
 import uuid
 from datetime import datetime
+from http.server import BaseHTTPRequestHandler
+from http.server import ThreadingHTTPServer
+from threading import Thread
 
 import celery
 import pytest
+import requests
 
 from AIPscan import db
 from AIPscan import test_helpers
@@ -20,6 +24,7 @@ from AIPscan.Aggregator.tasks import make_request
 from AIPscan.Aggregator.tasks import parse_package_list_file
 from AIPscan.Aggregator.tasks import process_packages
 from AIPscan.Aggregator.tasks import start_index_task
+from AIPscan.Aggregator.tasks import workflow_coordinator
 from AIPscan.Aggregator.tests import INVALID_JSON
 from AIPscan.Aggregator.tests import REQUEST_URL
 from AIPscan.Aggregator.tests import REQUEST_URL_WITHOUT_API_KEY
@@ -35,6 +40,136 @@ from AIPscan.models import index_tasks
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 FIXTURES_DIR = os.path.join(SCRIPT_DIR, "fixtures")
+
+
+@pytest.mark.parametrize("status", [200, 404, 503])
+def test_invalid_mets_response_fails_import(
+    app_instance, tmp_path, monkeypatch, status
+):
+    """A downloaded invalid document must fail without creating an AIP."""
+
+    class Handler(BaseHTTPRequestHandler):
+        def do_GET(self):
+            self.send_response(status)
+            self.end_headers()
+            self.wfile.write(b"<mets:invalid>")
+
+    server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+    thread = Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    storage = test_helpers.create_test_storage_service(
+        url=f"http://127.0.0.1:{server.server_port}"
+    )
+    job = test_helpers.create_test_fetch_job(storage_service_id=storage.id)
+    monkeypatch.setitem(app_instance.config, "AGGREGATOR_DOWNLOAD_ROOT", str(tmp_path))
+    try:
+        result = get_mets.apply(
+            args=[
+                "invalid-package",
+                4,
+                "data/METS.xml",
+                "invalid",
+                1,
+                storage.id,
+                1,
+                1,
+                job.id,
+            ],
+            throw=False,
+        )
+        assert result.state == "FAILURE"
+        assert isinstance(result.result, TaskError)
+        action = "parse" if status == 200 else "download"
+        assert f"Cannot {action} METS for AIP invalid-package" in str(result.result)
+        assert AIP.query.count() == 0
+        # Keep the downloaded document for diagnosis after a failed import.
+        document = tmp_path / "invalid/mets/1/METS.invalid-package.xml"
+        if status == 200:
+            assert document.read_bytes() == b"<mets:invalid>"
+        else:
+            assert not document.exists()
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join()
+
+
+def test_package_listing_timeout_hides_credentials(mocker):
+    mocker.patch(
+        "AIPscan.Aggregator.tasks.requests.get",
+        side_effect=requests.Timeout(f"Timed out: {REQUEST_URL}"),
+    )
+    with pytest.raises(TaskError) as error:
+        make_request(REQUEST_URL, REQUEST_URL_WITHOUT_API_KEY)
+    assert str(error.value) == f"Cannot connect to: {REQUEST_URL_WITHOUT_API_KEY}"
+
+
+def test_coordinator_reports_failed_package_listing(app_instance, tmp_path, mocker):
+    child = mocker.patch(
+        "AIPscan.Aggregator.tasks.package_lists_request.delay"
+    ).return_value
+    child.id = "failed-list"
+    result = mocker.patch(
+        "AIPscan.Aggregator.tasks.package_lists_request.AsyncResult"
+    ).return_value
+    result.state = "FAILURE"
+    result.info = ValueError("Invalid response")
+    job = test_helpers.create_test_fetch_job(download_end=None)
+
+    result = workflow_coordinator.apply(
+        args=["failed", job.storage_service_id, job.id, str(tmp_path)], throw=False
+    )
+
+    assert result.state == "FAILURE"
+    assert isinstance(result.result, TaskError)
+    assert "Package listing failed" in str(result.result)
+    assert AIP.query.count() == 0
+
+
+@pytest.mark.parametrize("progressing", [True, False])
+def test_coordinator_waits_while_listing_progresses(
+    app_instance, tmp_path, mocker, progressing
+):
+    child = mocker.patch(
+        "AIPscan.Aggregator.tasks.package_lists_request.delay"
+    ).return_value
+    child.id = "slow-list"
+
+    class ListingResult:
+        polls = 0
+
+        @property
+        def state(self):
+            self.polls += 1
+            return "IN PROGRESS" if self.polls <= 3 else "SUCCESS"
+
+        @property
+        def info(self):
+            return {
+                "completedPackageLists": self.polls if progressing else 0,
+                "totalPackageLists": 0,
+                "totalPackages": 0,
+            }
+
+    mocker.patch(
+        "AIPscan.Aggregator.tasks.package_lists_request.AsyncResult",
+        return_value=ListingResult(),
+    )
+    # A healthy listing lasts 1,200 seconds but produces a page every 400.
+    mocker.patch(
+        "AIPscan.Aggregator.tasks.time.monotonic", side_effect=[0, 400, 800, 1200]
+    )
+    mocker.patch("AIPscan.Aggregator.tasks.time.sleep")
+    job = test_helpers.create_test_fetch_job(download_end=None)
+
+    result = workflow_coordinator.apply(
+        args=["slow", job.storage_service_id, job.id, str(tmp_path)], throw=False
+    )
+
+    assert result.state == ("SUCCESS" if progressing else "FAILURE")
+    if not progressing:
+        assert isinstance(result.result, TaskError)
+        assert "made no progress for 600 seconds" in str(result.result)
 
 
 def _get_aips(storage_service_id):
