@@ -97,14 +97,15 @@ def download_mets(
     numbered_subdir = create_numbered_subdirs(timestamp, package_list_no)
     download_file = os.path.join(numbered_subdir, f"METS.{package_uuid}.xml")
 
-    mets_response = requests.get(
-        get_mets_url(storage_service, package_uuid, relative_path_to_mets),
-        stream=True,
-    )
-
     try:
-        mets_hash = stream_write_and_hash(mets_response, download_file)
-    finally:
-        mets_response.close()
+        with requests.get(
+            get_mets_url(storage_service, package_uuid, relative_path_to_mets),
+            stream=True,
+            timeout=(10, 120),
+        ) as mets_response:
+            mets_response.raise_for_status()
+            mets_hash = stream_write_and_hash(mets_response, download_file)
+    except requests.RequestException:
+        raise METSError(f"Cannot download METS for AIP {package_uuid}") from None
 
     return download_file, mets_hash

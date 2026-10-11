@@ -44,6 +44,9 @@ class Config:
     AGGREGATOR_DOWNLOAD_ROOT = os.getenv(
         "AGGREGATOR_DOWNLOAD_ROOT", DEFAULT_AGGREGATOR_DOWNLOAD_ROOT
     )
+    PACKAGE_LIST_IDLE_TIMEOUT_SECONDS = int(
+        os.getenv("PACKAGE_LIST_IDLE_TIMEOUT_SECONDS", "600")
+    )
 
 
 class DevelopmentConfig(Config):

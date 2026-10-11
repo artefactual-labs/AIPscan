@@ -66,6 +66,18 @@ def mets_import(app_instance, tmp_path, monkeypatch):
         thread.join()
 
 
+def test_failed_download_reports_failure(mets_import):
+    response, run = mets_import
+    response.update(status=404, body=b"METS unavailable")
+
+    result = run()
+
+    assert result.state == "FAILURE"
+    assert isinstance(result.result, TaskError)
+    assert f"Cannot download METS for AIP {PACKAGE_UUID}" in str(result.result)
+    assert AIP.query.count() == 0
+
+
 def test_failed_parse_preserves_existing_metadata(mets_import, tmp_path):
     response, run = mets_import
     assert run().state == "SUCCESS"

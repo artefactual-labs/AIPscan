@@ -284,9 +284,6 @@ def task_status(taskid):
             response = {"state": task.state, "coordinatorId": coordinator_id}
         else:
             response = {"state": task.state, "message": task.info.get("message")}
-    # CR Note: I am not sure we will ever meet this else, because
-    # task.state will always be intercepted through != FAILUTE. IDK. Do
-    # you read it the same way?
     else:
         # something went wrong in the background job
         response = {
@@ -301,20 +298,21 @@ def get_mets_task_status(coordinatorid):
     """Get mets task status"""
     totalAIPs = int(request.args.get("totalAIPs"))
     fetchJobId = int(request.args.get("fetchJobId"))
+    coordinator = tasks.workflow_coordinator.AsyncResult(coordinatorid, app=celery)
+    if coordinator.state == "FAILURE":
+        return jsonify({"state": "FAILURE", "message": str(coordinator.info)})
     mets_tasks = get_mets_tasks.query.filter_by(
         workflow_coordinator_id=coordinatorid, status=None
     ).all()
     response = []
-    incomplete = 0
     for row in mets_tasks:
         task_id = row.get_mets_task_id
         package_uuid = row.package_uuid
         task_result = AsyncResult(id=task_id, app=celery)
         mets_task_status = task_result.state
         if mets_task_status is None:
-            incomplete = incomplete + 1
             continue
-        if (mets_task_status == "SUCCESS") or (mets_task_status[0] == "FAILURE"):
+        if mets_task_status in {"SUCCESS", "FAILURE"}:
             totalAIPs += 1
             response.append(
                 {
@@ -323,21 +321,29 @@ def get_mets_task_status(coordinatorid):
                     "totalAIPs": totalAIPs,
                 }
             )
+            if mets_task_status == "FAILURE":
+                response[-1]["message"] = str(task_result.info)
             obj = get_mets_tasks.query.filter_by(get_mets_task_id=task_id).first()
             obj.status = mets_task_status
             db.session.commit()
     if len(mets_tasks) != 0:
         return jsonify(response)
-    if incomplete > 0 and totalAIPs == 0:
-        response = {"state": "PENDING"}
-        return jsonify(response)
-    downloadEnd = datetime.now().replace(microsecond=0)
+    # The package-list task can finish before the coordinator has created
+    # import tasks. An empty queue alone does not mean the fetch has finished.
+    if coordinator.state != "SUCCESS":
+        return jsonify({"state": "PENDING"})
     obj = FetchJob.query.filter_by(id=fetchJobId).first()
     start = obj.download_start
     downloadStart = _format_date(start)
-    obj.download_end = downloadEnd
-    db.session.commit()
+    if obj.download_end is None:
+        obj.download_end = datetime.now().replace(microsecond=0)
+        db.session.commit()
     response = {"state": "COMPLETED"}
+    failures = get_mets_tasks.query.filter_by(
+        workflow_coordinator_id=coordinatorid, status="FAILURE"
+    ).count()
+    if failures:
+        response["failedImports"] = failures
     flash(f"Fetch Job {downloadStart} completed")
     return jsonify(response)
 

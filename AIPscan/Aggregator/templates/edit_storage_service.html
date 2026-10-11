@@ -23,8 +23,14 @@
     {% for error in form.api_key.errors %}
     <span style="color: red;">[{{ error }}]</span>
     {% endfor %}</td></tr>
-  <tr><td><strong>{{ form.download_limit.label }}</strong></td><td>{{ form.download_limit(size=48) }} </td></tr>
-  <tr><td><strong>{{ form.download_offset.label }}</strong></td><td>{{ form.download_offset(size=48) }} </td></tr>
+  <tr><td><strong>{{ form.download_limit.label }}</strong></td><td>{{ form.download_limit(size=48) }}
+    {% for error in form.download_limit.errors %}
+    <span style="color: red;">[{{ error }}]</span>
+    {% endfor %}</td></tr>
+  <tr><td><strong>{{ form.download_offset.label }}</strong></td><td>{{ form.download_offset(size=48) }}
+    {% for error in form.download_offset.errors %}
+    <span style="color: red;">[{{ error }}]</span>
+    {% endfor %}</td></tr>
   <tr><td><strong>{{ form.default.label }}</strong></td><td>{{ form.default() }}</td></tr>
 </table>
 <button type="submit" class="btn btn-success">Save</button>

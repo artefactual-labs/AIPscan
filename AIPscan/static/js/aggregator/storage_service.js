@@ -1,9 +1,9 @@
 function consolePrepend(message) {
-  $("#console").prepend(`<div class="log">${message}</div>`);
+  $("#console").prepend($("<div>").addClass("log").text(message));
 }
 
 function consoleAppend(message) {
-  $("#console").append(`<div class="log">${message}</div>`);
+  $("#console").append($("<div>").addClass("log").text(message));
   $("#console").scrollTop($("#console")[0].scrollHeight);
 }
 
@@ -53,9 +53,6 @@ function newFetchJob(storageServiceId) {
 }
 
 function packageListTaskStatus(taskId, showcount, fetchJobId) {
-  const statusPending = "PENDING";
-  const statusProgress = "IN PROGRESS";
-
   var url = new URL(
     `aggregator/package_list_task_status/${taskId}`,
     $("body").data("url-root"),
@@ -68,7 +65,12 @@ function packageListTaskStatus(taskId, showcount, fetchJobId) {
 
     success: function (data) {
       let state = data["state"];
-      if (state != statusPending && state != statusProgress) {
+      if (state === "FAILURE") {
+        consoleAppend(`FAILURE downloading package lists: ${data["status"]}`);
+        setFetchButtonDisabled(false);
+        return;
+      }
+      if (state === "SUCCESS") {
         consoleAppend("Downloading AIP METS files");
 
         getMetsTaskStatus(data["coordinatorId"], 0, fetchJobId);
@@ -107,12 +109,21 @@ function getMetsTaskStatus(coordinatorId, totalAIPs, fetchJobId) {
     datatype: "json",
 
     success: function (data) {
+      if (data["state"] === "FAILURE") {
+        consoleAppend(`FAILURE fetching AIPs: ${data["message"]}`);
+        setFetchButtonDisabled(false);
+        return;
+      }
       if (data["state"] == "PENDING") {
         setTimeout(function () {
           getMetsTaskStatus(coordinatorId, totalAIPs, fetchJobId);
         }, 1000);
       } else if (data["state"] == "COMPLETED") {
-        consoleAppend("METS download completed");
+        consoleAppend(
+          data["failedImports"]
+            ? `METS download completed with ${data["failedImports"]} failed imports`
+            : "METS download completed",
+        );
         setTimeout(function () {
           indexStart(fetchJobId);
         }, 3000);
@@ -122,6 +133,9 @@ function getMetsTaskStatus(coordinatorId, totalAIPs, fetchJobId) {
           consoleAppend(
             `${item["state"]} parsing ${item["totalAIPs"]}. ${item["package"]}`,
           );
+          if (item["message"]) {
+            consoleAppend(item["message"]);
+          }
 
           if (i == data.length - 1) {
             totalAIPs = data[i]["totalAIPs"];

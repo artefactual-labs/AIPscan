@@ -16,7 +16,6 @@ from AIPscan.conftest import ORIGIN_PIPELINE
 from AIPscan.conftest import STORAGE_LOCATION_1_CURRENT_LOCATION
 from AIPscan.models import AIP
 from AIPscan.models import Agent
-from AIPscan.models import FetchJob
 from AIPscan.models import File
 from AIPscan.models import FileType
 from AIPscan.models import Pipeline
@@ -387,19 +386,17 @@ def test_create_fetch_job(app_instance, mocker, tmp_path):
     assert fetch_job.storage_service_id == storage_service_id
 
 
-def test_update_fetch_job(app_instance, mocker):
-    fetch_job = FetchJob(
+def test_update_fetch_job(app_instance):
+    storage_service = test_helpers.create_test_storage_service()
+    fetch_job = test_helpers.create_test_fetch_job(
         total_packages=0,
         total_aips=0,
         total_deleted_aips=0,
         download_start=datetime.now(),
-        download_end=datetime.now(),
+        download_end=None,
         download_directory="/some/directory/",
-        storage_service_id=1,
+        storage_service_id=storage_service.id,
     )
-
-    mocker.patch("sqlalchemy.orm.query.Query.first", return_value=fetch_job)
-    mocker.patch("AIPscan.db.session.commit")
 
     # Define processed packages
     deleted = types.StorageServicePackage()
@@ -423,7 +420,10 @@ def test_update_fetch_job(app_instance, mocker):
     # Only some packags may have been processed
     total_packages_count = 10
 
-    obj = database_helpers.update_fetch_job(1, processed_packages, total_packages_count)
+    obj = database_helpers.update_fetch_job(
+        fetch_job.id, processed_packages, total_packages_count
+    )
+    db.session.expire_all()
 
     assert obj.total_packages == total_packages_count
     assert obj.total_deleted_aips == 1
@@ -431,6 +431,7 @@ def test_update_fetch_job(app_instance, mocker):
     assert obj.total_aips == 1
     assert obj.total_dips == 1
     assert obj.total_sips == 1
+    assert obj.download_end is None
 
 
 @pytest.mark.parametrize(

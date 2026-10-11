@@ -1,10 +1,138 @@
+from datetime import datetime
+
 import pytest
 from flask import current_app
 
+from AIPscan import db
 from AIPscan import test_helpers
 from AIPscan.Aggregator.tasks import TaskError
 from AIPscan.Aggregator.views import _test_storage_service_connection
 from AIPscan.models import StorageService
+from AIPscan.models import get_mets_tasks
+
+
+@pytest.mark.parametrize("state", ["SUCCESS", "FAILURE", "PENDING", "STARTED"])
+def test_fetch_job_reports_terminal_import_states(app_instance, mocker, state):
+    """Polling records finished imports and leaves running imports pending."""
+    job = test_helpers.create_test_fetch_job(download_end=None)
+    task = get_mets_tasks(
+        get_mets_task_id="import-task",
+        workflow_coordinator_id="coordinator",
+        package_uuid="package",
+    )
+    db.session.add(task)
+    db.session.commit()
+    result = mocker.patch("AIPscan.Aggregator.views.AsyncResult").return_value
+    result.state = state
+    result.info = TaskError("Cannot parse METS")
+    mocker.patch(
+        "AIPscan.Aggregator.views.tasks.workflow_coordinator.AsyncResult"
+    ).return_value.state = "SUCCESS"
+    client = app_instance.test_client()
+    url = "/aggregator/get_mets_task_status/coordinator"
+    params = {"totalAIPs": 0, "fetchJobId": job.id}
+
+    response = client.get(url, query_string=params)
+
+    assert response.status_code == 200
+    terminal = state in {"SUCCESS", "FAILURE"}
+    assert response.json == (
+        [
+            {"state": state, "package": "METS.package.xml", "totalAIPs": 1}
+            | ({"message": "Cannot parse METS"} if state == "FAILURE" else {})
+        ]
+        if terminal
+        else []
+    )
+    db.session.expire_all()
+    assert task.status == (state if terminal else None)
+    assert job.download_end is None
+
+    response = client.get(url, query_string=params | {"totalAIPs": int(terminal)})
+    assert response.json == (
+        {"state": "COMPLETED", "failedImports": 1}
+        if state == "FAILURE"
+        else {"state": "COMPLETED"}
+        if terminal
+        else []
+    )
+    db.session.expire_all()
+    assert (job.download_end is not None) == terminal
+
+
+@pytest.mark.parametrize("state", ["PENDING", "STARTED", "FAILURE", "SUCCESS"])
+def test_fetch_job_waits_for_coordinator(app_instance, mocker, state):
+    job = test_helpers.create_test_fetch_job(download_end=None)
+    result = mocker.patch(
+        "AIPscan.Aggregator.views.tasks.workflow_coordinator.AsyncResult"
+    ).return_value
+    result.state = state
+    result.info = TaskError("Cannot read package list")
+
+    response = app_instance.test_client().get(
+        "/aggregator/get_mets_task_status/coordinator",
+        query_string={"totalAIPs": 0, "fetchJobId": job.id},
+    )
+
+    assert response.status_code == 200
+    assert response.json["state"] == (
+        "COMPLETED"
+        if state == "SUCCESS"
+        else "FAILURE"
+        if state == "FAILURE"
+        else "PENDING"
+    )
+    if state == "FAILURE":
+        assert response.json["message"] == "Cannot read package list"
+    db.session.expire_all()
+    assert (job.download_end is not None) == (state == "SUCCESS")
+
+
+def test_completed_poll_preserves_end_time(app_instance, mocker):
+    original_end = datetime(2020, 1, 2, 3, 4, 5)
+    job = test_helpers.create_test_fetch_job(download_end=original_end)
+    mocker.patch(
+        "AIPscan.Aggregator.views.tasks.workflow_coordinator.AsyncResult"
+    ).return_value.state = "SUCCESS"
+
+    response = app_instance.test_client().get(
+        "/aggregator/get_mets_task_status/completed-coordinator",
+        query_string={"totalAIPs": 1, "fetchJobId": job.id},
+    )
+
+    assert response.json == {"state": "COMPLETED"}
+    db.session.expire_all()
+    assert job.download_end == original_end
+
+
+def test_failed_coordinator_with_pending_import(app_instance, mocker):
+    job = test_helpers.create_test_fetch_job(download_end=None)
+    db.session.add(
+        get_mets_tasks(
+            get_mets_task_id="pending-import",
+            workflow_coordinator_id="failed-coordinator",
+            package_uuid="package",
+        )
+    )
+    db.session.commit()
+    mocker.patch("AIPscan.Aggregator.views.AsyncResult").return_value.state = "PENDING"
+    coordinator = mocker.patch(
+        "AIPscan.Aggregator.views.tasks.workflow_coordinator.AsyncResult"
+    ).return_value
+    coordinator.state = "FAILURE"
+    coordinator.info = TaskError("Cannot finish scheduling imports")
+
+    response = app_instance.test_client().get(
+        "/aggregator/get_mets_task_status/failed-coordinator",
+        query_string={"totalAIPs": 0, "fetchJobId": job.id},
+    )
+
+    assert response.json == {
+        "state": "FAILURE",
+        "message": "Cannot finish scheduling imports",
+    }
+    db.session.expire_all()
+    assert job.download_end is None
 
 
 def test_new_fetch_job_success_returns_task_id(app_instance, mocker):
