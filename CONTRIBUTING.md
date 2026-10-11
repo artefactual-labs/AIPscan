@@ -160,8 +160,10 @@ bash tests/e2e/check.sh --release=false
 bash tests/e2e/check.sh --distribution=dist
 ```
 
-The supplied directory must contain exactly one wheel. This allows the built
-distribution to be checked independently of a source installation.
+The supplied directory must contain exactly one wheel. Release CI restores the
+built distribution and checks it on native amd64 and arm64 runners before PyPI
+publication, tag creation, or Docker image publication can proceed. Docker
+publication later rebuilds the release recipe from that same wheel.
 
 The suite is also registered with Dagger's native checks:
 
