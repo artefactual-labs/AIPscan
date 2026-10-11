@@ -292,8 +292,6 @@ def get_mets(
     This function relies on being able to use mets-reader-writer which
     is the primary object we will be passing about.
 
-    TODO: Log METS errors.
-
     The "customlogger" argument allows an external logger to be specified when
     the task's logic is executed, using the task's "apply" method, by an
     external application like a batch script.
@@ -305,13 +303,16 @@ def get_mets(
 
     # Download METS file
     storage_service = db.session.get(StorageService, storage_service_id)
-    download_file, mets_hash = download_mets(
-        storage_service,
-        package_uuid,
-        relative_path_to_mets,
-        timestamp_str,
-        package_list_no,
-    )
+    try:
+        download_file, mets_hash = download_mets(
+            storage_service,
+            package_uuid,
+            relative_path_to_mets,
+            timestamp_str,
+            package_list_no,
+        )
+    except METSError as err:
+        raise TaskError(str(err)) from err
     mets_name = os.path.basename(download_file)
 
     # If METS file's hash matches an existing value, this is a duplicate of an
@@ -331,9 +332,8 @@ def get_mets(
 
     try:
         mets = parse_mets_with_metsrw(download_file)
-    except METSError:
-        # An error we need to log and report back to the user.
-        return
+    except METSError as err:
+        raise TaskError(f"Cannot parse METS for AIP {package_uuid}: {err}") from err
 
     try:
         original_name = get_aip_original_name(mets, package_uuid)
@@ -344,26 +344,29 @@ def get_mets(
 
     # Delete records of any previous versions of this AIP, which will shortly
     # be replaced by new records from the updated METS.
-    previous_aips = AIP.query.filter_by(uuid=package_uuid).all()
-    for previous_aip in previous_aips:
-        tasklogger.info(
-            f"Deleting record for AIP {package_uuid} to replace from newer METS"
+    try:
+        previous_aips = AIP.query.filter_by(uuid=package_uuid).all()
+        for previous_aip in previous_aips:
+            tasklogger.info(
+                f"Deleting record for AIP {package_uuid} to replace from newer METS"
+            )
+            database_helpers.delete_aip_object(previous_aip)
+
+        aip = database_helpers.create_aip_object(
+            package_uuid=package_uuid,
+            transfer_name=original_name,
+            create_date=mets.createdate,
+            mets_sha256=mets_hash,
+            size=aip_size,
+            storage_service_id=storage_service_id,
+            storage_location_id=storage_location_id,
+            fetch_job_id=fetch_job_id,
+            origin_pipeline_id=origin_pipeline_id,
         )
-        database_helpers.delete_aip_object(previous_aip)
-
-    aip = database_helpers.create_aip_object(
-        package_uuid=package_uuid,
-        transfer_name=original_name,
-        create_date=mets.createdate,
-        mets_sha256=mets_hash,
-        size=aip_size,
-        storage_service_id=storage_service_id,
-        storage_location_id=storage_location_id,
-        fetch_job_id=fetch_job_id,
-        origin_pipeline_id=origin_pipeline_id,
-    )
-
-    database_helpers.process_aip_data(aip, mets)
+        database_helpers.process_aip_data(aip, mets)
+    except Exception as err:
+        db.session.rollback()
+        raise TaskError(f"Cannot import METS for AIP {package_uuid}") from err
 
     # Delete downloaded METS file.
     try:
