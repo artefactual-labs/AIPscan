@@ -370,6 +370,9 @@ def index_status(fetch_job_id):
     response = {}
 
     if obj.indexing_end is None:
+        result = tasks.index_task.AsyncResult(obj.index_task_id, app=celery)
+        if result.state == "FAILURE":
+            return jsonify({"state": "FAILURE", "message": str(result.info)})
         response["progress"] = obj.indexing_progress
         response["state"] = "PENDING"
     else:

@@ -197,7 +197,10 @@ function indexRefreshStatus(fetchJobId) {
     datatype: "json",
 
     success: function (data) {
-      if (data["state"] == "PENDING") {
+      if (data["state"] == "FAILURE") {
+        consoleAppend("FAILURE indexing: " + data["message"]);
+        setFetchButtonDisabled(false);
+      } else if (data["state"] == "PENDING") {
         if (data["progress"] !== null) {
           consoleAppend(data["progress"]);
         }

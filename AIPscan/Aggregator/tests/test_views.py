@@ -9,6 +9,7 @@ from AIPscan.Aggregator.tasks import TaskError
 from AIPscan.Aggregator.views import _test_storage_service_connection
 from AIPscan.models import StorageService
 from AIPscan.models import get_mets_tasks
+from AIPscan.models import index_tasks
 
 
 @pytest.mark.parametrize("state", ["SUCCESS", "FAILURE", "PENDING", "STARTED"])
@@ -133,6 +134,25 @@ def test_failed_coordinator_with_pending_import(app_instance, mocker):
     }
     db.session.expire_all()
     assert job.download_end is None
+
+
+def test_indexing_status_reports_failed_worker(app_instance, enable_typesense, mocker):
+    job = test_helpers.create_test_fetch_job()
+    test_helpers.create_test_index_tasks(job.id, "failed-index")
+    result = mocker.patch(
+        "AIPscan.Aggregator.views.tasks.index_task.AsyncResult"
+    ).return_value
+    result.state = "FAILURE"
+    result.info = RuntimeError("Typesense did not accept every file document")
+
+    response = app_instance.test_client().get(f"/aggregator/indexing_status/{job.id}")
+
+    assert response.json == {
+        "state": "FAILURE",
+        "message": "Typesense did not accept every file document",
+    }
+    db.session.expire_all()
+    assert index_tasks.query.filter_by(fetch_job_id=job.id).one().indexing_end is None
 
 
 def test_new_fetch_job_success_returns_task_id(app_instance, mocker):

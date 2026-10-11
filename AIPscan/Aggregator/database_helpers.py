@@ -282,7 +282,8 @@ def _get_file_properties(fs_entry):
 
     try:
         for premis_object in fs_entry.get_premis_objects():
-            file_info["size"] = premis_object.size
+            size = premis_object.size
+            file_info["size"] = None if size == () else size
             key_alias = premis_object.format_registry_key
             file_info["date_created"] = _optional_file_date(
                 premis_object.date_created_by_application

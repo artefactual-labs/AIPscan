@@ -126,3 +126,17 @@ def test_failed_persistence_reports_failure_and_allows_retry(
     assert aip.mets_sha256 == sha256(response["body"]).hexdigest()
     assert any(file.name == "retry.txt" for file in aip.files)
     assert not document.exists()
+
+
+def test_import_accepts_missing_file_sizes(mets_import):
+    response, run = mets_import
+    xml = ET.fromstring(response["body"])
+    for parent in xml.iter():
+        for child in list(parent):
+            if child.tag == "{info:lc/xmlns/premis-v2}size":
+                parent.remove(child)
+    response["body"] = ET.tostring(xml)
+
+    assert run().state == "SUCCESS"
+    assert File.query.count() > 0
+    assert all(file.size is None for file in File.query.all())
