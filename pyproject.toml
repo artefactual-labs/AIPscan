@@ -57,7 +57,12 @@ dev = [
     "tzlocal",
 ]
 e2e = [
+    "lxml>=6.1.3",
+    "metsrw>=0.7.0",
     "playwright>=1.63,<2",
+    "pytest>=9,<10",
+    "pytest-bdd>=9,<10",
+    "requests>=2.34.2",
 ]
 linting = [
     "prek",

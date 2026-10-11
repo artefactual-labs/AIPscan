@@ -1,7 +1,9 @@
 """Package the upstream production METS and an unidentified-format variant."""
 
 import hashlib
+import json
 import os
+import re
 import subprocess
 from pathlib import Path
 from xml.etree import ElementTree as ET
@@ -32,12 +34,13 @@ def package_aip(parent, name, uuid, xml):
         ["7z", "a", "-m0=lzma", str(archive), root.name], cwd=parent, check=True
     )
     os.chown(archive, 1000, 1000)
+    return archive.stat().st_size
 
 
 def main():
     parent = Path("/home/archivematica/transfers")
     xml = Path("/legacy.xml").read_bytes()
-    package_aip(parent, "easy_1488911181", LEGACY_UUID, xml)
+    sizes = {"legacy": package_aip(parent, "easy_1488911181", LEGACY_UUID, xml)}
 
     # Derive the unidentified-file case from the same real METS, leaving the
     # checked-in fixture and the first package's metadata unchanged.
@@ -48,7 +51,14 @@ def main():
     characteristics = mets.find("m:amdSec/m:techMD/.//p:objectCharacteristics", NS)
     characteristics.remove(characteristics.find("p:format", NS))
     variant = ET.tostring(mets, encoding="UTF-8", xml_declaration=True)
-    package_aip(parent, "unidentified-transfer", UNKNOWN_UUID, variant)
+    sizes["unknown"] = package_aip(
+        parent, "unidentified-transfer", UNKNOWN_UUID, variant
+    )
+    tool = subprocess.run(["7z", "i"], capture_output=True, text=True, check=True)
+    version = re.search(r"7-Zip.*?(\d+\.\d+)", tool.stdout).group(1)
+    Path("/legacy-packages.json").write_text(
+        json.dumps({"sizes": sizes, "version": version})
+    )
 
 
 if __name__ == "__main__":

@@ -4,11 +4,14 @@ import base64
 import csv
 import io
 import json
+import os
 import time
 from collections import deque
+from pathlib import Path
 
 import requests
-from charts import check_charts
+from lxml import html
+from metsrw.plugins.premisrw import PREMISAgent
 from metsrw.plugins.premisrw import PREMISEvent
 
 HISTORY = deque(maxlen=20)
@@ -45,14 +48,17 @@ def unit_complete(kind, uuid):
     return result if result["status"] == "COMPLETE" else None
 
 
-def main():
+def seed_repository():
     # A listening HTTP port alone does not mean ambox's bootstrap has finished.
     def ready():
-        response = requests.get(
-            "http://ambox:64080/api/processing-configuration/automated/",
-            headers=AUTH,
-            timeout=30,
-        )
+        try:
+            response = requests.get(
+                "http://ambox:64080/api/processing-configuration/automated/",
+                headers=AUTH,
+                timeout=30,
+            )
+        except requests.ConnectionError:
+            return False
         HISTORY.append(("ready", response.status_code, response.text[:1000]))
         return response.status_code == 200
 
@@ -92,9 +98,12 @@ def main():
         for location in locations
         if location["purpose"] == "TS" and location["path"].rstrip("/") == "/home"
     )
-    for name, uuid in [
-        ("easy_1488911181", legacy_uuid),
-        ("unidentified-transfer", unknown_uuid),
+    archive_metadata = json.loads(
+        Path(__file__).with_name("legacy-packages.json").read_text()
+    )
+    for kind, name, uuid in [
+        ("legacy", "easy_1488911181", legacy_uuid),
+        ("unknown", "unidentified-transfer", unknown_uuid),
     ]:
         archive = f"{name}-{uuid}.7z"
         legacy = request(
@@ -109,22 +118,52 @@ def main():
                 "origin_path": f"archivematica/transfers/{archive}",
                 "current_location": package["current_location"],
                 "current_path": archive,
-                "size": 4,
+                "size": archive_metadata["sizes"][kind],
                 "events": [
                     PREMISEvent(
                         event_identifier_type="UUID",
                         event_identifier_value=uuid,
                         event_type="compression",
                         event_date_time="2017-03-07T18:24:38",
-                        event_detail="program=7z; version=16.02; algorithm=lzma",
+                        event_detail=f"program=7z; version={archive_metadata['version']}; algorithm=lzma",
                         event_outcome="0",
+                        linking_agent_identifier_type="local",
+                        linking_agent_identifier_value="aipscan-e2e-packager",
+                    ).data
+                ],
+                "agents": [
+                    PREMISAgent(
+                        agent_identifier_type="local",
+                        agent_identifier_value="aipscan-e2e-packager",
+                        agent_name="AIPscan acceptance fixture packager",
+                        agent_type="software",
                     ).data
                 ],
             },
         ).json()
         assert legacy["status"] == "UPLOADED", legacy
 
-    job = request("POST", "http://aipscan:5000/aggregator/new_fetch_job/1").json()
+    return {"modern": sip, "legacy": legacy_uuid, "unknown": unknown_uuid}
+
+
+def configure_storage_service(storage_service_id=1, **changes):
+    """Use the normal form and its session-bound CSRF token."""
+    url = f"http://aipscan:5000/aggregator/edit_storage_service/{storage_service_id}"
+    with requests.Session() as session:
+        response = session.get(url, timeout=30)
+        response.raise_for_status()
+        form = html.fromstring(response.text).forms[0]
+        response = session.post(
+            url, data=dict(form.form_values()) | changes, timeout=30
+        )
+        response.raise_for_status()
+        assert response.url.endswith("/aggregator/storage_services"), response.text
+
+
+def fetch_repository(storage_service_id=1):
+    job = request(
+        "POST", f"http://aipscan:5000/aggregator/new_fetch_job/{storage_service_id}"
+    ).json()
 
     def listed():
         result = request(
@@ -134,69 +173,53 @@ def main():
         assert result["state"] != "FAILURE", result
         return result if result["state"] == "SUCCESS" else None
 
-    wait_for("package listing", listed)
+    coordinator = wait_for("package listing", listed)["coordinatorId"]
+    states = []
 
-    def exported(uuid):
-        response = request(
+    def imported():
+        result = request(
             "GET",
-            "http://aipscan:5000/reporter/aip_contents/",
-            params={
-                "amss_id": 1,
-                "start_date": "2000-01-01",
-                "end_date": "2100-01-01",
-                "csv": "true",
-            },
+            f"http://aipscan:5000/aggregator/get_mets_task_status/{coordinator}",
+            params={"totalAIPs": len(states), "fetchJobId": job["fetchJobId"]},
+        ).json()
+        if isinstance(result, list):
+            states.extend(result)
+            assert all(row["state"] == "SUCCESS" for row in result), result
+            return False
+        assert result["state"] != "FAILURE", result
+        return result["state"] == "COMPLETED"
+
+    wait_for("fetch completion", imported, timeout=180)
+    job["imports"] = states
+    if os.getenv("AIPSCAN_INDEXED") == "1":
+        request(
+            "GET", f"http://aipscan:5000/aggregator/index_refresh/{job['fetchJobId']}"
         )
-        rows = list(csv.DictReader(io.StringIO(response.text)))
-        matches = [row for row in rows if row["UUID"] == uuid]
-        if matches and matches[0]["Formats"]:
-            return matches[0]
-        return None
 
-    row = wait_for("AIP contents", lambda: exported(sip), timeout=120)
-    assert row["AIP Name"] == "aipscan-e2e", row
-    assert int(row["Size (bytes)"]) == len(b"AIPscan end-to-end test.\n"), row
-    assert row["Formats"] == "x-fmt/111 (Plain Text): 1 file", row
-    print(json.dumps(row, indent=2))
-    legacy_row = wait_for(
-        "legacy AIP contents", lambda: exported(legacy_uuid), timeout=120
-    )
-    assert legacy_row["AIP Name"] == "easy_1488911181", legacy_row
-    assert int(legacy_row["Size (bytes)"]) == 4, legacy_row
-    assert legacy_row["Formats"] == "x-fmt/111 (Plain Text): 1 file", legacy_row
-    print(json.dumps(legacy_row, indent=2))
-    unknown_row = wait_for(
-        "unidentified AIP contents", lambda: exported(unknown_uuid), timeout=120
-    )
-    assert unknown_row["AIP Name"] == "unidentified-transfer", unknown_row
-    assert int(unknown_row["Size (bytes)"]) == 4, unknown_row
-    assert unknown_row["Formats"] == "Unknown (Unknown): 1 file", unknown_row
-    print(json.dumps(unknown_row, indent=2))
-    formats_csv = request(
+        def indexed():
+            result = request(
+                "GET",
+                f"http://aipscan:5000/aggregator/indexing_status/{job['fetchJobId']}",
+            ).json()
+            return result["state"] == "COMPLETED"
+
+        wait_for("index completion", indexed, timeout=120)
+
+    return job
+
+
+PARAMS = {"amss_id": 1, "start_date": "2000-01-01", "end_date": "2100-01-01"}
+
+
+def report_rows(report, prefix="", **params):
+    response = request(
         "GET",
-        "http://aipscan:5000/reporter/report_formats_count/",
-        params={
-            "amss_id": 1,
-            "start_date": "2000-01-01",
-            "end_date": "2100-01-01",
-            "csv": "true",
-        },
+        f"http://aipscan:5000{prefix}/reporter/{report}/",
+        params=PARAMS | params | {"csv": "true"},
     )
-    formats = {
-        row["Format"]: (int(row["Count"]), int(row["Size (bytes)"]))
-        for row in csv.DictReader(io.StringIO(formats_csv.text))
-    }
-    assert formats == {
-        "Plain Text": (2, len(b"AIPscan end-to-end test.\n") + 4),
-        "Unknown": (1, 4),
-    }, formats
-    check_charts()
-    print("End-to-end reports passed")
+    return list(csv.DictReader(io.StringIO(response.text)))
 
 
-if __name__ == "__main__":
-    try:
-        main()
-    except Exception:
-        print("Recent HTTP responses:", json.dumps(list(HISTORY), indent=2))
-        raise
+def aip_row(uuid):
+    matches = [row for row in report_rows("aip_contents") if row["UUID"] == uuid]
+    return matches[0] if matches and matches[0]["Formats"] else None
