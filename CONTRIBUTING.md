@@ -1,14 +1,14 @@
 # Contributing
 
-Thank you for considering a contribution to AIPscan!
-AIPscan is a work-in-progress and does not yet have a formal
-contribution process. Bug reports and feature requests are welcome as
-issues in the AIPscan GitHub repository. Pull requests with community
-code contributions are similarly welcome but should typically be
-submitted after filing an issue and discussing the proposed approach.
+Thank you for considering a contribution to AIPscan! AIPscan is a
+work-in-progress and does not yet have a formal contribution process. Bug
+reports and feature requests are welcome as issues in the AIPscan GitHub
+repository. Pull requests with community code contributions are similarly
+welcome but should typically be submitted after filing an issue and discussing
+the proposed approach.
 
-In general, follow code style guidelines from the Archivematica
-project's [CONTRIBUTING.md] to the greatest degree possible.
+In general, follow code style guidelines from the Archivematica project's
+[CONTRIBUTING.md] to the greatest degree possible.
 
 ## Development environment
 
@@ -16,29 +16,41 @@ project's [CONTRIBUTING.md] to the greatest degree possible.
 
 - Clone the repository:
 
-      git clone https://github.com/artefactual-labs/AIPscan
+  ```sh
+  git clone https://github.com/artefactual-labs/AIPscan
+  ```
 
 - Change your working directory:
 
-      cd AIPscan
+  ```sh
+  cd AIPscan
+  ```
 
 - Start the application services:
 
-      docker compose up --detach --wait
+  ```sh
+  docker compose up --detach --wait
+  ```
 
 - Access the web app at <http://localhost:5000>.
 
 - Access logs for running services:
 
-      docker compose logs -f
+  ```sh
+  docker compose logs -f
+  ```
 
 - Shut down the stack when finished:
 
-      docker compose down
+  ```sh
+  docker compose down
+  ```
 
 - Remove all volumes when you need a clean slate:
 
-      docker compose down --volumes
+  ```sh
+  docker compose down --volumes
+  ```
 
 ### Archivematica network
 
@@ -47,11 +59,15 @@ to talk directly to an Archivematica development environment.
 
 Populate the `.env` file with the following contents:
 
-      COMPOSE_FILE=./docker-compose.yml:./docker-compose.am-network.yml
+```sh
+  COMPOSE_FILE=./docker-compose.yml:./docker-compose.am-network.yml
+```
 
 Then start the services:
 
-      docker compose up --detach --wait
+```sh
+  docker compose up --detach --wait
+```
 
 This expects an external Docker network named `am_default`, usually created by
 the Archivematica development environment. The regular test suite does not need
@@ -65,81 +81,180 @@ environment.
 
 Start only the MySQL service:
 
-    COMPOSE_FILE=./docker-compose.yml docker compose up --detach --wait --no-deps aipscan-mysql
+```sh
+COMPOSE_FILE=./docker-compose.yml docker compose up --detach --wait --no-deps aipscan-mysql
+```
 
 Run the Python test environments:
 
-    uv run tox -m test
+```sh
+uv run tox -m test
+```
 
-To run a single tox environment:
-
-    uv run tox -e 3.14
-    uv run tox -e 3.14t
+Use `uv run tox list` to find the configured environment names, then select a
+single environment with tox's `-e` option.
 
 To pass arguments through to pytest:
 
-    uv run tox -e 3.14 -- -x AIPscan/tests/test_app.py
+```sh
+uv run tox -m test -- -x AIPscan/tests/test_app.py
+```
 
 To run the linting environment:
 
-    uv run tox -e linting
+```sh
+uv run tox -e linting
+```
 
 The default `uv run tox` command runs every environment in `pyproject.toml`,
 including linting. Use `uv run tox -m test` when you only want the test matrix.
 
 To match CI more closely, run:
 
-    COMPOSE_FILE=./docker-compose.yml docker compose up --detach --wait --no-deps aipscan-mysql
-    make test PYTESTARGS="--cov AIPscan --cov-config .coveragerc --cov-report xml:coverage.xml"
-    make lint
-    COMPOSE_FILE=./docker-compose.yml docker compose run --rm --no-deps aipscan-migrate bash -c "flask db upgrade && flask db check"
+```sh
+COMPOSE_FILE=./docker-compose.yml docker compose up --detach --wait --no-deps aipscan-mysql
+make test PYTESTARGS="--cov AIPscan --cov-config .coveragerc --cov-report xml:coverage.xml"
+make lint
+COMPOSE_FILE=./docker-compose.yml docker compose run --rm --no-deps aipscan-migrate bash -c "flask db upgrade && flask db check"
+```
 
 When finished, stop the test database and remove volumes:
 
-    COMPOSE_FILE=./docker-compose.yml docker compose down --volumes
-
-### End-to-end reporting test
-
-The Dagger module exercises a real ingest in ambox 1.2.1, followed by an
-AIPscan fetch through Celery and an HTTP CSV export. It starts fresh ambox,
-MySQL, RabbitMQ, and AIPscan services without publishing host ports or using
-existing Archivematica installations. The web server and worker share one
-container so they can access the same download directory.
-
-The same run packages the upstream `production-aip-mets-file.xml` fixture from
-mets-reader-writer without changing its metadata. This Archivematica 1.6 METS
-uses PREMIS 2.2 and omits the original file's creation date. A second package
-uses a variant with the original's format identification removed. CSV reports
-must retain both package names and byte totals, and the unidentified original
-must appear as Unknown in the format-count CSV and browser charts. The known
-legacy and modern originals must aggregate together as Plain Text.
-
-The test also builds the frontend with the configured Node.js version and opens
-the reports in Chromium using Playwright. It checks the pie and scatter charts
-against the imported file counts and sizes, checks the ingest timeline and
-storage time series, and exercises hover text and time-series controls. Missing
-assets, HTTP failures, and browser JavaScript errors fail the test. Playwright
-and Chromium are installed only in the test runner container.
-
-With Docker and Dagger 0.21.9 installed, run from the repository root:
-
 ```sh
-dagger call test-end-to-end
+COMPOSE_FILE=./docker-compose.yml docker compose down --volumes
 ```
 
-The first run downloads the images and browser, builds the Python environment,
-and compiles the frontend assets.
-Subsequent runs reuse build layers, while service data is temporary.
-The test has bounded waits and prints recent HTTP responses on failure;
-Dagger's trace includes the service logs. To retain the local console output:
+### Acceptance tests
+
+The Dagger module starts isolated ambox, MySQL, RabbitMQ, and AIPscan services.
+It ingests a real transfer with Archivematica, registers production legacy METS
+fixtures as stored archives, and fetches their metadata through Celery. Tests
+observe HTTP responses, CSV reports, persisted job durations, and Chromium UI
+behavior. No existing Archivematica installation or host ports are needed.
+
+By default, the suite builds a wheel with its frontend assets and installs it in
+the release Dockerfile target. The application runs as its non-root user with
+production settings. The web server and worker share the download directory, and
+migrations run at service startup.
+
+With Docker and Dagger installed, run:
 
 ```sh
-mkdir -p output
-dagger call test-end-to-end >output/e2e.log 2>&1
+bash tests/e2e/check.sh
+bash tests/e2e/check.sh --indexed=true
 ```
 
-CI runs this scenario in a separate job; the regular pytest suite remains
-independent of ambox and Dagger.
+The second command starts a real Typesense service. An SQL app instance under
+`/sql` reads the same database, so indexed exports can be compared with SQL
+without a second application container. Each command exports JUnit, pytest logs,
+and failed-case HTTP history to a new directory under `output/e2e`. Browser
+failures also save screenshots and Playwright traces. The script prints the
+artifact path and returns the pytest exit status. View a saved trace with
+`uv run --group e2e playwright show-trace path/to/trace.zip`.
+
+For source development, or to check an already-built release wheel:
+
+```sh
+bash tests/e2e/check.sh --release=false
+bash tests/e2e/check.sh --distribution=dist
+```
+
+The supplied directory must contain exactly one wheel. This allows the built
+distribution to be checked independently of a source installation.
+
+The suite is also registered with Dagger's native checks:
+
+```sh
+dagger --lock=frozen check -l
+dagger --lock=frozen check test-end-to-end
+dagger --lock=frozen check test-indexed-reports
+```
+
+Checks report failures through Dagger. Use `check.sh` when you also want
+artifacts exported to the host. On machines with limited Docker disk space, run
+the two checks sequentially; `dagger check` runs registered checks concurrently.
+
+#### Add a scenario
+
+Gherkin features live in `tests/e2e/features`. Each Python test module uses
+`pytest_bdd.scenarios()` to collect its feature and defines steps through normal
+pytest fixtures. Shared browser, artifact, and imported-repository fixtures live
+in `conftest.py`. To inspect the collection without starting services:
+
+```sh
+uv run --group e2e pytest --collect-only tests/e2e
+```
+
+Keep scenarios independent of execution order. The main corpus stays unchanged:
+it includes modern and Archivematica 1.6 METS, PREMIS 2.2, missing file dates,
+and an unidentified original. Package listing uses one package per page. A
+separate HTTP Storage Service boundary fixture covers changed METS, deletion,
+malformed XML, missing downloads, failed listing recovery, missing file sizes,
+and mixed image formats with preservation files. It also supplies 1,200 files
+with varied sizes to exercise index batches and exact byte totals. A parseable
+METS with a missing event agent checks that a persistence failure is reported
+and a later fetch can recover after the document is corrected. Imports retain
+their existing commit boundaries, so these cases do not guarantee that a failed
+replacement preserves the previous metadata. These cases run through the real
+worker and database, but do not validate an archival ingest or preservation
+normalization.
+
+Browser checks cover pie, scatter, ingest timeline, and storage time-series
+charts as separate cases. Indexed checks compare counts, sizes, largest items,
+format versions, and date/location filters with SQL. Upgrade cases remove the
+new format facets from the real index and verify SQL fallback before rebuilding
+it through the application. The regular Python suite remains independent of
+ambox and Dagger. After upgrading the indexed format fields, format reports use
+SQL until the existing Typesense index is refreshed from the Storage Service
+page. This keeps reports available during an upgrade.
+
+Package listing can run as long as it keeps downloading pages. The coordinator
+fails after 600 seconds without progress; set
+`PACKAGE_LIST_IDLE_TIMEOUT_SECONDS` to change this limit for a slower Storage
+Service.
+
+#### Caching and image updates
+
+Test functions use session caching. A fresh run identity prevents a previous
+result from skipping tests and keeps concurrent service stacks separate. Build
+layers still reuse unchanged dependency and asset inputs. uv and npm downloads
+use cache volumes; virtual environments and `node_modules` are build outputs.
+The wheel builder does not install runtime dependencies, and the browser runner
+installs only the acceptance dependency group.
+
+The generated `.dagger/lock` pins image lookups for both Linux architectures.
+`check.sh` uses frozen lookups and fails if a needed pin is missing. Refresh
+existing pins with Dagger, then review the lockfile diff:
+
+```sh
+dagger lock update
+```
+
+Dockerfile `FROM` lookups are outside the Dagger lockfile. The release stages
+pin their uv and Python bases by digest so verification and publication use the
+same bases. Update these Dockerfile digests when updating the release images. A
+Python version change also needs a matching base digest; the image build checks
+that the runtime matches `.python-version`.
+
+When adding a new lookup, discover it by running the relevant variant live:
+
+```sh
+DAGGER_LOCK_MODE=live bash tests/e2e/check.sh --indexed=true
+```
+
+Dagger's cache is subject to garbage collection and available disk space.
+Package cache volumes do not guarantee that build layers will stay resident.
+Repeated downloads can indicate disk pressure; inspect engine logs and Docker's
+available storage before changing retention settings. Avoid routine pruning as a
+speed optimization. Increasing Docker disk capacity or freeing unused data
+requires a separate decision about the machine's other projects.
+
+GitHub-hosted runners start with a fresh engine. Cache reuse is limited to work
+within each runner. See the upstream
+[function caching documentation][dagger-cache] and
+[lockfile documentation][dagger-locks] for the two caching layers and lock
+modes. Optional engine resource limits can be introduced if measured resource
+contention requires them.
 
 ## Upgrading dependencies
 
@@ -156,20 +271,23 @@ If you want to update Node.js, there are two steps:
 
 Other dependencies:
 
-    # Python dependencies.
-    # Use `--dry-run` first to see what would be changed.
-    uv lock --upgrade
+```sh
+# Python dependencies.
+# Use `--dry-run` first to see what would be changed.
+uv lock --upgrade
 
-    # pre-commit dependencies.
-    uv run prek autoupdate
+# pre-commit dependencies.
+uv run prek autoupdate
 
-    # Node.js dependencies.
-    npx npm-check-updates --interactive
+# Node.js dependencies.
+npx npm-check-updates --interactive
+```
 
 Prettier runs from the npm lockfile through a local prek hook, so run `npm ci`
 before `make lint`. Update service image versions in both `docker-compose.yml`
-and `.dagger/src/aipscan/main.py`, and keep the uv image versions and hook aligned.
-The Dagger module has its own lockfile (`uv lock --upgrade --directory .dagger`).
+and `.dagger/src/aipscan/main.py`, and keep the uv image versions and hook
+aligned. The Dagger module has its own lockfile
+(`uv lock --upgrade --directory .dagger`).
 
 ## Preparing a release
 
@@ -182,28 +300,34 @@ Run the release process with an alpha or release candidate tag first to shake
 out issues. Remember to use the PEP 440 versioning scheme, e.g. `0.9.0a2`, using
 the GitHub CLI:
 
-    gh workflow run release.yml --ref main -f version=0.9.0a2
+```sh
+gh workflow run release.yml --ref main -f version=0.9.0a2
+```
 
-Head to the Actions tab in GitHub and monitor the progress of the [release
-workflow]. When everything looks good, repeat the same command with the final
-version number to cut the official release (the workflow handles building,
+Head to the Actions tab in GitHub and monitor the progress of the
+[release workflow]. When everything looks good, repeat the same command with the
+final version number to cut the official release (the workflow handles building,
 tagging, and publishing).
 
 ## Database migrations
 
-AIPscan now uses Alembic migrations managed through Flask-Migrate. We
-recommend using the Docker Compose services so the app and migration commands
-share the same configuration.
+AIPscan now uses Alembic migrations managed through Flask-Migrate. We recommend
+using the Docker Compose services so the app and migration commands share the
+same configuration.
 
 - Make sure that the development environment is running.
 
 - Create a new migration when models change:
 
-      docker compose run --rm aipscan-migrate flask db migrate -m "Describe change"
+  ```sh
+  docker compose run --rm aipscan-migrate flask db migrate -m "Describe change"
+  ```
 
 - Verify the migration applies cleanly:
 
-      docker compose run --rm aipscan-migrate flask db upgrade
+  ```sh
+  docker compose run --rm aipscan-migrate flask db upgrade
+  ```
 
 - Commit the generated revision(s) under `AIPscan/migrations` alongside your
   model changes. Regenerate the migration if follow-up edits change the schema.
@@ -212,11 +336,15 @@ share the same configuration.
 
 To generate database documentation using [SchemaSpy] run the following command:
 
-    make schema-docs
+```sh
+make schema-docs
+```
 
 If you're using `docker-compose.am-network.yml`, then use this instead:
 
-    make schema-docs NETWORK=am_default
+```sh
+make schema-docs NETWORK=am_default
+```
 
 SchemaSpy writes its output to the `output` directory; open `output/index.html`
 in a browser to review the results.
@@ -236,8 +364,8 @@ Service, Storage Location, and start and end dates.
 
 ### Creating a new Data endpoint
 
-The first step when creating a new AIPscan report is to implement a new
-endpoint for the report's data.
+The first step when creating a new AIPscan report is to implement a new endpoint
+for the report's data.
 
 AIPscan implements [Flask blueprints] to separate code into discrete sections by
 function. The `Data` blueprint is home to the `data` and `report_data` Python
@@ -348,22 +476,21 @@ def formats_count(storage_service_id, start_date, end_date, storage_location_id=
     return report
 ```
 
-All new Data endpoints must have proper test coverage. Examples can
-be found in `AIPscan/Data/tests`. Integration tests which use a test
-database rely heavily on [pytest] fixtures in AIPscan's
-[project-wide conftest module].
+All new Data endpoints must have proper test coverage. Examples can be found in
+`AIPscan/Data/tests`. Integration tests which use a test database rely heavily
+on [pytest] fixtures in AIPscan's [project-wide conftest module].
 
 ### Creating a new API endpoint
 
-Each new Data endpoint should have a corresponding API endpoint. These
-are not used to serve data within the AIPscan application, but serve to
-allow flexible uses of data gathered by AIPscan.
+Each new Data endpoint should have a corresponding API endpoint. These are not
+used to serve data within the AIPscan application, but serve to allow flexible
+uses of data gathered by AIPscan.
 
 All API code can be found in the `API` blueprint. AIPscan uses the [Flask-RESTX]
 library to provide API functionality and API documentation using Swagger.
 
-API endpoints in AIPscan are thin wrappers around their corresponding
-`Data` endpoints. These can be found in the `namespace_data` and
+API endpoints in AIPscan are thin wrappers around their corresponding `Data`
+endpoints. These can be found in the `namespace_data` and
 `namespace_report_data` modules within the `API` blueprint.
 
 For example:
@@ -645,13 +772,15 @@ $("#aipsByOriginalFormat").on("click", function() {
 
 Congratulations! You've now added a new report to AIPscan.
 
-[uv]: https://docs.astral.sh/uv/getting-started/installation/
-[release workflow]: https://github.com/artefactual-labs/AIPscan/actions/workflows/release.yml
-[SchemaSpy]: http://schemaspy.org/
-[CONTRIBUTING.md]: https://github.com/artefactual/archivematica/blob/HEAD/CONTRIBUTING.md
-[Flask blueprints]: https://flask.palletsprojects.com/en/1.1.x/blueprints/
-[SQLAlchemy]: https://www.sqlalchemy.org/
-[pytest]: https://docs.pytest.org
-[project-wide conftest module]: https://github.com/artefactual-labs/AIPscan/blob/main/AIPscan/conftest.py
-[Flask-RESTX]: https://flask-restx.readthedocs.io/en/latest/
+[contributing.md]: https://github.com/artefactual/archivematica/blob/HEAD/CONTRIBUTING.md
+[dagger-cache]: https://docs.dagger.io/extending/function-caching/
+[dagger-locks]: https://docs.dagger.io/next/reference/cli/lockfiles/
+[flask blueprints]: https://flask.palletsprojects.com/en/1.1.x/blueprints/
+[flask-restx]: https://flask-restx.readthedocs.io/en/latest/
 [jinja2 template]: https://flask.palletsprojects.com/en/1.1.x/templating/
+[project-wide conftest module]: https://github.com/artefactual-labs/AIPscan/blob/main/AIPscan/conftest.py
+[pytest]: https://docs.pytest.org
+[release workflow]: https://github.com/artefactual-labs/AIPscan/actions/workflows/release.yml
+[schemaspy]: http://schemaspy.org/
+[sqlalchemy]: https://www.sqlalchemy.org/
+[uv]: https://docs.astral.sh/uv/getting-started/installation/
