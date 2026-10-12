@@ -155,7 +155,7 @@ class Aipscan:
         ambox = ambox_files.as_service(no_init=True)
         python_base = (
             dag.container()
-            .from_("ghcr.io/astral-sh/uv:0.12.21-python3.14-trixie-slim")
+            .from_("ghcr.io/astral-sh/uv:0.13.0-trixie-slim")
             .with_workdir("/app")
             .with_env_variable("HATCH_BUILD_NO_HOOKS", "1")
             .with_env_variable("SETUPTOOLS_SCM_PRETEND_VERSION", "1.0.0dev")
@@ -166,6 +166,7 @@ class Aipscan:
             .with_file("pyproject.toml", source.file("pyproject.toml"))
             .with_file("uv.lock", source.file("uv.lock"))
             .with_file(".python-version", source.file(".python-version"))
+            .with_exec(["uv", "venv", "--managed-python", "/venv"])
         )
         fault_storage = (
             python_base.with_file(

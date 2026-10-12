@@ -1,9 +1,9 @@
 ARG TARGET=dev
 
 # Value comes from .python-version (default avoids InvalidDefaultArgInFrom).
-ARG PYTHON_VERSION=3.14.7
+ARG PYTHON_VERSION=3.15.0
 
-FROM ghcr.io/astral-sh/uv:0.12.21-trixie-slim AS builder
+FROM ghcr.io/astral-sh/uv:0.13.0-trixie-slim AS builder
 ENV UV_COMPILE_BYTECODE=1
 ENV UV_LINK_MODE=copy
 ENV UV_PYTHON_INSTALL_DIR=/python
@@ -41,23 +41,31 @@ COPY .init-scripts/entrypoint.sh /
 ENTRYPOINT ["/entrypoint.sh"]
 
 # Keep the runtime dependency versions aligned with the reviewed uv lock.
-FROM ghcr.io/astral-sh/uv:0.12.21-trixie-slim@sha256:0b4686f3d71340b38a02d2b73b17620fe18d5c82c0f1c3c3a59996ed6e8e5b98 AS release-lock
+FROM ghcr.io/astral-sh/uv:0.13.0-trixie-slim@sha256:11bee95ce27982f00acb0c85aa1b5ee6203a9bb958b7def6f27ead851d454e8d AS release-lock
 WORKDIR /app
 COPY pyproject.toml uv.lock .python-version ./
 RUN uv export --locked --no-dev --extra server --no-emit-project \
     --output-file /constraints.txt
 
-FROM python:${PYTHON_VERSION}-slim-trixie@sha256:51dafde81dbdb6ebde285137a295cf18a47ca95234fe388a343719cb97305b3d AS release
+FROM ghcr.io/astral-sh/uv:0.13.0-trixie-slim@sha256:11bee95ce27982f00acb0c85aa1b5ee6203a9bb958b7def6f27ead851d454e8d AS release
 ARG PYTHON_VERSION
 ARG WHEEL
-RUN python -c "import sys; assert sys.version.split()[0] == '${PYTHON_VERSION}', 'Update the pinned release Python image'"
-RUN adduser --disabled-password --gecos "" aipscan
+ENV UV_PYTHON_INSTALL_DIR=/python
+ENV UV_LINK_MODE=copy
+ENV PATH="/venv/bin:$PATH"
+RUN uv python install "${PYTHON_VERSION}" && \
+    uv venv --python "${PYTHON_VERSION}" /venv
+RUN python -c "import sys; assert sys.version.split()[0] == '${PYTHON_VERSION}'"
+RUN apt-get update && \
+    apt-get install --no-install-recommends --yes adduser && \
+    rm -rf /var/lib/apt/lists/* && \
+    adduser --disabled-password --gecos "" aipscan
 RUN --mount=type=bind,source=dist,target=/dist,ro \
     --mount=type=bind,from=release-lock,source=/constraints.txt,target=/constraints.txt \
-    --mount=type=cache,target=/root/.cache/pip \
-    pip install --root-user-action=ignore --compile --require-hashes \
+    --mount=type=cache,target=/root/.cache/uv \
+    uv pip install --python /venv/bin/python --compile-bytecode --require-hashes \
     --requirement /constraints.txt && \
-    pip install --root-user-action=ignore --compile --no-deps /dist/${WHEEL}[server]
+    uv pip install --python /venv/bin/python --compile-bytecode --no-deps /dist/${WHEEL}[server]
 ENV FLASK_APP=AIPscan:create_app
 COPY .init-scripts/entrypoint.sh /
 USER aipscan
