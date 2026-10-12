@@ -234,10 +234,10 @@ dagger lock update
 ```
 
 Dockerfile `FROM` lookups are outside the Dagger lockfile. The release stages
-pin their uv and Python bases by digest so verification and publication use the
-same bases. Update these Dockerfile digests when updating the release images. A
-Python version change also needs a matching base digest; the image build checks
-that the runtime matches `.python-version`.
+pin their uv base by digest so verification and publication use the same base.
+Update these Dockerfile digests when updating uv. Python is installed by uv from
+the version in `.python-version`, passed as a build argument. The image build
+checks that the installed runtime matches that version.
 
 When adding a new lookup, discover it by running the relevant variant live:
 
