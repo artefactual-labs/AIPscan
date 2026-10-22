@@ -26,7 +26,7 @@ runs:
         INPUT_PRERELEASE: ${{ inputs.prerelease }}
       run: |
         set -euo pipefail
-        script_path="${{ github.action_path }}/release.sh"
+        script_path="${GITHUB_ACTION_PATH}/release.sh"
         args=()
         if [[ -n "${INPUT_TITLE}" ]]; then
           args+=(--title "${INPUT_TITLE}")
