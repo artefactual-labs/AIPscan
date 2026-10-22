@@ -1,0 +1,20 @@
+profile: pedantic
+rules:
+  # gh actions-lock --verify enforces the pins in actions.lock.
+  unpinned-uses: off
+ignores:
+  - rule: secrets-outside-env
+    file: .github/workflows/test.yml
+    job: tox
+    step: Upload coverage report
+    reason: Coverage uploads use the existing repository token on pull requests.
+  - rule: secrets-outside-env
+    file: .github/workflows/release.yml
+    job: image-build
+    step: Login to Docker Hub
+    reason: Docker Hub credentials are existing repository secrets; moving them requires repository administration.
+  - rule: secrets-outside-env
+    file: .github/workflows/release.yml
+    job: image-merge
+    step: Login to Docker Hub
+    reason: Docker Hub credentials are existing repository secrets; moving them requires repository administration.

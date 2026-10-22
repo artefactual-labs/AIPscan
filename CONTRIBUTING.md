@@ -305,6 +305,19 @@ gh actions-lock --verify
 CI verifies the lockfile without rewriting it. `gh actions-lock --verify-local`
 also checks coverage offline, but does not verify the trustworthiness of pins.
 
+Check workflows, composite actions, and Dependabot configuration with
+[jactionlint]:
+
+```sh
+jactionlint --strict-exit
+```
+
+`.github/jactionlint.yaml` selects the pedantic profile. CI fails on warnings
+and informational findings as well as errors. Action pinning is delegated to
+`gh actions-lock --verify`. Narrow exceptions preserve the existing Codecov and
+Docker Hub repository secrets; moving those secrets to protected environments
+requires repository administration.
+
 ## Preparing a release
 
 Prerequisites:
@@ -799,6 +812,7 @@ Congratulations! You've now added a new report to AIPscan.
 [flask blueprints]: https://flask.palletsprojects.com/en/1.1.x/blueprints/
 [flask-restx]: https://flask-restx.readthedocs.io/en/latest/
 [gh actions-lock]: https://github.com/github/gh-actions-lock
+[jactionlint]: https://github.com/jdx/jactionlint
 [jinja2 template]: https://flask.palletsprojects.com/en/1.1.x/templating/
 [project-wide conftest module]: https://github.com/artefactual-labs/AIPscan/blob/main/AIPscan/conftest.py
 [pytest]: https://docs.pytest.org
