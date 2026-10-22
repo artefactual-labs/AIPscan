@@ -67,6 +67,9 @@ e2e = [
 linting = [
     "prek",
 ]
+publish = [
+    "pypi-attestations>=0.0.30",
+]
 
 
 [tool.hatch.version]

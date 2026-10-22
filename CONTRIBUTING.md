@@ -292,12 +292,30 @@ and `.dagger/src/aipscan/main.py`, and keep the uv image versions and hook
 aligned. The Dagger module has its own lockfile
 (`uv lock --upgrade --directory .dagger`).
 
+GitHub Actions use version tags with exact commits and repository identities in
+`.github/workflows/actions.lock`. After adding or updating an action, regenerate
+the lockfile with [gh actions-lock] and include it in the same commit:
+
+```sh
+gh extension install github/gh-actions-lock --pin v0.2.0
+gh actions-lock
+gh actions-lock --verify
+```
+
+CI verifies the lockfile without rewriting it. `gh actions-lock --verify-local`
+also checks coverage offline, but does not verify the trustworthiness of pins.
+
 ## Preparing a release
 
 Prerequisites:
 
 - Make sure that all tests pass.
 - Make sure that the dependencies are up to date (see above).
+
+PyPI publication uses `uv publish` with required Trusted Publishing. The locked
+`publish` dependency group generates attestations for the verified distribution
+files before upload. The release workflow and `pypi` environment retain their
+Trusted Publisher identity.
 
 Run the release process with an alpha or release candidate tag first to shake
 out issues. Remember to use the PEP 440 versioning scheme, e.g. `0.9.0a2`, using
@@ -780,6 +798,7 @@ Congratulations! You've now added a new report to AIPscan.
 [dagger-locks]: https://docs.dagger.io/next/reference/cli/lockfiles/
 [flask blueprints]: https://flask.palletsprojects.com/en/1.1.x/blueprints/
 [flask-restx]: https://flask-restx.readthedocs.io/en/latest/
+[gh actions-lock]: https://github.com/github/gh-actions-lock
 [jinja2 template]: https://flask.palletsprojects.com/en/1.1.x/templating/
 [project-wide conftest module]: https://github.com/artefactual-labs/AIPscan/blob/main/AIPscan/conftest.py
 [pytest]: https://docs.pytest.org
