@@ -1,9 +1,9 @@
 ARG TARGET=dev
 
 # Value comes from .python-version (default avoids InvalidDefaultArgInFrom).
-ARG PYTHON_VERSION=3.15.0
+ARG PYTHON_VERSION=3.15.1
 
-FROM ghcr.io/astral-sh/uv:0.13.0-trixie-slim AS builder
+FROM ghcr.io/astral-sh/uv:0.13.5-trixie-slim AS builder
 ENV UV_COMPILE_BYTECODE=1
 ENV UV_LINK_MODE=copy
 ENV UV_PYTHON_INSTALL_DIR=/python
@@ -41,13 +41,13 @@ COPY .init-scripts/entrypoint.sh /
 ENTRYPOINT ["/entrypoint.sh"]
 
 # Keep the runtime dependency versions aligned with the reviewed uv lock.
-FROM ghcr.io/astral-sh/uv:0.13.0-trixie-slim@sha256:11bee95ce27982f00acb0c85aa1b5ee6203a9bb958b7def6f27ead851d454e8d AS release-lock
+FROM ghcr.io/astral-sh/uv:0.13.5-trixie-slim@sha256:95611d89b7324e0517fe7257bb00979cf1f68461e5fb2b2d027d039da054bc07 AS release-lock
 WORKDIR /app
 COPY pyproject.toml uv.lock .python-version ./
 RUN uv export --locked --no-dev --extra server --no-emit-project \
     --output-file /constraints.txt
 
-FROM ghcr.io/astral-sh/uv:0.13.0-trixie-slim@sha256:11bee95ce27982f00acb0c85aa1b5ee6203a9bb958b7def6f27ead851d454e8d AS release
+FROM ghcr.io/astral-sh/uv:0.13.5-trixie-slim@sha256:95611d89b7324e0517fe7257bb00979cf1f68461e5fb2b2d027d039da054bc07 AS release
 ARG PYTHON_VERSION
 ARG WHEEL
 ENV UV_PYTHON_INSTALL_DIR=/python

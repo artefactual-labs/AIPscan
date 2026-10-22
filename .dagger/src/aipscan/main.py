@@ -114,7 +114,7 @@ class Aipscan:
         )
         rabbitmq = (
             dag.container()
-            .from_("rabbitmq:4.3.6-management")
+            .from_("rabbitmq:4.4.0-management")
             .with_mounted_temp("/var/lib/rabbitmq", size=128 * 1024 * 1024)
             .with_env_variable("RABBITMQ_NODENAME", "rabbit@localhost")
             # Celery control queues still use transient non-exclusive queues.
@@ -155,7 +155,7 @@ class Aipscan:
         ambox = ambox_files.as_service(no_init=True)
         python_base = (
             dag.container()
-            .from_("ghcr.io/astral-sh/uv:0.13.0-trixie-slim")
+            .from_("ghcr.io/astral-sh/uv:0.13.5-trixie-slim")
             .with_workdir("/app")
             .with_env_variable("HATCH_BUILD_NO_HOOKS", "1")
             .with_env_variable("SETUPTOOLS_SCM_PRETEND_VERSION", "1.0.0dev")

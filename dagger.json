@@ -1,6 +1,6 @@
 {
   "name": "aipscan",
-  "engineVersion": "v0.21.10",
+  "engineVersion": "v0.21.11",
   "sdk": {
     "source": "python"
   },
