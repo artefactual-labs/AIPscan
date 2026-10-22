@@ -22,7 +22,7 @@ jobs:
       - name: "Install Dagger"
         uses: dagger/dagger-for-github@27b130bf0f79a7f6fbbbe0fbca6760dc9bb40a77 # v8.4.1
         with:
-          version: "0.21.10"
+          version: "0.21.11"
       - name: "Run Dagger end-to-end tests"
         run: bash tests/e2e/check.sh --indexed=${{ matrix.indexed }}
       - name: "Save acceptance test artifacts"
@@ -44,7 +44,7 @@ jobs:
       - name: "Check out repository"
         uses: "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1" # v7.0.1
       - name: "Install uv"
-        uses: "astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884" # v10.3.0
+        uses: "astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e" # v10.3.2
       - name: "Install Node.js"
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
@@ -80,7 +80,7 @@ jobs:
       - name: "Check out repository"
         uses: "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1" # v7.0.1
       - name: "Install uv"
-        uses: "astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884" # v10.3.0
+        uses: "astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e" # v10.3.2
       - name: "Install Node.js"
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:

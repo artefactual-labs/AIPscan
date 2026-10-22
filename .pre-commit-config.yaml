@@ -7,11 +7,11 @@ repos:
     - id: fix-byte-order-marker
     - id: check-executables-have-shebangs
 - repo: https://github.com/astral-sh/uv-pre-commit
-  rev: 0.13.0
+  rev: 0.13.5
   hooks:
     - id: uv-lock
 - repo: https://github.com/astral-sh/ruff-pre-commit
-  rev: v0.17.0
+  rev: v0.17.1
   hooks:
     - id: ruff-check
       args: ["--fix"]

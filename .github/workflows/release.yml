@@ -48,7 +48,7 @@ jobs:
         with:
           node-version-file: .node-version
       - name: Install uv
-        uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
         with:
           enable-cache: true
           version: latest
@@ -89,7 +89,7 @@ jobs:
       - name: Install Dagger
         uses: dagger/dagger-for-github@27b130bf0f79a7f6fbbbe0fbca6760dc9bb40a77 # v8.4.1
         with:
-          version: "0.21.10"
+          version: "0.21.11"
       - name: Verify the release wheel and image
         run: bash tests/e2e/check.sh --distribution=dist --indexed=true
       - name: Save acceptance test artifacts
@@ -114,7 +114,7 @@ jobs:
           name: dist
           path: dist
       - name: Upload distribution packages to PyPI
-        uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
+        uses: pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086 # v1.14.3
 
   tag:
     name: Push tag
