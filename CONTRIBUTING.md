@@ -318,6 +318,57 @@ and informational findings as well as errors. Action pinning is delegated to
 Docker Hub repository secrets; moving those secrets to protected environments
 requires repository administration.
 
+## Software bill of materials
+
+The SBOM workflow runs on pushes to `main` and can also be started manually. The
+release workflow calls it directly after publishing the Docker manifests,
+including for prereleases. It does not depend on a release event, which a
+release created with `GITHUB_TOKEN` would not trigger.
+
+Each run generates three CycloneDX JSON inventories:
+
+- `source`: Python and npm lockfile dependencies, including development
+  dependencies. This covers frontend libraries bundled into JavaScript, whose
+  npm metadata is absent from the production image. It also includes build and
+  test tools, so it is broader than the runtime inventory.
+- `linux-amd64` and `linux-arm64`: packages detected in each final production
+  image, including Debian packages and installed Python dependencies with the
+  `server` extra. Trivy misses the CPython runtime installed by uv, so the
+  workflow reads its version from the image's interpreter and adds it with a
+  Python CPE identifier for vulnerability matching. CI checks that Debian
+  packages, AIPscan, Gunicorn, and the runtime are present before uploading the
+  inventory.
+
+[CycloneDX CLI] merges these inventories into one SBOM, uploaded once to the
+`aipscan` project in [Dependency-Track]. The project version is the branch name
+for branch runs and the requested release version for releases. The hierarchical
+merge preserves the source and image inventories within the document; it does
+not create child projects in Dependency-Track. CI validates the merged document,
+checks dependency references, and checks that no package identity was lost,
+including versions and architecture qualifiers. Both the individual inventories
+and the combined SBOM are saved as workflow artifacts. If any inventory fails,
+the upload does not run, so a partial inventory cannot replace the complete one.
+
+The combined inventory includes development tools and both architectures; it
+describes the product's dependencies rather than a single deployed container.
+Branch runs build the `release` Dockerfile target locally without pushing an
+image. Release runs scan the published multi-platform image by digest on native
+runners, rather than rebuilding it.
+
+Configure `DEPENDENCY_TRACK_URL` (the API server URL) and
+`DEPENDENCY_TRACK_API_KEY` as repository secrets, or grant this repository
+access to the corresponding organization secrets. The key needs `BOM_UPLOAD` and
+`PROJECT_CREATION_UPLOAD` permissions because uploads use `autoCreate=true`.
+Missing credentials or rejected uploads fail the workflow; generated SBOMs
+remain available as workflow artifacts. Dependency-Track processes the inventory
+and performs vulnerability analysis asynchronously; a successful upload is not a
+vulnerability policy check or a release gate.
+
+[Trivy] generates the inventories. Image SBOMs cover packages the scanner can
+identify, not container configuration risks or every statically linked library.
+Separately deployed services such as MySQL, RabbitMQ, and Typesense are outside
+the AIPscan image and are not covered by these SBOMs.
+
 ## Preparing a release
 
 Prerequisites:
@@ -807,8 +858,10 @@ $("#aipsByOriginalFormat").on("click", function() {
 Congratulations! You've now added a new report to AIPscan.
 
 [contributing.md]: https://github.com/artefactual/archivematica/blob/HEAD/CONTRIBUTING.md
+[cyclonedx cli]: https://github.com/CycloneDX/cyclonedx-cli#merge-command
 [dagger-cache]: https://docs.dagger.io/extending/function-caching/
 [dagger-locks]: https://docs.dagger.io/next/reference/cli/lockfiles/
+[dependency-track]: https://docs.dependencytrack.org/usage/cicd/
 [flask blueprints]: https://flask.palletsprojects.com/en/1.1.x/blueprints/
 [flask-restx]: https://flask-restx.readthedocs.io/en/latest/
 [gh actions-lock]: https://github.com/github/gh-actions-lock
@@ -819,4 +872,5 @@ Congratulations! You've now added a new report to AIPscan.
 [release workflow]: https://github.com/artefactual-labs/AIPscan/actions/workflows/release.yml
 [schemaspy]: http://schemaspy.org/
 [sqlalchemy]: https://www.sqlalchemy.org/
+[trivy]: https://trivy.dev/docs/latest/guide/supply-chain/sbom/
 [uv]: https://docs.astral.sh/uv/getting-started/installation/

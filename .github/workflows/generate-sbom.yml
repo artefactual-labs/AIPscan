@@ -1,0 +1,216 @@
+name: SBOM (Dependency-Track)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      version:
+        description: Release version in Dependency-Track
+        required: true
+        type: string
+      image:
+        description: Published multi-platform image reference pinned by digest
+        required: true
+        type: string
+    secrets:
+      DEPENDENCY_TRACK_URL:
+        required: true
+      DEPENDENCY_TRACK_API_KEY:
+        required: true
+
+permissions: {}
+
+concurrency:
+  group: sbom-${{ inputs.version || github.ref }}
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  # Match the scanner used by Archivematica; update the digest with the version.
+  TRIVY_IMAGE: aquasec/trivy@sha256:bcc376de8d77cfe086a917230e818dc9f8528e3c852f7b1aff648949b6258d1c # v0.69.3
+  PROJECT_VERSION: ${{ inputs.version || github.ref_name }}
+
+jobs:
+  sbom:
+    name: SBOM (${{ matrix.scope }})
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - scope: source
+            runner: ubuntu-24.04
+          - scope: linux-amd64
+            runner: ubuntu-24.04
+          - scope: linux-arm64
+            runner: ubuntu-24.04-arm
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install Node.js
+        if: ${{ matrix.scope != 'source' && !inputs.image }}
+        uses: actions/setup-node@v7.1.0
+        with:
+          node-version-file: .node-version
+      - name: Install uv
+        if: ${{ matrix.scope != 'source' && !inputs.image }}
+        uses: astral-sh/setup-uv@v10.3.2
+      - name: Build production image
+        if: ${{ matrix.scope != 'source' && !inputs.image }}
+        run: make build-release-image
+      - name: Export production image
+        if: ${{ matrix.scope != 'source' }}
+        env:
+          RELEASE_IMAGE: ${{ inputs.image }}
+        run: |
+          image=aipscan-release-test:1.0.0.dev1
+          if [ -n "$RELEASE_IMAGE" ]; then
+            image="$RELEASE_IMAGE"
+            docker pull "$image"
+          fi
+          docker run --rm --network none --entrypoint /venv/bin/python "$image" \
+            -c 'import platform; print(platform.python_version())' > "$RUNNER_TEMP/python-version"
+          docker save --output "$RUNNER_TEMP/image.tar" "$image"
+      - name: Generate CycloneDX SBOM
+        env:
+          SCOPE: ${{ matrix.scope }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/sbom" "$RUNNER_TEMP/sbom-source"
+          if [ "$SCOPE" = source ]; then
+            # Include dev dependencies: package.json uses them for shipped JS.
+            # Scan only manifests to avoid build outputs and local environments.
+            cp pyproject.toml uv.lock package.json package-lock.json "$RUNNER_TEMP/sbom-source/"
+            docker run --rm \
+              --volume "$RUNNER_TEMP/sbom-source:/scan:ro" \
+              --volume "$RUNNER_TEMP/sbom:/output" \
+              "$TRIVY_IMAGE" fs --format cyclonedx --include-dev-deps \
+              --output /output/sbom.cdx.json /scan
+          else
+            docker run --rm \
+              --volume "$RUNNER_TEMP/image.tar:/image.tar:ro" \
+              --volume "$RUNNER_TEMP/sbom:/output" \
+              "$TRIVY_IMAGE" image --input /image.tar --format cyclonedx \
+              --output /output/sbom.cdx.json
+          fi
+      - name: Include the managed Python runtime
+        if: ${{ matrix.scope != 'source' }}
+        run: |
+          # uv's CPython is outside Debian's package database and Trivy misses it.
+          version="$(cat "$RUNNER_TEMP/python-version")"
+          # Fail rather than generate an incorrect CPE for a prerelease runtime.
+          [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          bom="$RUNNER_TEMP/sbom/sbom.cdx.json"
+          jq --arg version "$version" '
+            ("pkg:generic/python@" + $version) as $ref |
+            .metadata.component["bom-ref"] as $root |
+            .components += [{
+              type: "application", name: "python", version: $version,
+              "bom-ref": $ref, purl: $ref,
+              cpe: ("cpe:2.3:a:python:python:" + $version + ":*:*:*:*:*:*:*"),
+              description: "CPython runtime version read from the container interpreter"
+            }] |
+            .dependencies |= (map(
+              if .ref == $root then .dependsOn += [$ref] else . end
+            ) + [{ref: $ref, dependsOn: []}])
+          ' "$bom" > "$bom.tmp"
+          mv "$bom.tmp" "$bom"
+      - name: Check inventory coverage
+        env:
+          SCOPE: ${{ matrix.scope }}
+        run: |
+          bom="$RUNNER_TEMP/sbom/sbom.cdx.json"
+          jq -e '.bomFormat == "CycloneDX" and (.components | length > 0)' "$bom"
+          if [ "$SCOPE" = source ]; then
+            jq -e 'any(.components[]; (.purl // "") | startswith("pkg:npm/"))' "$bom"
+            jq -e 'any(.components[]; (.purl // "") | startswith("pkg:pypi/"))' "$bom"
+          else
+            jq -e 'any(.components[]; (.purl // "") | startswith("pkg:deb/"))' "$bom"
+            jq -e 'any(.components[]; .name == "aipscan")' "$bom"
+            jq -e 'any(.components[]; .name == "gunicorn")' "$bom"
+            jq -e --arg version "$(cat "$RUNNER_TEMP/python-version")" \
+              'any(.components[]; .name == "python" and .version == $version and .cpe != null)' "$bom"
+          fi
+          jq --arg name "aipscan/$SCOPE" '.metadata.component.name = $name' "$bom" > "$bom.tmp"
+          mv "$bom.tmp" "$bom"
+      - name: Save SBOM artifact
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: sbom-${{ matrix.scope }}
+          path: ${{ runner.temp }}/sbom/sbom.cdx.json
+          if-no-files-found: error
+
+  upload:
+    name: Merge and upload SBOM
+    needs: sbom
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions: {}
+    env:
+      CYCLONEDX_IMAGE: cyclonedx/cyclonedx-cli@sha256:252c2e26f468c25fea1e63ecde1bc3198ad6e9dbb57f5ed3236bddcb2281b3a7 # 0.33.1
+    steps:
+      - name: Download inventories
+        uses: actions/download-artifact@v8.0.2
+        with:
+          pattern: sbom-*
+          path: ${{ runner.temp }}/inventories
+      - name: Merge and validate inventories
+        run: |
+          mkdir -p "$RUNNER_TEMP/sbom"
+          docker run --rm \
+            --volume "$RUNNER_TEMP/inventories:/input:ro" \
+            --volume "$RUNNER_TEMP/sbom:/output" \
+            "$CYCLONEDX_IMAGE" merge --hierarchical \
+            --input-files /input/sbom-source/sbom.cdx.json \
+              /input/sbom-linux-amd64/sbom.cdx.json \
+              /input/sbom-linux-arm64/sbom.cdx.json \
+            --output-file /output/sbom.cdx.json --output-version v1_6 \
+            --name aipscan --version "$PROJECT_VERSION"
+          docker run --rm --volume "$RUNNER_TEMP/sbom:/output:ro" \
+            "$CYCLONEDX_IMAGE" validate --input-file /output/sbom.cdx.json --fail-on-errors
+          # Preserve every package identity, including versions and architecture qualifiers.
+          jq -se '
+            def components: .components[]? | recurse(.components[]?);
+            def identities: [components | [.type, .group, .name, .version, .purl, .cpe]] | unique;
+            .[0] as $merged |
+            (([.[1:][] | identities[]] | unique) - ($merged | identities) | length) == 0
+          ' "$RUNNER_TEMP/sbom/sbom.cdx.json" "$RUNNER_TEMP"/inventories/sbom-*/sbom.cdx.json
+          # Schema validation alone does not detect duplicate or dangling references.
+          jq -e '
+            ([.metadata.component, (.components[] | recurse(.components[]?))] | map(."bom-ref")) as $refs |
+            ($refs | length) == ($refs | unique | length) and
+            (([.dependencies[] | .ref, .dependsOn[]?] - $refs | length) == 0)
+          ' "$RUNNER_TEMP/sbom/sbom.cdx.json"
+      - name: Save combined SBOM
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: sbom
+          path: ${{ runner.temp }}/sbom/sbom.cdx.json
+          if-no-files-found: error
+      - name: Upload to Dependency-Track
+        env:
+          DEPENDENCY_TRACK_URL: ${{ secrets.DEPENDENCY_TRACK_URL }}
+          DEPENDENCY_TRACK_API_KEY: ${{ secrets.DEPENDENCY_TRACK_API_KEY }}
+          PROJECT_NAME: aipscan
+        run: |
+          if [ -z "$DEPENDENCY_TRACK_URL" ] || [ -z "$DEPENDENCY_TRACK_API_KEY" ]; then
+            echo "Set DEPENDENCY_TRACK_URL and DEPENDENCY_TRACK_API_KEY repository secrets."
+            exit 1
+          fi
+          curl --fail-with-body --silent --show-error \
+            --connect-timeout 30 --max-time 120 \
+            -X POST "${DEPENDENCY_TRACK_URL%/}/api/v1/bom" \
+            -H "X-Api-Key: ${DEPENDENCY_TRACK_API_KEY}" \
+            -F "autoCreate=true" \
+            --form-string "projectName=${PROJECT_NAME}" \
+            --form-string "projectVersion=${PROJECT_VERSION}" \
+            -F "bom=@${RUNNER_TEMP}/sbom/sbom.cdx.json"

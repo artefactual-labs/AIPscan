@@ -4,6 +4,15 @@ rules:
   unpinned-uses: off
 ignores:
   - rule: secrets-outside-env
+    file: .github/workflows/generate-sbom.yml
+    job: upload
+    step: Upload to Dependency-Track
+    reason: SBOM uploads share the repository or organization secrets used by the other Dependency-Track integrations.
+  - rule: secrets-outside-env
+    file: .github/workflows/release.yml
+    job: sbom
+    reason: The reusable SBOM workflow receives only the two Dependency-Track secrets.
+  - rule: secrets-outside-env
     file: .github/workflows/test.yml
     job: tox
     step: Upload coverage report

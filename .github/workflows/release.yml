@@ -242,6 +242,8 @@ jobs:
 
   image-merge:
     name: Publish Docker manifests
+    outputs:
+      image: ${{ steps.image.outputs.reference }}
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions: {}
@@ -282,9 +284,26 @@ jobs:
           done
           docker buildx imagetools create "${args[@]}"
       - name: Inspect image
+        id: image
         env:
           RELEASE_VERSION: ${{ inputs.version }}
-        run: docker buildx imagetools inspect "$REGISTRY_IMAGE:$RELEASE_VERSION"
+        run: |
+          docker buildx imagetools inspect "$REGISTRY_IMAGE:$RELEASE_VERSION"
+          digest="$(docker buildx imagetools inspect "$REGISTRY_IMAGE:$RELEASE_VERSION" --format '{{.Manifest.Digest}}')"
+          echo "reference=$REGISTRY_IMAGE@$digest" >> "$GITHUB_OUTPUT"
+
+  sbom:
+    name: Release SBOMs
+    needs: image-merge
+    permissions:
+      contents: read
+    uses: $/.github/workflows/generate-sbom.yml
+    with:
+      version: ${{ inputs.version }}
+      image: ${{ needs.image-merge.outputs.image }}
+    secrets:
+      DEPENDENCY_TRACK_URL: ${{ secrets.DEPENDENCY_TRACK_URL }}
+      DEPENDENCY_TRACK_API_KEY: ${{ secrets.DEPENDENCY_TRACK_API_KEY }}
 
   release:
     name: Create GitHub release
