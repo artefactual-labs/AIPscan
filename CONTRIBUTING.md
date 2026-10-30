@@ -138,6 +138,11 @@ production settings. Runtime dependencies come from `uv.lock` and their hashes
 are checked during image installation. The web server and worker share the
 download directory, and migrations run at service startup.
 
+The production image contains the Python interpreter and installed application,
+but no uv, pip, or ensurepip. Package installation happens in the build stage;
+rebuild the image to change its dependencies. Acceptance checks verify that
+these installers are absent from the final image.
+
 With Docker and Dagger installed, run:
 
 ```sh
@@ -234,10 +239,11 @@ dagger lock update
 ```
 
 Dockerfile `FROM` lookups are outside the Dagger lockfile. The release stages
-pin their uv base by digest so verification and publication use the same base.
-Update these Dockerfile digests when updating uv. Python is installed by uv from
-the version in `.python-version`, passed as a build argument. The image build
-checks that the installed runtime matches that version.
+pin their uv build base and Debian runtime base by digest so verification and
+publication use the same bases. Update these Dockerfile digests when updating uv
+or the runtime base. Python is installed by uv from the version in
+`.python-version`, passed as a build argument. The image build checks that the
+installed runtime matches that version.
 
 When adding a new lookup, discover it by running the relevant variant live:
 

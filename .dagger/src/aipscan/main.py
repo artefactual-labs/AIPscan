@@ -223,8 +223,14 @@ class Aipscan:
                     [
                         "python",
                         "-c",
-                        "import AIPscan, os; assert os.getuid() != 0; "
-                        "assert '/site-packages/' in AIPscan.__file__, AIPscan.__file__",
+                        "import AIPscan, importlib.util, os, pathlib, shutil, sysconfig; "
+                        "assert os.getuid() != 0; "
+                        "assert '/site-packages/' in AIPscan.__file__, AIPscan.__file__; "
+                        "assert all(shutil.which(tool) is None for tool in ('uv', 'uvx', 'pip', 'pip3')); "
+                        "assert importlib.util.find_spec('pip') is None; "
+                        "stdlib = pathlib.Path(sysconfig.get_path('stdlib')); "
+                        "assert not (stdlib / 'ensurepip').exists(); "
+                        "assert not (stdlib / 'site-packages' / 'pip').exists()",
                     ]
                 )
             )
