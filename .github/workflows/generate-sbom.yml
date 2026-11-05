@@ -64,7 +64,7 @@ jobs:
           node-version-file: .node-version
       - name: Install uv
         if: ${{ matrix.scope != 'source' && !inputs.image }}
-        uses: astral-sh/setup-uv@v10.3.2
+        uses: astral-sh/setup-uv@v10.3.3
       - name: Build production image
         if: ${{ matrix.scope != 'source' && !inputs.image }}
         run: make build-release-image
