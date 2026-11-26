@@ -10,13 +10,13 @@
   },
   "devDependencies": {
     "@fortawesome/fontawesome-free": "^7.3.1",
-    "bootstrap": "^5.3.8",
-    "chart.js": "^4.5.1",
-    "jquery": "^4.0.0",
+    "bootstrap": "^5.3.9",
+    "chart.js": "^4.6.1",
+    "jquery": "^4.1.0",
     "npm-run-all": "^4.1.5",
-    "plotly.js-dist": "^4.1.2",
-    "prettier": "^3.9.10",
-    "vite": "^8.3.5"
+    "plotly.js-dist": "^4.3.0",
+    "prettier": "^3.10.1",
+    "vite": "^8.3.8"
   },
   "type": "module"
 }
